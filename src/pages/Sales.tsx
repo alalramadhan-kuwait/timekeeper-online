@@ -5,6 +5,7 @@ import { Card, Spinner } from '../components/ui';
 import { formatKD } from '../lib/format';
 
 interface SaleItem { brand: string | null; product_type: string | null; product: string | null; quantity: number; amount_kd: number }
+interface TrafficRow { date_logged: string; visitor_count: number; outlet: string | null }
 interface SaleCase {
   id: string; date_logged: string; staff: string; brand: string | null; product_type: string | null;
   product: string; amount_kd: number | null; outlet: string | null; channel: string | null;
@@ -36,6 +37,7 @@ export default function SalesPage() {
   const [from, setFrom] = useState(periodStart('month'));
   const [to, setTo] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [allSales, setAllSales] = useState<SaleCase[]>([]);
+  const [allTraffic, setAllTraffic] = useState<TrafficRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [outlet, setOutlet] = useState('All');
   const [outletOptions, setOutletOptions] = useState<string[]>([]);
@@ -67,6 +69,14 @@ export default function SalesPage() {
         setAllSales((data as unknown as SaleCase[]) ?? []);
         setLoading(false);
       });
+    // every case carries a visitor_count, so all case types together = store traffic
+    supabase
+      .from('cases')
+      .select('date_logged, visitor_count, outlet')
+      .eq('deleted', false)
+      .gte('date_logged', from)
+      .lte('date_logged', to)
+      .then(({ data }) => setAllTraffic((data as TrafficRow[]) ?? []));
   }, [from, to]);
 
   const sales = useMemo(
@@ -108,6 +118,16 @@ export default function SalesPage() {
     return [...map.entries()].sort((a, b) => a[0].localeCompare(b[0]));
   }, [sales]);
   const maxDay = Math.max(1, ...byDay.map(([, v]) => v));
+
+  const trafficByDay = useMemo(() => {
+    const rows = outlet === 'All' ? allTraffic : allTraffic.filter((t) => (t.outlet || 'Unknown') === outlet);
+    const map = new Map<string, number>();
+    for (const t of rows) map.set(t.date_logged, (map.get(t.date_logged) ?? 0) + (Number(t.visitor_count) || 0));
+    return [...map.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+  }, [allTraffic, outlet]);
+  const totalVisitors = trafficByDay.reduce((s, [, v]) => s + v, 0);
+  const avgTraffic = trafficByDay.length ? totalVisitors / trafficByDay.length : 0;
+  const maxTraffic = Math.max(1, ...trafficByDay.map(([, v]) => v));
 
   return (
     <div>
@@ -167,6 +187,41 @@ export default function SalesPage() {
                     <div className="text-[10px] text-slate-400">{d.slice(5)}</div>
                   </div>
                 ))}
+              </div>
+            )}
+          </div>
+
+          <div className="mb-6 bg-white rounded-xl border border-slate-200 shadow-sm p-4">
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+              <h2 className="text-sm font-semibold text-slate-700">Store traffic (visitors per day)</h2>
+              <div className="text-sm text-slate-500">
+                Total <b className="text-slate-800">{totalVisitors}</b> · Average{' '}
+                <b className="text-amber-600">{avgTraffic.toFixed(1)} / day</b>
+                {totalVisitors > 0 && sales.length > 0 && (
+                  <> · Conversion <b className="text-emerald-600">{((sales.length / totalVisitors) * 100).toFixed(0)}%</b></>
+                )}
+              </div>
+            </div>
+            {trafficByDay.length === 0 ? <div className="text-slate-400 text-sm">No traffic data in this period</div> : (
+              <div className="relative">
+                {/* dashed average line over the bars */}
+                <div
+                  className="absolute left-0 right-0 border-t-2 border-dashed border-amber-400 z-10 pointer-events-none"
+                  style={{ bottom: `${18 + (avgTraffic / maxTraffic) * 80}px` }}
+                  title={`Average ${avgTraffic.toFixed(1)} visitors/day`}
+                />
+                <div className="flex items-end gap-1 h-32 overflow-x-auto">
+                  {trafficByDay.map(([d, v]) => (
+                    <div key={d} className="flex flex-col items-center gap-1 min-w-[34px]" title={`${d}: ${v} visitors`}>
+                      <div className="text-[10px] text-slate-500">{v}</div>
+                      <div
+                        className={`w-6 rounded-t ${v >= avgTraffic ? 'bg-amber-400' : 'bg-slate-300'}`}
+                        style={{ height: `${Math.max(4, (v / maxTraffic) * 80)}px` }}
+                      />
+                      <div className="text-[10px] text-slate-400">{d.slice(5)}</div>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>
