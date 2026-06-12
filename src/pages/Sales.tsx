@@ -1,11 +1,19 @@
 import { useEffect, useMemo, useState } from 'react';
-import { format, startOfWeek, startOfMonth, subDays } from 'date-fns';
+import { format, startOfWeek, startOfMonth, subDays, subMonths, parseISO, getDay } from 'date-fns';
 import { supabase } from '../lib/supabase';
 import { Card, Spinner } from '../components/ui';
 import { formatKD } from '../lib/format';
 
 interface SaleItem { brand: string | null; product_type: string | null; product: string | null; quantity: number; amount_kd: number }
-interface TrafficRow { date_logged: string; visitor_count: number; outlet: string | null }
+interface TrafficRow { date_logged: string; time_logged: string | null; visitor_count: number; outlet: string | null }
+
+type TrafficView = 'day' | 'hour' | 'weekday' | 'month';
+const trafficViews: Record<TrafficView, string> = {
+  day: 'By day', hour: 'By hour of day', weekday: 'By weekday', month: 'By month',
+};
+// Kuwait retail week runs Saturday → Friday
+const WEEKDAYS = ['Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+const jsDayToIndex = (jsDay: number) => (jsDay + 1) % 7; // JS: 0=Sun … 6=Sat → 0=Sat … 6=Fri
 interface SaleCase {
   id: string; date_logged: string; staff: string; brand: string | null; product_type: string | null;
   product: string; amount_kd: number | null; outlet: string | null; channel: string | null;
@@ -69,15 +77,18 @@ export default function SalesPage() {
         setAllSales((data as unknown as SaleCase[]) ?? []);
         setLoading(false);
       });
-    // every case carries a visitor_count, so all case types together = store traffic
+  }, [from, to]);
+
+  // every case carries a visitor_count, so all case types together = store traffic.
+  // fetched for the last 12 months once so the "By month" view always has a full year.
+  useEffect(() => {
     supabase
       .from('cases')
-      .select('date_logged, visitor_count, outlet')
+      .select('date_logged, time_logged, visitor_count, outlet')
       .eq('deleted', false)
-      .gte('date_logged', from)
-      .lte('date_logged', to)
+      .gte('date_logged', format(subMonths(new Date(), 12), 'yyyy-MM-dd'))
       .then(({ data }) => setAllTraffic((data as TrafficRow[]) ?? []));
-  }, [from, to]);
+  }, []);
 
   const sales = useMemo(
     () => (outlet === 'All' ? allSales : allSales.filter((c) => (c.outlet || 'Unknown') === outlet)),
@@ -119,15 +130,38 @@ export default function SalesPage() {
   }, [sales]);
   const maxDay = Math.max(1, ...byDay.map(([, v]) => v));
 
-  const trafficByDay = useMemo(() => {
-    const rows = outlet === 'All' ? allTraffic : allTraffic.filter((t) => (t.outlet || 'Unknown') === outlet);
+  const [trafficView, setTrafficView] = useState<TrafficView>('day');
+
+  const trafficBuckets = useMemo(() => {
+    let rows = outlet === 'All' ? allTraffic : allTraffic.filter((t) => (t.outlet || 'Unknown') === outlet);
+    // month view always spans the fetched 12 months; the others follow the selected period
+    if (trafficView !== 'month') rows = rows.filter((t) => t.date_logged >= from && t.date_logged <= to);
+
     const map = new Map<string, number>();
-    for (const t of rows) map.set(t.date_logged, (map.get(t.date_logged) ?? 0) + (Number(t.visitor_count) || 0));
+    const add = (k: string, v: number) => map.set(k, (map.get(k) ?? 0) + v);
+
+    for (const t of rows) {
+      const v = Number(t.visitor_count) || 0;
+      if (trafficView === 'day') add(t.date_logged, v);
+      else if (trafficView === 'hour') {
+        const h = t.time_logged?.match(/^(\d{1,2})/);
+        if (h) add(`${h[1].padStart(2, '0')}:00`, v);
+      } else if (trafficView === 'weekday') add(WEEKDAYS[jsDayToIndex(getDay(parseISO(t.date_logged)))], v);
+      else add(t.date_logged.slice(0, 7), v);
+    }
+
+    if (trafficView === 'weekday') {
+      return WEEKDAYS.filter((d) => map.has(d)).map((d) => [d, map.get(d)!] as [string, number]);
+    }
     return [...map.entries()].sort((a, b) => a[0].localeCompare(b[0]));
-  }, [allTraffic, outlet]);
-  const totalVisitors = trafficByDay.reduce((s, [, v]) => s + v, 0);
-  const avgTraffic = trafficByDay.length ? totalVisitors / trafficByDay.length : 0;
-  const maxTraffic = Math.max(1, ...trafficByDay.map(([, v]) => v));
+  }, [allTraffic, outlet, trafficView, from, to]);
+
+  const trafficLabel = (k: string) =>
+    trafficView === 'day' ? k.slice(5) : trafficView === 'weekday' ? k.slice(0, 3) : k;
+  const totalVisitors = trafficBuckets.reduce((s, [, v]) => s + v, 0);
+  const avgTraffic = trafficBuckets.length ? totalVisitors / trafficBuckets.length : 0;
+  const maxTraffic = Math.max(1, ...trafficBuckets.map(([, v]) => v));
+  const avgUnit = { day: 'day', hour: 'hour', weekday: 'weekday', month: 'month' }[trafficView];
 
   return (
     <div>
@@ -193,16 +227,30 @@ export default function SalesPage() {
 
           <div className="mb-6 bg-white rounded-xl border border-slate-200 shadow-sm p-4">
             <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-              <h2 className="text-sm font-semibold text-slate-700">Store traffic (visitors per day)</h2>
+              <div className="flex flex-wrap items-center gap-2">
+                <h2 className="text-sm font-semibold text-slate-700">Store traffic</h2>
+                <div className="flex rounded-lg border border-slate-300 overflow-hidden">
+                  {(Object.keys(trafficViews) as TrafficView[]).map((v) => (
+                    <button
+                      key={v}
+                      onClick={() => setTrafficView(v)}
+                      className={`px-2.5 py-1 text-xs ${trafficView === v ? 'bg-slate-900 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}
+                    >
+                      {trafficViews[v]}
+                    </button>
+                  ))}
+                </div>
+                {trafficView === 'month' && <span className="text-xs text-slate-400">last 12 months</span>}
+              </div>
               <div className="text-sm text-slate-500">
                 Total <b className="text-slate-800">{totalVisitors}</b> · Average{' '}
-                <b className="text-amber-600">{avgTraffic.toFixed(1)} / day</b>
-                {totalVisitors > 0 && sales.length > 0 && (
+                <b className="text-amber-600">{avgTraffic.toFixed(1)} / {avgUnit}</b>
+                {trafficView === 'day' && totalVisitors > 0 && sales.length > 0 && (
                   <> · Conversion <b className="text-emerald-600">{((sales.length / totalVisitors) * 100).toFixed(0)}%</b></>
                 )}
               </div>
             </div>
-            {trafficByDay.length === 0 ? <div className="text-slate-400 text-sm">No traffic data in this period</div> : (
+            {trafficBuckets.length === 0 ? <div className="text-slate-400 text-sm">No traffic data in this period</div> : (
               <div className="relative">
                 {/* dashed average line over the bars */}
                 <div
@@ -211,14 +259,14 @@ export default function SalesPage() {
                   title={`Average ${avgTraffic.toFixed(1)} visitors/day`}
                 />
                 <div className="flex items-end gap-1 h-32 overflow-x-auto">
-                  {trafficByDay.map(([d, v]) => (
-                    <div key={d} className="flex flex-col items-center gap-1 min-w-[34px]" title={`${d}: ${v} visitors`}>
+                  {trafficBuckets.map(([d, v]) => (
+                    <div key={d} className="flex flex-col items-center gap-1 min-w-[34px] flex-1" title={`${d}: ${v} visitors`}>
                       <div className="text-[10px] text-slate-500">{v}</div>
                       <div
                         className={`w-6 rounded-t ${v >= avgTraffic ? 'bg-amber-400' : 'bg-slate-300'}`}
                         style={{ height: `${Math.max(4, (v / maxTraffic) * 80)}px` }}
                       />
-                      <div className="text-[10px] text-slate-400">{d.slice(5)}</div>
+                      <div className="text-[10px] text-slate-400 whitespace-nowrap">{trafficLabel(d)}</div>
                     </div>
                   ))}
                 </div>
