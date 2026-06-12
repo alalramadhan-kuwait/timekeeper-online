@@ -1,0 +1,173 @@
+import { useEffect, useMemo, useState } from 'react';
+import { format, startOfWeek, startOfMonth, subDays } from 'date-fns';
+import { supabase } from '../lib/supabase';
+import { Card, Spinner } from '../components/ui';
+import { formatKD } from '../lib/format';
+
+interface SaleItem { brand: string | null; product_type: string | null; product: string | null; quantity: number; amount_kd: number }
+interface SaleCase {
+  id: string; date_logged: string; staff: string; brand: string | null; product_type: string | null;
+  product: string; amount_kd: number | null; outlet: string | null; channel: string | null;
+  sale_items: SaleItem[];
+}
+
+type Period = 'today' | 'week' | 'month' | '30d' | 'custom';
+
+const periodLabels: Record<Period, string> = {
+  today: 'Today', week: 'This week', month: 'This month', '30d': 'Last 30 days', custom: 'Custom',
+};
+
+function periodStart(p: Period): string {
+  const now = new Date();
+  if (p === 'today') return format(now, 'yyyy-MM-dd');
+  if (p === 'week') return format(startOfWeek(now, { weekStartsOn: 6 }), 'yyyy-MM-dd'); // Kuwait week starts Saturday
+  if (p === 'month') return format(startOfMonth(now), 'yyyy-MM-dd');
+  return format(subDays(now, 30), 'yyyy-MM-dd');
+}
+
+/** Total for one sale: line items when present, otherwise the case amount. */
+function caseTotal(c: SaleCase): number {
+  if (c.sale_items?.length) return c.sale_items.reduce((s, i) => s + Number(i.amount_kd) * (Number(i.quantity) || 1), 0);
+  return Number(c.amount_kd ?? 0);
+}
+
+export default function SalesPage() {
+  const [period, setPeriod] = useState<Period>('month');
+  const [from, setFrom] = useState(periodStart('month'));
+  const [to, setTo] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [sales, setSales] = useState<SaleCase[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (period !== 'custom') {
+      setFrom(periodStart(period));
+      setTo(format(new Date(), 'yyyy-MM-dd'));
+    }
+  }, [period]);
+
+  useEffect(() => {
+    setLoading(true);
+    supabase
+      .from('cases')
+      .select('id, date_logged, staff, brand, product_type, product, amount_kd, outlet, channel, sale_items(brand, product_type, product, quantity, amount_kd)')
+      .eq('case_type', 'Sale')
+      .eq('deleted', false)
+      .gte('date_logged', from)
+      .lte('date_logged', to)
+      .order('date_logged', { ascending: false })
+      .then(({ data }) => {
+        setSales((data as unknown as SaleCase[]) ?? []);
+        setLoading(false);
+      });
+  }, [from, to]);
+
+  const total = useMemo(() => sales.reduce((s, c) => s + caseTotal(c), 0), [sales]);
+
+  // breakdowns — brand/product type are attributed at item level when items exist
+  const byKey = (level: 'staff' | 'outlet' | 'brand' | 'product_type') => {
+    const map = new Map<string, { amount: number; count: number }>();
+    for (const c of sales) {
+      if (level === 'staff' || level === 'outlet') {
+        const k = (c[level] || 'Unknown') as string;
+        const e = map.get(k) ?? { amount: 0, count: 0 };
+        e.amount += caseTotal(c); e.count += 1;
+        map.set(k, e);
+      } else if (c.sale_items?.length) {
+        for (const i of c.sale_items) {
+          const k = i[level] || c[level] || 'Unknown';
+          const e = map.get(k) ?? { amount: 0, count: 0 };
+          e.amount += Number(i.amount_kd) * (Number(i.quantity) || 1); e.count += 1;
+          map.set(k, e);
+        }
+      } else {
+        const k = c[level] || 'Unknown';
+        const e = map.get(k) ?? { amount: 0, count: 0 };
+        e.amount += caseTotal(c); e.count += 1;
+        map.set(k, e);
+      }
+    }
+    return [...map.entries()].sort((a, b) => b[1].amount - a[1].amount);
+  };
+
+  const byDay = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const c of sales) map.set(c.date_logged, (map.get(c.date_logged) ?? 0) + caseTotal(c));
+    return [...map.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+  }, [sales]);
+  const maxDay = Math.max(1, ...byDay.map(([, v]) => v));
+
+  return (
+    <div>
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <div>
+          <h1 className="text-xl font-bold text-slate-900">Sales Reports</h1>
+          <p className="text-sm text-slate-500">Live from daily sales entries (entered in the store CRM).</p>
+        </div>
+        <div className="flex gap-2 items-center flex-wrap">
+          {(Object.keys(periodLabels) as Period[]).map((p) => (
+            <button
+              key={p}
+              onClick={() => setPeriod(p)}
+              className={`px-3 py-1.5 rounded-lg text-sm border ${period === p ? 'bg-slate-900 text-white border-slate-900' : 'bg-white border-slate-300 text-slate-600 hover:bg-slate-50'}`}
+            >
+              {periodLabels[p]}
+            </button>
+          ))}
+          {period === 'custom' && (
+            <>
+              <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="px-2 py-1.5 rounded-lg border border-slate-300 text-sm bg-white" />
+              <span className="text-slate-400">→</span>
+              <input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="px-2 py-1.5 rounded-lg border border-slate-300 text-sm bg-white" />
+            </>
+          )}
+        </div>
+      </div>
+
+      {loading ? <Spinner /> : (
+        <>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+            <Card title="Total sales" value={`${formatKD(total)} KD`} />
+            <Card title="Transactions" value={sales.length} />
+            <Card title="Average sale" value={sales.length ? `${formatKD(total / sales.length)} KD` : '—'} />
+            <Card title="Period" value={`${from} → ${to}`} />
+          </div>
+
+          <div className="mb-6 bg-white rounded-xl border border-slate-200 shadow-sm p-4">
+            <h2 className="text-sm font-semibold text-slate-700 mb-3">Sales by day</h2>
+            {byDay.length === 0 ? <div className="text-slate-400 text-sm">No sales in this period</div> : (
+              <div className="flex items-end gap-1 h-32 overflow-x-auto">
+                {byDay.map(([d, v]) => (
+                  <div key={d} className="flex flex-col items-center gap-1 min-w-[34px]" title={`${d}: ${formatKD(v)} KD`}>
+                    <div className="text-[10px] text-slate-500">{formatKD(v)}</div>
+                    <div className="w-6 bg-blue-500 rounded-t" style={{ height: `${Math.max(4, (v / maxDay) * 80)}px` }} />
+                    <div className="text-[10px] text-slate-400">{d.slice(5)}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {([['Sales by staff', 'staff'], ['Sales by brand', 'brand'], ['Sales by product type', 'product_type'], ['Sales by outlet', 'outlet']] as const).map(([title, key]) => (
+              <div key={key} className="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
+                <h2 className="text-sm font-semibold text-slate-700 mb-2">{title}</h2>
+                <table className="w-full text-sm">
+                  <tbody>
+                    {byKey(key).map(([k, v]) => (
+                      <tr key={k} className="border-b border-slate-100 last:border-0">
+                        <td className="py-1.5">{k}</td>
+                        <td className="py-1.5 text-right text-slate-500">{v.count}×</td>
+                        <td className="py-1.5 text-right font-medium">{formatKD(v.amount)} KD</td>
+                      </tr>
+                    ))}
+                    {byKey(key).length === 0 && <tr><td className="py-2 text-slate-400">No data</td></tr>}
+                  </tbody>
+                </table>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
