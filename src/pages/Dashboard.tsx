@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { ExternalLink } from 'lucide-react';
 import { format, startOfWeek } from 'date-fns';
 import { supabase } from '../lib/supabase';
 import { Card, Badge, Spinner } from '../components/ui';
@@ -108,9 +109,19 @@ export default function Dashboard() {
 
   return (
     <div>
-      <div className="mb-5">
-        <h1 className="text-xl font-bold text-slate-900">Dashboard</h1>
-        <p className="text-sm text-slate-500">Welcome back{profile ? `, ${profile.full_name}` : ''} — live operations summary.</p>
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-xl font-bold text-slate-900">Dashboard</h1>
+          <p className="text-sm text-slate-500">Welcome back{profile ? `, ${profile.full_name}` : ''} — live operations summary.</p>
+        </div>
+        <a
+          href="https://alalramadhan-kuwait.github.io/watch-store-crm/#/reports"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 bg-amber-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-amber-600"
+        >
+          <ExternalLink size={15} /> Store Daily Report
+        </a>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 mb-8">

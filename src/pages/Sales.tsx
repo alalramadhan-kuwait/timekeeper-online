@@ -35,8 +35,16 @@ export default function SalesPage() {
   const [period, setPeriod] = useState<Period>('month');
   const [from, setFrom] = useState(periodStart('month'));
   const [to, setTo] = useState(format(new Date(), 'yyyy-MM-dd'));
-  const [sales, setSales] = useState<SaleCase[]>([]);
+  const [allSales, setAllSales] = useState<SaleCase[]>([]);
   const [loading, setLoading] = useState(true);
+  const [outlet, setOutlet] = useState('All');
+  const [outletOptions, setOutletOptions] = useState<string[]>([]);
+
+  useEffect(() => {
+    supabase.from('settings').select('outlets').single().then(({ data }) => {
+      if (data?.outlets) setOutletOptions(data.outlets as string[]);
+    });
+  }, []);
 
   useEffect(() => {
     if (period !== 'custom') {
@@ -56,10 +64,15 @@ export default function SalesPage() {
       .lte('date_logged', to)
       .order('date_logged', { ascending: false })
       .then(({ data }) => {
-        setSales((data as unknown as SaleCase[]) ?? []);
+        setAllSales((data as unknown as SaleCase[]) ?? []);
         setLoading(false);
       });
   }, [from, to]);
+
+  const sales = useMemo(
+    () => (outlet === 'All' ? allSales : allSales.filter((c) => (c.outlet || 'Unknown') === outlet)),
+    [allSales, outlet],
+  );
 
   const total = useMemo(() => sales.reduce((s, c) => s + caseTotal(c), 0), [sales]);
 
@@ -104,6 +117,17 @@ export default function SalesPage() {
           <p className="text-sm text-slate-500">Live from daily sales entries (entered in the store CRM).</p>
         </div>
         <div className="flex gap-2 items-center flex-wrap">
+          <select
+            value={outlet}
+            onChange={(e) => setOutlet(e.target.value)}
+            className="px-3 py-1.5 rounded-lg border border-slate-300 text-sm bg-white"
+            title="Filter by store outlet"
+          >
+            <option>All</option>
+            {[...new Set([...outletOptions, ...allSales.map((c) => c.outlet || 'Unknown')])].map((o) => (
+              <option key={o}>{o}</option>
+            ))}
+          </select>
           {(Object.keys(periodLabels) as Period[]).map((p) => (
             <button
               key={p}

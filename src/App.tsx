@@ -5,6 +5,7 @@ import LoginPage from './components/LoginPage';
 import Dashboard from './pages/Dashboard';
 import SalesPage from './pages/Sales';
 import CrmPage from './pages/Crm';
+import SettingsPage from './pages/Settings';
 import LeavePage from './pages/Leave';
 import {
   WaitingListPage, PreOrdersPage, PurchaseOrdersPage, ConsignmentsPage,
@@ -33,6 +34,7 @@ function Shell() {
         <Route path="/hr" element={hrAllowed ? <EmployeesPage /> : <Navigate to="/" />} />
         <Route path="/leave" element={hrAllowed ? <LeavePage /> : <Navigate to="/" />} />
         <Route path="/company-documents" element={<CompanyDocsPage />} />
+        <Route path="/settings" element={['admin', 'manager'].includes(role ?? '') ? <SettingsPage /> : <Navigate to="/" />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Route>
     </Routes>

@@ -1,7 +1,7 @@
 import { NavLink, Outlet } from 'react-router-dom';
 import {
   LayoutDashboard, TrendingUp, Hourglass, PackageCheck, Truck, Handshake,
-  Star, Users, CalendarRange, FileWarning, LogOut, Watch, Menu, Contact, type LucideIcon,
+  Star, Users, CalendarRange, FileWarning, LogOut, Watch, Menu, Contact, Settings, type LucideIcon,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth, Role } from '../context/AuthContext';
@@ -25,6 +25,7 @@ const NAV: NavItem[] = [
   { to: '/hr', label: 'HR — Employees', icon: Users, roles: ['admin', 'manager', 'hr'] },
   { to: '/leave', label: 'Leave Tracking', icon: CalendarRange, roles: ['admin', 'manager', 'hr'] },
   { to: '/company-documents', label: 'Company Documents', icon: FileWarning, roles: ['admin', 'manager', 'hr', 'viewer'] },
+  { to: '/settings', label: 'Settings', icon: Settings, roles: ['admin', 'manager'] },
 ];
 
 export function navForRole(role: Role | null): NavItem[] {

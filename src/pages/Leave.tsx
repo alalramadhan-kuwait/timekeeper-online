@@ -10,6 +10,7 @@ export default function LeavePage() {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [leaves, setLeaves] = useState<LeaveRow[]>([]);
   const [reload, setReload] = useState(0);
+  const [employeeFilter, setEmployeeFilter] = useState('All');
 
   useEffect(() => {
     supabase.from('employees').select('id, full_name, annual_leave_entitlement, status')
@@ -43,6 +44,18 @@ export default function LeavePage() {
     stampCreatedBy: false,
     orderBy: { column: 'leave_start', ascending: false },
     onChanged: () => setReload((x) => x + 1),
+    filter: employeeFilter === 'All' ? undefined : (r) => r.employee_id === employeeFilter,
+    toolbarExtra: (
+      <select
+        value={employeeFilter}
+        onChange={(e) => setEmployeeFilter(e.target.value)}
+        className="px-3 py-1.5 rounded-lg border border-slate-300 text-sm bg-white"
+        title="Filter by employee"
+      >
+        <option value="All">All employees</option>
+        {employees.map((e) => <option key={e.id} value={e.id}>{e.full_name}</option>)}
+      </select>
+    ),
     beforeSave: (p) => {
       if ((p.days == null || p.days === 0) && p.leave_start && p.leave_end) {
         p.days = differenceInCalendarDays(parseISO(p.leave_end), parseISO(p.leave_start)) + 1;
@@ -68,7 +81,7 @@ export default function LeavePage() {
       { key: 'approval_status', label: 'Status' },
       { key: 'notes', label: 'Notes' },
     ],
-  }), [employees, empNames]);
+  }), [employees, empNames, employeeFilter]);
 
   return (
     <div className="space-y-8">

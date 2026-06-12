@@ -45,6 +45,10 @@ export interface CrudConfig {
   beforeSave?: (payload: Record<string, any>) => Record<string, any>;
   /** called after any successful insert/update/delete */
   onChanged?: () => void;
+  /** extra client-side row filter (e.g. employee dropdown owned by the page) */
+  filter?: (row: Record<string, any>) => boolean;
+  /** extra controls rendered in the toolbar row */
+  toolbarExtra?: React.ReactNode;
 }
 
 export function CrudModule({ config }: { config: CrudConfig }) {
@@ -75,6 +79,7 @@ export function CrudModule({ config }: { config: CrudConfig }) {
 
   const filtered = useMemo(() => {
     let r = rows;
+    if (config.filter) r = r.filter(config.filter);
     if (config.statusField && statusFilter !== 'All') {
       r = r.filter((row) => row[config.statusField!] === statusFilter);
     }
@@ -154,6 +159,7 @@ export function CrudModule({ config }: { config: CrudConfig }) {
             {config.statusOptions.map((s) => <option key={s}>{s}</option>)}
           </select>
         )}
+        {config.toolbarExtra}
         <div className="ml-auto text-sm text-slate-500 self-center">{filtered.length} records</div>
       </div>
 
