@@ -1,7 +1,24 @@
 import { useEffect, useMemo, useState } from 'react';
-import { differenceInCalendarDays, parseISO } from 'date-fns';
+import { addDays, getDay, isAfter, parseISO } from 'date-fns';
 import { CrudModule, CrudConfig } from '../components/CrudModule';
 import { supabase } from '../lib/supabase';
+
+/**
+ * Kuwait Labor Law (Law No. 6 of 2010): annual leave is 30 paid WORKING days.
+ * The weekly rest day (Friday) inside a leave period does not consume leave,
+ * so auto-calculated days skip Fridays. Public holidays can be deducted
+ * manually by overriding the days field.
+ */
+export function workingDaysBetween(startStr: string, endStr: string): number {
+  let d = parseISO(startStr);
+  const end = parseISO(endStr);
+  let days = 0;
+  while (!isAfter(d, end)) {
+    if (getDay(d) !== 5) days++; // 5 = Friday
+    d = addDays(d, 1);
+  }
+  return days;
+}
 
 interface Employee { id: string; full_name: string; annual_leave_entitlement: number; status: string }
 interface LeaveRow { employee_id: string; days: number; approval_status: string; leave_start: string }
@@ -37,7 +54,7 @@ export default function LeavePage() {
   const config: CrudConfig = useMemo(() => ({
     table: 'leave_records',
     title: 'Leave Requests',
-    description: 'Vacations and approvals. Days auto-calculate from the dates if left blank.',
+    description: 'Days auto-calculate as working days (Fridays excluded) if left blank — override manually for public holidays.',
     canWrite: (r) => ['admin', 'hr'].includes(r ?? ''),
     statusField: 'approval_status',
     statusOptions: ['Pending', 'Approved', 'Rejected'],
@@ -58,7 +75,7 @@ export default function LeavePage() {
     ),
     beforeSave: (p) => {
       if ((p.days == null || p.days === 0) && p.leave_start && p.leave_end) {
-        p.days = differenceInCalendarDays(parseISO(p.leave_end), parseISO(p.leave_start)) + 1;
+        p.days = workingDaysBetween(p.leave_start, p.leave_end);
       }
       return p;
     },
@@ -69,7 +86,7 @@ export default function LeavePage() {
       },
       { key: 'leave_start', label: 'Leave start', type: 'date', required: true },
       { key: 'leave_end', label: 'Leave end', type: 'date', required: true },
-      { key: 'days', label: 'Days (blank = auto)', type: 'number' },
+      { key: 'days', label: 'Working days (blank = auto, Fridays excluded)', type: 'number' },
       { key: 'approval_status', label: 'Approval status', type: 'select', options: ['Pending', 'Approved', 'Rejected'], defaultValue: 'Pending', required: true },
       { key: 'notes', label: 'Notes', type: 'textarea' },
     ],
@@ -86,7 +103,10 @@ export default function LeavePage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-xl font-bold text-slate-900 mb-3">Leave Balances — {new Date().getFullYear()}</h1>
+        <h1 className="text-xl font-bold text-slate-900 mb-1">Leave Balances — {new Date().getFullYear()}</h1>
+        <p className="text-sm text-slate-500 mb-3">
+          Per Kuwait Labor Law (Law No. 6 of 2010): 30 paid working days of annual leave per year.
+        </p>
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
