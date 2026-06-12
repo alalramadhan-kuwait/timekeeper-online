@@ -1,7 +1,7 @@
 import { NavLink, Outlet } from 'react-router-dom';
 import {
   LayoutDashboard, TrendingUp, Hourglass, PackageCheck, Truck, Handshake,
-  Star, Users, CalendarRange, FileWarning, LogOut, Watch, Menu, type LucideIcon,
+  Star, Users, CalendarRange, FileWarning, LogOut, Watch, Menu, Contact, type LucideIcon,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth, Role } from '../context/AuthContext';
@@ -16,6 +16,7 @@ interface NavItem {
 const NAV: NavItem[] = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, roles: ['admin', 'manager', 'staff', 'hr', 'viewer'] },
   { to: '/sales', label: 'Sales Reports', icon: TrendingUp, roles: ['admin', 'manager', 'staff', 'viewer'] },
+  { to: '/crm', label: 'CRM Customers', icon: Contact, roles: ['admin', 'manager', 'staff', 'viewer'] },
   { to: '/waiting-list', label: 'Waiting List', icon: Hourglass, roles: ['admin', 'manager', 'staff', 'viewer'] },
   { to: '/pre-orders', label: 'Pre-Orders', icon: PackageCheck, roles: ['admin', 'manager', 'staff', 'viewer'] },
   { to: '/purchase-orders', label: 'PO & Inbound', icon: Truck, roles: ['admin', 'manager', 'staff', 'viewer'] },
