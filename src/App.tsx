@@ -7,9 +7,10 @@ import SalesPage from './pages/Sales';
 import CrmPage from './pages/Crm';
 import SettingsPage from './pages/Settings';
 import LeavePage from './pages/Leave';
+import AttendancePage from './pages/Attendance';
 import {
   WaitingListPage, PreOrdersPage, PurchaseOrdersPage, ConsignmentsPage,
-  VipCustomersPage, EmployeesPage, CompanyDocsPage,
+  VipCustomersPage, EmployeesPage, CompanyDocsPage, LimitedProjectsPage,
 } from './pages/modules';
 import { Spinner } from './components/ui';
 
@@ -31,8 +32,10 @@ function Shell() {
         <Route path="/purchase-orders" element={<PurchaseOrdersPage />} />
         <Route path="/consignments" element={<ConsignmentsPage />} />
         <Route path="/vip" element={<VipCustomersPage />} />
+        <Route path="/attendance" element={<AttendancePage />} />
         <Route path="/hr" element={hrAllowed ? <EmployeesPage /> : <Navigate to="/" />} />
         <Route path="/leave" element={hrAllowed ? <LeavePage /> : <Navigate to="/" />} />
+        <Route path="/limited-projects" element={<LimitedProjectsPage />} />
         <Route path="/company-documents" element={<CompanyDocsPage />} />
         <Route path="/settings" element={['admin', 'manager'].includes(role ?? '') ? <SettingsPage /> : <Navigate to="/" />} />
         <Route path="*" element={<Navigate to="/" />} />

@@ -1,7 +1,7 @@
 import { NavLink, Outlet } from 'react-router-dom';
 import {
   LayoutDashboard, TrendingUp, Hourglass, PackageCheck, Truck, Handshake,
-  Star, Users, CalendarRange, FileWarning, LogOut, Watch, Menu, Contact, Settings, type LucideIcon,
+  Star, Users, CalendarRange, FileWarning, LogOut, Watch, Menu, Contact, Settings, Gem, ClipboardCheck, type LucideIcon,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth, Role } from '../context/AuthContext';
@@ -17,11 +17,12 @@ const NAV: NavItem[] = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, roles: ['admin', 'manager', 'staff', 'hr', 'viewer'] },
   { to: '/sales', label: 'Sales Reports', icon: TrendingUp, roles: ['admin', 'manager', 'staff', 'viewer'] },
   { to: '/crm', label: 'CRM Customers', icon: Contact, roles: ['admin', 'manager', 'staff', 'viewer'] },
-  { to: '/waiting-list', label: 'Waiting List', icon: Hourglass, roles: ['admin', 'manager', 'staff', 'viewer'] },
-  { to: '/pre-orders', label: 'Pre-Orders', icon: PackageCheck, roles: ['admin', 'manager', 'staff', 'viewer'] },
+  { to: '/waiting-list', label: 'Demand List', icon: Hourglass, roles: ['admin', 'manager', 'staff', 'viewer'] },
   { to: '/purchase-orders', label: 'PO & Inbound', icon: Truck, roles: ['admin', 'manager', 'staff', 'viewer'] },
   { to: '/consignments', label: 'Consignments', icon: Handshake, roles: ['admin', 'manager', 'staff', 'viewer'] },
   { to: '/vip', label: 'VIP Customers', icon: Star, roles: ['admin', 'manager', 'staff', 'viewer'] },
+  { to: '/limited-projects', label: 'Limited Projects', icon: Gem, roles: ['admin', 'manager', 'staff', 'viewer'] },
+  { to: '/attendance', label: 'Attendance', icon: ClipboardCheck, roles: ['admin', 'manager', 'staff', 'hr'] },
   { to: '/hr', label: 'HR — Employees', icon: Users, roles: ['admin', 'manager', 'hr'] },
   { to: '/leave', label: 'Leave Tracking', icon: CalendarRange, roles: ['admin', 'manager', 'hr'] },
   { to: '/company-documents', label: 'Company Documents', icon: FileWarning, roles: ['admin', 'manager', 'hr', 'viewer'] },
