@@ -13,30 +13,66 @@ interface NavItem {
   roles: Role[];
 }
 
-const NAV: NavItem[] = [
-  { to: '/', label: 'Dashboard', icon: LayoutDashboard, roles: ['admin', 'manager', 'staff', 'hr', 'viewer'] },
-  { to: '/sales', label: 'Sales Reports', icon: TrendingUp, roles: ['admin', 'manager', 'staff', 'viewer'] },
-  { to: '/crm', label: 'CRM Customers', icon: Contact, roles: ['admin', 'manager', 'staff', 'viewer'] },
-  { to: '/waiting-list', label: 'Demand List', icon: Hourglass, roles: ['admin', 'manager', 'staff', 'viewer'] },
-  { to: '/purchase-orders', label: 'PO & Inbound', icon: Truck, roles: ['admin', 'manager', 'staff', 'viewer'] },
-  { to: '/consignments', label: 'Consignments', icon: Handshake, roles: ['admin', 'manager', 'staff', 'viewer'] },
-  { to: '/vip', label: 'VIP Customers', icon: Star, roles: ['admin', 'manager', 'staff', 'viewer'] },
-  { to: '/limited-projects', label: 'Limited Projects', icon: Gem, roles: ['admin', 'manager', 'staff', 'viewer'] },
-  { to: '/attendance', label: 'Attendance', icon: ClipboardCheck, roles: ['admin', 'manager', 'staff', 'hr'] },
-  { to: '/hr', label: 'HR — Employees', icon: Users, roles: ['admin', 'manager', 'hr'] },
-  { to: '/leave', label: 'Leave Tracking', icon: CalendarRange, roles: ['admin', 'manager', 'hr'] },
-  { to: '/company-documents', label: 'Company Documents', icon: FileWarning, roles: ['admin', 'manager', 'hr', 'viewer'] },
-  { to: '/settings', label: 'Settings', icon: Settings, roles: ['admin', 'manager'] },
+interface NavGroup {
+  title: string | null; // null = no header (top-level)
+  items: NavItem[];
+}
+
+const NAV_GROUPS: NavGroup[] = [
+  {
+    title: null,
+    items: [
+      { to: '/', label: 'Dashboard', icon: LayoutDashboard, roles: ['admin', 'manager', 'staff', 'hr', 'viewer'] },
+    ],
+  },
+  {
+    title: 'Sales & Customers',
+    items: [
+      { to: '/sales', label: 'Sales Reports', icon: TrendingUp, roles: ['admin', 'manager', 'staff', 'viewer'] },
+      { to: '/crm', label: 'CRM Customers', icon: Contact, roles: ['admin', 'manager', 'staff', 'viewer'] },
+      { to: '/vip', label: 'VIP Customers', icon: Star, roles: ['admin', 'manager', 'staff', 'viewer'] },
+      { to: '/waiting-list', label: 'Demand List', icon: Hourglass, roles: ['admin', 'manager', 'staff', 'viewer'] },
+    ],
+  },
+  {
+    title: 'Purchasing & Stock',
+    items: [
+      { to: '/purchase-orders', label: 'PO & Inbound', icon: Truck, roles: ['admin', 'manager', 'staff', 'viewer'] },
+      { to: '/consignments', label: 'Consignments', icon: Handshake, roles: ['admin', 'manager', 'staff', 'viewer'] },
+      { to: '/limited-projects', label: 'Limited Projects', icon: Gem, roles: ['admin', 'manager', 'staff', 'viewer'] },
+    ],
+  },
+  {
+    title: 'HR & Team',
+    items: [
+      { to: '/attendance', label: 'Attendance', icon: ClipboardCheck, roles: ['admin', 'manager', 'staff', 'hr'] },
+      { to: '/hr', label: 'Employees', icon: Users, roles: ['admin', 'manager', 'hr'] },
+      { to: '/leave', label: 'Leave Tracking', icon: CalendarRange, roles: ['admin', 'manager', 'hr'] },
+      { to: '/company-documents', label: 'Company Documents', icon: FileWarning, roles: ['admin', 'manager', 'hr', 'viewer'] },
+    ],
+  },
+  {
+    title: 'Admin',
+    items: [
+      { to: '/settings', label: 'Settings', icon: Settings, roles: ['admin', 'manager'] },
+    ],
+  },
 ];
 
 export function navForRole(role: Role | null): NavItem[] {
-  return NAV.filter((n) => role && n.roles.includes(role));
+  return NAV_GROUPS.flatMap((g) => g.items).filter((n) => role && n.roles.includes(role));
+}
+
+function groupsForRole(role: Role | null): NavGroup[] {
+  return NAV_GROUPS
+    .map((g) => ({ ...g, items: g.items.filter((n) => role && n.roles.includes(role)) }))
+    .filter((g) => g.items.length > 0);
 }
 
 export default function Layout() {
   const { profile, role, signOut } = useAuth();
   const [open, setOpen] = useState(false);
-  const items = navForRole(role);
+  const groups = groupsForRole(role);
 
   return (
     <div className="min-h-screen flex">
@@ -49,17 +85,26 @@ export default function Layout() {
           </div>
         </div>
         <nav className="flex-1 overflow-y-auto py-3">
-          {items.map((n) => (
-            <NavLink
-              key={n.to}
-              to={n.to}
-              end={n.to === '/'}
-              onClick={() => setOpen(false)}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-5 py-2.5 text-sm ${isActive ? 'bg-slate-800 text-white border-r-2 border-amber-400' : 'text-slate-300 hover:bg-slate-800/60'}`}
-            >
-              <n.icon size={16} /> {n.label}
-            </NavLink>
+          {groups.map((g, gi) => (
+            <div key={g.title ?? gi} className={gi > 0 ? 'mt-3' : ''}>
+              {g.title && (
+                <div className="px-5 pt-1 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                  {g.title}
+                </div>
+              )}
+              {g.items.map((n) => (
+                <NavLink
+                  key={n.to}
+                  to={n.to}
+                  end={n.to === '/'}
+                  onClick={() => setOpen(false)}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 px-5 py-2 text-sm ${isActive ? 'bg-slate-800 text-white border-r-2 border-amber-400' : 'text-slate-300 hover:bg-slate-800/60'}`}
+                >
+                  <n.icon size={16} /> {n.label}
+                </NavLink>
+              ))}
+            </div>
           ))}
         </nav>
         <div className="px-5 py-4 border-t border-slate-800 text-sm">
