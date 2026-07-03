@@ -21,6 +21,7 @@ interface Stats {
   empDocsExpiring: number;
   companyDocsExpiring: number;
   pendingLeave: number;
+  lowStock: number | null; // null = Lightspeed not connected yet
 }
 
 interface POFinancials {
@@ -240,6 +241,10 @@ export default function Dashboard() {
         loadAlertActions(),
         supabase.from('purchase_orders').select('po_number, supplier, brand, status, total_cost, amount_paid, invoice_received').not('status', 'in', '("Cancelled","Returned")'),
       ]);
+      const [lowStockQ, stockCountQ] = await Promise.all([
+        supabase.from('lightspeed_low_stock').select('product_id', { count: 'exact', head: true }),
+        supabase.from('lightspeed_stock').select('product_id', { count: 'exact', head: true }),
+      ]);
 
       const weekCases = (salesWeekQ.data ?? []) as any[];
       const salesWeek = weekCases.reduce((s, c) => s + caseTotal(c), 0);
@@ -270,6 +275,7 @@ export default function Dashboard() {
         empDocsExpiring: empDocs,
         companyDocsExpiring: compDocs,
         pendingLeave: (leave as any).count ?? 0,
+        lowStock: (stockCountQ.count ?? 0) > 0 ? (lowStockQ.count ?? 0) : null,
       });
       // PO payment summary
       const poRows = (poData.data ?? []) as any[];
@@ -324,6 +330,9 @@ export default function Dashboard() {
     { title: 'Open waiting list', value: stats.openWaiting, link: '/waiting-list' },
     { title: 'Open pre-orders', value: stats.openPreOrders, link: '/waiting-list' },
     { title: 'Open purchase orders', value: stats.openPOs, link: '/purchase-orders' },
+    ...(stats.lowStock != null
+      ? [{ title: 'Low stock items', value: stats.lowStock, link: '/stock', accent: stats.lowStock ? 'text-red-600' : undefined }]
+      : []),
     { title: 'Shipments pending', value: stats.shipmentsPending, link: '/purchase-orders' },
     { title: 'Out on consignment', value: stats.onConsignment, link: '/consignments' },
     { title: 'VIP occasions this month', value: stats.vipOccasionsMonth, link: '/vip' },

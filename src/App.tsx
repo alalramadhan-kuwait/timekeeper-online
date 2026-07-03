@@ -6,6 +6,7 @@ import Dashboard from './pages/Dashboard';
 import SalesPage from './pages/Sales';
 import CrmPage from './pages/Crm';
 import FollowUpsPage from './pages/FollowUps';
+import StockPage from './pages/Stock';
 import SettingsPage from './pages/Settings';
 import LeavePage from './pages/Leave';
 import AttendancePage from './pages/Attendance';
@@ -32,6 +33,7 @@ function Shell() {
         <Route path="/waiting-list" element={<WaitingListPage />} />
         <Route path="/pre-orders" element={<PreOrdersPage />} />
         <Route path="/purchase-orders" element={<PurchaseOrdersPage />} />
+        <Route path="/stock" element={<StockPage />} />
         <Route path="/consignments" element={<ConsignmentsPage />} />
         <Route path="/vip" element={<VipCustomersPage />} />
         <Route path="/attendance" element={<AttendancePage />} />

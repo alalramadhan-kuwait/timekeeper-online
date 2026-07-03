@@ -1,0 +1,156 @@
+// Syncs Lightspeed X-Series inventory into lightspeed_stock.
+// Callers: pg_cron (x-sync-key header) or the app's "Sync now" button (user JWT, admin/manager only).
+import { createClient } from "jsr:@supabase/supabase-js@2";
+
+const json = (body: unknown, status = 200) =>
+  new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
+
+interface LsProduct {
+  id: string;
+  sku?: string;
+  name?: string;
+  deleted_at?: string | null;
+  brand?: { name?: string } | null;
+  brand_name?: string;
+  supplier?: { name?: string } | null;
+  supplier_name?: string;
+  price_including_tax?: number;
+  retail_price?: number;
+}
+interface LsInventory {
+  product_id: string;
+  outlet_id: string;
+  current_amount?: number;
+  reorder_point?: number;
+}
+
+async function lsPageAll<T>(base: string, path: string, token: string): Promise<T[]> {
+  const out: T[] = [];
+  let after = 0;
+  for (let page = 0; page < 200; page++) {
+    const res = await fetch(`${base}${path}?page_size=500&after=${after}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (res.status === 429) { // rate limited — wait and retry same page
+      await new Promise((r) => setTimeout(r, 3000));
+      page--; continue;
+    }
+    if (!res.ok) throw new Error(`${path} → ${res.status}: ${(await res.text()).slice(0, 200)}`);
+    const body = await res.json();
+    const data: T[] = body.data ?? [];
+    out.push(...data);
+    const max = body.version?.max;
+    if (!data.length || max == null || max === after) break;
+    after = max;
+  }
+  return out;
+}
+
+Deno.serve(async (req: Request) => {
+  const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+
+  const { data: auth } = await admin.from("lightspeed_auth").select("*").eq("id", 1).single();
+  if (!auth) return json({ error: "Not connected to Lightspeed yet" }, 400);
+
+  // ── authorize the caller: shared key (cron) or admin/manager JWT (app button)
+  const syncKey = req.headers.get("x-sync-key");
+  let allowed = !!syncKey && syncKey === auth.sync_key;
+  if (!allowed) {
+    const jwt = (req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, "");
+    if (jwt) {
+      const { data: userData } = await admin.auth.getUser(jwt);
+      if (userData?.user) {
+        const { data: prof } = await admin.from("profiles").select("role").eq("id", userData.user.id).single();
+        allowed = ["admin", "manager"].includes(prof?.role ?? "");
+      }
+    }
+  }
+  if (!allowed) return json({ error: "Unauthorized" }, 401);
+  if (!auth.refresh_token && !auth.access_token) return json({ error: "Lightspeed not authorized yet — complete the connect step" }, 400);
+
+  const { data: logRow } = await admin.from("lightspeed_sync_log")
+    .insert({ status: "running" }).select("id").single();
+
+  const fail = async (msg: string) => {
+    await admin.from("lightspeed_sync_log").update({
+      status: "error", error: msg.slice(0, 500), finished_at: new Date().toISOString(),
+    }).eq("id", logRow!.id);
+    return json({ error: msg }, 500);
+  };
+
+  try {
+    const base = `https://${auth.domain_prefix}.retail.lightspeed.app`;
+    let token: string = auth.access_token;
+
+    // refresh the access token if it expires within 5 minutes
+    if (!auth.expires_at || new Date(auth.expires_at).getTime() < Date.now() + 300_000) {
+      const clientId = Deno.env.get("LS_CLIENT_ID");
+      const clientSecret = Deno.env.get("LS_CLIENT_SECRET");
+      if (!clientId || !clientSecret) return await fail("LS_CLIENT_ID / LS_CLIENT_SECRET secrets not set");
+      const r = await fetch(`${base}/api/1.0/token`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          refresh_token: auth.refresh_token,
+          client_id: clientId,
+          client_secret: clientSecret,
+          grant_type: "refresh_token",
+        }),
+      });
+      const body = await r.json().catch(() => ({}));
+      if (!r.ok || !body.access_token) return await fail(`Token refresh failed (${r.status}): ${JSON.stringify(body).slice(0, 200)}`);
+      token = body.access_token;
+      await admin.from("lightspeed_auth").update({
+        access_token: token,
+        refresh_token: body.refresh_token ?? auth.refresh_token,
+        expires_at: body.expires ? new Date(body.expires * 1000).toISOString() : new Date(Date.now() + 6 * 3600_000).toISOString(),
+        updated_at: new Date().toISOString(),
+      }).eq("id", 1);
+    }
+
+    // outlets → id → name
+    const outletsRes = await fetch(`${base}/api/2.0/outlets`, { headers: { Authorization: `Bearer ${token}` } });
+    if (!outletsRes.ok) return await fail(`Outlets → ${outletsRes.status}: ${(await outletsRes.text()).slice(0, 200)}`);
+    const outlets: { id: string; name: string }[] = (await outletsRes.json()).data ?? [];
+    const outletName = new Map(outlets.map((o) => [o.id, o.name]));
+
+    const products = await lsPageAll<LsProduct>(base, "/api/2.0/products", token);
+    const productById = new Map(products.filter((p) => !p.deleted_at).map((p) => [p.id, p]));
+
+    const inventory = await lsPageAll<LsInventory>(base, "/api/2.0/inventory", token);
+
+    const syncedAt = new Date().toISOString();
+    const rows = inventory
+      .filter((i) => productById.has(i.product_id) && outletName.has(i.outlet_id))
+      .map((i) => {
+        const p = productById.get(i.product_id)!;
+        return {
+          product_id: i.product_id,
+          outlet: outletName.get(i.outlet_id)!,
+          sku: p.sku ?? null,
+          name: p.name ?? "Unnamed product",
+          brand: p.brand?.name ?? p.brand_name ?? null,
+          supplier: p.supplier?.name ?? p.supplier_name ?? null,
+          price: p.price_including_tax ?? p.retail_price ?? null,
+          stock_on_hand: Number(i.current_amount ?? 0),
+          reorder_point: i.reorder_point != null ? Number(i.reorder_point) : null,
+          synced_at: syncedAt,
+        };
+      });
+
+    // replace snapshot: upsert current rows, then drop rows not in this sync
+    for (let i = 0; i < rows.length; i += 500) {
+      const { error } = await admin.from("lightspeed_stock").upsert(rows.slice(i, i + 500));
+      if (error) return await fail(`Upsert failed: ${error.message}`);
+    }
+    await admin.from("lightspeed_stock").delete().lt("synced_at", syncedAt);
+
+    await admin.from("lightspeed_sync_log").update({
+      status: "ok", products_synced: productById.size, finished_at: new Date().toISOString(),
+    }).eq("id", logRow!.id);
+
+    return json({ ok: true, products: productById.size, stock_rows: rows.length });
+  } catch (e) {
+    return await fail(e instanceof Error ? e.message : String(e));
+  }
+});

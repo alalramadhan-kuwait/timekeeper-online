@@ -1,7 +1,7 @@
 import { NavLink, Outlet } from 'react-router-dom';
 import {
   LayoutDashboard, TrendingUp, Hourglass, PackageCheck, Truck, Handshake,
-  Star, Users, CalendarRange, FileWarning, LogOut, Watch, Menu, Contact, Settings, Gem, ClipboardCheck, PhoneCall, type LucideIcon,
+  Star, Users, CalendarRange, FileWarning, LogOut, Watch, Menu, Contact, Settings, Gem, ClipboardCheck, PhoneCall, Boxes, type LucideIcon,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth, Role } from '../context/AuthContext';
@@ -38,6 +38,7 @@ const NAV_GROUPS: NavGroup[] = [
   {
     title: 'Purchasing & Stock',
     items: [
+      { to: '/stock', label: 'Stock (Lightspeed)', icon: Boxes, roles: ['admin', 'manager', 'staff', 'viewer'] },
       { to: '/purchase-orders', label: 'Supplier Payments', icon: Truck, roles: ['admin', 'manager', 'staff', 'viewer'] },
       { to: '/consignments', label: 'Consignments', icon: Handshake, roles: ['admin', 'manager', 'staff', 'viewer'] },
       { to: '/limited-projects', label: 'Limited Projects', icon: Gem, roles: ['admin', 'manager', 'staff', 'viewer'] },
