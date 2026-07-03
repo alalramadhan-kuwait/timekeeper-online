@@ -168,7 +168,7 @@ export default function SalesPage() {
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <div>
           <h1 className="text-xl font-bold text-slate-900">Sales Reports</h1>
-          <p className="text-sm text-slate-500">Live from daily sales entries (entered in the store CRM).</p>
+          <p className="text-sm text-slate-500">Store traffic, demand, lost sales and follow-ups per outlet — live from the Daily Sales Report app. Sales of record stay in Lightspeed.</p>
         </div>
         <div className="flex gap-2 items-center flex-wrap">
           <select

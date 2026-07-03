@@ -207,7 +207,7 @@ export default function CrmPage() {
       <div className="mb-4">
         <h1 className="text-xl font-bold text-slate-900">CRM — Customer List</h1>
         <p className="text-sm text-slate-500">
-          Built live from store CRM cases — revenue, visits and open follow-ups per customer.
+          Built live from Daily Sales Report cases — revenue, visits and open follow-ups per customer.
           {canEdit && ' Click a customer to edit their info, case statuses and notes.'}
         </p>
       </div>
