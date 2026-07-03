@@ -101,8 +101,8 @@ export const PreOrdersPage = DemandListPage;
 const PO_STATUSES = ['Open', 'Sent', 'Dispatched', 'Partially received', 'Received', 'Cancelled', 'Returned'];
 const purchaseOrders: CrudConfig = {
   table: 'purchase_orders',
-  title: 'Purchase Orders & Inbound',
-  description: 'POs and inbound shipments — replaces the Excel tracker.',
+  title: 'Supplier Payments & Inbound',
+  description: 'Supplier payments, balances and inbound shipments. Stock receiving stays in Lightspeed — this page tracks the money side.',
   canWrite: purchasingRoles,
   statusField: 'status',
   statusOptions: PO_STATUSES,

@@ -37,7 +37,7 @@ const NAV_GROUPS: NavGroup[] = [
   {
     title: 'Purchasing & Stock',
     items: [
-      { to: '/purchase-orders', label: 'PO & Inbound', icon: Truck, roles: ['admin', 'manager', 'staff', 'viewer'] },
+      { to: '/purchase-orders', label: 'Supplier Payments', icon: Truck, roles: ['admin', 'manager', 'staff', 'viewer'] },
       { to: '/consignments', label: 'Consignments', icon: Handshake, roles: ['admin', 'manager', 'staff', 'viewer'] },
       { to: '/limited-projects', label: 'Limited Projects', icon: Gem, roles: ['admin', 'manager', 'staff', 'viewer'] },
     ],
