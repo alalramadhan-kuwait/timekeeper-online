@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useState } from 'react';
 import { RefreshCw, PlugZap, AlertTriangle } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Badge, Spinner } from '../components/ui';
@@ -80,15 +80,27 @@ export default function StockPage() {
       p.totalQty += Number(r.stock_on_hand);
       if (r.reorder_point != null && Number(r.stock_on_hand) <= Number(r.reorder_point)) p.low = true;
     }
-    let list = [...map.values()];
+    // only items actually in stock
+    let list = [...map.values()].filter((p) => p.totalQty > 0);
     if (brandFilter !== 'All') list = list.filter((p) => p.brand === brandFilter);
     if (lowOnly) list = list.filter((p) => p.low);
     if (search.trim()) {
       const q = search.toLowerCase();
       list = list.filter((p) => [p.name, p.sku, p.brand, p.supplier].some((v) => (v ?? '').toLowerCase().includes(q)));
     }
+    // group related items: brand A→Z (no-brand last), then name
+    list.sort((a, b) =>
+      (a.brand ?? '￿').localeCompare(b.brand ?? '￿') || a.name.localeCompare(b.name));
     return list;
   }, [rows, brandFilter, lowOnly, search]);
+
+  const totals = useMemo(() => {
+    const inStock = products.length;
+    const units = products.reduce((s, p) => s + p.totalQty, 0);
+    const perOutlet: Record<string, number> = {};
+    for (const p of products) for (const [o, c] of Object.entries(p.perOutlet)) perOutlet[o] = (perOutlet[o] ?? 0) + c.qty;
+    return { inStock, units, perOutlet };
+  }, [products]);
 
   if (loading) return <Spinner />;
 
@@ -169,6 +181,22 @@ export default function StockPage() {
         </div>
       ) : (
         <>
+          {/* Summary cards */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+            <div className="bg-white rounded-xl border border-slate-200 shadow-sm px-4 py-3">
+              <p className="text-xs text-slate-500 mb-0.5">Products in stock</p>
+              <p className="text-xl font-bold text-slate-800">{totals.inStock}</p>
+              <p className="text-xs text-slate-400">{totals.units} units total</p>
+            </div>
+            {outlets.map((o) => (
+              <div key={o} className="bg-white rounded-xl border border-slate-200 shadow-sm px-4 py-3">
+                <p className="text-xs text-slate-500 mb-0.5 truncate" title={o}>{o}</p>
+                <p className="text-xl font-bold text-emerald-600">{totals.perOutlet[o] ?? 0}</p>
+                <p className="text-xs text-slate-400">units</p>
+              </div>
+            ))}
+          </div>
+
           <div className="flex flex-wrap gap-2 mb-3">
             <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search product, SKU, brand…"
               className="px-3 py-1.5 rounded-lg border border-slate-300 text-sm bg-white w-64" />
@@ -190,7 +218,6 @@ export default function StockPage() {
                 <tr className="text-left text-xs text-slate-500 uppercase tracking-wide border-b border-slate-200">
                   <th className="px-4 py-3">Product</th>
                   <th className="px-4 py-3 hidden sm:table-cell">SKU</th>
-                  <th className="px-4 py-3 hidden sm:table-cell">Brand</th>
                   {outlets.map((o) => <th key={o} className="px-4 py-3 text-right whitespace-nowrap">{o}</th>)}
                   <th className="px-4 py-3 text-right">Total</th>
                   <th className="px-4 py-3 text-right hidden sm:table-cell">Price</th>
@@ -198,32 +225,52 @@ export default function StockPage() {
               </thead>
               <tbody>
                 {products.length === 0 && (
-                  <tr><td colSpan={outlets.length + 4} className="px-4 py-8 text-center text-slate-400">No products match</td></tr>
+                  <tr><td colSpan={outlets.length + 4} className="px-4 py-8 text-center text-slate-400">No products in stock match</td></tr>
                 )}
-                {products.slice(0, 500).map((p) => (
-                  <tr key={p.product_id} className={`border-b border-slate-100 last:border-0 hover:bg-slate-50 ${p.low ? 'bg-amber-50/60' : ''}`}>
-                    <td className="px-4 py-2.5">
-                      <div className="font-medium text-slate-700 flex items-center gap-1.5">
-                        {p.low && <AlertTriangle size={13} className="text-amber-500 shrink-0" />}
-                        <span className="truncate max-w-[260px]" title={p.name}>{p.name}</span>
-                      </div>
-                      <div className="text-xs text-slate-400 sm:hidden">{[p.sku, p.brand].filter(Boolean).join(' · ')}</div>
-                    </td>
-                    <td className="px-4 py-2.5 text-slate-500 hidden sm:table-cell">{p.sku ?? '—'}</td>
-                    <td className="px-4 py-2.5 text-slate-500 hidden sm:table-cell">{p.brand ?? '—'}</td>
-                    {outlets.map((o) => {
-                      const cell = p.perOutlet[o];
-                      const isLow = cell && cell.reorder != null && cell.qty <= cell.reorder;
-                      return (
-                        <td key={o} className={`px-4 py-2.5 text-right font-medium ${!cell ? 'text-slate-300' : isLow ? 'text-amber-600' : cell.qty <= 0 ? 'text-red-500' : 'text-slate-700'}`}>
-                          {cell ? cell.qty : '—'}
+                {products.slice(0, 500).map((p, idx, arr) => {
+                  const brandLabel = p.brand ?? 'No brand';
+                  const newBrand = idx === 0 || (arr[idx - 1].brand ?? 'No brand') !== brandLabel;
+                  return (
+                    <Fragment key={p.product_id}>{newBrand && (
+                      <tr key={`hdr-${brandLabel}`} className="bg-slate-50 border-b border-slate-200">
+                        <td colSpan={outlets.length + 4} className="px-4 py-1.5 text-xs font-bold text-slate-600 uppercase tracking-wide">
+                          {brandLabel}
+                          <span className="ml-2 font-normal text-slate-400 normal-case">
+                            {arr.filter((x) => (x.brand ?? 'No brand') === brandLabel).length} items
+                          </span>
                         </td>
-                      );
-                    })}
-                    <td className="px-4 py-2.5 text-right font-semibold">{p.totalQty}</td>
-                    <td className="px-4 py-2.5 text-right hidden sm:table-cell">{p.price != null ? `${formatKD(Number(p.price))} KD` : '—'}</td>
-                  </tr>
-                ))}
+                      </tr>
+                    )}
+                    <tr key={p.product_id} className={`border-b border-slate-100 last:border-0 hover:bg-slate-50 ${p.low ? 'bg-amber-50/60' : ''}`}>
+                      <td className="px-4 py-2.5">
+                        <div className="font-medium text-slate-700 flex items-center gap-1.5">
+                          {p.low && <AlertTriangle size={13} className="text-amber-500 shrink-0" />}
+                          <span className="truncate max-w-[260px]" title={p.name}>{p.name}</span>
+                        </div>
+                        <div className="text-xs text-slate-400 sm:hidden">{p.sku ?? ''}</div>
+                      </td>
+                      <td className="px-4 py-2.5 text-slate-500 hidden sm:table-cell">{p.sku ?? '—'}</td>
+                      {outlets.map((o) => {
+                        const cell = p.perOutlet[o];
+                        const qty = cell?.qty ?? 0;
+                        const isLow = cell && cell.reorder != null && qty <= cell.reorder;
+                        return (
+                          <td key={o} className="px-4 py-2.5 text-right">
+                            {qty > 0 ? (
+                              <span className={`inline-block min-w-[28px] px-2 py-0.5 rounded-full text-xs font-semibold ${isLow ? 'bg-amber-100 text-amber-700' : 'bg-emerald-50 text-emerald-700'}`}>
+                                {qty}
+                              </span>
+                            ) : (
+                              <span className="text-slate-300 text-xs">—</span>
+                            )}
+                          </td>
+                        );
+                      })}
+                      <td className="px-4 py-2.5 text-right font-bold text-slate-800">{p.totalQty}</td>
+                      <td className="px-4 py-2.5 text-right hidden sm:table-cell">{p.price != null ? `${formatKD(Number(p.price))} KD` : '—'}</td>
+                    </tr></Fragment>
+                  );
+                })}
               </tbody>
             </table>
             {products.length > 500 && (
@@ -234,8 +281,7 @@ export default function StockPage() {
           </div>
 
           <div className="mt-2 flex items-center gap-2 text-xs text-slate-400">
-            <Badge className="bg-amber-100 text-amber-700 border-amber-200">amber</Badge> at/below reorder point
-            <Badge className="bg-red-100 text-red-600 border-red-200">red</Badge> zero or negative stock
+            <Badge className="bg-amber-100 text-amber-700 border-amber-200">amber</Badge> at/below reorder point · items with zero stock everywhere are hidden
           </div>
         </>
       )}

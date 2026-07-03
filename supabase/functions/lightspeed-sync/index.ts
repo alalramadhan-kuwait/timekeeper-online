@@ -9,6 +9,8 @@ interface LsProduct {
   id: string;
   sku?: string;
   name?: string;
+  active?: boolean;
+  is_active?: boolean;
   deleted_at?: string | null;
   brand?: { name?: string } | null;
   brand_name?: string;
@@ -115,7 +117,11 @@ Deno.serve(async (req: Request) => {
     const outletName = new Map(outlets.map((o) => [o.id, o.name]));
 
     const products = await lsPageAll<LsProduct>(base, "/api/2.0/products", token);
-    const productById = new Map(products.filter((p) => !p.deleted_at).map((p) => [p.id, p]));
+    const productById = new Map(
+      products
+        .filter((p) => !p.deleted_at && p.active !== false && p.is_active !== false)
+        .map((p) => [p.id, p]),
+    );
 
     const inventory = await lsPageAll<LsInventory>(base, "/api/2.0/inventory", token);
 
