@@ -155,6 +155,28 @@ export default function SalesPage() {
     return [...map.entries()].sort((a, b) => b[1].amount - a[1].amount);
   };
 
+  // Outlet scorecard — always across ALL outlets (ignores the outlet filter), period-scoped
+  const outletScorecard = useMemo(() => {
+    const map = new Map<string, { sales: number; txns: number; lostValue: number; lostCount: number; visitors: number }>();
+    const get = (k: string) => {
+      if (!map.has(k)) map.set(k, { sales: 0, txns: 0, lostValue: 0, lostCount: 0, visitors: 0 });
+      return map.get(k)!;
+    };
+    for (const c of allSales) {
+      const e = get(c.outlet || 'Unknown');
+      e.sales += caseTotal(c); e.txns += 1;
+    }
+    for (const c of allLost) {
+      const e = get(c.outlet || 'Unknown');
+      e.lostValue += Number(c.amount_kd ?? 0); e.lostCount += 1;
+    }
+    for (const t of allTraffic) {
+      if (t.date_logged < from || t.date_logged > to) continue;
+      get(t.outlet || 'Unknown').visitors += Number(t.visitor_count) || 0;
+    }
+    return [...map.entries()].sort((a, b) => b[1].sales - a[1].sales);
+  }, [allSales, allLost, allTraffic, from, to]);
+
   const byDay = useMemo(() => {
     const map = new Map<string, number>();
     for (const c of sales) map.set(c.date_logged, (map.get(c.date_logged) ?? 0) + caseTotal(c));
@@ -304,6 +326,50 @@ export default function SalesPage() {
                 </div>
               </div>
             )}
+          </div>
+
+          {/* ── Outlet scorecard ── */}
+          <div className="mb-6 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 border-b border-slate-200">
+              <h2 className="text-sm font-semibold text-slate-700">Outlet scorecard — this period</h2>
+              <span className="text-xs text-slate-400">All outlets compared, regardless of the outlet filter</span>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-xs text-slate-500 uppercase tracking-wide border-b border-slate-200">
+                    <th className="px-4 py-2.5">Outlet</th>
+                    <th className="px-4 py-2.5 text-right">Visitors</th>
+                    <th className="px-4 py-2.5 text-right">Sales</th>
+                    <th className="px-4 py-2.5 text-right">Conversion</th>
+                    <th className="px-4 py-2.5 text-right">Revenue</th>
+                    <th className="px-4 py-2.5 text-right hidden sm:table-cell">Avg ticket</th>
+                    <th className="px-4 py-2.5 text-right">Lost value</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {outletScorecard.map(([name, s]) => {
+                    const conv = s.visitors > 0 ? (s.txns / s.visitors) * 100 : null;
+                    return (
+                      <tr key={name} className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
+                        <td className="px-4 py-2.5 font-medium text-slate-700">{name}</td>
+                        <td className="px-4 py-2.5 text-right text-slate-500">{s.visitors}</td>
+                        <td className="px-4 py-2.5 text-right text-slate-500">{s.txns}</td>
+                        <td className="px-4 py-2.5 text-right font-medium text-amber-600">{conv != null ? `${conv.toFixed(0)}%` : '—'}</td>
+                        <td className="px-4 py-2.5 text-right font-medium text-emerald-600">{formatKD(s.sales)} KD</td>
+                        <td className="px-4 py-2.5 text-right hidden sm:table-cell">{s.txns ? `${formatKD(s.sales / s.txns)} KD` : '—'}</td>
+                        <td className="px-4 py-2.5 text-right font-medium text-rose-600">
+                          {s.lostCount ? `${formatKD(s.lostValue)} KD (${s.lostCount}×)` : '—'}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                  {outletScorecard.length === 0 && (
+                    <tr><td colSpan={7} className="px-4 py-6 text-center text-slate-400">No data in this period</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
 
           {/* ── Lost sales analysis ── */}
