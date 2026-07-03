@@ -25,6 +25,13 @@ interface LsInventory {
   current_amount?: number;
   reorder_point?: number;
 }
+interface LsSale {
+  id: string;
+  status?: string;
+  sale_date?: string;
+  created_at?: string;
+  line_items?: { product_id?: string; quantity?: number; price_total?: number; price?: number }[];
+}
 
 async function lsPageAll<T>(base: string, path: string, token: string): Promise<T[]> {
   const out: T[] = [];
@@ -151,11 +158,75 @@ Deno.serve(async (req: Request) => {
     }
     await admin.from("lightspeed_stock").delete().lt("synced_at", syncedAt);
 
+    // ── sales movement: aggregate last 90 days per product ──
+    let salesRows = 0;
+    let salesWarning: string | null = null;
+    try {
+      const now = Date.now();
+      const from90 = new Date(now - 90 * 86400_000).toISOString().replace(/\.\d{3}Z$/, "Z");
+      const to = new Date(now).toISOString().replace(/\.\d{3}Z$/, "Z");
+      const cutoff30 = new Date(now - 30 * 86400_000).toISOString();
+
+      const sales: LsSale[] = [];
+      for (let offset = 0; offset < 50_000; offset += 1000) {
+        const res = await fetch(
+          `${base}/api/2.0/search?type=sales&date_from=${encodeURIComponent(from90)}&date_to=${encodeURIComponent(to)}&page_size=1000&offset=${offset}`,
+          { headers: { Authorization: `Bearer ${token}` } },
+        );
+        if (res.status === 429) { await new Promise((r) => setTimeout(r, 3000)); offset -= 1000; continue; }
+        if (!res.ok) throw new Error(`Sales search → ${res.status}: ${(await res.text()).slice(0, 200)}`);
+        const data: LsSale[] = (await res.json()).data ?? [];
+        sales.push(...data);
+        if (data.length < 1000) break;
+      }
+
+      const agg = new Map<string, { u30: number; u90: number; rev: number; last: string }>();
+      for (const s of sales) {
+        if ((s.status ?? "").toUpperCase().includes("VOID")) continue;
+        const saleDate = s.sale_date ?? s.created_at ?? "";
+        if (!saleDate) continue;
+        const in30 = saleDate >= cutoff30;
+        for (const li of s.line_items ?? []) {
+          if (!li.product_id) continue;
+          const qty = Number(li.quantity ?? 0);
+          const rev = li.price_total != null ? Number(li.price_total) : Number(li.price ?? 0) * qty;
+          const e = agg.get(li.product_id) ?? { u30: 0, u90: 0, rev: 0, last: "" };
+          e.u90 += qty;
+          if (in30) e.u30 += qty;
+          e.rev += rev;
+          if (qty > 0 && saleDate > e.last) e.last = saleDate;
+          agg.set(li.product_id, e);
+        }
+      }
+
+      const salesSyncedAt = new Date().toISOString();
+      const salesInsert = [...agg.entries()].map(([product_id, e]) => ({
+        product_id,
+        units_30d: e.u30,
+        units_90d: e.u90,
+        revenue_90d: e.rev,
+        last_sold: e.last ? e.last.slice(0, 10) : null,
+        synced_at: salesSyncedAt,
+      }));
+      for (let i = 0; i < salesInsert.length; i += 500) {
+        const { error } = await admin.from("lightspeed_product_sales").upsert(salesInsert.slice(i, i + 500));
+        if (error) throw new Error(`Sales upsert failed: ${error.message}`);
+      }
+      await admin.from("lightspeed_product_sales").delete().lt("synced_at", salesSyncedAt);
+      salesRows = salesInsert.length;
+    } catch (se) {
+      // stock sync succeeded — record the sales issue without failing the run
+      salesWarning = se instanceof Error ? se.message : String(se);
+    }
+
     await admin.from("lightspeed_sync_log").update({
-      status: "ok", products_synced: productById.size, finished_at: new Date().toISOString(),
+      status: "ok",
+      products_synced: productById.size,
+      error: salesWarning ? `sales: ${salesWarning.slice(0, 400)}` : null,
+      finished_at: new Date().toISOString(),
     }).eq("id", logRow!.id);
 
-    return json({ ok: true, products: productById.size, stock_rows: rows.length });
+    return json({ ok: true, products: productById.size, stock_rows: rows.length, sales_rows: salesRows, sales_warning: salesWarning });
   } catch (e) {
     return await fail(e instanceof Error ? e.message : String(e));
   }

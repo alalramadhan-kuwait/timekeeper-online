@@ -11,13 +11,25 @@ interface StockRow {
   synced_at: string;
 }
 
+interface SalesAgg { units_30d: number; units_90d: number; revenue_90d: number; last_sold: string | null }
+
+type Movement = 'fast' | 'slow' | 'dead';
+
 interface ProductRow {
   product_id: string; name: string; sku: string | null; brand: string | null; supplier: string | null;
   price: number | null;
   perOutlet: Record<string, { qty: number; reorder: number | null }>;
   totalQty: number;
   low: boolean;
+  units30: number; units90: number; lastSold: string | null;
+  movement: Movement;
 }
+
+const movementStyle: Record<Movement, { label: string; cls: string }> = {
+  fast: { label: 'Fast', cls: 'bg-emerald-100 text-emerald-700' },
+  slow: { label: 'Slow', cls: 'bg-amber-100 text-amber-700' },
+  dead: { label: 'Not moving', cls: 'bg-rose-100 text-rose-600' },
+};
 
 const CALLBACK_URL = 'https://ttshgrujnycapugrmyxs.supabase.co/functions/v1/lightspeed-oauth-callback';
 
@@ -32,6 +44,9 @@ export default function StockPage() {
   const [search, setSearch] = useState('');
   const [brandFilter, setBrandFilter] = useState('All');
   const [lowOnly, setLowOnly] = useState(false);
+  const [deadOnly, setDeadOnly] = useState(false);
+  const [view, setView] = useState<'products' | 'brands'>('brands');
+  const [salesMap, setSalesMap] = useState<Map<string, SalesAgg>>(new Map());
   const [clientId, setClientId] = useState('');
 
   async function load() {
@@ -46,6 +61,14 @@ export default function StockPage() {
       if (data.length < 1000) break;
     }
     setRows(all);
+    const salesAll: (SalesAgg & { product_id: string })[] = [];
+    for (let fromIdx = 0; ; fromIdx += 1000) {
+      const { data, error } = await supabase.from('lightspeed_product_sales').select('*').range(fromIdx, fromIdx + 999);
+      if (error || !data?.length) break;
+      salesAll.push(...(data as (SalesAgg & { product_id: string })[]));
+      if (data.length < 1000) break;
+    }
+    setSalesMap(new Map(salesAll.map((s) => [s.product_id, s])));
     const { data: log } = await supabase.from('lightspeed_sync_log')
       .select('finished_at, status, error').order('started_at', { ascending: false }).limit(1);
     setLastSync(log?.[0] ?? null);
@@ -73,7 +96,14 @@ export default function StockPage() {
     for (const r of rows) {
       let p = map.get(r.product_id);
       if (!p) {
-        p = { product_id: r.product_id, name: r.name, sku: r.sku, brand: r.brand, supplier: r.supplier, price: r.price, perOutlet: {}, totalQty: 0, low: false };
+        const s = salesMap.get(r.product_id);
+        const u30 = Number(s?.units_30d ?? 0), u90 = Number(s?.units_90d ?? 0);
+        p = {
+          product_id: r.product_id, name: r.name, sku: r.sku, brand: r.brand, supplier: r.supplier, price: r.price,
+          perOutlet: {}, totalQty: 0, low: false,
+          units30: u30, units90: u90, lastSold: s?.last_sold ?? null,
+          movement: u30 > 0 ? 'fast' : u90 > 0 ? 'slow' : 'dead',
+        };
         map.set(r.product_id, p);
       }
       p.perOutlet[r.outlet] = { qty: Number(r.stock_on_hand), reorder: r.reorder_point != null ? Number(r.reorder_point) : null };
@@ -84,6 +114,7 @@ export default function StockPage() {
     let list = [...map.values()].filter((p) => p.totalQty > 0);
     if (brandFilter !== 'All') list = list.filter((p) => p.brand === brandFilter);
     if (lowOnly) list = list.filter((p) => p.low);
+    if (deadOnly) list = list.filter((p) => p.movement === 'dead');
     if (search.trim()) {
       const q = search.toLowerCase();
       list = list.filter((p) => [p.name, p.sku, p.brand, p.supplier].some((v) => (v ?? '').toLowerCase().includes(q)));
@@ -92,15 +123,41 @@ export default function StockPage() {
     list.sort((a, b) =>
       (a.brand ?? '￿').localeCompare(b.brand ?? '￿') || a.name.localeCompare(b.name));
     return list;
-  }, [rows, brandFilter, lowOnly, search]);
+  }, [rows, brandFilter, lowOnly, deadOnly, search, salesMap]);
 
   const totals = useMemo(() => {
     const inStock = products.length;
     const units = products.reduce((s, p) => s + p.totalQty, 0);
+    const value = products.reduce((s, p) => s + p.totalQty * Number(p.price ?? 0), 0);
+    const deadValue = products.filter((p) => p.movement === 'dead').reduce((s, p) => s + p.totalQty * Number(p.price ?? 0), 0);
     const perOutlet: Record<string, number> = {};
     for (const p of products) for (const [o, c] of Object.entries(p.perOutlet)) perOutlet[o] = (perOutlet[o] ?? 0) + c.qty;
-    return { inStock, units, perOutlet };
+    return { inStock, units, value, deadValue, perOutlet };
   }, [products]);
+
+  // Brand analytics — value, units, movement per brand (from filtered product list minus brand filter)
+  const brandStats = useMemo(() => {
+    const map = new Map<string, { units: number; value: number; u30: number; u90: number; rev90: number; deadValue: number; items: number }>();
+    for (const p of products) {
+      const b = p.brand ?? 'No brand';
+      const e = map.get(b) ?? { units: 0, value: 0, u30: 0, u90: 0, rev90: 0, deadValue: 0, items: 0 };
+      e.units += p.totalQty;
+      e.value += p.totalQty * Number(p.price ?? 0);
+      e.u30 += p.units30;
+      e.u90 += p.units90;
+      e.rev90 += Number(salesMap.get(p.product_id)?.revenue_90d ?? 0);
+      if (p.movement === 'dead') e.deadValue += p.totalQty * Number(p.price ?? 0);
+      e.items += 1;
+      map.set(b, e);
+    }
+    return [...map.entries()]
+      .map(([brand, e]) => ({
+        brand, ...e,
+        movement: (e.u30 > 0 ? 'fast' : e.u90 > 0 ? 'slow' : 'dead') as Movement,
+        sellThrough: e.u90 + e.units > 0 ? (e.u90 / (e.u90 + e.units)) * 100 : 0,
+      }))
+      .sort((a, b) => b.value - a.value);
+  }, [products, salesMap]);
 
   if (loading) return <Spinner />;
 
@@ -181,25 +238,45 @@ export default function StockPage() {
         </div>
       ) : (
         <>
-          {/* Summary cards */}
+          {/* Summary cards — marketing focus */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
             <div className="bg-white rounded-xl border border-slate-200 shadow-sm px-4 py-3">
-              <p className="text-xs text-slate-500 mb-0.5">Products in stock</p>
-              <p className="text-xl font-bold text-slate-800">{totals.inStock}</p>
-              <p className="text-xs text-slate-400">{totals.units} units total</p>
+              <p className="text-xs text-slate-500 mb-0.5">Stock retail value</p>
+              <p className="text-xl font-bold text-slate-800">{formatKD(totals.value)} KD</p>
+              <p className="text-xs text-slate-400">{totals.inStock} products · {totals.units} units</p>
             </div>
-            {outlets.map((o) => (
-              <div key={o} className="bg-white rounded-xl border border-slate-200 shadow-sm px-4 py-3">
-                <p className="text-xs text-slate-500 mb-0.5 truncate" title={o}>{o}</p>
-                <p className="text-xl font-bold text-emerald-600">{totals.perOutlet[o] ?? 0}</p>
-                <p className="text-xs text-slate-400">units</p>
-              </div>
-            ))}
+            <div className="bg-white rounded-xl border border-slate-200 shadow-sm px-4 py-3">
+              <p className="text-xs text-slate-500 mb-0.5">Not-moving stock value</p>
+              <p className={`text-xl font-bold ${totals.deadValue > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>{formatKD(totals.deadValue)} KD</p>
+              <p className="text-xs text-slate-400">no sales in 90 days — marketing target</p>
+            </div>
+            <div className="bg-white rounded-xl border border-slate-200 shadow-sm px-4 py-3">
+              <p className="text-xs text-slate-500 mb-0.5">Units sold — 30 days</p>
+              <p className="text-xl font-bold text-emerald-600">{products.reduce((s, p) => s + p.units30, 0)}</p>
+              <p className="text-xs text-slate-400">{products.reduce((s, p) => s + p.units90, 0)} in 90 days</p>
+            </div>
+            <div className="bg-white rounded-xl border border-slate-200 shadow-sm px-4 py-3">
+              <p className="text-xs text-slate-500 mb-0.5">Best mover (30d)</p>
+              <p className="text-xl font-bold text-slate-800 truncate" title={[...brandStats].sort((a, b) => b.u30 - a.u30)[0]?.brand}>
+                {[...brandStats].sort((a, b) => b.u30 - a.u30)[0]?.brand ?? '—'}
+              </p>
+              <p className="text-xs text-slate-400">{[...brandStats].sort((a, b) => b.u30 - a.u30)[0]?.u30 ?? 0} units sold</p>
+            </div>
           </div>
 
           <div className="flex flex-wrap gap-2 mb-3">
-            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search product, SKU, brand…"
-              className="px-3 py-1.5 rounded-lg border border-slate-300 text-sm bg-white w-64" />
+            <div className="flex rounded-lg border border-slate-300 overflow-hidden text-sm">
+              {(['brands', 'products'] as const).map((v) => (
+                <button key={v} onClick={() => setView(v)}
+                  className={`px-3 py-1.5 capitalize ${view === v ? 'bg-slate-900 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}>
+                  {v}
+                </button>
+              ))}
+            </div>
+            {view === 'products' && (
+              <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search product, SKU, brand…"
+                className="px-3 py-1.5 rounded-lg border border-slate-300 text-sm bg-white w-56" />
+            )}
             <select value={brandFilter} onChange={(e) => setBrandFilter(e.target.value)}
               className="px-3 py-1.5 rounded-lg border border-slate-300 text-sm bg-white">
               <option>All</option>
@@ -209,9 +286,60 @@ export default function StockPage() {
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm border ${lowOnly ? 'bg-amber-500 text-white border-amber-500' : 'bg-white border-slate-300 text-slate-600 hover:bg-slate-50'}`}>
               <AlertTriangle size={13} /> Low stock
             </button>
-            <div className="ml-auto text-sm text-slate-500 self-center">{products.length} products</div>
+            <button onClick={() => setDeadOnly((v) => !v)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm border ${deadOnly ? 'bg-rose-500 text-white border-rose-500' : 'bg-white border-slate-300 text-slate-600 hover:bg-slate-50'}`}>
+              Not moving
+            </button>
+            <div className="ml-auto text-sm text-slate-500 self-center">
+              {view === 'brands' ? `${brandStats.length} brands` : `${products.length} products`}
+            </div>
           </div>
 
+          {view === 'brands' && (
+            <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-xs text-slate-500 uppercase tracking-wide border-b border-slate-200">
+                    <th className="px-4 py-3">Brand</th>
+                    <th className="px-4 py-3 text-right">Units</th>
+                    <th className="px-4 py-3 text-right">Stock value</th>
+                    <th className="px-4 py-3 text-right">Sold 30d</th>
+                    <th className="px-4 py-3 text-right hidden sm:table-cell">Sold 90d</th>
+                    <th className="px-4 py-3 text-right hidden sm:table-cell">Revenue 90d</th>
+                    <th className="px-4 py-3 text-right hidden sm:table-cell">Sell-through</th>
+                    <th className="px-4 py-3 text-right">Movement</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {brandStats.map((b) => (
+                    <tr key={b.brand} className="border-b border-slate-100 last:border-0 hover:bg-slate-50 cursor-pointer"
+                      onClick={() => { setBrandFilter(b.brand === 'No brand' ? 'All' : b.brand); setView('products'); }}>
+                      <td className="px-4 py-2.5 font-medium text-slate-700">
+                        {b.brand}
+                        <span className="text-xs text-slate-400 font-normal ml-1.5">{b.items} items</span>
+                      </td>
+                      <td className="px-4 py-2.5 text-right">{b.units}</td>
+                      <td className="px-4 py-2.5 text-right font-bold text-slate-800">{formatKD(b.value)} KD</td>
+                      <td className="px-4 py-2.5 text-right text-emerald-600 font-medium">{b.u30 || '—'}</td>
+                      <td className="px-4 py-2.5 text-right text-slate-500 hidden sm:table-cell">{b.u90 || '—'}</td>
+                      <td className="px-4 py-2.5 text-right hidden sm:table-cell">{b.rev90 ? `${formatKD(b.rev90)} KD` : '—'}</td>
+                      <td className="px-4 py-2.5 text-right hidden sm:table-cell text-slate-500">{b.sellThrough.toFixed(0)}%</td>
+                      <td className="px-4 py-2.5 text-right">
+                        <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-semibold ${movementStyle[b.movement].cls}`}>
+                          {movementStyle[b.movement].label}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div className="px-4 py-2 text-xs text-slate-400 border-t border-slate-100">
+                Click a brand to see its products · Sell-through = sold 90d ÷ (sold 90d + in stock)
+              </div>
+            </div>
+          )}
+
+          {view === 'products' && (<>
           <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -221,11 +349,13 @@ export default function StockPage() {
                   {outlets.map((o) => <th key={o} className="px-4 py-3 text-right whitespace-nowrap">{o}</th>)}
                   <th className="px-4 py-3 text-right">Total</th>
                   <th className="px-4 py-3 text-right hidden sm:table-cell">Price</th>
+                  <th className="px-4 py-3 text-right">Sold 30d</th>
+                  <th className="px-4 py-3 text-right hidden sm:table-cell">Last sold</th>
                 </tr>
               </thead>
               <tbody>
                 {products.length === 0 && (
-                  <tr><td colSpan={outlets.length + 4} className="px-4 py-8 text-center text-slate-400">No products in stock match</td></tr>
+                  <tr><td colSpan={outlets.length + 6} className="px-4 py-8 text-center text-slate-400">No products in stock match</td></tr>
                 )}
                 {products.slice(0, 500).map((p, idx, arr) => {
                   const brandLabel = p.brand ?? 'No brand';
@@ -233,7 +363,7 @@ export default function StockPage() {
                   return (
                     <Fragment key={p.product_id}>{newBrand && (
                       <tr key={`hdr-${brandLabel}`} className="bg-slate-50 border-b border-slate-200">
-                        <td colSpan={outlets.length + 4} className="px-4 py-1.5 text-xs font-bold text-slate-600 uppercase tracking-wide">
+                        <td colSpan={outlets.length + 6} className="px-4 py-1.5 text-xs font-bold text-slate-600 uppercase tracking-wide">
                           {brandLabel}
                           <span className="ml-2 font-normal text-slate-400 normal-case">
                             {arr.filter((x) => (x.brand ?? 'No brand') === brandLabel).length} items
@@ -268,6 +398,14 @@ export default function StockPage() {
                       })}
                       <td className="px-4 py-2.5 text-right font-bold text-slate-800">{p.totalQty}</td>
                       <td className="px-4 py-2.5 text-right hidden sm:table-cell">{p.price != null ? `${formatKD(Number(p.price))} KD` : '—'}</td>
+                      <td className="px-4 py-2.5 text-right">
+                        {p.units30 > 0
+                          ? <span className="text-emerald-600 font-semibold">{p.units30}</span>
+                          : p.movement === 'dead'
+                            ? <span className={`inline-block px-1.5 py-0.5 rounded-full text-[10px] font-semibold ${movementStyle.dead.cls}`}>Not moving</span>
+                            : <span className="text-slate-300">—</span>}
+                      </td>
+                      <td className="px-4 py-2.5 text-right text-xs text-slate-400 hidden sm:table-cell">{p.lastSold ?? 'never (90d)'}</td>
                     </tr></Fragment>
                   );
                 })}
@@ -283,6 +421,7 @@ export default function StockPage() {
           <div className="mt-2 flex items-center gap-2 text-xs text-slate-400">
             <Badge className="bg-amber-100 text-amber-700 border-amber-200">amber</Badge> at/below reorder point · items with zero stock everywhere are hidden
           </div>
+          </>)}
         </>
       )}
     </div>
