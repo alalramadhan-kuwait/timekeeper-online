@@ -42,6 +42,7 @@ export default function FollowUpsPage() {
   const [outletFilter, setOutletFilter] = useState('All');
   const [saving, setSaving] = useState<string | null>(null);
   const [editing, setEditing] = useState<FollowUpCase | null>(null);
+  const [groupBy, setGroupBy] = useState<'urgency' | 'brand'>('urgency');
 
   async function load() {
     setLoading(true);
@@ -102,9 +103,69 @@ export default function FollowUpsPage() {
     return b;
   }, [cases, staffFilter, outletFilter, todayStr]);
 
+  // Brand view: sections per brand (alphabetical), items sorted by callback date
+  const brandGroups = useMemo(() => {
+    let list = cases;
+    if (staffFilter !== 'All') list = list.filter((c) => c.staff === staffFilter);
+    if (outletFilter !== 'All') list = list.filter((c) => c.outlet === outletFilter);
+    const map = new Map<string, FollowUpCase[]>();
+    for (const c of list) {
+      const b = c.brand?.trim() || 'No brand';
+      if (!map.has(b)) map.set(b, []);
+      map.get(b)!.push(c);
+    }
+    for (const arr of map.values()) {
+      arr.sort((a, z) => (a.promised_callback ?? '9999').localeCompare(z.promised_callback ?? '9999'));
+    }
+    return [...map.entries()].sort((a, z) =>
+      a[0] === 'No brand' ? 1 : z[0] === 'No brand' ? -1 : a[0].localeCompare(z[0]));
+  }, [cases, staffFilter, outletFilter]);
+
   if (loading) return <Spinner />;
 
   const total = BUCKETS.reduce((s, bk) => s + buckets[bk.key].length, 0);
+
+  const renderRow = (c: FollowUpCase) => (
+    <div key={c.id} className="px-4 py-3 flex flex-wrap items-center gap-x-4 gap-y-2">
+      <div className="min-w-0 flex-1 basis-52">
+        <div className="flex items-center gap-2">
+          <span className="font-semibold text-slate-800 text-sm truncate">
+            {c.customer_name?.trim() || c.contact || 'Unknown customer'}
+          </span>
+          {c.contact && (
+            <a href={`tel:${c.contact}`} className="text-blue-500 hover:text-blue-700 shrink-0" title={`Call ${c.contact}`}>
+              <Phone size={13} />
+            </a>
+          )}
+        </div>
+        <p className="text-xs text-slate-500 truncate">
+          {[c.brand, c.product].filter(Boolean).join(' — ') || 'No product noted'}
+        </p>
+        {c.notes && <p className="text-xs text-slate-400 italic truncate">{c.notes}</p>}
+      </div>
+      <div className="text-xs text-slate-500 shrink-0">
+        <div>{c.outlet ?? '—'} · {c.staff}</div>
+        <div className={c.promised_callback && c.promised_callback < todayStr ? 'text-red-600 font-medium' : ''}>
+          {c.promised_callback ? `Callback ${c.promised_callback}` : `Logged ${c.date_logged}`}
+        </div>
+      </div>
+      {canEdit && (
+        <div className="flex items-center gap-2 shrink-0">
+          <select
+            value="Open"
+            disabled={saving === c.id}
+            onChange={(e) => { if (e.target.value !== 'Open') updateStatus(c.id, e.target.value); }}
+            className="px-2 py-1 rounded-lg border border-slate-300 text-xs bg-white"
+          >
+            {CASE_STATUSES.map((s) => <option key={s}>{s}</option>)}
+          </select>
+          <button onClick={() => setEditing(c)} className="text-slate-400 hover:text-blue-600" aria-label="Edit">
+            <Pencil size={14} />
+          </button>
+        </div>
+      )}
+    </div>
+  );
 
   return (
     <div>
@@ -126,6 +187,17 @@ export default function FollowUpsPage() {
           <option>All</option>
           {outletOptions.map((s) => <option key={s}>{s}</option>)}
         </select>
+        <div className="flex rounded-lg border border-slate-300 overflow-hidden text-sm">
+          {(['urgency', 'brand'] as const).map((g) => (
+            <button
+              key={g}
+              onClick={() => setGroupBy(g)}
+              className={`px-3 py-1.5 capitalize ${groupBy === g ? 'bg-slate-900 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}
+            >
+              By {g}
+            </button>
+          ))}
+        </div>
         <div className="ml-auto text-sm text-slate-500 self-center">{total} open follow-up{total !== 1 ? 's' : ''}</div>
       </div>
 
@@ -135,7 +207,7 @@ export default function FollowUpsPage() {
         <div className="bg-white rounded-xl border border-slate-200 p-8 text-center text-slate-400 text-sm">
           No open follow-ups — everyone has been contacted 🎉
         </div>
-      ) : (
+      ) : groupBy === 'urgency' ? (
         <div className="space-y-6">
           {BUCKETS.map((bk) => {
             const list = buckets[bk.key];
@@ -149,51 +221,25 @@ export default function FollowUpsPage() {
                   <Badge className={bk.chip}>{list.length}</Badge>
                 </div>
                 <div className="bg-white rounded-xl border border-slate-200 shadow-sm divide-y divide-slate-100">
-                  {list.map((c) => (
-                    <div key={c.id} className="px-4 py-3 flex flex-wrap items-center gap-x-4 gap-y-2">
-                      <div className="min-w-0 flex-1 basis-52">
-                        <div className="flex items-center gap-2">
-                          <span className="font-semibold text-slate-800 text-sm truncate">
-                            {c.customer_name?.trim() || c.contact || 'Unknown customer'}
-                          </span>
-                          {c.contact && (
-                            <a href={`tel:${c.contact}`} className="text-blue-500 hover:text-blue-700 shrink-0" title={`Call ${c.contact}`}>
-                              <Phone size={13} />
-                            </a>
-                          )}
-                        </div>
-                        <p className="text-xs text-slate-500 truncate">
-                          {[c.brand, c.product].filter(Boolean).join(' — ') || 'No product noted'}
-                        </p>
-                        {c.notes && <p className="text-xs text-slate-400 italic truncate">{c.notes}</p>}
-                      </div>
-                      <div className="text-xs text-slate-500 shrink-0">
-                        <div>{c.outlet ?? '—'} · {c.staff}</div>
-                        <div className={c.promised_callback && c.promised_callback < todayStr ? 'text-red-600 font-medium' : ''}>
-                          {c.promised_callback ? `Callback ${c.promised_callback}` : `Logged ${c.date_logged}`}
-                        </div>
-                      </div>
-                      {canEdit && (
-                        <div className="flex items-center gap-2 shrink-0">
-                          <select
-                            value="Open"
-                            disabled={saving === c.id}
-                            onChange={(e) => { if (e.target.value !== 'Open') updateStatus(c.id, e.target.value); }}
-                            className="px-2 py-1 rounded-lg border border-slate-300 text-xs bg-white"
-                          >
-                            {CASE_STATUSES.map((s) => <option key={s}>{s}</option>)}
-                          </select>
-                          <button onClick={() => setEditing(c)} className="text-slate-400 hover:text-blue-600" aria-label="Edit">
-                            <Pencil size={14} />
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                  {list.map((c) => renderRow(c))}
                 </div>
               </div>
             );
           })}
+        </div>
+      ) : (
+        <div className="space-y-6">
+          {brandGroups.map(([brand, list]) => (
+            <div key={brand}>
+              <div className="flex items-center gap-2 mb-2">
+                <h2 className="font-bold text-sm uppercase tracking-wide text-slate-700">{brand}</h2>
+                <Badge className="bg-slate-100 text-slate-600 border-slate-200">{list.length}</Badge>
+              </div>
+              <div className="bg-white rounded-xl border border-slate-200 shadow-sm divide-y divide-slate-100">
+                {list.map((c) => renderRow(c))}
+              </div>
+            </div>
+          ))}
         </div>
       )}
 
