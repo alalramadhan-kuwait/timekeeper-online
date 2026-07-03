@@ -413,9 +413,9 @@ export default function Dashboard() {
                 <thead>
                   <tr className="text-left text-xs text-slate-500 uppercase tracking-wide border-b border-slate-200">
                     <th className="px-4 py-2.5">Status</th>
-                    <th className="px-4 py-2.5 text-right">POs</th>
+                    <th className="px-4 py-2.5 text-right hidden sm:table-cell">POs</th>
                     <th className="px-4 py-2.5 text-right">Total value</th>
-                    <th className="px-4 py-2.5 text-right">Paid</th>
+                    <th className="px-4 py-2.5 text-right hidden sm:table-cell">Paid</th>
                     <th className="px-4 py-2.5 text-right">Balance</th>
                   </tr>
                 </thead>
@@ -427,9 +427,9 @@ export default function Dashboard() {
                       onClick={() => setPODetail({ label: `Status: ${row.status}`, rows: poRows.filter((r) => r.status === row.status) })}
                     >
                       <td className="px-4 py-2.5 font-medium text-slate-700">{row.status}</td>
-                      <td className="px-4 py-2.5 text-right text-slate-500">{row.count}</td>
+                      <td className="px-4 py-2.5 text-right text-slate-500 hidden sm:table-cell">{row.count}</td>
                       <td className="px-4 py-2.5 text-right">{formatKDCompact(row.total)} KD</td>
-                      <td className="px-4 py-2.5 text-right text-emerald-600">{formatKDCompact(row.paid)} KD</td>
+                      <td className="px-4 py-2.5 text-right text-emerald-600 hidden sm:table-cell">{formatKDCompact(row.paid)} KD</td>
                       <td className={`px-4 py-2.5 text-right font-medium ${row.total - row.paid > 0 ? 'text-red-600' : 'text-slate-400'}`}>
                         {formatKDCompact(row.total - row.paid)} KD
                       </td>
@@ -450,9 +450,9 @@ export default function Dashboard() {
                 <thead>
                   <tr className="text-left text-xs text-slate-500 uppercase tracking-wide border-b border-slate-200">
                     <th className="px-4 py-2.5">Brand</th>
-                    <th className="px-4 py-2.5 text-right">POs</th>
+                    <th className="px-4 py-2.5 text-right hidden sm:table-cell">POs</th>
                     <th className="px-4 py-2.5 text-right">Total value</th>
-                    <th className="px-4 py-2.5 text-right">Paid</th>
+                    <th className="px-4 py-2.5 text-right hidden sm:table-cell">Paid</th>
                     <th className="px-4 py-2.5 text-right">Outstanding</th>
                   </tr>
                 </thead>
@@ -467,17 +467,17 @@ export default function Dashboard() {
                       })}
                     >
                       <td className="px-4 py-2.5 font-medium text-slate-700">{row.brand}</td>
-                      <td className="px-4 py-2.5 text-right text-slate-500">{row.count}</td>
+                      <td className="px-4 py-2.5 text-right text-slate-500 hidden sm:table-cell">{row.count}</td>
                       <td className="px-4 py-2.5 text-right">{formatKDCompact(row.total)} KD</td>
-                      <td className="px-4 py-2.5 text-right text-emerald-600">{formatKDCompact(row.paid)} KD</td>
+                      <td className="px-4 py-2.5 text-right text-emerald-600 hidden sm:table-cell">{formatKDCompact(row.paid)} KD</td>
                       <td className="px-4 py-2.5 text-right font-bold text-red-600">{formatKDCompact(row.balance)} KD</td>
                     </tr>
                   ))}
                   <tr className="border-t-2 border-slate-200 bg-slate-50">
                     <td className="px-4 py-2.5 font-bold text-slate-800">Total</td>
-                    <td className="px-4 py-2.5 text-right text-slate-500 font-medium">{poFinancials.byBrand.reduce((s, b) => s + b.count, 0)}</td>
+                    <td className="px-4 py-2.5 text-right text-slate-500 font-medium hidden sm:table-cell">{poFinancials.byBrand.reduce((s, b) => s + b.count, 0)}</td>
                     <td className="px-4 py-2.5 text-right font-medium">{formatKDCompact(poFinancials.byBrand.reduce((s, b) => s + b.total, 0))} KD</td>
-                    <td className="px-4 py-2.5 text-right text-emerald-600 font-medium">{formatKDCompact(poFinancials.byBrand.reduce((s, b) => s + b.paid, 0))} KD</td>
+                    <td className="px-4 py-2.5 text-right text-emerald-600 font-medium hidden sm:table-cell">{formatKDCompact(poFinancials.byBrand.reduce((s, b) => s + b.paid, 0))} KD</td>
                     <td className="px-4 py-2.5 text-right font-bold text-red-600">{formatKDCompact(poFinancials.byBrand.reduce((s, b) => s + b.balance, 0))} KD</td>
                   </tr>
                 </tbody>
@@ -569,8 +569,30 @@ export default function Dashboard() {
             <div className="overflow-auto">
               {poDetail.rows.length === 0 ? (
                 <p className="px-5 py-8 text-center text-slate-400 text-sm">No purchase orders in this group.</p>
-              ) : (
-                <table className="w-full text-sm">
+              ) : (<>
+                {/* Mobile: stacked cards */}
+                <div className="sm:hidden divide-y divide-slate-100">
+                  {poDetail.rows.map((r, i) => {
+                    const bal = Number(r.total_cost ?? 0) - Number(r.amount_paid ?? 0);
+                    return (
+                      <div key={i} className="px-4 py-3">
+                        <div className="flex items-center justify-between gap-2 mb-1">
+                          <span className="font-semibold text-slate-800 text-sm truncate">{r.po_number ?? '—'}</span>
+                          <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700 shrink-0">{r.status}</span>
+                        </div>
+                        <p className="text-xs text-slate-500 mb-2 truncate">{[r.supplier, r.brand].filter(Boolean).join(' · ') || '—'}</p>
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-slate-500">Total <b className="text-slate-800">{formatKD(Number(r.total_cost ?? 0))}</b></span>
+                          <span className="text-slate-500">Paid <b className="text-emerald-600">{formatKD(Number(r.amount_paid ?? 0))}</b></span>
+                          <span className="text-slate-500">Bal <b className={bal > 0 ? 'text-red-600' : 'text-slate-400'}>{formatKD(bal)}</b></span>
+                          {r.invoice_received ? <span className="text-emerald-600">Inv ✓</span> : <span className="text-amber-600">Inv pending</span>}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                {/* Desktop: table */}
+                <table className="w-full text-sm hidden sm:table">
                   <thead className="sticky top-0 bg-white">
                     <tr className="text-left text-xs text-slate-500 uppercase tracking-wide border-b border-slate-200">
                       <th className="px-4 py-3">PO #</th>
@@ -603,9 +625,9 @@ export default function Dashboard() {
                     })}
                   </tbody>
                 </table>
-              )}
+              </>)}
             </div>
-            <div className="px-5 py-3 border-t border-slate-100 bg-slate-50 shrink-0 flex justify-between items-center">
+            <div className="px-5 py-3 border-t border-slate-100 bg-slate-50 shrink-0 flex flex-wrap justify-between items-center gap-2">
               <div className="text-xs text-slate-500">
                 Total: <span className="font-semibold text-slate-800">{formatKD(poDetail.rows.reduce((s, r) => s + Number(r.total_cost ?? 0), 0))}</span>
                 {' · '}Paid: <span className="font-semibold text-emerald-700">{formatKD(poDetail.rows.reduce((s, r) => s + Number(r.amount_paid ?? 0), 0))}</span>
