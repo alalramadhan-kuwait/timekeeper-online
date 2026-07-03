@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { format, parseISO } from 'date-fns';
 import { Search, Phone, Pencil, Check, X, Star, ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Modal, Spinner, StatusBadge, Badge } from '../components/ui';
@@ -448,10 +449,38 @@ function CustomerModal({ profile, vipRecord, canEdit, error, onClose, onSaveCust
         </div>
       )}
 
-      {/* ── Case history ── */}
-      <div className="max-h-96 overflow-y-auto divide-y divide-slate-100">
-        {profile.cases.map((c) => (
-          <div key={c.id} className="py-2.5 text-sm">
+      {/* ── Case history timeline ── */}
+      <div className="max-h-96 overflow-y-auto pr-1">
+        {(() => {
+          const groups: [string, CaseRow[]][] = [];
+          for (const c of profile.cases) {
+            const key = c.date_logged?.slice(0, 7) ?? 'Unknown';
+            const last = groups[groups.length - 1];
+            if (last && last[0] === key) last[1].push(c);
+            else groups.push([key, [c]]);
+          }
+          return groups.map(([month, list]) => (
+            <div key={month}>
+              <div className="sticky top-0 z-10 bg-white py-1 text-xs font-semibold text-slate-400 uppercase tracking-wide">
+                {month === 'Unknown' ? 'Unknown date' : format(parseISO(`${month}-01`), 'MMMM yyyy')}
+              </div>
+              <div className="border-l-2 border-slate-100 ml-1.5 pl-4">
+                {list.map((c) => renderCase(c))}
+              </div>
+            </div>
+          ));
+        })()}
+      </div>
+    </Modal>
+  );
+
+  function renderCase(c: CaseRow) {
+    const dotColor: Record<string, string> = {
+      Sale: 'bg-emerald-500', 'Follow-up': 'bg-blue-500', 'Lost Sale': 'bg-rose-500', 'No Interaction': 'bg-slate-300',
+    };
+    return (
+          <div key={c.id} className="py-2.5 text-sm relative">
+            <span className={`absolute -left-[22.5px] top-4 h-2.5 w-2.5 rounded-full ring-2 ring-white ${dotColor[c.case_type] ?? 'bg-slate-300'}`} />
             <div className="flex items-center gap-2 flex-wrap">
               <Badge className={caseTypeColors[c.case_type]}>{c.case_type}</Badge>
               {canEdit ? (
@@ -490,8 +519,6 @@ function CustomerModal({ profile, vipRecord, canEdit, error, onClose, onSaveCust
               c.notes && <div className="text-xs text-slate-500 mt-0.5">{c.notes}</div>
             )}
           </div>
-        ))}
-      </div>
-    </Modal>
-  );
+    );
+  }
 }
