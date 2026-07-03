@@ -150,7 +150,7 @@ export default function StockPage() {
                 <input value={clientId} onChange={(e) => setClientId(e.target.value)} placeholder="Client ID"
                   className="flex-1 px-3 py-2 rounded-lg border border-slate-300 text-sm" />
                 <a
-                  href={clientId ? `https://secure.retail.lightspeed.app/connect?response_type=code&client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(CALLBACK_URL)}` : undefined}
+                  href={clientId ? `https://secure.retail.lightspeed.app/connect?response_type=code&client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(CALLBACK_URL)}&state=tkonline-${Date.now()}` : undefined}
                   target="_blank" rel="noopener noreferrer"
                   className={`px-4 py-2 rounded-lg text-sm font-medium ${clientId ? 'bg-slate-900 text-white hover:bg-slate-700' : 'bg-slate-200 text-slate-400 pointer-events-none'}`}
                 >
