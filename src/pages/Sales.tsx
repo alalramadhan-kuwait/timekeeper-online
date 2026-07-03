@@ -20,6 +20,11 @@ interface SaleCase {
   sale_items: SaleItem[];
 }
 
+interface LostCase {
+  id: string; date_logged: string; staff: string; customer_name: string | null; brand: string | null;
+  product: string | null; amount_kd: number | null; outlet: string | null; notes: string | null;
+}
+
 type Period = 'today' | 'week' | 'month' | '30d' | 'custom';
 
 const periodLabels: Record<Period, string> = {
@@ -45,6 +50,7 @@ export default function SalesPage() {
   const [from, setFrom] = useState(periodStart('month'));
   const [to, setTo] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [allSales, setAllSales] = useState<SaleCase[]>([]);
+  const [allLost, setAllLost] = useState<LostCase[]>([]);
   const [allTraffic, setAllTraffic] = useState<TrafficRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [outlet, setOutlet] = useState('All');
@@ -77,6 +83,15 @@ export default function SalesPage() {
         setAllSales((data as unknown as SaleCase[]) ?? []);
         setLoading(false);
       });
+    supabase
+      .from('cases')
+      .select('id, date_logged, staff, customer_name, brand, product, amount_kd, outlet, notes')
+      .eq('case_type', 'Lost Sale')
+      .eq('deleted', false)
+      .gte('date_logged', from)
+      .lte('date_logged', to)
+      .order('date_logged', { ascending: false })
+      .then(({ data }) => setAllLost((data as LostCase[]) ?? []));
   }, [from, to]);
 
   // every case carries a visitor_count, so all case types together = store traffic.
@@ -96,6 +111,22 @@ export default function SalesPage() {
   );
 
   const total = useMemo(() => sales.reduce((s, c) => s + caseTotal(c), 0), [sales]);
+
+  const lost = useMemo(
+    () => (outlet === 'All' ? allLost : allLost.filter((c) => (c.outlet || 'Unknown') === outlet)),
+    [allLost, outlet],
+  );
+  const lostValue = useMemo(() => lost.reduce((s, c) => s + Number(c.amount_kd ?? 0), 0), [lost]);
+  const lostByKey = (level: 'brand' | 'outlet') => {
+    const map = new Map<string, { amount: number; count: number }>();
+    for (const c of lost) {
+      const k = (c[level] || 'Unknown') as string;
+      const e = map.get(k) ?? { amount: 0, count: 0 };
+      e.amount += Number(c.amount_kd ?? 0); e.count += 1;
+      map.set(k, e);
+    }
+    return [...map.entries()].sort((a, b) => b[1].amount - a[1].amount || b[1].count - a[1].count);
+  };
 
   // breakdowns — brand/product type are attributed at item level when items exist
   const byKey = (level: 'staff' | 'outlet' | 'brand' | 'product_type') => {
@@ -271,6 +302,60 @@ export default function SalesPage() {
                   ))}
                 </div>
               </div>
+            )}
+          </div>
+
+          {/* ── Lost sales analysis ── */}
+          <div className="mb-6 bg-white rounded-xl border border-rose-200 shadow-sm p-4">
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+              <h2 className="text-sm font-semibold text-rose-700">Lost sales — this period</h2>
+              <div className="text-sm text-slate-500">
+                <b className="text-rose-600">{lost.length}</b> lost · value{' '}
+                <b className="text-rose-600">{formatKD(lostValue)} KD</b>
+                {total + lostValue > 0 && (
+                  <> · <b className="text-slate-700">{((lostValue / (total + lostValue)) * 100).toFixed(0)}%</b> of potential revenue</>
+                )}
+              </div>
+            </div>
+            {lost.length === 0 ? (
+              <div className="text-slate-400 text-sm">No lost sales recorded in this period 🎉</div>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+                  {([['Lost by brand', 'brand'], ['Lost by outlet', 'outlet']] as const).map(([title, key]) => (
+                    <div key={key}>
+                      <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">{title}</h3>
+                      <table className="w-full text-sm">
+                        <tbody>
+                          {lostByKey(key).slice(0, 8).map(([k, v]) => (
+                            <tr key={k} className="border-b border-slate-100 last:border-0">
+                              <td className="py-1.5">{k}</td>
+                              <td className="py-1.5 text-right text-slate-500">{v.count}×</td>
+                              <td className="py-1.5 text-right font-medium text-rose-600">{formatKD(v.amount)} KD</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ))}
+                </div>
+                <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Recent lost sales & reasons</h3>
+                <div className="divide-y divide-slate-100 max-h-72 overflow-y-auto">
+                  {lost.slice(0, 25).map((c) => (
+                    <div key={c.id} className="py-2 flex flex-wrap items-start gap-x-4 gap-y-1 text-sm">
+                      <div className="min-w-0 flex-1 basis-48">
+                        <span className="font-medium text-slate-700">{[c.brand, c.product].filter(Boolean).join(' — ') || 'Unspecified item'}</span>
+                        {c.customer_name && <span className="text-slate-400"> · {c.customer_name}</span>}
+                        <p className="text-xs text-slate-500 italic">{c.notes || 'No reason recorded'}</p>
+                      </div>
+                      <div className="text-xs text-slate-400 shrink-0 text-right">
+                        <div>{Number(c.amount_kd ?? 0) > 0 ? <span className="text-rose-600 font-medium">{formatKD(Number(c.amount_kd))} KD</span> : '—'}</div>
+                        <div>{c.date_logged} · {c.outlet ?? '—'} · {c.staff}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
             )}
           </div>
 
