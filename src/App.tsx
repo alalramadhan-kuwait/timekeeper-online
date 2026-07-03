@@ -5,6 +5,7 @@ import LoginPage from './components/LoginPage';
 import Dashboard from './pages/Dashboard';
 import SalesPage from './pages/Sales';
 import CrmPage from './pages/Crm';
+import FollowUpsPage from './pages/FollowUps';
 import SettingsPage from './pages/Settings';
 import LeavePage from './pages/Leave';
 import AttendancePage from './pages/Attendance';
@@ -27,6 +28,7 @@ function Shell() {
         <Route path="/" element={<Dashboard />} />
         <Route path="/sales" element={<SalesPage />} />
         <Route path="/crm" element={<CrmPage />} />
+        <Route path="/follow-ups" element={<FollowUpsPage />} />
         <Route path="/waiting-list" element={<WaitingListPage />} />
         <Route path="/pre-orders" element={<PreOrdersPage />} />
         <Route path="/purchase-orders" element={<PurchaseOrdersPage />} />

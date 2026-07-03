@@ -1,7 +1,7 @@
 import { NavLink, Outlet } from 'react-router-dom';
 import {
   LayoutDashboard, TrendingUp, Hourglass, PackageCheck, Truck, Handshake,
-  Star, Users, CalendarRange, FileWarning, LogOut, Watch, Menu, Contact, Settings, Gem, ClipboardCheck, type LucideIcon,
+  Star, Users, CalendarRange, FileWarning, LogOut, Watch, Menu, Contact, Settings, Gem, ClipboardCheck, PhoneCall, type LucideIcon,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth, Role } from '../context/AuthContext';
@@ -30,6 +30,7 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { to: '/sales', label: 'Sales Reports', icon: TrendingUp, roles: ['admin', 'manager', 'staff', 'viewer'] },
       { to: '/crm', label: 'CRM Customers', icon: Contact, roles: ['admin', 'manager', 'staff', 'viewer'] },
+      { to: '/follow-ups', label: 'Follow-up Board', icon: PhoneCall, roles: ['admin', 'manager', 'staff', 'viewer'] },
       { to: '/vip', label: 'VIP Customers', icon: Star, roles: ['admin', 'manager', 'staff', 'viewer'] },
       { to: '/waiting-list', label: 'Demand List', icon: Hourglass, roles: ['admin', 'manager', 'staff', 'viewer'] },
     ],
