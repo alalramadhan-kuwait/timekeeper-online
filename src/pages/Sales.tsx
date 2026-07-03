@@ -23,6 +23,7 @@ interface SaleCase {
 interface LostCase {
   id: string; date_logged: string; staff: string; customer_name: string | null; brand: string | null;
   product: string | null; amount_kd: number | null; outlet: string | null; notes: string | null;
+  lost_reason: string | null;
 }
 
 type Period = 'today' | 'week' | 'month' | '30d' | 'custom';
@@ -85,7 +86,7 @@ export default function SalesPage() {
       });
     supabase
       .from('cases')
-      .select('id, date_logged, staff, customer_name, brand, product, amount_kd, outlet, notes')
+      .select('id, date_logged, staff, customer_name, brand, product, amount_kd, outlet, notes, lost_reason')
       .eq('case_type', 'Lost Sale')
       .eq('deleted', false)
       .gte('date_logged', from)
@@ -117,10 +118,10 @@ export default function SalesPage() {
     [allLost, outlet],
   );
   const lostValue = useMemo(() => lost.reduce((s, c) => s + Number(c.amount_kd ?? 0), 0), [lost]);
-  const lostByKey = (level: 'brand' | 'outlet') => {
+  const lostByKey = (level: 'brand' | 'outlet' | 'lost_reason') => {
     const map = new Map<string, { amount: number; count: number }>();
     for (const c of lost) {
-      const k = (c[level] || 'Unknown') as string;
+      const k = (c[level] || (level === 'lost_reason' ? 'No reason' : 'Unknown')) as string;
       const e = map.get(k) ?? { amount: 0, count: 0 };
       e.amount += Number(c.amount_kd ?? 0); e.count += 1;
       map.set(k, e);
@@ -321,8 +322,8 @@ export default function SalesPage() {
               <div className="text-slate-400 text-sm">No lost sales recorded in this period 🎉</div>
             ) : (
               <>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
-                  {([['Lost by brand', 'brand'], ['Lost by outlet', 'outlet']] as const).map(([title, key]) => (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+                  {([['Lost by reason', 'lost_reason'], ['Lost by brand', 'brand'], ['Lost by outlet', 'outlet']] as const).map(([title, key]) => (
                     <div key={key}>
                       <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">{title}</h3>
                       <table className="w-full text-sm">
@@ -346,7 +347,12 @@ export default function SalesPage() {
                       <div className="min-w-0 flex-1 basis-48">
                         <span className="font-medium text-slate-700">{[c.brand, c.product].filter(Boolean).join(' — ') || 'Unspecified item'}</span>
                         {c.customer_name && <span className="text-slate-400"> · {c.customer_name}</span>}
-                        <p className="text-xs text-slate-500 italic">{c.notes || 'No reason recorded'}</p>
+                        <div className="flex items-center gap-2 flex-wrap mt-0.5">
+                          <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-rose-100 text-rose-700">
+                            {c.lost_reason || 'No reason'}
+                          </span>
+                          {c.notes && <span className="text-xs text-slate-500 italic truncate">{c.notes}</span>}
+                        </div>
                       </div>
                       <div className="text-xs text-slate-400 shrink-0 text-right">
                         <div>{Number(c.amount_kd ?? 0) > 0 ? <span className="text-rose-600 font-medium">{formatKD(Number(c.amount_kd))} KD</span> : '—'}</div>
