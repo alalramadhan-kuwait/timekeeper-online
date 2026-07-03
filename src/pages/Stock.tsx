@@ -301,7 +301,7 @@ export default function StockPage() {
                 <thead>
                   <tr className="text-left text-xs text-slate-500 uppercase tracking-wide border-b border-slate-200">
                     <th className="px-4 py-3">Brand</th>
-                    <th className="px-4 py-3 text-right">Units</th>
+                    <th className="px-4 py-3 text-right hidden sm:table-cell">Units</th>
                     <th className="px-4 py-3 text-right">Stock value</th>
                     <th className="px-4 py-3 text-right">Sold 30d</th>
                     <th className="px-4 py-3 text-right hidden sm:table-cell">Sold 90d</th>
@@ -316,9 +316,10 @@ export default function StockPage() {
                       onClick={() => { setBrandFilter(b.brand === 'No brand' ? 'All' : b.brand); setView('products'); }}>
                       <td className="px-4 py-2.5 font-medium text-slate-700">
                         {b.brand}
-                        <span className="text-xs text-slate-400 font-normal ml-1.5">{b.items} items</span>
+                        <span className="text-xs text-slate-400 font-normal ml-1.5 hidden sm:inline">{b.items} items</span>
+                        <span className="block text-xs text-slate-400 font-normal sm:hidden">{b.units} units · {b.items} items</span>
                       </td>
-                      <td className="px-4 py-2.5 text-right">{b.units}</td>
+                      <td className="px-4 py-2.5 text-right hidden sm:table-cell">{b.units}</td>
                       <td className="px-4 py-2.5 text-right font-bold text-slate-800">{formatKD(b.value)} KD</td>
                       <td className="px-4 py-2.5 text-right text-emerald-600 font-medium">{b.u30 || '—'}</td>
                       <td className="px-4 py-2.5 text-right text-slate-500 hidden sm:table-cell">{b.u90 || '—'}</td>
@@ -346,7 +347,7 @@ export default function StockPage() {
                 <tr className="text-left text-xs text-slate-500 uppercase tracking-wide border-b border-slate-200">
                   <th className="px-4 py-3">Product</th>
                   <th className="px-4 py-3 hidden sm:table-cell">SKU</th>
-                  {outlets.map((o) => <th key={o} className="px-4 py-3 text-right whitespace-nowrap">{o}</th>)}
+                  {outlets.map((o) => <th key={o} className="px-4 py-3 text-right whitespace-nowrap hidden md:table-cell">{o}</th>)}
                   <th className="px-4 py-3 text-right">Total</th>
                   <th className="px-4 py-3 text-right hidden sm:table-cell">Price</th>
                   <th className="px-4 py-3 text-right">Sold 30d</th>
@@ -385,7 +386,7 @@ export default function StockPage() {
                         const qty = cell?.qty ?? 0;
                         const isLow = cell && cell.reorder != null && qty <= cell.reorder;
                         return (
-                          <td key={o} className="px-4 py-2.5 text-right">
+                          <td key={o} className="px-4 py-2.5 text-right hidden md:table-cell">
                             {qty > 0 ? (
                               <span className={`inline-block min-w-[28px] px-2 py-0.5 rounded-full text-xs font-semibold ${isLow ? 'bg-amber-100 text-amber-700' : 'bg-emerald-50 text-emerald-700'}`}>
                                 {qty}
