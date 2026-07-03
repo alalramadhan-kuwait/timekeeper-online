@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Phone, AlertTriangle, CalendarClock, CalendarDays, HelpCircle } from 'lucide-react';
+import { useEffect, useMemo, useState, type ChangeEvent } from 'react';
+import { Phone, AlertTriangle, CalendarClock, CalendarDays, HelpCircle, Pencil, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { supabase } from '../lib/supabase';
 import { Badge, Spinner } from '../components/ui';
@@ -41,6 +41,7 @@ export default function FollowUpsPage() {
   const [staffFilter, setStaffFilter] = useState('All');
   const [outletFilter, setOutletFilter] = useState('All');
   const [saving, setSaving] = useState<string | null>(null);
+  const [editing, setEditing] = useState<FollowUpCase | null>(null);
 
   async function load() {
     setLoading(true);
@@ -66,6 +67,16 @@ export default function FollowUpsPage() {
     setSaving(null);
   }
 
+  async function saveEdit(patch: Partial<FollowUpCase>) {
+    if (!editing) return;
+    setSaving(editing.id);
+    const { error } = await supabase.from('cases').update(patch).eq('id', editing.id);
+    if (error) setError(error.message);
+    else setCases((cs) => cs.map((c) => (c.id === editing.id ? { ...c, ...patch } : c)));
+    setSaving(null);
+    setEditing(null);
+  }
+
   const staffOptions = useMemo(() => [...new Set(cases.map((c) => c.staff).filter(Boolean))].sort(), [cases]);
   const outletOptions = useMemo(() => [...new Set(cases.map((c) => c.outlet ?? '').filter(Boolean))].sort(), [cases]);
 
@@ -82,6 +93,12 @@ export default function FollowUpsPage() {
       else if (c.promised_callback === todayStr) b.today.push(c);
       else b.upcoming.push(c);
     }
+    // Group related items together: same brand, then same product, then by callback date
+    const rel = (a: FollowUpCase, z: FollowUpCase) =>
+      (a.brand ?? '').localeCompare(z.brand ?? '') ||
+      (a.product ?? '').localeCompare(z.product ?? '') ||
+      (a.promised_callback ?? '').localeCompare(z.promised_callback ?? '');
+    for (const k of Object.keys(b) as Bucket[]) b[k].sort(rel);
     return b;
   }, [cases, staffFilter, outletFilter, todayStr]);
 
@@ -157,14 +174,19 @@ export default function FollowUpsPage() {
                         </div>
                       </div>
                       {canEdit && (
-                        <select
-                          value="Open"
-                          disabled={saving === c.id}
-                          onChange={(e) => { if (e.target.value !== 'Open') updateStatus(c.id, e.target.value); }}
-                          className="px-2 py-1 rounded-lg border border-slate-300 text-xs bg-white shrink-0"
-                        >
-                          {CASE_STATUSES.map((s) => <option key={s}>{s}</option>)}
-                        </select>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <select
+                            value="Open"
+                            disabled={saving === c.id}
+                            onChange={(e) => { if (e.target.value !== 'Open') updateStatus(c.id, e.target.value); }}
+                            className="px-2 py-1 rounded-lg border border-slate-300 text-xs bg-white"
+                          >
+                            {CASE_STATUSES.map((s) => <option key={s}>{s}</option>)}
+                          </select>
+                          <button onClick={() => setEditing(c)} className="text-slate-400 hover:text-blue-600" aria-label="Edit">
+                            <Pencil size={14} />
+                          </button>
+                        </div>
                       )}
                     </div>
                   ))}
@@ -174,6 +196,92 @@ export default function FollowUpsPage() {
           })}
         </div>
       )}
+
+      {editing && (
+        <EditModal
+          record={editing}
+          saving={saving === editing.id}
+          onClose={() => setEditing(null)}
+          onSave={saveEdit}
+        />
+      )}
+    </div>
+  );
+}
+
+function EditModal({ record, saving, onClose, onSave }: {
+  record: FollowUpCase;
+  saving: boolean;
+  onClose: () => void;
+  onSave: (patch: Partial<FollowUpCase>) => void;
+}) {
+  const [form, setForm] = useState({
+    customer_name: record.customer_name ?? '',
+    contact: record.contact ?? '',
+    brand: record.brand ?? '',
+    product: record.product ?? '',
+    promised_callback: record.promised_callback ?? '',
+    notes: record.notes ?? '',
+  });
+
+  const set = (k: keyof typeof form) => (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+    setForm((f) => ({ ...f, [k]: e.target.value }));
+
+  const inputCls = 'w-full px-3 py-2 rounded-lg border border-slate-300 text-sm bg-white';
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between px-5 py-3 border-b border-slate-200">
+          <h3 className="font-bold text-slate-900 text-sm">Edit follow-up</h3>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-700"><X size={18} /></button>
+        </div>
+        <div className="p-5 space-y-3">
+          <label className="block text-xs">
+            <span className="block text-slate-500 mb-1 font-medium">Customer name</span>
+            <input value={form.customer_name} onChange={set('customer_name')} className={inputCls} />
+          </label>
+          <label className="block text-xs">
+            <span className="block text-slate-500 mb-1 font-medium">Contact / phone</span>
+            <input value={form.contact} onChange={set('contact')} className={inputCls} />
+          </label>
+          <div className="grid grid-cols-2 gap-3">
+            <label className="block text-xs">
+              <span className="block text-slate-500 mb-1 font-medium">Brand</span>
+              <input value={form.brand} onChange={set('brand')} className={inputCls} />
+            </label>
+            <label className="block text-xs">
+              <span className="block text-slate-500 mb-1 font-medium">Product / model</span>
+              <input value={form.product} onChange={set('product')} className={inputCls} />
+            </label>
+          </div>
+          <label className="block text-xs">
+            <span className="block text-slate-500 mb-1 font-medium">Callback date</span>
+            <input type="date" value={form.promised_callback} onChange={set('promised_callback')} className={inputCls} />
+          </label>
+          <label className="block text-xs">
+            <span className="block text-slate-500 mb-1 font-medium">Notes / comment</span>
+            <textarea value={form.notes} onChange={set('notes')} rows={3} className={`${inputCls} resize-none`} />
+          </label>
+        </div>
+        <div className="flex justify-end gap-2 px-5 py-3 border-t border-slate-100 bg-slate-50">
+          <button onClick={onClose} className="px-4 py-2 rounded-lg text-sm text-slate-500 hover:text-slate-700">Cancel</button>
+          <button
+            disabled={saving}
+            onClick={() => onSave({
+              customer_name: form.customer_name.trim() || null,
+              contact: form.contact.trim() || null,
+              brand: form.brand.trim() || null,
+              product: form.product.trim() || null,
+              promised_callback: form.promised_callback || null,
+              notes: form.notes.trim() || null,
+            })}
+            className="px-4 py-2 rounded-lg bg-slate-900 text-white text-sm font-medium hover:bg-slate-700 disabled:opacity-60"
+          >
+            {saving ? 'Saving…' : 'Save changes'}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
