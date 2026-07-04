@@ -1,5 +1,5 @@
-import { Fragment, useEffect, useMemo, useState } from 'react';
-import { RefreshCw, PlugZap, AlertTriangle } from 'lucide-react';
+import { Fragment, useEffect, useMemo, useState, type Dispatch, type SetStateAction } from 'react';
+import { RefreshCw, PlugZap, AlertTriangle, ChevronUp, ChevronDown } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Badge, Spinner } from '../components/ui';
 import { formatKD } from '../lib/format';
@@ -46,6 +46,8 @@ export default function StockPage() {
   const [brandFilter, setBrandFilter] = useState('All');
   const [lowOnly, setLowOnly] = useState(false);
   const [movementFilter, setMovementFilter] = useState<Movement | null>(null);
+  const [prodSort, setProdSort] = useState<{ col: string; asc: boolean } | null>(null);
+  const [brandSort, setBrandSort] = useState<{ col: string; asc: boolean } | null>(null);
   const [view, setView] = useState<'products' | 'brands'>('brands');
   const [salesMap, setSalesMap] = useState<Map<string, SalesAgg>>(new Map());
   const [costMap, setCostMap] = useState<Map<string, number>>(new Map()); // `${product_id}|${outlet}` → cost (managers only, enforced by RLS)
@@ -137,8 +139,28 @@ export default function StockPage() {
     // group related items: brand A→Z (no-brand last), then name
     list.sort((a, b) =>
       (a.brand ?? '￿').localeCompare(b.brand ?? '￿') || a.name.localeCompare(b.name));
+    // explicit column sort overrides the brand grouping
+    if (prodSort) {
+      const get = (p: ProductRow): string | number => {
+        switch (prodSort.col) {
+          case 'name': return p.name;
+          case 'sku': return p.sku ?? '';
+          case 'total': return p.totalQty;
+          case 'value': return p.totalQty * Number(p.price ?? 0);
+          case 'price': return Number(p.price ?? 0);
+          case 'sold30': return p.units30;
+          case 'lastSold': return p.lastSold ?? '';
+          default: return 0;
+        }
+      };
+      list.sort((a, b) => {
+        const av = get(a), bv = get(b);
+        const cmp = typeof av === 'number' && typeof bv === 'number' ? av - bv : String(av).localeCompare(String(bv));
+        return prodSort.asc ? cmp : -cmp;
+      });
+    }
     return list;
-  }, [rows, brandFilter, lowOnly, movementFilter, search, salesMap, costMap]);
+  }, [rows, brandFilter, lowOnly, movementFilter, search, salesMap, costMap, prodSort]);
 
   const hasCost = costMap.size > 0;
 
@@ -177,6 +199,52 @@ export default function StockPage() {
       }))
       .sort((a, b) => b.value - a.value);
   }, [products, salesMap]);
+
+  const sortedBrandStats = useMemo(() => {
+    if (!brandSort) return brandStats;
+    const get = (b: (typeof brandStats)[number]): string | number => {
+      switch (brandSort.col) {
+        case 'brand': return b.brand;
+        case 'units': return b.units;
+        case 'value': return b.value;
+        case 'cost': return b.cost;
+        case 'margin': return b.margin;
+        case 'sold30': return b.u30;
+        case 'sold90': return b.u90;
+        case 'rev90': return b.rev90;
+        case 'sellThrough': return b.sellThrough;
+        case 'movement': return b.movement;
+        default: return 0;
+      }
+    };
+    return [...brandStats].sort((a, b) => {
+      const av = get(a), bv = get(b);
+      const cmp = typeof av === 'number' && typeof bv === 'number' ? av - bv : String(av).localeCompare(String(bv));
+      return brandSort.asc ? cmp : -cmp;
+    });
+  }, [brandStats, brandSort]);
+
+  const toggleSort = (
+    setter: Dispatch<SetStateAction<{ col: string; asc: boolean } | null>>,
+  ) => (col: string) =>
+    setter((s) => (s?.col === col ? (s.asc ? { col, asc: false } : null) : { col, asc: true }));
+
+  const SortTh = ({ col, label, sort, onSort, className = '' }: {
+    col: string; label: string;
+    sort: { col: string; asc: boolean } | null;
+    onSort: (col: string) => void;
+    className?: string;
+  }) => (
+    <th
+      className={`px-4 py-3 cursor-pointer select-none hover:text-slate-800 whitespace-nowrap ${className}`}
+      onClick={() => onSort(col)}
+    >
+      <span className="inline-flex items-center gap-0.5">
+        {label}
+        {sort?.col === col && (sort.asc ? <ChevronUp size={12} /> : <ChevronDown size={12} />)}
+      </span>
+    </th>
+  );
 
   if (loading) return <Spinner />;
 
@@ -375,20 +443,20 @@ export default function StockPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="text-left text-xs text-slate-500 uppercase tracking-wide border-b border-slate-200">
-                    <th className="px-4 py-3">Brand</th>
-                    <th className="px-4 py-3 text-right hidden sm:table-cell">Units</th>
-                    <th className="px-4 py-3 text-right">Stock value</th>
-                    {hasCost && <th className="px-4 py-3 text-right hidden sm:table-cell">Cost value</th>}
-                    {hasCost && <th className="px-4 py-3 text-right">Margin</th>}
-                    <th className="px-4 py-3 text-right">Sold 30d</th>
-                    <th className="px-4 py-3 text-right hidden sm:table-cell">Sold 90d</th>
-                    <th className="px-4 py-3 text-right hidden sm:table-cell">Revenue 90d</th>
-                    <th className="px-4 py-3 text-right hidden sm:table-cell">Sell-through</th>
-                    <th className="px-4 py-3 text-right">Movement</th>
+                    <SortTh col="brand" label="Brand" sort={brandSort} onSort={toggleSort(setBrandSort)} />
+                    <SortTh col="units" label="Units" sort={brandSort} onSort={toggleSort(setBrandSort)} className="text-right hidden sm:table-cell" />
+                    <SortTh col="value" label="Stock value" sort={brandSort} onSort={toggleSort(setBrandSort)} className="text-right" />
+                    {hasCost && <SortTh col="cost" label="Cost value" sort={brandSort} onSort={toggleSort(setBrandSort)} className="text-right hidden sm:table-cell" />}
+                    {hasCost && <SortTh col="margin" label="Margin" sort={brandSort} onSort={toggleSort(setBrandSort)} className="text-right" />}
+                    <SortTh col="sold30" label="Sold 30d" sort={brandSort} onSort={toggleSort(setBrandSort)} className="text-right" />
+                    <SortTh col="sold90" label="Sold 90d" sort={brandSort} onSort={toggleSort(setBrandSort)} className="text-right hidden sm:table-cell" />
+                    <SortTh col="rev90" label="Revenue 90d" sort={brandSort} onSort={toggleSort(setBrandSort)} className="text-right hidden sm:table-cell" />
+                    <SortTh col="sellThrough" label="Sell-through" sort={brandSort} onSort={toggleSort(setBrandSort)} className="text-right hidden sm:table-cell" />
+                    <SortTh col="movement" label="Movement" sort={brandSort} onSort={toggleSort(setBrandSort)} className="text-right" />
                   </tr>
                 </thead>
                 <tbody>
-                  {brandStats.map((b) => (
+                  {sortedBrandStats.map((b) => (
                     <tr key={b.brand} className="border-b border-slate-100 last:border-0 hover:bg-slate-50 cursor-pointer"
                       onClick={() => { setBrandFilter(b.brand === 'No brand' ? 'All' : b.brand); setView('products'); }}>
                       <td className="px-4 py-2.5 font-medium text-slate-700">
@@ -428,26 +496,28 @@ export default function StockPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left text-xs text-slate-500 uppercase tracking-wide border-b border-slate-200">
-                  <th className="px-4 py-3">Product</th>
-                  <th className="px-4 py-3 hidden sm:table-cell">SKU</th>
+                  <SortTh col="name" label="Product" sort={prodSort} onSort={toggleSort(setProdSort)} />
+                  <SortTh col="sku" label="SKU" sort={prodSort} onSort={toggleSort(setProdSort)} className="hidden sm:table-cell" />
                   {outlets.map((o) => <th key={o} className="px-4 py-3 text-right whitespace-nowrap hidden md:table-cell">{o}</th>)}
-                  <th className="px-4 py-3 text-right">Total</th>
-                  <th className="px-4 py-3 text-right hidden sm:table-cell">Price</th>
-                  <th className="px-4 py-3 text-right">Sold 30d</th>
-                  <th className="px-4 py-3 text-right hidden sm:table-cell">Last sold</th>
+                  <SortTh col="total" label="Total" sort={prodSort} onSort={toggleSort(setProdSort)} className="text-right" />
+                  <SortTh col="value" label="Value" sort={prodSort} onSort={toggleSort(setProdSort)} className="text-right" />
+                  <SortTh col="price" label="Price" sort={prodSort} onSort={toggleSort(setProdSort)} className="text-right hidden sm:table-cell" />
+                  <SortTh col="sold30" label="Sold 30d" sort={prodSort} onSort={toggleSort(setProdSort)} className="text-right" />
+                  <SortTh col="lastSold" label="Last sold" sort={prodSort} onSort={toggleSort(setProdSort)} className="text-right hidden sm:table-cell" />
                 </tr>
               </thead>
               <tbody>
                 {products.length === 0 && (
-                  <tr><td colSpan={outlets.length + 6} className="px-4 py-8 text-center text-slate-400">No products in stock match</td></tr>
+                  <tr><td colSpan={outlets.length + 7} className="px-4 py-8 text-center text-slate-400">No products in stock match</td></tr>
                 )}
                 {products.slice(0, 500).map((p, idx, arr) => {
                   const brandLabel = p.brand ?? 'No brand';
-                  const newBrand = idx === 0 || (arr[idx - 1].brand ?? 'No brand') !== brandLabel;
+                  // brand group headers only in the default (brand-grouped) order
+                  const newBrand = !prodSort && (idx === 0 || (arr[idx - 1].brand ?? 'No brand') !== brandLabel);
                   return (
                     <Fragment key={p.product_id}>{newBrand && (
                       <tr key={`hdr-${brandLabel}`} className="bg-slate-50 border-b border-slate-200">
-                        <td colSpan={outlets.length + 6} className="px-4 py-1.5 text-xs font-bold text-slate-600 uppercase tracking-wide">
+                        <td colSpan={outlets.length + 7} className="px-4 py-1.5 text-xs font-bold text-slate-600 uppercase tracking-wide">
                           {brandLabel}
                           <span className="ml-2 font-normal text-slate-400 normal-case">
                             {arr.filter((x) => (x.brand ?? 'No brand') === brandLabel).length} items
@@ -481,6 +551,7 @@ export default function StockPage() {
                         );
                       })}
                       <td className="px-4 py-2.5 text-right font-bold text-slate-800">{p.totalQty}</td>
+                      <td className="px-4 py-2.5 text-right font-semibold text-slate-800">{formatKD(p.totalQty * Number(p.price ?? 0))} KD</td>
                       <td className="px-4 py-2.5 text-right hidden sm:table-cell">{p.price != null ? `${formatKD(Number(p.price))} KD` : '—'}</td>
                       <td className="px-4 py-2.5 text-right">
                         {p.units30 > 0
