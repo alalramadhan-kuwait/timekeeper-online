@@ -465,8 +465,8 @@ export default function StockPage() {
                         <span className="block text-xs text-slate-400 font-normal sm:hidden">{b.units} units · {b.items} items</span>
                       </td>
                       <td className="px-4 py-2.5 text-right hidden sm:table-cell">{b.units}</td>
-                      <td className="px-4 py-2.5 text-right font-bold text-slate-800">{formatKD(b.value)} KD</td>
-                      {hasCost && <td className="px-4 py-2.5 text-right text-slate-500 hidden sm:table-cell">{formatKD(b.cost)} KD</td>}
+                      <td className="px-4 py-2.5 text-right font-bold text-slate-800 whitespace-nowrap">{formatKD(b.value)} KD</td>
+                      {hasCost && <td className="px-4 py-2.5 text-right text-slate-500 hidden sm:table-cell whitespace-nowrap">{formatKD(b.cost)} KD</td>}
                       {hasCost && (
                         <td className={`px-4 py-2.5 text-right font-medium ${b.margin >= 40 ? 'text-emerald-600' : b.margin >= 20 ? 'text-amber-600' : 'text-rose-600'}`}>
                           {b.margin.toFixed(0)}%
@@ -474,7 +474,7 @@ export default function StockPage() {
                       )}
                       <td className="px-4 py-2.5 text-right text-emerald-600 font-medium">{b.u30 || '—'}</td>
                       <td className="px-4 py-2.5 text-right text-slate-500 hidden sm:table-cell">{b.u90 || '—'}</td>
-                      <td className="px-4 py-2.5 text-right hidden sm:table-cell">{b.rev90 ? `${formatKD(b.rev90)} KD` : '—'}</td>
+                      <td className="px-4 py-2.5 text-right hidden sm:table-cell whitespace-nowrap">{b.rev90 ? `${formatKD(b.rev90)} KD` : '—'}</td>
                       <td className="px-4 py-2.5 text-right hidden sm:table-cell text-slate-500">{b.sellThrough.toFixed(0)}%</td>
                       <td className="px-4 py-2.5 text-right">
                         <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-semibold ${movementStyle[b.movement].cls}`}>
@@ -551,8 +551,8 @@ export default function StockPage() {
                         );
                       })}
                       <td className="px-4 py-2.5 text-right font-bold text-slate-800">{p.totalQty}</td>
-                      <td className="px-4 py-2.5 text-right font-semibold text-slate-800">{formatKD(p.totalQty * Number(p.price ?? 0))} KD</td>
-                      <td className="px-4 py-2.5 text-right hidden sm:table-cell">{p.price != null ? `${formatKD(Number(p.price))} KD` : '—'}</td>
+                      <td className="px-4 py-2.5 text-right font-semibold text-slate-800 whitespace-nowrap">{formatKD(p.totalQty * Number(p.price ?? 0))} KD</td>
+                      <td className="px-4 py-2.5 text-right hidden sm:table-cell whitespace-nowrap">{p.price != null ? `${formatKD(Number(p.price))} KD` : '—'}</td>
                       <td className="px-4 py-2.5 text-right">
                         {p.units30 > 0
                           ? <span className="text-emerald-600 font-semibold">{p.units30}</span>

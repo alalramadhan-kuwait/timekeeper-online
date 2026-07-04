@@ -356,7 +356,7 @@ export default function SalesPage() {
                         <td className="px-4 py-2.5 text-right text-slate-500">{s.visitors}</td>
                         <td className="px-4 py-2.5 text-right text-slate-500">{s.txns}</td>
                         <td className="px-4 py-2.5 text-right font-medium text-amber-600">{conv != null ? `${conv.toFixed(0)}%` : '—'}</td>
-                        <td className="px-4 py-2.5 text-right font-medium text-emerald-600">{formatKD(s.sales)} KD</td>
+                        <td className="px-4 py-2.5 text-right font-medium text-emerald-600 whitespace-nowrap">{formatKD(s.sales)} KD</td>
                         <td className="px-4 py-2.5 text-right hidden sm:table-cell">{s.txns ? `${formatKD(s.sales / s.txns)} KD` : '—'}</td>
                         <td className="px-4 py-2.5 text-right font-medium text-rose-600">
                           {s.lostCount ? `${formatKD(s.lostValue)} KD (${s.lostCount}×)` : '—'}
