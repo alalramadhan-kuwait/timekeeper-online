@@ -23,6 +23,7 @@ interface ProductRow {
   low: boolean;
   units30: number; units90: number; lastSold: string | null;
   movement: Movement;
+  costValue: number; // Σ qty × avg cost — 0 when cost not visible to this role
 }
 
 const movementStyle: Record<Movement, { label: string; cls: string }> = {
@@ -47,6 +48,7 @@ export default function StockPage() {
   const [deadOnly, setDeadOnly] = useState(false);
   const [view, setView] = useState<'products' | 'brands'>('brands');
   const [salesMap, setSalesMap] = useState<Map<string, SalesAgg>>(new Map());
+  const [costMap, setCostMap] = useState<Map<string, number>>(new Map()); // `${product_id}|${outlet}` → cost (managers only, enforced by RLS)
   const [clientId, setClientId] = useState('');
 
   async function load() {
@@ -69,6 +71,17 @@ export default function StockPage() {
       if (data.length < 1000) break;
     }
     setSalesMap(new Map(salesAll.map((s) => [s.product_id, s])));
+    // cost table is readable by admin/manager only (RLS) — others just get no rows
+    const costs = new Map<string, number>();
+    for (let fromIdx = 0; ; fromIdx += 1000) {
+      const { data, error } = await supabase.from('lightspeed_stock_cost').select('product_id, outlet, cost').range(fromIdx, fromIdx + 999);
+      if (error || !data?.length) break;
+      for (const c of data as { product_id: string; outlet: string; cost: number | null }[]) {
+        if (c.cost != null) costs.set(`${c.product_id}|${c.outlet}`, Number(c.cost));
+      }
+      if (data.length < 1000) break;
+    }
+    setCostMap(costs);
     const { data: log } = await supabase.from('lightspeed_sync_log')
       .select('finished_at, status, error').order('started_at', { ascending: false }).limit(1);
     setLastSync(log?.[0] ?? null);
@@ -103,11 +116,13 @@ export default function StockPage() {
           perOutlet: {}, totalQty: 0, low: false,
           units30: u30, units90: u90, lastSold: s?.last_sold ?? null,
           movement: u30 > 0 ? 'fast' : u90 > 0 ? 'slow' : 'dead',
+          costValue: 0,
         };
         map.set(r.product_id, p);
       }
       p.perOutlet[r.outlet] = { qty: Number(r.stock_on_hand), reorder: r.reorder_point != null ? Number(r.reorder_point) : null };
       p.totalQty += Number(r.stock_on_hand);
+      p.costValue += Number(r.stock_on_hand) * (costMap.get(`${r.product_id}|${r.outlet}`) ?? 0);
       if (r.reorder_point != null && Number(r.stock_on_hand) <= Number(r.reorder_point)) p.low = true;
     }
     // only items actually in stock
@@ -123,7 +138,9 @@ export default function StockPage() {
     list.sort((a, b) =>
       (a.brand ?? '￿').localeCompare(b.brand ?? '￿') || a.name.localeCompare(b.name));
     return list;
-  }, [rows, brandFilter, lowOnly, deadOnly, search, salesMap]);
+  }, [rows, brandFilter, lowOnly, deadOnly, search, salesMap, costMap]);
+
+  const hasCost = costMap.size > 0;
 
   const totals = useMemo(() => {
     const inStock = products.length;
@@ -137,12 +154,13 @@ export default function StockPage() {
 
   // Brand analytics — value, units, movement per brand (from filtered product list minus brand filter)
   const brandStats = useMemo(() => {
-    const map = new Map<string, { units: number; value: number; u30: number; u90: number; rev90: number; deadValue: number; items: number }>();
+    const map = new Map<string, { units: number; value: number; cost: number; u30: number; u90: number; rev90: number; deadValue: number; items: number }>();
     for (const p of products) {
       const b = p.brand ?? 'No brand';
-      const e = map.get(b) ?? { units: 0, value: 0, u30: 0, u90: 0, rev90: 0, deadValue: 0, items: 0 };
+      const e = map.get(b) ?? { units: 0, value: 0, cost: 0, u30: 0, u90: 0, rev90: 0, deadValue: 0, items: 0 };
       e.units += p.totalQty;
       e.value += p.totalQty * Number(p.price ?? 0);
+      e.cost += p.costValue;
       e.u30 += p.units30;
       e.u90 += p.units90;
       e.rev90 += Number(salesMap.get(p.product_id)?.revenue_90d ?? 0);
@@ -155,6 +173,7 @@ export default function StockPage() {
         brand, ...e,
         movement: (e.u30 > 0 ? 'fast' : e.u90 > 0 ? 'slow' : 'dead') as Movement,
         sellThrough: e.u90 + e.units > 0 ? (e.u90 / (e.u90 + e.units)) * 100 : 0,
+        margin: e.value > 0 ? ((e.value - e.cost) / e.value) * 100 : 0,
       }))
       .sort((a, b) => b.value - a.value);
   }, [products, salesMap]);
@@ -243,7 +262,10 @@ export default function StockPage() {
             <div className="bg-white rounded-xl border border-slate-200 shadow-sm px-4 py-3">
               <p className="text-xs text-slate-500 mb-0.5">Stock retail value</p>
               <p className="text-xl font-bold text-slate-800">{formatKD(totals.value)} KD</p>
-              <p className="text-xs text-slate-400">{totals.inStock} products · {totals.units} units</p>
+              <p className="text-xs text-slate-400">
+                {totals.inStock} products · {totals.units} units
+                {hasCost && <> · <span className="text-emerald-600 font-medium">{formatKD(totals.value - products.reduce((s, p) => s + p.costValue, 0))} KD potential profit</span></>}
+              </p>
             </div>
             <div className="bg-white rounded-xl border border-slate-200 shadow-sm px-4 py-3">
               <p className="text-xs text-slate-500 mb-0.5">Not-moving stock value</p>
@@ -303,6 +325,8 @@ export default function StockPage() {
                     <th className="px-4 py-3">Brand</th>
                     <th className="px-4 py-3 text-right hidden sm:table-cell">Units</th>
                     <th className="px-4 py-3 text-right">Stock value</th>
+                    {hasCost && <th className="px-4 py-3 text-right hidden sm:table-cell">Cost value</th>}
+                    {hasCost && <th className="px-4 py-3 text-right">Margin</th>}
                     <th className="px-4 py-3 text-right">Sold 30d</th>
                     <th className="px-4 py-3 text-right hidden sm:table-cell">Sold 90d</th>
                     <th className="px-4 py-3 text-right hidden sm:table-cell">Revenue 90d</th>
@@ -321,6 +345,12 @@ export default function StockPage() {
                       </td>
                       <td className="px-4 py-2.5 text-right hidden sm:table-cell">{b.units}</td>
                       <td className="px-4 py-2.5 text-right font-bold text-slate-800">{formatKD(b.value)} KD</td>
+                      {hasCost && <td className="px-4 py-2.5 text-right text-slate-500 hidden sm:table-cell">{formatKD(b.cost)} KD</td>}
+                      {hasCost && (
+                        <td className={`px-4 py-2.5 text-right font-medium ${b.margin >= 40 ? 'text-emerald-600' : b.margin >= 20 ? 'text-amber-600' : 'text-rose-600'}`}>
+                          {b.margin.toFixed(0)}%
+                        </td>
+                      )}
                       <td className="px-4 py-2.5 text-right text-emerald-600 font-medium">{b.u30 || '—'}</td>
                       <td className="px-4 py-2.5 text-right text-slate-500 hidden sm:table-cell">{b.u90 || '—'}</td>
                       <td className="px-4 py-2.5 text-right hidden sm:table-cell">{b.rev90 ? `${formatKD(b.rev90)} KD` : '—'}</td>

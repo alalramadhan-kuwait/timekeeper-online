@@ -24,6 +24,7 @@ interface LsInventory {
   outlet_id: string;
   current_amount?: number;
   reorder_point?: number;
+  average_cost?: number;
 }
 interface LsSale {
   id: string;
@@ -157,6 +158,21 @@ Deno.serve(async (req: Request) => {
       if (error) return await fail(`Upsert failed: ${error.message}`);
     }
     await admin.from("lightspeed_stock").delete().lt("synced_at", syncedAt);
+
+    // cost rows go to a separate manager-only table
+    const costRows = inventory
+      .filter((i) => productById.has(i.product_id) && outletName.has(i.outlet_id))
+      .map((i) => ({
+        product_id: i.product_id,
+        outlet: outletName.get(i.outlet_id)!,
+        cost: i.average_cost != null ? Number(i.average_cost) : null,
+        synced_at: syncedAt,
+      }));
+    for (let i = 0; i < costRows.length; i += 500) {
+      const { error } = await admin.from("lightspeed_stock_cost").upsert(costRows.slice(i, i + 500));
+      if (error) return await fail(`Cost upsert failed: ${error.message}`);
+    }
+    await admin.from("lightspeed_stock_cost").delete().lt("synced_at", syncedAt);
 
     // ── sales movement: aggregate last 90 days per product ──
     let salesRows = 0;
