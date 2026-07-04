@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ExternalLink, ChevronDown, StickyNote, BellOff, UserRound, CheckCheck, ArrowRight, RotateCcw, Wallet, X } from 'lucide-react';
-import { format, startOfWeek } from 'date-fns';
+import { format, startOfWeek, startOfMonth } from 'date-fns';
 import { supabase } from '../lib/supabase';
 import { Card, Badge, Spinner } from '../components/ui';
 import { formatKDCompact, formatKD } from '../lib/format';
@@ -22,6 +22,10 @@ interface Stats {
   companyDocsExpiring: number;
   pendingLeave: number;
   lowStock: number | null; // null = Lightspeed not connected yet
+  stockValue: number | null;
+  deadStockValue: number | null;
+  overdueFollowUps: number;
+  lostSalesMonth: number; // KD value this month
 }
 
 interface POFinancials {
@@ -241,9 +245,16 @@ export default function Dashboard() {
         loadAlertActions(),
         supabase.from('purchase_orders').select('po_number, supplier, brand, status, total_cost, amount_paid, invoice_received').not('status', 'in', '("Cancelled","Returned")'),
       ]);
-      const [lowStockQ, stockCountQ] = await Promise.all([
+      const monthStart = format(startOfMonth(new Date()), 'yyyy-MM-dd');
+      const [lowStockQ, stockCountQ, stockSummaryQ, overdueFuQ, lostMonthQ] = await Promise.all([
         supabase.from('lightspeed_low_stock').select('product_id', { count: 'exact', head: true }),
         supabase.from('lightspeed_stock').select('product_id', { count: 'exact', head: true }),
+        supabase.from('lightspeed_stock_summary').select('*').single(),
+        supabase.from('cases').select('id', { count: 'exact', head: true })
+          .eq('case_type', 'Follow-up').eq('status', 'Open').eq('deleted', false)
+          .lt('promised_callback', todayStr),
+        supabase.from('cases').select('amount_kd')
+          .eq('case_type', 'Lost Sale').eq('deleted', false).gte('date_logged', monthStart),
       ]);
 
       const weekCases = (salesWeekQ.data ?? []) as any[];
@@ -276,6 +287,10 @@ export default function Dashboard() {
         companyDocsExpiring: compDocs,
         pendingLeave: (leave as any).count ?? 0,
         lowStock: (stockCountQ.count ?? 0) > 0 ? (lowStockQ.count ?? 0) : null,
+        stockValue: stockSummaryQ.data ? Number(stockSummaryQ.data.retail_value) : null,
+        deadStockValue: stockSummaryQ.data ? Number(stockSummaryQ.data.dead_value) : null,
+        overdueFollowUps: overdueFuQ.count ?? 0,
+        lostSalesMonth: ((lostMonthQ.data ?? []) as any[]).reduce((s, c) => s + Number(c.amount_kd ?? 0), 0),
       });
       // PO payment summary
       const poRows = (poData.data ?? []) as any[];
@@ -327,9 +342,17 @@ export default function Dashboard() {
   const cards: { title: string; value: string | number; link: string; accent?: string }[] = [
     { title: 'Sales today', value: `${formatKDCompact(stats.salesToday)} KD`, link: '/sales', accent: 'text-emerald-600' },
     { title: 'Sales this week', value: `${formatKDCompact(stats.salesWeek)} KD`, link: '/sales', accent: 'text-emerald-600' },
+    { title: 'Overdue follow-ups', value: stats.overdueFollowUps, link: '/follow-ups', accent: stats.overdueFollowUps ? 'text-red-600' : undefined },
+    { title: 'Lost sales this month', value: `${formatKDCompact(stats.lostSalesMonth)} KD`, link: '/sales', accent: stats.lostSalesMonth ? 'text-rose-600' : undefined },
     { title: 'Open waiting list', value: stats.openWaiting, link: '/waiting-list' },
     { title: 'Open pre-orders', value: stats.openPreOrders, link: '/waiting-list' },
     { title: 'Open purchase orders', value: stats.openPOs, link: '/purchase-orders' },
+    ...(stats.stockValue != null
+      ? [{ title: 'Stock value (Lightspeed)', value: `${formatKDCompact(stats.stockValue)} KD`, link: '/stock' }]
+      : []),
+    ...(stats.deadStockValue != null
+      ? [{ title: 'Not-moving stock', value: `${formatKDCompact(stats.deadStockValue)} KD`, link: '/stock', accent: stats.deadStockValue ? 'text-rose-600' : 'text-emerald-600' }]
+      : []),
     ...(stats.lowStock != null
       ? [{ title: 'Low stock items', value: stats.lowStock, link: '/stock', accent: stats.lowStock ? 'text-red-600' : undefined }]
       : []),
