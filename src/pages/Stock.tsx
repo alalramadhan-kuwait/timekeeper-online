@@ -257,32 +257,49 @@ export default function StockPage() {
         </div>
       ) : (
         <>
-          {/* Summary cards — marketing focus */}
+          {/* Summary cards — marketing focus, KD-based */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
             <div className="bg-white rounded-xl border border-slate-200 shadow-sm px-4 py-3">
               <p className="text-xs text-slate-500 mb-0.5">Stock retail value</p>
               <p className="text-xl font-bold text-slate-800">{formatKD(totals.value)} KD</p>
-              <p className="text-xs text-slate-400">
-                {totals.inStock} products · {totals.units} units
-                {hasCost && <> · <span className="text-emerald-600 font-medium">{formatKD(totals.value - products.reduce((s, p) => s + p.costValue, 0))} KD potential profit</span></>}
-              </p>
+              <p className="text-xs text-slate-400">{totals.inStock} products · {totals.units} units</p>
             </div>
+
+            {hasCost ? (
+              <div className="bg-white rounded-xl border border-slate-200 shadow-sm px-4 py-3">
+                <p className="text-xs text-slate-500 mb-0.5">Potential profit in stock</p>
+                <p className="text-xl font-bold text-emerald-600">
+                  {formatKD(totals.value - products.reduce((s, p) => s + p.costValue, 0))} KD
+                </p>
+                <p className="text-xs text-slate-400">
+                  {totals.value > 0 ? `${(((totals.value - products.reduce((s, p) => s + p.costValue, 0)) / totals.value) * 100).toFixed(0)}% average margin` : '—'}
+                </p>
+              </div>
+            ) : (
+              <div className="bg-white rounded-xl border border-slate-200 shadow-sm px-4 py-3">
+                <p className="text-xs text-slate-500 mb-0.5">Brands in stock</p>
+                <p className="text-xl font-bold text-slate-800">{brandStats.length}</p>
+                <p className="text-xs text-slate-400">{totals.units} units total</p>
+              </div>
+            )}
+
             <div className="bg-white rounded-xl border border-slate-200 shadow-sm px-4 py-3">
-              <p className="text-xs text-slate-500 mb-0.5">Not-moving stock value</p>
+              <p className="text-xs text-slate-500 mb-0.5">Not-moving stock</p>
               <p className={`text-xl font-bold ${totals.deadValue > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>{formatKD(totals.deadValue)} KD</p>
-              <p className="text-xs text-slate-400">no sales in 90 days — marketing target</p>
-            </div>
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm px-4 py-3">
-              <p className="text-xs text-slate-500 mb-0.5">Units sold — 30 days</p>
-              <p className="text-xl font-bold text-emerald-600">{products.reduce((s, p) => s + p.units30, 0)}</p>
-              <p className="text-xs text-slate-400">{products.reduce((s, p) => s + p.units90, 0)} in 90 days</p>
-            </div>
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm px-4 py-3">
-              <p className="text-xs text-slate-500 mb-0.5">Best mover (30d)</p>
-              <p className="text-xl font-bold text-slate-800 truncate" title={[...brandStats].sort((a, b) => b.u30 - a.u30)[0]?.brand}>
-                {[...brandStats].sort((a, b) => b.u30 - a.u30)[0]?.brand ?? '—'}
+              <p className="text-xs text-slate-400">
+                {products.filter((p) => p.movement === 'dead').length} products
+                {totals.value > 0 && <> · {((totals.deadValue / totals.value) * 100).toFixed(0)}% of stock value</>}
               </p>
-              <p className="text-xs text-slate-400">{[...brandStats].sort((a, b) => b.u30 - a.u30)[0]?.u30 ?? 0} units sold</p>
+            </div>
+
+            <div className="bg-white rounded-xl border border-slate-200 shadow-sm px-4 py-3">
+              <p className="text-xs text-slate-500 mb-0.5">Sales — last 90 days</p>
+              <p className="text-xl font-bold text-emerald-600">
+                {formatKD([...salesMap.values()].reduce((s, v) => s + Number(v.revenue_90d ?? 0), 0))} KD
+              </p>
+              <p className="text-xs text-slate-400">
+                top brand: {[...brandStats].sort((a, b) => b.rev90 - a.rev90)[0]?.brand ?? '—'} ({formatKD([...brandStats].sort((a, b) => b.rev90 - a.rev90)[0]?.rev90 ?? 0)} KD)
+              </p>
             </div>
           </div>
 
