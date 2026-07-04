@@ -45,7 +45,7 @@ export default function StockPage() {
   const [search, setSearch] = useState('');
   const [brandFilter, setBrandFilter] = useState('All');
   const [lowOnly, setLowOnly] = useState(false);
-  const [deadOnly, setDeadOnly] = useState(false);
+  const [movementFilter, setMovementFilter] = useState<Movement | null>(null);
   const [view, setView] = useState<'products' | 'brands'>('brands');
   const [salesMap, setSalesMap] = useState<Map<string, SalesAgg>>(new Map());
   const [costMap, setCostMap] = useState<Map<string, number>>(new Map()); // `${product_id}|${outlet}` → cost (managers only, enforced by RLS)
@@ -129,7 +129,7 @@ export default function StockPage() {
     let list = [...map.values()].filter((p) => p.totalQty > 0);
     if (brandFilter !== 'All') list = list.filter((p) => p.brand === brandFilter);
     if (lowOnly) list = list.filter((p) => p.low);
-    if (deadOnly) list = list.filter((p) => p.movement === 'dead');
+    if (movementFilter) list = list.filter((p) => p.movement === movementFilter);
     if (search.trim()) {
       const q = search.toLowerCase();
       list = list.filter((p) => [p.name, p.sku, p.brand, p.supplier].some((v) => (v ?? '').toLowerCase().includes(q)));
@@ -138,7 +138,7 @@ export default function StockPage() {
     list.sort((a, b) =>
       (a.brand ?? '￿').localeCompare(b.brand ?? '￿') || a.name.localeCompare(b.name));
     return list;
-  }, [rows, brandFilter, lowOnly, deadOnly, search, salesMap, costMap]);
+  }, [rows, brandFilter, lowOnly, movementFilter, search, salesMap, costMap]);
 
   const hasCost = costMap.size > 0;
 
@@ -257,51 +257,85 @@ export default function StockPage() {
         </div>
       ) : (
         <>
-          {/* Summary cards — marketing focus, KD-based */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm px-4 py-3">
-              <p className="text-xs text-slate-500 mb-0.5">Stock retail value</p>
-              <p className="text-xl font-bold text-slate-800">{formatKD(totals.value)} KD</p>
-              <p className="text-xs text-slate-400">{totals.inStock} products · {totals.units} units</p>
-            </div>
+          {/* Summary cards — 8 clickable shortcuts */}
+          {(() => {
+            const profit = totals.value - products.reduce((s, p) => s + p.costValue, 0);
+            const fast = products.filter((p) => p.movement === 'fast');
+            const slow = products.filter((p) => p.movement === 'slow');
+            const dead = products.filter((p) => p.movement === 'dead');
+            const lowCount = products.filter((p) => p.low).length;
+            const fastValue = fast.reduce((s, p) => s + p.totalQty * Number(p.price ?? 0), 0);
+            const slowValue = slow.reduce((s, p) => s + p.totalQty * Number(p.price ?? 0), 0);
+            const rev90 = [...salesMap.values()].reduce((s, v) => s + Number(v.revenue_90d ?? 0), 0);
+            const u90 = products.reduce((s, p) => s + p.units90, 0);
+            const u30 = products.reduce((s, p) => s + p.units30, 0);
+            const topRev = [...brandStats].sort((a, b) => b.rev90 - a.rev90)[0];
+            const sellThrough = u90 + totals.units > 0 ? (u90 / (u90 + totals.units)) * 100 : 0;
+            const resetFilters = () => { setLowOnly(false); setMovementFilter(null); setSearch(''); };
 
-            {hasCost ? (
-              <div className="bg-white rounded-xl border border-slate-200 shadow-sm px-4 py-3">
-                <p className="text-xs text-slate-500 mb-0.5">Potential profit in stock</p>
-                <p className="text-xl font-bold text-emerald-600">
-                  {formatKD(totals.value - products.reduce((s, p) => s + p.costValue, 0))} KD
-                </p>
-                <p className="text-xs text-slate-400">
-                  {totals.value > 0 ? `${(((totals.value - products.reduce((s, p) => s + p.costValue, 0)) / totals.value) * 100).toFixed(0)}% average margin` : '—'}
-                </p>
+            const cards: { label: string; value: string; sub: string; accent?: string; onClick: () => void }[] = [
+              {
+                label: 'Stock retail value', value: `${formatKD(totals.value)} KD`,
+                sub: `${totals.inStock} products · ${totals.units} units`,
+                onClick: () => { resetFilters(); setView('products'); },
+              },
+              hasCost
+                ? {
+                    label: 'Potential profit in stock', value: `${formatKD(profit)} KD`, accent: 'text-emerald-600',
+                    sub: totals.value > 0 ? `${((profit / totals.value) * 100).toFixed(0)}% average margin` : '—',
+                    onClick: () => { resetFilters(); setView('brands'); },
+                  }
+                : {
+                    label: 'Brands in stock', value: String(brandStats.length),
+                    sub: `${totals.units} units total`,
+                    onClick: () => { resetFilters(); setView('brands'); },
+                  },
+              {
+                label: 'Sales — last 90 days', value: `${formatKD(rev90)} KD`, accent: 'text-emerald-600',
+                sub: `top brand: ${topRev?.brand ?? '—'} (${formatKD(topRev?.rev90 ?? 0)} KD)`,
+                onClick: () => { resetFilters(); setView('brands'); },
+              },
+              {
+                label: 'Sell-through — 90 days', value: `${sellThrough.toFixed(0)}%`,
+                sub: `${u90} units sold · ${u30} in last 30d`,
+                onClick: () => { resetFilters(); setView('brands'); },
+              },
+              {
+                label: 'Fast movers', value: `${formatKD(fastValue)} KD`, accent: 'text-emerald-600',
+                sub: `${fast.length} products sold in last 30d`,
+                onClick: () => { resetFilters(); setMovementFilter('fast'); setView('products'); },
+              },
+              {
+                label: 'Slow movers', value: `${formatKD(slowValue)} KD`, accent: 'text-amber-600',
+                sub: `${slow.length} products — sold in 90d, not 30d`,
+                onClick: () => { resetFilters(); setMovementFilter('slow'); setView('products'); },
+              },
+              {
+                label: 'Not-moving stock', value: `${formatKD(totals.deadValue)} KD`,
+                accent: totals.deadValue > 0 ? 'text-rose-600' : 'text-emerald-600',
+                sub: `${dead.length} products · ${totals.value > 0 ? ((totals.deadValue / totals.value) * 100).toFixed(0) : 0}% of stock value`,
+                onClick: () => { resetFilters(); setMovementFilter('dead'); setView('products'); },
+              },
+              {
+                label: 'Low stock', value: String(lowCount), accent: lowCount > 0 ? 'text-amber-600' : undefined,
+                sub: 'at or below reorder point',
+                onClick: () => { resetFilters(); setLowOnly(true); setView('products'); },
+              },
+            ];
+
+            return (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                {cards.map((c) => (
+                  <button key={c.label} onClick={c.onClick}
+                    className="bg-white rounded-xl border border-slate-200 shadow-sm px-4 py-3 text-left hover:border-slate-400 hover:shadow-md transition-all">
+                    <p className="text-xs text-slate-500 mb-0.5">{c.label}</p>
+                    <p className={`text-xl font-bold ${c.accent ?? 'text-slate-800'}`}>{c.value}</p>
+                    <p className="text-xs text-slate-400">{c.sub}</p>
+                  </button>
+                ))}
               </div>
-            ) : (
-              <div className="bg-white rounded-xl border border-slate-200 shadow-sm px-4 py-3">
-                <p className="text-xs text-slate-500 mb-0.5">Brands in stock</p>
-                <p className="text-xl font-bold text-slate-800">{brandStats.length}</p>
-                <p className="text-xs text-slate-400">{totals.units} units total</p>
-              </div>
-            )}
-
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm px-4 py-3">
-              <p className="text-xs text-slate-500 mb-0.5">Not-moving stock</p>
-              <p className={`text-xl font-bold ${totals.deadValue > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>{formatKD(totals.deadValue)} KD</p>
-              <p className="text-xs text-slate-400">
-                {products.filter((p) => p.movement === 'dead').length} products
-                {totals.value > 0 && <> · {((totals.deadValue / totals.value) * 100).toFixed(0)}% of stock value</>}
-              </p>
-            </div>
-
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm px-4 py-3">
-              <p className="text-xs text-slate-500 mb-0.5">Sales — last 90 days</p>
-              <p className="text-xl font-bold text-emerald-600">
-                {formatKD([...salesMap.values()].reduce((s, v) => s + Number(v.revenue_90d ?? 0), 0))} KD
-              </p>
-              <p className="text-xs text-slate-400">
-                top brand: {[...brandStats].sort((a, b) => b.rev90 - a.rev90)[0]?.brand ?? '—'} ({formatKD([...brandStats].sort((a, b) => b.rev90 - a.rev90)[0]?.rev90 ?? 0)} KD)
-              </p>
-            </div>
-          </div>
+            );
+          })()}
 
           <div className="flex flex-wrap gap-2 mb-3">
             <div className="flex rounded-lg border border-slate-300 overflow-hidden text-sm">
@@ -325,10 +359,12 @@ export default function StockPage() {
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm border ${lowOnly ? 'bg-amber-500 text-white border-amber-500' : 'bg-white border-slate-300 text-slate-600 hover:bg-slate-50'}`}>
               <AlertTriangle size={13} /> Low stock
             </button>
-            <button onClick={() => setDeadOnly((v) => !v)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm border ${deadOnly ? 'bg-rose-500 text-white border-rose-500' : 'bg-white border-slate-300 text-slate-600 hover:bg-slate-50'}`}>
-              Not moving
-            </button>
+            {(['fast', 'slow', 'dead'] as const).map((m) => (
+              <button key={m} onClick={() => setMovementFilter((v) => (v === m ? null : m))}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm border ${movementFilter === m ? 'bg-slate-900 text-white border-slate-900' : 'bg-white border-slate-300 text-slate-600 hover:bg-slate-50'}`}>
+                {movementStyle[m].label}
+              </button>
+            ))}
             <div className="ml-auto text-sm text-slate-500 self-center">
               {view === 'brands' ? `${brandStats.length} brands` : `${products.length} products`}
             </div>
