@@ -42,7 +42,8 @@ function periodStart(p: Period): string {
 
 /** Total for one sale: line items when present, otherwise the case amount. */
 function caseTotal(c: SaleCase): number {
-  if (c.sale_items?.length) return c.sale_items.reduce((s, i) => s + Number(i.amount_kd) * (Number(i.quantity) || 1), 0);
+  // sale_items.amount_kd is already the line total (quantity included) — do not multiply
+  if (c.sale_items?.length) return c.sale_items.reduce((s, i) => s + Number(i.amount_kd), 0);
   return Number(c.amount_kd ?? 0);
 }
 
@@ -142,7 +143,7 @@ export default function SalesPage() {
         for (const i of c.sale_items) {
           const k = i[level] || c[level] || 'Unknown';
           const e = map.get(k) ?? { amount: 0, count: 0 };
-          e.amount += Number(i.amount_kd) * (Number(i.quantity) || 1); e.count += 1;
+          e.amount += Number(i.amount_kd); e.count += 1;
           map.set(k, e);
         }
       } else {

@@ -38,7 +38,8 @@ interface POFinancials {
 }
 
 function caseTotal(c: any): number {
-  if (c.sale_items?.length) return c.sale_items.reduce((s: number, i: any) => s + Number(i.amount_kd) * (Number(i.quantity) || 1), 0);
+  // sale_items.amount_kd is already the line total (quantity included) — do not multiply
+  if (c.sale_items?.length) return c.sale_items.reduce((s: number, i: any) => s + Number(i.amount_kd), 0);
   return Number(c.amount_kd ?? 0);
 }
 
