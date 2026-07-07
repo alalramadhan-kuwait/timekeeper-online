@@ -34,9 +34,16 @@ Deno.serve(async (req: Request) => {
   if (!allowed) return json({ error: "Unauthorized" }, 401);
 
   const apiKey = Deno.env.get("RESEND_API_KEY");
-  const to = (Deno.env.get("BRIEFING_TO") ?? "").split(",").map((s) => s.trim()).filter(Boolean);
-  if (!apiKey || to.length === 0) {
-    return json({ error: "Not configured: set RESEND_API_KEY and BRIEFING_TO secrets in Supabase" }, 400);
+  if (!apiKey) return json({ error: "Not configured: set the RESEND_API_KEY secret in Supabase (free key at resend.com)" }, 400);
+
+  // recipients come from Settings → Daily Briefing (with the BRIEFING_TO secret as optional extra)
+  const { data: settingsRow } = await admin.from("settings").select("briefing_emails").limit(1).single();
+  const to = [...new Set([
+    ...(((settingsRow?.briefing_emails ?? []) as string[])),
+    ...((Deno.env.get("BRIEFING_TO") ?? "").split(",")),
+  ].map((s) => s.trim()).filter(Boolean))];
+  if (to.length === 0) {
+    return json({ error: "No recipients: add email addresses in Settings → Daily Briefing Email" }, 400);
   }
   const from = Deno.env.get("BRIEFING_FROM") ?? "Timekeeper Online <onboarding@resend.dev>";
 
