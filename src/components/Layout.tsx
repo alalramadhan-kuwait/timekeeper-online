@@ -1,7 +1,7 @@
 import { NavLink, Outlet } from 'react-router-dom';
 import {
   LayoutDashboard, TrendingUp, Hourglass, PackageCheck, Truck, Handshake,
-  Star, Users, CalendarRange, FileWarning, LogOut, Watch, Menu, Contact, Settings, Gem, ClipboardCheck, PhoneCall, Boxes, type LucideIcon,
+  Star, Users, CalendarRange, FileWarning, LogOut, Watch, Menu, Contact, Settings, Gem, ClipboardCheck, PhoneCall, Boxes, History, type LucideIcon,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth, Role } from '../context/AuthContext';
@@ -22,32 +22,32 @@ const NAV_GROUPS: NavGroup[] = [
   {
     title: null,
     items: [
-      { to: '/', label: 'Dashboard', icon: LayoutDashboard, roles: ['admin', 'manager', 'staff', 'hr', 'viewer'] },
+      { to: '/', label: 'Dashboard', icon: LayoutDashboard, roles: ['admin', 'manager', 'staff', 'hr', 'viewer', 'sales', 'operations'] },
     ],
   },
   {
     title: 'Sales & Customers',
     items: [
-      { to: '/sales', label: 'Sales Reports', icon: TrendingUp, roles: ['admin', 'manager', 'staff', 'viewer'] },
-      { to: '/crm', label: 'CRM Customers', icon: Contact, roles: ['admin', 'manager', 'staff', 'viewer'] },
-      { to: '/follow-ups', label: 'Follow-up Board', icon: PhoneCall, roles: ['admin', 'manager', 'staff', 'viewer'] },
-      { to: '/vip', label: 'VIP Customers', icon: Star, roles: ['admin', 'manager', 'staff', 'viewer'] },
-      { to: '/waiting-list', label: 'Demand List', icon: Hourglass, roles: ['admin', 'manager', 'staff', 'viewer'] },
+      { to: '/sales', label: 'Sales Reports', icon: TrendingUp, roles: ['admin', 'manager', 'staff', 'viewer', 'sales'] },
+      { to: '/crm', label: 'CRM Customers', icon: Contact, roles: ['admin', 'manager', 'staff', 'viewer', 'sales'] },
+      { to: '/follow-ups', label: 'Follow-up Board', icon: PhoneCall, roles: ['admin', 'manager', 'staff', 'viewer', 'sales'] },
+      { to: '/vip', label: 'VIP Customers', icon: Star, roles: ['admin', 'manager', 'staff', 'viewer', 'sales'] },
+      { to: '/waiting-list', label: 'Demand List', icon: Hourglass, roles: ['admin', 'manager', 'staff', 'viewer', 'sales', 'operations'] },
     ],
   },
   {
     title: 'Purchasing & Stock',
     items: [
-      { to: '/stock', label: 'Stock (Lightspeed)', icon: Boxes, roles: ['admin', 'manager', 'staff', 'viewer'] },
-      { to: '/purchase-orders', label: 'Supplier Payments', icon: Truck, roles: ['admin', 'manager', 'staff', 'viewer'] },
-      { to: '/consignments', label: 'Consignments', icon: Handshake, roles: ['admin', 'manager', 'staff', 'viewer'] },
-      { to: '/limited-projects', label: 'Limited Projects', icon: Gem, roles: ['admin', 'manager', 'staff', 'viewer'] },
+      { to: '/stock', label: 'Stock (Lightspeed)', icon: Boxes, roles: ['admin', 'manager', 'staff', 'viewer', 'sales', 'operations'] },
+      { to: '/purchase-orders', label: 'Supplier Payments', icon: Truck, roles: ['admin', 'manager', 'staff', 'viewer', 'operations'] },
+      { to: '/consignments', label: 'Consignments', icon: Handshake, roles: ['admin', 'manager', 'staff', 'viewer', 'operations'] },
+      { to: '/limited-projects', label: 'Limited Projects', icon: Gem, roles: ['admin', 'manager', 'staff', 'viewer', 'operations'] },
     ],
   },
   {
     title: 'HR & Team',
     items: [
-      { to: '/attendance', label: 'Attendance', icon: ClipboardCheck, roles: ['admin', 'manager', 'staff', 'hr'] },
+      { to: '/attendance', label: 'Attendance', icon: ClipboardCheck, roles: ['admin', 'manager', 'staff', 'hr', 'sales', 'operations'] },
       { to: '/hr', label: 'Employees', icon: Users, roles: ['admin', 'manager', 'hr'] },
       { to: '/leave', label: 'Leave Tracking', icon: CalendarRange, roles: ['admin', 'manager', 'hr'] },
       { to: '/company-documents', label: 'Company Documents', icon: FileWarning, roles: ['admin', 'manager', 'hr', 'viewer'] },
@@ -56,6 +56,7 @@ const NAV_GROUPS: NavGroup[] = [
   {
     title: 'Admin',
     items: [
+      { to: '/history', label: 'History Log', icon: History, roles: ['admin', 'manager'] },
       { to: '/settings', label: 'Settings', icon: Settings, roles: ['admin', 'manager'] },
     ],
   },

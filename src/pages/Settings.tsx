@@ -1,10 +1,169 @@
 import { useEffect, useState } from 'react';
-import { Plus, Trash2, MapPin, Save } from 'lucide-react';
+import { Plus, Trash2, MapPin, Save, UserPlus, Mail } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Spinner, Badge } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 
 interface Brand { id: string; name: string; is_active: boolean }
+interface TeamProfile { id: string; full_name: string; role: string }
+
+const ROLES = ['admin', 'manager', 'sales', 'operations', 'staff', 'hr', 'viewer'];
+const ROLE_HINTS: Record<string, string> = {
+  admin: 'Full access + settings & users',
+  manager: 'Full access',
+  sales: 'CRM, follow-ups, VIP, demand list',
+  operations: 'Supplier payments, consignments, limited projects, stock',
+  staff: 'Sales + purchasing view (legacy)',
+  hr: 'Employees, leave, company documents',
+  viewer: 'Read-only',
+};
+
+/** Admin-only: team members and role-based access */
+function TeamAccess() {
+  const { user } = useAuth();
+  const [team, setTeam] = useState<TeamProfile[]>([]);
+  const [msg, setMsg] = useState<string | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [newEmail, setNewEmail] = useState('');
+  const [newName, setNewName] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [newRole, setNewRole] = useState('sales');
+
+  async function load() {
+    const { data } = await supabase.from('profiles').select('id, full_name, role').order('full_name');
+    setTeam((data ?? []) as TeamProfile[]);
+  }
+  useEffect(() => { load(); }, []);
+
+  async function call(body: Record<string, unknown>) {
+    setBusy(true); setMsg(null); setErr(null);
+    const { data, error } = await supabase.functions.invoke('admin-users', { body });
+    setBusy(false);
+    if (error) { setErr(error.message); return false; }
+    if (data?.error) { setErr(data.error); return false; }
+    return true;
+  }
+
+  async function createUser() {
+    if (!newEmail || !newPassword) { setErr('Email and password are required'); return; }
+    if (await call({ action: 'create', email: newEmail, password: newPassword, full_name: newName || newEmail, role: newRole })) {
+      setMsg(`User ${newEmail} created with role ${newRole}`);
+      setNewEmail(''); setNewName(''); setNewPassword('');
+      load();
+    }
+  }
+
+  async function setRole(id: string, role: string) {
+    if (await call({ action: 'set_role', user_id: id, role })) {
+      setMsg('Role updated');
+      load();
+    }
+  }
+
+  return (
+    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 lg:col-span-2">
+      <div className="flex items-center gap-2 mb-1">
+        <UserPlus size={15} className="text-slate-500" />
+        <h2 className="text-sm font-semibold text-slate-700">Team & Access</h2>
+      </div>
+      <p className="text-xs text-slate-400 mb-3">
+        Each employee signs in with their own account and sees only the sections for their role.
+      </p>
+      {msg && <div className="mb-3 px-3 py-2 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm">{msg}</div>}
+      {err && <div className="mb-3 px-3 py-2 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">{err}</div>}
+
+      <div className="overflow-x-auto mb-4">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="text-left text-xs text-slate-500 uppercase tracking-wide border-b border-slate-200">
+              <th className="px-2 py-2">Name</th>
+              <th className="px-2 py-2">Role</th>
+              <th className="px-2 py-2 hidden sm:table-cell">Access</th>
+            </tr>
+          </thead>
+          <tbody>
+            {team.map((t) => (
+              <tr key={t.id} className="border-b border-slate-100 last:border-0">
+                <td className="px-2 py-2 font-medium text-slate-700 whitespace-nowrap">
+                  {t.full_name}{t.id === user?.id && <span className="text-xs text-slate-400"> (you)</span>}
+                </td>
+                <td className="px-2 py-2">
+                  <select
+                    value={t.role}
+                    disabled={busy || t.id === user?.id}
+                    onChange={(e) => setRole(t.id, e.target.value)}
+                    className="px-2 py-1 rounded-lg border border-slate-300 text-xs bg-white capitalize disabled:opacity-50"
+                  >
+                    {ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
+                  </select>
+                </td>
+                <td className="px-2 py-2 text-xs text-slate-400 hidden sm:table-cell">{ROLE_HINTS[t.role] ?? ''}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Add employee account</h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 mb-2">
+        <input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Full name"
+          className="px-3 py-1.5 rounded-lg border border-slate-300 text-sm" />
+        <input value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="Email (username)" type="email"
+          className="px-3 py-1.5 rounded-lg border border-slate-300 text-sm" />
+        <input value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Temporary password (8+ chars)" type="text"
+          className="px-3 py-1.5 rounded-lg border border-slate-300 text-sm" />
+        <select value={newRole} onChange={(e) => setNewRole(e.target.value)}
+          className="px-3 py-1.5 rounded-lg border border-slate-300 text-sm bg-white capitalize">
+          {ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
+        </select>
+      </div>
+      <p className="text-xs text-slate-400 mb-2">{ROLE_HINTS[newRole]}</p>
+      <button onClick={createUser} disabled={busy}
+        className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-slate-900 text-white text-sm font-medium hover:bg-slate-700 disabled:opacity-60">
+        <UserPlus size={13} /> {busy ? 'Working…' : 'Create account'}
+      </button>
+    </div>
+  );
+}
+
+/** Admin-only: daily briefing configuration + test */
+function DailyBriefing() {
+  const [sending, setSending] = useState(false);
+  const [result, setResult] = useState<string | null>(null);
+
+  async function sendTest() {
+    setSending(true); setResult(null);
+    const { data, error } = await supabase.functions.invoke('daily-briefing', { body: {} });
+    setSending(false);
+    if (error) setResult(`Failed: ${error.message}`);
+    else if (data?.error) setResult(`Failed: ${data.error}`);
+    else setResult(`Sent ✓ to ${(data?.sent_to ?? []).join(', ')}`);
+  }
+
+  return (
+    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 lg:col-span-2">
+      <div className="flex items-center gap-2 mb-1">
+        <Mail size={15} className="text-slate-500" />
+        <h2 className="text-sm font-semibold text-slate-700">Daily Briefing Email</h2>
+      </div>
+      <p className="text-xs text-slate-400 mb-3">
+        Sent automatically every morning at 8:30 (Kuwait): yesterday's sales, overdue follow-ups, supplier balance,
+        stock value, not-moving stock, low stock and pending leave. Requires the <code>RESEND_API_KEY</code> and{' '}
+        <code>BRIEFING_TO</code> secrets in Supabase (Edge Functions → Secrets). Get a free key at resend.com.
+      </p>
+      {result && (
+        <div className={`mb-3 px-3 py-2 rounded-lg text-sm border ${result.startsWith('Sent') ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-red-50 border-red-200 text-red-700'}`}>
+          {result}
+        </div>
+      )}
+      <button onClick={sendTest} disabled={sending}
+        className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-slate-900 text-white text-sm font-medium hover:bg-slate-700 disabled:opacity-60">
+        <Mail size={13} /> {sending ? 'Sending…' : 'Send test briefing now'}
+      </button>
+    </div>
+  );
+}
 
 /** Editable string-list card backed by an array column on settings. */
 function ListEditor({ title, hint, items, onChange, disabled }: {
@@ -165,6 +324,9 @@ export default function SettingsPage() {
           disabled={!isAdmin}
           onChange={(v) => { setStaffRoster(v); saveSettings({ staff_roster: v }); }}
         />
+
+        {isAdmin && <TeamAccess />}
+        {isAdmin && <DailyBriefing />}
 
         {isAdmin && (
           <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 lg:col-span-2">

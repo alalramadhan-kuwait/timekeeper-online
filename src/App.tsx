@@ -7,6 +7,7 @@ import SalesPage from './pages/Sales';
 import CrmPage from './pages/Crm';
 import FollowUpsPage from './pages/FollowUps';
 import StockPage from './pages/Stock';
+import HistoryLogPage from './pages/HistoryLog';
 import SettingsPage from './pages/Settings';
 import LeavePage from './pages/Leave';
 import AttendancePage from './pages/Attendance';
@@ -41,6 +42,7 @@ function Shell() {
         <Route path="/leave" element={hrAllowed ? <LeavePage /> : <Navigate to="/" />} />
         <Route path="/limited-projects" element={<LimitedProjectsPage />} />
         <Route path="/company-documents" element={<CompanyDocsPage />} />
+        <Route path="/history" element={['admin', 'manager'].includes(role ?? '') ? <HistoryLogPage /> : <Navigate to="/" />} />
         <Route path="/settings" element={['admin', 'manager'].includes(role ?? '') ? <SettingsPage /> : <Navigate to="/" />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Route>

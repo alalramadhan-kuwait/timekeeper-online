@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { X, Upload, Trash2 as TrashIcon } from 'lucide-react';
 import { CrudModule, CrudConfig } from '../components/CrudModule';
 import { StatusBadge, Badge } from '../components/ui';
@@ -6,8 +6,8 @@ import { formatKD } from '../lib/format';
 import { expiryTier, tierClass, tierLabel } from '../lib/expiry';
 import { supabase } from '../lib/supabase';
 
-const salesRoles = (r: string | null) => ['admin', 'manager', 'staff'].includes(r ?? '');
-const purchasingRoles = (r: string | null) => ['admin', 'manager'].includes(r ?? '');
+const salesRoles = (r: string | null) => ['admin', 'manager', 'staff', 'sales'].includes(r ?? '');
+const purchasingRoles = (r: string | null) => ['admin', 'manager', 'operations'].includes(r ?? '');
 const hrRoles = (r: string | null) => ['admin', 'hr'].includes(r ?? '');
 
 const kd = (v: number | null | undefined) => (v == null ? '—' : `${formatKD(Number(v))} KD`);
@@ -111,6 +111,7 @@ const purchaseOrders: CrudConfig = {
     { key: 'supplier', label: 'Supplier' },
     { key: 'brand', label: 'Brand' },
     { key: 'po_type', label: 'Type', options: ['PO', 'Inbound'] },
+    { key: 'linked_project', label: 'Project' },
   ],
   fields: [
     { key: 'po_number', label: 'PO number', type: 'text', required: true },
@@ -126,6 +127,7 @@ const purchaseOrders: CrudConfig = {
     { key: 'expected_arrival', label: 'Expected arrival', type: 'date' },
     { key: 'invoice_received', label: 'Invoice received', type: 'checkbox' },
     { key: 'team_notified', label: 'Team notified', type: 'checkbox' },
+    { key: 'linked_project', label: 'Limited project', type: 'select', options: [] }, // options filled at runtime
     { key: 'update_date', label: 'Last update date', type: 'date' },
     { key: 'notes', label: 'Notes', type: 'textarea' },
   ],
@@ -141,10 +143,26 @@ const purchaseOrders: CrudConfig = {
     { key: 'shipment_status', label: 'Shipment' },
     { key: 'expected_arrival', label: 'Expected', sortable: true, render: (r) => <ExpiryCell date={r.expected_arrival} /> },
     { key: 'invoice_received', label: 'Invoice', render: (r) => (r.invoice_received ? '✓' : <span className="text-amber-600">Pending</span>) },
+    { key: 'linked_project', label: 'Project', sortable: true, render: (r) => r.linked_project
+      ? <Badge className="bg-violet-100 text-violet-700 border-violet-200">{r.linked_project}</Badge>
+      : <span className="text-slate-300 text-xs">—</span> },
   ],
   rowClickToEdit: true,
 };
-export const PurchaseOrdersPage = () => <CrudModule config={purchaseOrders} />;
+
+export function PurchaseOrdersPage() {
+  const [projectNames, setProjectNames] = useState<string[]>([]);
+  useEffect(() => {
+    supabase.from('limited_projects').select('project_name').order('project_name')
+      .then(({ data }) => setProjectNames((data ?? []).map((p: any) => p.project_name).filter(Boolean)));
+  }, []);
+  const config = useMemo<CrudConfig>(() => ({
+    ...purchaseOrders,
+    fields: purchaseOrders.fields.map((f) =>
+      f.key === 'linked_project' ? { ...f, options: projectNames } : f),
+  }), [projectNames]);
+  return <CrudModule config={config} />;
+}
 
 /* ---------------- Consignments ---------------- */
 const consignments: CrudConfig = {
