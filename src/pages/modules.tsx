@@ -400,9 +400,31 @@ const lpBaseConfig: CrudConfig = {
   columns: [],
 };
 
+interface ProjectPO {
+  po_number: string; supplier: string | null; status: string;
+  total_cost: number; amount_paid: number; linked_project: string;
+}
+const PO_CLOSED = ['Received', 'Cancelled', 'Returned'];
+
 export function LimitedProjectsPage() {
   const [photoModal, setPhotoModal] = useState<PhotoModalRecord | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [projectPOs, setProjectPOs] = useState<Map<string, ProjectPO[]>>(new Map());
+  const [poDetail, setPODetail] = useState<{ project: string; pos: ProjectPO[] } | null>(null);
+
+  useEffect(() => {
+    supabase.from('purchase_orders')
+      .select('po_number, supplier, status, total_cost, amount_paid, linked_project')
+      .not('linked_project', 'is', null)
+      .then(({ data }) => {
+        const map = new Map<string, ProjectPO[]>();
+        for (const p of (data ?? []) as ProjectPO[]) {
+          if (!map.has(p.linked_project)) map.set(p.linked_project, []);
+          map.get(p.linked_project)!.push(p);
+        }
+        setProjectPOs(map);
+      });
+  }, [refreshKey]);
 
   const config = useMemo<CrudConfig>(() => ({
     ...lpBaseConfig,
@@ -428,10 +450,39 @@ export function LimitedProjectsPage() {
       { key: 'our_allocation', label: 'Allocation' },
       { key: 'price_kd', label: 'Price', render: (r) => kd(r.price_kd) },
       { key: 'status', label: 'Status' },
+      {
+        key: 'po_summary', label: 'POs / Payments', sortable: true,
+        sortValue: (r) => (projectPOs.get(r.project_name) ?? []).reduce((s, p) => s + Number(p.total_cost ?? 0) - Number(p.amount_paid ?? 0), 0),
+        render: (r) => {
+          const pos = projectPOs.get(r.project_name) ?? [];
+          if (!pos.length) return <span className="text-slate-300 text-xs">—</span>;
+          const open = pos.filter((p) => !PO_CLOSED.includes(p.status)).length;
+          const total = pos.reduce((s, p) => s + Number(p.total_cost ?? 0), 0);
+          const paid = pos.reduce((s, p) => s + Number(p.amount_paid ?? 0), 0);
+          return (
+            <button
+              onClick={(e) => { e.stopPropagation(); setPODetail({ project: r.project_name, pos }); }}
+              className="text-left hover:opacity-75"
+              title="Click for PO details"
+            >
+              <div className="flex items-center gap-1.5 whitespace-nowrap">
+                <Badge className={open > 0 ? 'bg-blue-100 text-blue-700 border-blue-200' : 'bg-emerald-100 text-emerald-700 border-emerald-200'}>
+                  {pos.length} PO{pos.length !== 1 ? 's' : ''}{open > 0 ? ` · ${open} open` : ''}
+                </Badge>
+              </div>
+              <div className="text-xs whitespace-nowrap mt-0.5">
+                <span className="text-emerald-600 font-medium">{kd(paid)}</span>
+                <span className="text-slate-400"> / {kd(total)} KD</span>
+                {total - paid > 0 && <span className="text-red-600 font-medium"> · {kd(total - paid)} due</span>}
+              </div>
+            </button>
+          );
+        },
+      },
       { key: 'launch_date', label: 'Launch', render: (r) => <ExpiryCell date={r.launch_date} /> },
       { key: 'outlet', label: 'Outlet' },
     ],
-  }), []);
+  }), [projectPOs]);
 
   return (
     <>
@@ -442,6 +493,48 @@ export function LimitedProjectsPage() {
           onClose={() => setPhotoModal(null)}
           onPhotoChanged={() => { setRefreshKey((k) => k + 1); setPhotoModal(null); }}
         />
+      )}
+      {poDetail && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => setPODetail(null)}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[80vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-5 py-3 border-b border-slate-200 shrink-0">
+              <div>
+                <h3 className="font-bold text-slate-900 text-sm">{poDetail.project}</h3>
+                <p className="text-xs text-slate-500">{poDetail.pos.length} linked purchase order{poDetail.pos.length !== 1 ? 's' : ''}</p>
+              </div>
+              <button onClick={() => setPODetail(null)} className="text-slate-400 hover:text-slate-700"><X size={18} /></button>
+            </div>
+            <div className="overflow-auto divide-y divide-slate-100">
+              {poDetail.pos.map((p, i) => {
+                const bal = Number(p.total_cost ?? 0) - Number(p.amount_paid ?? 0);
+                const isOpen = !PO_CLOSED.includes(p.status);
+                return (
+                  <div key={i} className="px-5 py-3">
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                      <span className="font-semibold text-slate-800 text-sm">{p.po_number}</span>
+                      <StatusBadge value={p.status} />
+                    </div>
+                    {p.supplier && <p className="text-xs text-slate-500 mb-1">{p.supplier}</p>}
+                    <div className="flex items-center gap-4 text-xs whitespace-nowrap">
+                      <span className="text-slate-500">Total <b className="text-slate-800">{kd(p.total_cost)}</b></span>
+                      <span className="text-slate-500">Paid <b className="text-emerald-600">{kd(p.amount_paid)}</b></span>
+                      <span className="text-slate-500">Balance <b className={bal > 0 ? 'text-red-600' : 'text-slate-400'}>{kd(bal)}</b></span>
+                      {isOpen && <Badge className="bg-blue-100 text-blue-700 border-blue-200">Open</Badge>}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="px-5 py-3 border-t border-slate-100 bg-slate-50 shrink-0 flex flex-wrap justify-between items-center gap-2 text-xs">
+              <div className="text-slate-500 whitespace-nowrap">
+                Total <b className="text-slate-800">{kd(poDetail.pos.reduce((s, p) => s + Number(p.total_cost ?? 0), 0))}</b>
+                {' · '}Paid <b className="text-emerald-700">{kd(poDetail.pos.reduce((s, p) => s + Number(p.amount_paid ?? 0), 0))}</b>
+                {' · '}Due <b className="text-red-600">{kd(poDetail.pos.reduce((s, p) => s + Number(p.total_cost ?? 0) - Number(p.amount_paid ?? 0), 0))}</b> KD
+              </div>
+              <a href="#/purchase-orders" onClick={() => setPODetail(null)} className="text-blue-600 hover:underline">Open Supplier Payments →</a>
+            </div>
+          </div>
+        </div>
       )}
     </>
   );
