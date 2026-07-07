@@ -2,8 +2,14 @@
 // Callers: pg_cron (x-sync-key header) or the app's "Sync now" button (user JWT, admin/manager only).
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
+const CORS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-sync-key",
+  "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
+};
+
 const json = (body: unknown, status = 200) =>
-  new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
+  new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json", ...CORS } });
 
 interface LsProduct {
   id: string;
@@ -57,6 +63,7 @@ async function lsPageAll<T>(base: string, path: string, token: string): Promise<
 }
 
 Deno.serve(async (req: Request) => {
+  if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
   const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 
   const { data: auth } = await admin.from("lightspeed_auth").select("*").eq("id", 1).single();
