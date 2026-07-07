@@ -16,12 +16,14 @@ Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
   const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 
-  // caller must be an admin
+  // caller must be admin or manager; managers cannot touch admin accounts or grant admin
   const jwt = (req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, "");
   const { data: userData } = await admin.auth.getUser(jwt);
   if (!userData?.user) return json({ error: "Unauthorized" }, 401);
   const { data: prof } = await admin.from("profiles").select("role").eq("id", userData.user.id).single();
-  if (prof?.role !== "admin") return json({ error: "Admins only" }, 403);
+  const callerRole = prof?.role ?? "";
+  if (!["admin", "manager"].includes(callerRole)) return json({ error: "Admins and managers only" }, 403);
+  const isManager = callerRole === "manager";
 
   let body: { action?: string; email?: string; password?: string; full_name?: string; role?: string; user_id?: string };
   try { body = await req.json(); } catch { return json({ error: "Invalid JSON body" }, 400); }
@@ -29,6 +31,7 @@ Deno.serve(async (req: Request) => {
   if (body.action === "create") {
     if (!body.email || !body.password || !body.role) return json({ error: "email, password and role are required" }, 400);
     if (!VALID_ROLES.includes(body.role)) return json({ error: "Invalid role" }, 400);
+    if (isManager && body.role === "admin") return json({ error: "Only admins can create admin accounts" }, 403);
     if (body.password.length < 8) return json({ error: "Password must be at least 8 characters" }, 400);
     const { data, error } = await admin.auth.admin.createUser({
       email: body.email,
@@ -46,6 +49,11 @@ Deno.serve(async (req: Request) => {
     if (!body.user_id || !body.role) return json({ error: "user_id and role are required" }, 400);
     if (!VALID_ROLES.includes(body.role)) return json({ error: "Invalid role" }, 400);
     if (body.user_id === userData.user.id) return json({ error: "You cannot change your own role" }, 400);
+    if (isManager) {
+      if (body.role === "admin") return json({ error: "Only admins can grant the admin role" }, 403);
+      const { data: target } = await admin.from("profiles").select("role").eq("id", body.user_id).single();
+      if (target?.role === "admin") return json({ error: "Only admins can change an admin's role" }, 403);
+    }
     const { error } = await admin.from("profiles").update({ role: body.role }).eq("id", body.user_id);
     if (error) return json({ error: error.message }, 400);
     return json({ ok: true });

@@ -18,9 +18,11 @@ const ROLE_HINTS: Record<string, string> = {
   viewer: 'Read-only',
 };
 
-/** Admin-only: team members and role-based access */
+/** Admin & manager: team members and role-based access (managers cannot touch admin accounts) */
 function TeamAccess() {
-  const { user } = useAuth();
+  const { user, role } = useAuth();
+  const isManager = role === 'manager';
+  const assignableRoles = isManager ? ROLES.filter((r) => r !== 'admin') : ROLES;
   const [team, setTeam] = useState<TeamProfile[]>([]);
   const [msg, setMsg] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
@@ -29,6 +31,7 @@ function TeamAccess() {
   const [newName, setNewName] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [newRole, setNewRole] = useState('sales');
+  const lockedRow = (t: TeamProfile) => t.id === user?.id || (isManager && t.role === 'admin');
 
   async function load() {
     const { data } = await supabase.from('profiles').select('id, full_name, role').order('full_name');
@@ -91,11 +94,12 @@ function TeamAccess() {
                 <td className="px-2 py-2">
                   <select
                     value={t.role}
-                    disabled={busy || t.id === user?.id}
+                    disabled={busy || lockedRow(t)}
                     onChange={(e) => setRole(t.id, e.target.value)}
+                    title={isManager && t.role === 'admin' ? 'Only admins can change admin accounts' : undefined}
                     className="px-2 py-1 rounded-lg border border-slate-300 text-xs bg-white capitalize disabled:opacity-50"
                   >
-                    {ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
+                    {(t.role === 'admin' ? ROLES : assignableRoles).map((r) => <option key={r} value={r}>{r}</option>)}
                   </select>
                 </td>
                 <td className="px-2 py-2 text-xs text-slate-400 hidden sm:table-cell">{ROLE_HINTS[t.role] ?? ''}</td>
@@ -115,7 +119,7 @@ function TeamAccess() {
           className="px-3 py-1.5 rounded-lg border border-slate-300 text-sm" />
         <select value={newRole} onChange={(e) => setNewRole(e.target.value)}
           className="px-3 py-1.5 rounded-lg border border-slate-300 text-sm bg-white capitalize">
-          {ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
+          {assignableRoles.map((r) => <option key={r} value={r}>{r}</option>)}
         </select>
       </div>
       <p className="text-xs text-slate-400 mb-2">{ROLE_HINTS[newRole]}</p>
@@ -385,7 +389,7 @@ export default function SettingsPage() {
           onChange={(v) => { setStaffRoster(v); saveSettings({ staff_roster: v }); }}
         />
 
-        {isAdmin && <TeamAccess />}
+        {['admin', 'manager'].includes(role ?? '') && <TeamAccess />}
         {isAdmin && <DailyBriefing />}
 
         {isAdmin && (
