@@ -59,5 +59,17 @@ Deno.serve(async (req: Request) => {
     return json({ ok: true });
   }
 
+  if (body.action === "set_password") {
+    if (!body.user_id || !body.password) return json({ error: "user_id and password are required" }, 400);
+    if (body.password.length < 8) return json({ error: "Password must be at least 8 characters" }, 400);
+    if (isManager) {
+      const { data: target } = await admin.from("profiles").select("role").eq("id", body.user_id).single();
+      if (target?.role === "admin") return json({ error: "Only admins can reset an admin's password" }, 403);
+    }
+    const { error } = await admin.auth.admin.updateUserById(body.user_id, { password: body.password });
+    if (error) return json({ error: error.message }, 400);
+    return json({ ok: true });
+  }
+
   return json({ error: "Unknown action" }, 400);
 });

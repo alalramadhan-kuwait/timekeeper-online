@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { Plus, Trash2, MapPin, Save, UserPlus, Mail } from 'lucide-react';
+import { Fragment, useEffect, useState } from 'react';
+import { Plus, Trash2, MapPin, Save, UserPlus, Mail, KeyRound, X } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Spinner, Badge } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
@@ -31,7 +31,10 @@ function TeamAccess() {
   const [newName, setNewName] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [newRole, setNewRole] = useState('sales');
+  const [pwFor, setPwFor] = useState<string | null>(null);
+  const [pwValue, setPwValue] = useState('');
   const lockedRow = (t: TeamProfile) => t.id === user?.id || (isManager && t.role === 'admin');
+  const canResetPw = (t: TeamProfile) => !(isManager && t.role === 'admin');
 
   async function load() {
     const { data } = await supabase.from('profiles').select('id, full_name, role').order('full_name');
@@ -64,6 +67,15 @@ function TeamAccess() {
     }
   }
 
+  async function resetPassword() {
+    if (!pwFor) return;
+    if (pwValue.length < 8) { setErr('Password must be at least 8 characters'); return; }
+    if (await call({ action: 'set_password', user_id: pwFor, password: pwValue })) {
+      setMsg('Password changed — share it with the employee securely');
+      setPwFor(null); setPwValue('');
+    }
+  }
+
   return (
     <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 lg:col-span-2">
       <div className="flex items-center gap-2 mb-1">
@@ -83,11 +95,13 @@ function TeamAccess() {
               <th className="px-2 py-2">Name</th>
               <th className="px-2 py-2">Role</th>
               <th className="px-2 py-2 hidden sm:table-cell">Access</th>
+              <th className="px-2 py-2 w-24" />
             </tr>
           </thead>
           <tbody>
             {team.map((t) => (
-              <tr key={t.id} className="border-b border-slate-100 last:border-0">
+              <Fragment key={t.id}>
+              <tr className="border-b border-slate-100 last:border-0">
                 <td className="px-2 py-2 font-medium text-slate-700 whitespace-nowrap">
                   {t.full_name}{t.id === user?.id && <span className="text-xs text-slate-400"> (you)</span>}
                 </td>
@@ -103,7 +117,44 @@ function TeamAccess() {
                   </select>
                 </td>
                 <td className="px-2 py-2 text-xs text-slate-400 hidden sm:table-cell">{ROLE_HINTS[t.role] ?? ''}</td>
+                <td className="px-2 py-2 text-right">
+                  {canResetPw(t) && (
+                    <button
+                      onClick={() => { setPwFor(pwFor === t.id ? null : t.id); setPwValue(''); }}
+                      className="flex items-center gap-1 text-xs text-slate-400 hover:text-blue-600 ml-auto"
+                      title="Change password"
+                    >
+                      <KeyRound size={13} /> <span className="hidden sm:inline">Password</span>
+                    </button>
+                  )}
+                </td>
               </tr>
+              {pwFor === t.id && (
+                <tr className="border-b border-slate-100 bg-slate-50">
+                  <td colSpan={4} className="px-2 py-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-xs text-slate-500">New password for <b>{t.full_name}</b>:</span>
+                      <input
+                        value={pwValue}
+                        onChange={(e) => setPwValue(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && resetPassword()}
+                        placeholder="At least 8 characters"
+                        type="text"
+                        autoFocus
+                        className="px-3 py-1.5 rounded-lg border border-slate-300 text-sm w-56"
+                      />
+                      <button onClick={resetPassword} disabled={busy}
+                        className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-slate-900 text-white text-xs font-medium disabled:opacity-60">
+                        <KeyRound size={12} /> {busy ? 'Saving…' : 'Set password'}
+                      </button>
+                      <button onClick={() => { setPwFor(null); setPwValue(''); }} className="text-slate-400 hover:text-slate-600">
+                        <X size={14} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              )}
+              </Fragment>
             ))}
           </tbody>
         </table>
