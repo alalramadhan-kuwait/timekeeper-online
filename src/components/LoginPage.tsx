@@ -13,7 +13,9 @@ export default function LoginPage() {
     e.preventDefault();
     setBusy(true);
     setError(null);
-    const { error } = await signIn(email, password);
+    // simple usernames: "ahmad" signs in as ahmad@time-keeper.com
+    const identifier = email.includes('@') ? email.trim() : `${email.trim().toLowerCase()}@time-keeper.com`;
+    const { error } = await signIn(identifier, password);
     if (error) setError(error);
     setBusy(false);
   }
@@ -28,9 +30,9 @@ export default function LoginPage() {
         <p className="text-sm text-slate-500 mb-6">Operations Control System</p>
         {error && <div className="mb-4 px-3 py-2 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">{error}</div>}
         <label className="block text-sm mb-3">
-          <span className="text-slate-600">Email</span>
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required
-            className="mt-1 w-full px-3 py-2 rounded-lg border border-slate-300" />
+          <span className="text-slate-600">Username or email</span>
+          <input type="text" autoCapitalize="none" autoCorrect="off" value={email} onChange={(e) => setEmail(e.target.value)} required
+            placeholder="e.g. ahmad" className="mt-1 w-full px-3 py-2 rounded-lg border border-slate-300" />
         </label>
         <label className="block text-sm mb-5">
           <span className="text-slate-600">Password</span>

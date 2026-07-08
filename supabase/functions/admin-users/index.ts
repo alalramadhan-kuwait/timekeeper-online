@@ -32,7 +32,7 @@ Deno.serve(async (req: Request) => {
     if (!body.email || !body.password || !body.role) return json({ error: "email, password and role are required" }, 400);
     if (!VALID_ROLES.includes(body.role)) return json({ error: "Invalid role" }, 400);
     if (isManager && body.role === "admin") return json({ error: "Only admins can create admin accounts" }, 403);
-    if (body.password.length < 8) return json({ error: "Password must be at least 8 characters" }, 400);
+    if (body.password.length < 6) return json({ error: "Password must be at least 6 characters" }, 400);
     const { data, error } = await admin.auth.admin.createUser({
       email: body.email,
       password: body.password,
@@ -61,7 +61,7 @@ Deno.serve(async (req: Request) => {
 
   if (body.action === "set_password") {
     if (!body.user_id || !body.password) return json({ error: "user_id and password are required" }, 400);
-    if (body.password.length < 8) return json({ error: "Password must be at least 8 characters" }, 400);
+    if (body.password.length < 6) return json({ error: "Password must be at least 6 characters" }, 400);
     if (isManager) {
       const { data: target } = await admin.from("profiles").select("role").eq("id", body.user_id).single();
       if (target?.role === "admin") return json({ error: "Only admins can reset an admin's password" }, 403);

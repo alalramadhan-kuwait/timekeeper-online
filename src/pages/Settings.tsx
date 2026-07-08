@@ -52,9 +52,11 @@ function TeamAccess() {
   }
 
   async function createUser() {
-    if (!newEmail || !newPassword) { setErr('Email and password are required'); return; }
-    if (await call({ action: 'create', email: newEmail, password: newPassword, full_name: newName || newEmail, role: newRole })) {
-      setMsg(`User ${newEmail} created with role ${newRole}`);
+    if (!newEmail || !newPassword) { setErr('Username and password are required'); return; }
+    // simple usernames become name@time-keeper.com behind the scenes
+    const email = newEmail.includes('@') ? newEmail.trim() : `${newEmail.trim().toLowerCase()}@time-keeper.com`;
+    if (await call({ action: 'create', email, password: newPassword, full_name: newName || newEmail, role: newRole })) {
+      setMsg(`Account created — they sign in with "${newEmail.includes('@') ? newEmail : newEmail.trim().toLowerCase()}" and the password you set`);
       setNewEmail(''); setNewName(''); setNewPassword('');
       load();
     }
@@ -69,7 +71,7 @@ function TeamAccess() {
 
   async function resetPassword() {
     if (!pwFor) return;
-    if (pwValue.length < 8) { setErr('Password must be at least 8 characters'); return; }
+    if (pwValue.length < 6) { setErr('Password must be at least 6 characters'); return; }
     if (await call({ action: 'set_password', user_id: pwFor, password: pwValue })) {
       setMsg('Password changed — share it with the employee securely');
       setPwFor(null); setPwValue('');
@@ -138,7 +140,7 @@ function TeamAccess() {
                         value={pwValue}
                         onChange={(e) => setPwValue(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && resetPassword()}
-                        placeholder="At least 8 characters"
+                        placeholder="At least 6 characters"
                         type="text"
                         autoFocus
                         className="px-3 py-1.5 rounded-lg border border-slate-300 text-sm w-56"
@@ -164,9 +166,9 @@ function TeamAccess() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 mb-2">
         <input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Full name"
           className="px-3 py-1.5 rounded-lg border border-slate-300 text-sm" />
-        <input value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="Email (username)" type="email"
+        <input value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="Username (e.g. ahmad) or email" type="text"
           className="px-3 py-1.5 rounded-lg border border-slate-300 text-sm" />
-        <input value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Temporary password (8+ chars)" type="text"
+        <input value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Temporary password (6+ chars)" type="text"
           className="px-3 py-1.5 rounded-lg border border-slate-300 text-sm" />
         <select value={newRole} onChange={(e) => setNewRole(e.target.value)}
           className="px-3 py-1.5 rounded-lg border border-slate-300 text-sm bg-white capitalize">
