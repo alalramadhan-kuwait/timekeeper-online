@@ -1,11 +1,15 @@
 import { Fragment, useEffect, useState } from 'react';
-import { Plus, Trash2, MapPin, Save, UserPlus, Mail, KeyRound, X } from 'lucide-react';
+import { Plus, Trash2, MapPin, Save, UserPlus, Mail, KeyRound, X, Pencil, Check } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Spinner, Badge } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 
 interface Brand { id: string; name: string; is_active: boolean }
-interface TeamProfile { id: string; full_name: string; role: string }
+interface TeamProfile { id: string; full_name: string; role: string; email?: string }
+
+/** Show "ahmad" for ahmad@time-keeper.com, otherwise the full email. */
+const usernameOf = (email?: string) =>
+  email ? (email.toLowerCase().endsWith('@time-keeper.com') ? email.split('@')[0] : email) : '—';
 
 const ROLES = ['admin', 'manager', 'sales', 'operations', 'staff', 'hr', 'viewer'];
 const ROLE_HINTS: Record<string, string> = {
@@ -33,12 +37,24 @@ function TeamAccess() {
   const [newRole, setNewRole] = useState('sales');
   const [pwFor, setPwFor] = useState<string | null>(null);
   const [pwValue, setPwValue] = useState('');
-  const lockedRow = (t: TeamProfile) => t.id === user?.id || (isManager && t.role === 'admin');
-  const canResetPw = (t: TeamProfile) => !(isManager && t.role === 'admin');
+  const [editFor, setEditFor] = useState<string | null>(null);
+  const [editName, setEditName] = useState('');
+  const [editUsername, setEditUsername] = useState('');
+  // managers may not modify admin accounts; nobody may modify their own via this panel
+  const protectedRow = (t: TeamProfile) => isManager && t.role === 'admin';
+  const lockedRow = (t: TeamProfile) => t.id === user?.id || protectedRow(t);
 
   async function load() {
-    const { data } = await supabase.from('profiles').select('id, full_name, role').order('full_name');
-    setTeam((data ?? []) as TeamProfile[]);
+    // the edge function returns login emails; fall back to profiles if it's unavailable
+    setBusy(true);
+    const { data, error } = await supabase.functions.invoke('admin-users', { body: { action: 'list' } });
+    setBusy(false);
+    if (!error && data?.team) {
+      setTeam((data.team as TeamProfile[]).sort((a, b) => a.full_name.localeCompare(b.full_name)));
+    } else {
+      const { data: profs } = await supabase.from('profiles').select('id, full_name, role').order('full_name');
+      setTeam((profs ?? []) as TeamProfile[]);
+    }
   }
   useEffect(() => { load(); }, []);
 
@@ -49,6 +65,35 @@ function TeamAccess() {
     if (error) { setErr(error.message); return false; }
     if (data?.error) { setErr(data.error); return false; }
     return true;
+  }
+
+  function startEdit(t: TeamProfile) {
+    setEditFor(editFor === t.id ? null : t.id);
+    setPwFor(null);
+    setEditName(t.full_name);
+    setEditUsername(usernameOf(t.email));
+  }
+
+  async function saveEdit(t: TeamProfile) {
+    const body: Record<string, unknown> = { action: 'update', user_id: t.id, full_name: editName.trim() || t.full_name };
+    const typed = editUsername.trim();
+    const current = usernameOf(t.email);
+    if (typed && typed !== current) {
+      body.email = typed.includes('@') ? typed : `${typed.toLowerCase()}@time-keeper.com`;
+    }
+    if (await call(body)) {
+      setMsg('Account updated');
+      setEditFor(null);
+      load();
+    }
+  }
+
+  async function deleteUser(t: TeamProfile) {
+    if (!window.confirm(`Delete the account for ${t.full_name} (${usernameOf(t.email)})? They will no longer be able to sign in. This cannot be undone.`)) return;
+    if (await call({ action: 'delete', user_id: t.id })) {
+      setMsg(`Account for ${t.full_name} deleted`);
+      load();
+    }
   }
 
   async function createUser() {
@@ -95,9 +140,10 @@ function TeamAccess() {
           <thead>
             <tr className="text-left text-xs text-slate-500 uppercase tracking-wide border-b border-slate-200">
               <th className="px-2 py-2">Name</th>
+              <th className="px-2 py-2">Username</th>
               <th className="px-2 py-2">Role</th>
-              <th className="px-2 py-2 hidden sm:table-cell">Access</th>
-              <th className="px-2 py-2 w-24" />
+              <th className="px-2 py-2 hidden lg:table-cell">Access</th>
+              <th className="px-2 py-2 w-px whitespace-nowrap text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -107,33 +153,59 @@ function TeamAccess() {
                 <td className="px-2 py-2 font-medium text-slate-700 whitespace-nowrap">
                   {t.full_name}{t.id === user?.id && <span className="text-xs text-slate-400"> (you)</span>}
                 </td>
+                <td className="px-2 py-2 text-slate-500 whitespace-nowrap font-mono text-xs">{usernameOf(t.email)}</td>
                 <td className="px-2 py-2">
                   <select
                     value={t.role}
                     disabled={busy || lockedRow(t)}
                     onChange={(e) => setRole(t.id, e.target.value)}
-                    title={isManager && t.role === 'admin' ? 'Only admins can change admin accounts' : undefined}
+                    title={protectedRow(t) ? 'Only admins can change admin accounts' : undefined}
                     className="px-2 py-1 rounded-lg border border-slate-300 text-xs bg-white capitalize disabled:opacity-50"
                   >
                     {(t.role === 'admin' ? ROLES : assignableRoles).map((r) => <option key={r} value={r}>{r}</option>)}
                   </select>
                 </td>
-                <td className="px-2 py-2 text-xs text-slate-400 hidden sm:table-cell">{ROLE_HINTS[t.role] ?? ''}</td>
-                <td className="px-2 py-2 text-right">
-                  {canResetPw(t) && (
-                    <button
-                      onClick={() => { setPwFor(pwFor === t.id ? null : t.id); setPwValue(''); }}
-                      className="flex items-center gap-1 text-xs text-slate-400 hover:text-blue-600 ml-auto"
-                      title="Change password"
-                    >
-                      <KeyRound size={13} /> <span className="hidden sm:inline">Password</span>
-                    </button>
+                <td className="px-2 py-2 text-xs text-slate-400 hidden lg:table-cell">{ROLE_HINTS[t.role] ?? ''}</td>
+                <td className="px-2 py-2 text-right whitespace-nowrap">
+                  {!protectedRow(t) && (
+                    <div className="flex items-center gap-2 justify-end">
+                      <button onClick={() => startEdit(t)} className="text-slate-400 hover:text-blue-600" title="Edit name / username">
+                        <Pencil size={14} />
+                      </button>
+                      <button onClick={() => { setPwFor(pwFor === t.id ? null : t.id); setEditFor(null); setPwValue(''); }}
+                        className="text-slate-400 hover:text-blue-600" title="Change password">
+                        <KeyRound size={14} />
+                      </button>
+                      {t.id !== user?.id && (
+                        <button onClick={() => deleteUser(t)} className="text-slate-400 hover:text-red-600" title="Delete account">
+                          <Trash2 size={14} />
+                        </button>
+                      )}
+                    </div>
                   )}
                 </td>
               </tr>
+              {editFor === t.id && (
+                <tr className="border-b border-slate-100 bg-slate-50">
+                  <td colSpan={5} className="px-2 py-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-xs text-slate-500">Edit:</span>
+                      <input value={editName} onChange={(e) => setEditName(e.target.value)} placeholder="Full name"
+                        className="px-3 py-1.5 rounded-lg border border-slate-300 text-sm w-40" />
+                      <input value={editUsername} onChange={(e) => setEditUsername(e.target.value)} placeholder="Username"
+                        className="px-3 py-1.5 rounded-lg border border-slate-300 text-sm w-40" />
+                      <button onClick={() => saveEdit(t)} disabled={busy}
+                        className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-slate-900 text-white text-xs font-medium disabled:opacity-60">
+                        <Check size={12} /> {busy ? 'Saving…' : 'Save'}
+                      </button>
+                      <button onClick={() => setEditFor(null)} className="text-slate-400 hover:text-slate-600"><X size={14} /></button>
+                    </div>
+                  </td>
+                </tr>
+              )}
               {pwFor === t.id && (
                 <tr className="border-b border-slate-100 bg-slate-50">
-                  <td colSpan={4} className="px-2 py-2">
+                  <td colSpan={5} className="px-2 py-2">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="text-xs text-slate-500">New password for <b>{t.full_name}</b>:</span>
                       <input

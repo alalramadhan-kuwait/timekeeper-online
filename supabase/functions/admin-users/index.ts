@@ -1,4 +1,5 @@
-// Admin-only user management: create users and change roles.
+// Admin/manager user management: list, create, edit, delete accounts, change roles & passwords.
+// Managers cannot create/modify/delete admin accounts or grant the admin role.
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
 const CORS = {
@@ -27,6 +28,20 @@ Deno.serve(async (req: Request) => {
 
   let body: { action?: string; email?: string; password?: string; full_name?: string; role?: string; user_id?: string };
   try { body = await req.json(); } catch { return json({ error: "Invalid JSON body" }, 400); }
+
+  if (body.action === "list") {
+    const { data: usersData, error } = await admin.auth.admin.listUsers({ page: 1, perPage: 200 });
+    if (error) return json({ error: error.message }, 400);
+    const { data: profiles } = await admin.from("profiles").select("id, full_name, role");
+    const profById = new Map((profiles ?? []).map((p: { id: string; full_name: string; role: string }) => [p.id, p]));
+    const team = usersData.users.map((u) => ({
+      id: u.id,
+      email: u.email ?? "",
+      full_name: profById.get(u.id)?.full_name ?? u.email ?? "Unknown",
+      role: profById.get(u.id)?.role ?? "viewer",
+    }));
+    return json({ ok: true, team });
+  }
 
   if (body.action === "create") {
     if (!body.email || !body.password || !body.role) return json({ error: "email, password and role are required" }, 400);
@@ -67,6 +82,37 @@ Deno.serve(async (req: Request) => {
       if (target?.role === "admin") return json({ error: "Only admins can reset an admin's password" }, 403);
     }
     const { error } = await admin.auth.admin.updateUserById(body.user_id, { password: body.password });
+    if (error) return json({ error: error.message }, 400);
+    return json({ ok: true });
+  }
+
+  if (body.action === "update") {
+    if (!body.user_id) return json({ error: "user_id is required" }, 400);
+    if (isManager) {
+      const { data: target } = await admin.from("profiles").select("role").eq("id", body.user_id).single();
+      if (target?.role === "admin") return json({ error: "Only admins can edit an admin account" }, 403);
+    }
+    // update login email/username if provided
+    if (body.email) {
+      const { error } = await admin.auth.admin.updateUserById(body.user_id, { email: body.email });
+      if (error) return json({ error: error.message }, 400);
+    }
+    // update display name if provided
+    if (body.full_name != null) {
+      const { error } = await admin.from("profiles").update({ full_name: body.full_name }).eq("id", body.user_id);
+      if (error) return json({ error: error.message }, 400);
+    }
+    return json({ ok: true });
+  }
+
+  if (body.action === "delete") {
+    if (!body.user_id) return json({ error: "user_id is required" }, 400);
+    if (body.user_id === userData.user.id) return json({ error: "You cannot delete your own account" }, 400);
+    if (isManager) {
+      const { data: target } = await admin.from("profiles").select("role").eq("id", body.user_id).single();
+      if (target?.role === "admin") return json({ error: "Only admins can delete an admin account" }, 403);
+    }
+    const { error } = await admin.auth.admin.deleteUser(body.user_id);
     if (error) return json({ error: error.message }, 400);
     return json({ ok: true });
   }
