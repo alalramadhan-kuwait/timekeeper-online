@@ -62,20 +62,33 @@ const NAV_GROUPS: NavGroup[] = [
   },
 ];
 
-export function navForRole(role: Role | null): NavItem[] {
-  return NAV_GROUPS.flatMap((g) => g.items).filter((n) => role && n.roles.includes(role));
+/** Flat catalogue of every page, for the per-user access editor in Settings. */
+export interface PageDef { to: string; label: string; group: string }
+export const PAGES: PageDef[] = NAV_GROUPS.flatMap((g) =>
+  g.items.filter((i) => i.to !== '/settings').map((i) => ({ to: i.to, label: i.label, group: g.title ?? 'Main' })),
+);
+
+/** Whether a user may open a page, honouring per-user overrides then role defaults. */
+export function canAccessPath(to: string, role: Role | null, pageAccess: string[] | null): boolean {
+  if (to === '/') return true; // dashboard is always the landing page
+  // user management stays role-gated and cannot be granted via page_access
+  if (to === '/settings') return role === 'admin' || role === 'manager';
+  if (role === 'admin') return true;
+  if (pageAccess && pageAccess.length > 0) return pageAccess.includes(to);
+  const item = NAV_GROUPS.flatMap((g) => g.items).find((n) => n.to === to);
+  return !!(item && role && item.roles.includes(role));
 }
 
-function groupsForRole(role: Role | null): NavGroup[] {
+function groupsFor(role: Role | null, pageAccess: string[] | null): NavGroup[] {
   return NAV_GROUPS
-    .map((g) => ({ ...g, items: g.items.filter((n) => role && n.roles.includes(role)) }))
+    .map((g) => ({ ...g, items: g.items.filter((n) => canAccessPath(n.to, role, pageAccess)) }))
     .filter((g) => g.items.length > 0);
 }
 
 export default function Layout() {
-  const { profile, role, signOut } = useAuth();
+  const { profile, role, pageAccess, signOut } = useAuth();
   const [open, setOpen] = useState(false);
-  const groups = groupsForRole(role);
+  const groups = groupsFor(role, pageAccess);
 
   return (
     <div className="min-h-screen flex">

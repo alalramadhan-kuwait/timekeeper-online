@@ -1,11 +1,12 @@
 import { Fragment, useEffect, useState } from 'react';
-import { Plus, Trash2, MapPin, Save, UserPlus, Mail, KeyRound, X, Pencil, Check } from 'lucide-react';
+import { Plus, Trash2, MapPin, Save, UserPlus, Mail, KeyRound, X, Pencil, Check, SlidersHorizontal } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Spinner, Badge } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
+import { PAGES } from '../components/Layout';
 
 interface Brand { id: string; name: string; is_active: boolean }
-interface TeamProfile { id: string; full_name: string; role: string; email?: string }
+interface TeamProfile { id: string; full_name: string; role: string; email?: string; page_access?: string[] | null }
 
 /** Show "ahmad" for ahmad@time-keeper.com, otherwise the full email. */
 const usernameOf = (email?: string) =>
@@ -40,6 +41,9 @@ function TeamAccess() {
   const [editFor, setEditFor] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
   const [editUsername, setEditUsername] = useState('');
+  const [accessFor, setAccessFor] = useState<string | null>(null);
+  const [accessSel, setAccessSel] = useState<Set<string>>(new Set());
+  const [accessCustom, setAccessCustom] = useState(false);
   // managers may not modify admin accounts; nobody may modify their own via this panel
   const protectedRow = (t: TeamProfile) => isManager && t.role === 'admin';
   const lockedRow = (t: TeamProfile) => t.id === user?.id || protectedRow(t);
@@ -100,6 +104,35 @@ function TeamAccess() {
     }
   }
 
+  function startAccess(t: TeamProfile) {
+    const open = accessFor === t.id ? null : t.id;
+    setAccessFor(open);
+    setPwFor(null); setEditFor(null);
+    if (open) {
+      const custom = Array.isArray(t.page_access) && t.page_access.length > 0;
+      setAccessCustom(custom);
+      setAccessSel(new Set(custom ? t.page_access! : PAGES.map((p) => p.to)));
+    }
+  }
+
+  function toggleAccess(to: string) {
+    setAccessSel((prev) => {
+      const next = new Set(prev);
+      if (next.has(to)) next.delete(to); else next.add(to);
+      return next;
+    });
+  }
+
+  async function saveAccess(t: TeamProfile) {
+    // custom off = reset to role defaults (null); custom on = explicit allow-list
+    const page_access = accessCustom ? [...accessSel] : null;
+    if (await call({ action: 'set_access', user_id: t.id, page_access })) {
+      setMsg(accessCustom ? `Custom access saved for ${t.full_name}` : `${t.full_name} reset to role defaults`);
+      setAccessFor(null);
+      load();
+    }
+  }
+
   async function deleteUser(t: TeamProfile) {
     if (!window.confirm(`Delete the account for ${t.full_name} (${usernameOf(t.email)})? They will no longer be able to sign in. This cannot be undone.`)) return;
     if (await call({ action: 'delete', user_id: t.id })) {
@@ -142,7 +175,8 @@ function TeamAccess() {
         <h2 className="text-sm font-semibold text-slate-700">Team & Access</h2>
       </div>
       <p className="text-xs text-slate-400 mb-3">
-        Each employee signs in with their own account and sees only the sections for their role.
+        Each employee signs in with their own account. Pick a role for quick defaults, or use the sliders
+        (<SlidersHorizontal size={11} className="inline" />) to tick exactly which pages that person can open.
       </p>
       {msg && <div className="mb-3 px-3 py-2 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm">{msg}</div>}
       {err && <div className="mb-3 px-3 py-2 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">{err}</div>}
@@ -177,14 +211,21 @@ function TeamAccess() {
                     {(t.role === 'admin' ? ROLES : assignableRoles).map((r) => <option key={r} value={r}>{r}</option>)}
                   </select>
                 </td>
-                <td className="px-2 py-2 text-xs text-slate-400 hidden lg:table-cell">{ROLE_HINTS[t.role] ?? ''}</td>
+                <td className="px-2 py-2 text-xs hidden lg:table-cell">
+                  {Array.isArray(t.page_access) && t.page_access.length > 0
+                    ? <span className="text-violet-600 font-medium">Custom · {t.page_access.length} pages</span>
+                    : <span className="text-slate-400">{ROLE_HINTS[t.role] ?? ''}</span>}
+                </td>
                 <td className="px-2 py-2 text-right whitespace-nowrap">
                   {!protectedRow(t) && (
                     <div className="flex items-center gap-2 justify-end">
+                      <button onClick={() => startAccess(t)} className={`hover:text-violet-600 ${accessFor === t.id ? 'text-violet-600' : 'text-slate-400'}`} title="Customize page access">
+                        <SlidersHorizontal size={14} />
+                      </button>
                       <button onClick={() => startEdit(t)} className="text-slate-400 hover:text-blue-600" title="Edit name / username">
                         <Pencil size={14} />
                       </button>
-                      <button onClick={() => { setPwFor(pwFor === t.id ? null : t.id); setEditFor(null); setPwValue(''); }}
+                      <button onClick={() => { setPwFor(pwFor === t.id ? null : t.id); setEditFor(null); setAccessFor(null); setPwValue(''); }}
                         className="text-slate-400 hover:text-blue-600" title="Change password">
                         <KeyRound size={14} />
                       </button>
@@ -211,6 +252,35 @@ function TeamAccess() {
                         <Check size={12} /> {busy ? 'Saving…' : 'Save'}
                       </button>
                       <button onClick={() => setEditFor(null)} className="text-slate-400 hover:text-slate-600"><X size={14} /></button>
+                    </div>
+                  </td>
+                </tr>
+              )}
+              {accessFor === t.id && (
+                <tr className="border-b border-slate-100 bg-violet-50/40">
+                  <td colSpan={5} className="px-3 py-3">
+                    <label className="flex items-center gap-2 text-sm mb-2 cursor-pointer">
+                      <input type="checkbox" checked={accessCustom} onChange={(e) => setAccessCustom(e.target.checked)} className="h-4 w-4" />
+                      <span className="font-medium text-slate-700">Custom page access for {t.full_name}</span>
+                      <span className="text-xs text-slate-400">(off = use the {t.role} role defaults)</span>
+                    </label>
+                    {accessCustom && (
+                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-1 mb-3 pl-1">
+                        {PAGES.map((p) => (
+                          <label key={p.to} className="flex items-center gap-1.5 text-xs text-slate-600 cursor-pointer">
+                            <input type="checkbox" checked={accessSel.has(p.to)} onChange={() => toggleAccess(p.to)} className="h-3.5 w-3.5" />
+                            {p.label}
+                          </label>
+                        ))}
+                      </div>
+                    )}
+                    <div className="flex items-center gap-2">
+                      <button onClick={() => saveAccess(t)} disabled={busy}
+                        className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-violet-600 text-white text-xs font-medium disabled:opacity-60">
+                        <Check size={12} /> {busy ? 'Saving…' : 'Save access'}
+                      </button>
+                      <span className="text-xs text-slate-400">Dashboard is always visible; Settings stays admin/manager only.</span>
+                      <button onClick={() => setAccessFor(null)} className="text-slate-400 hover:text-slate-600 ml-auto"><X size={14} /></button>
                     </div>
                   </td>
                 </tr>

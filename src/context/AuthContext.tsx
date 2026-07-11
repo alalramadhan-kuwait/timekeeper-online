@@ -8,12 +8,14 @@ export interface Profile {
   id: string;
   full_name: string;
   role: Role;
+  page_access: string[] | null; // per-user page allow-list; null = role defaults
 }
 
 interface AuthContextType {
   user: User | null;
   profile: Profile | null;
   role: Role | null;
+  pageAccess: string[] | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
@@ -23,6 +25,7 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   profile: null,
   role: null,
+  pageAccess: null,
   loading: true,
   signIn: async () => ({ error: 'Not initialized' }),
   signOut: async () => {},
@@ -36,7 +39,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   async function loadProfile(userId: string) {
     const { data } = await supabase
       .from('profiles')
-      .select('id, full_name, role')
+      .select('id, full_name, role, page_access')
       .eq('id', userId)
       .single();
     if (data) setProfile(data as Profile);
@@ -66,7 +69,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, profile, role: profile?.role ?? null, loading, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, profile, role: profile?.role ?? null, pageAccess: profile?.page_access ?? null, loading, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );

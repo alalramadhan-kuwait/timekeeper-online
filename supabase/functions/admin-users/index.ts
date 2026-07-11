@@ -26,19 +26,20 @@ Deno.serve(async (req: Request) => {
   if (!["admin", "manager"].includes(callerRole)) return json({ error: "Admins and managers only" }, 403);
   const isManager = callerRole === "manager";
 
-  let body: { action?: string; email?: string; password?: string; full_name?: string; role?: string; user_id?: string };
+  let body: { action?: string; email?: string; password?: string; full_name?: string; role?: string; user_id?: string; page_access?: string[] | null };
   try { body = await req.json(); } catch { return json({ error: "Invalid JSON body" }, 400); }
 
   if (body.action === "list") {
     const { data: usersData, error } = await admin.auth.admin.listUsers({ page: 1, perPage: 200 });
     if (error) return json({ error: error.message }, 400);
-    const { data: profiles } = await admin.from("profiles").select("id, full_name, role");
-    const profById = new Map((profiles ?? []).map((p: { id: string; full_name: string; role: string }) => [p.id, p]));
+    const { data: profiles } = await admin.from("profiles").select("id, full_name, role, page_access");
+    const profById = new Map((profiles ?? []).map((p: { id: string; full_name: string; role: string; page_access: string[] | null }) => [p.id, p]));
     const team = usersData.users.map((u) => ({
       id: u.id,
       email: u.email ?? "",
       full_name: profById.get(u.id)?.full_name ?? u.email ?? "Unknown",
       role: profById.get(u.id)?.role ?? "viewer",
+      page_access: profById.get(u.id)?.page_access ?? null,
     }));
     return json({ ok: true, team });
   }
@@ -102,6 +103,20 @@ Deno.serve(async (req: Request) => {
       const { error } = await admin.from("profiles").update({ full_name: body.full_name }).eq("id", body.user_id);
       if (error) return json({ error: error.message }, 400);
     }
+    return json({ ok: true });
+  }
+
+  if (body.action === "set_access") {
+    if (!body.user_id) return json({ error: "user_id is required" }, 400);
+    if (body.user_id === userData.user.id) return json({ error: "You cannot change your own page access" }, 400);
+    if (isManager) {
+      const { data: target } = await admin.from("profiles").select("role").eq("id", body.user_id).single();
+      if (target?.role === "admin") return json({ error: "Only admins can change an admin's access" }, 403);
+    }
+    // null (or omitted) resets to role defaults; an array is the explicit allow-list
+    const pa = Array.isArray(body.page_access) ? body.page_access : null;
+    const { error } = await admin.from("profiles").update({ page_access: pa }).eq("id", body.user_id);
+    if (error) return json({ error: error.message }, 400);
     return json({ ok: true });
   }
 
