@@ -237,6 +237,28 @@ Deno.serve(async (req: Request) => {
       }
       await admin.from("lightspeed_product_sales").delete().lt("synced_at", salesSyncedAt);
       salesRows = salesInsert.length;
+
+      // append a daily stock-value snapshot for the trend graph
+      const soldSet = new Set(salesInsert.filter((s) => Number(s.units_90d) > 0).map((s) => s.product_id));
+      const retailByProduct = new Map<string, number>();
+      for (const r of rows) retailByProduct.set(r.product_id, (retailByProduct.get(r.product_id) ?? 0) + r.stock_on_hand * Number(r.price ?? 0));
+      let retailValue = 0, deadValue = 0, units = 0;
+      for (const [pid, val] of retailByProduct) { retailValue += val; if (!soldSet.has(pid)) deadValue += val; }
+      for (const r of rows) units += r.stock_on_hand;
+      let costValue = 0;
+      for (const i of inventory) {
+        if (productById.has(i.product_id) && outletName.has(i.outlet_id)) costValue += Number(i.current_amount ?? 0) * Number(i.average_cost ?? 0);
+      }
+      const snapshotDate = new Date(Date.now() + 3 * 3600_000).toISOString().slice(0, 10); // Kuwait date
+      await admin.from("lightspeed_stock_value_history").upsert({
+        snapshot_date: snapshotDate,
+        retail_value: retailValue,
+        cost_value: costValue,
+        dead_value: deadValue,
+        units,
+        products: productById.size,
+        updated_at: new Date().toISOString(),
+      });
     } catch (se) {
       // stock sync succeeded — record the sales issue without failing the run
       salesWarning = se instanceof Error ? se.message : String(se);

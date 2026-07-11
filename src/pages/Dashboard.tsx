@@ -8,6 +8,7 @@ import { formatKDCompact, formatKD } from '../lib/format';
 import { buildAlerts, loadAlertActions, saveAlertAction, Alert, AlertAction } from '../lib/alerts';
 import { tierClass, tierLabel } from '../lib/expiry';
 import { useAuth } from '../context/AuthContext';
+import { canAccessPath } from '../components/Layout';
 
 interface Stats {
   salesToday: number;
@@ -200,7 +201,7 @@ function AlertRow({ alert, action, expanded, onToggle, onSave }: {
 
 // ── Dashboard ─────────────────────────────────────────────────────────────────
 export default function Dashboard() {
-  const { role, profile } = useAuth();
+  const { role, profile, pageAccess } = useAuth();
   const [stats, setStats] = useState<Stats | null>(null);
   const [poFinancials, setPOFinancials] = useState<POFinancials | null>(null);
   const [poRows, setPORows] = useState<any[]>([]);
@@ -389,7 +390,7 @@ export default function Dashboard() {
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 mb-8">
-        {cards.map((c) => (
+        {cards.filter((c) => canAccessPath(c.link, role, pageAccess)).map((c) => (
           <Link key={c.title} to={c.link} className="hover:opacity-80">
             <Card title={c.title} value={c.value} accent={c.accent} />
           </Link>
@@ -397,7 +398,7 @@ export default function Dashboard() {
       </div>
 
       {/* ── PO Payment Summary ──────────────────────────────────────────────── */}
-      {poFinancials && (
+      {poFinancials && canAccessPath('/purchase-orders', role, pageAccess) && (
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-3">
             <Wallet size={16} className="text-slate-500" />

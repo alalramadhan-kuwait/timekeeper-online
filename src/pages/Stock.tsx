@@ -51,6 +51,7 @@ export default function StockPage() {
   const [view, setView] = useState<'products' | 'brands'>('brands');
   const [salesMap, setSalesMap] = useState<Map<string, SalesAgg>>(new Map());
   const [costMap, setCostMap] = useState<Map<string, number>>(new Map()); // `${product_id}|${outlet}` → cost (managers only, enforced by RLS)
+  const [history, setHistory] = useState<{ snapshot_date: string; retail_value: number; dead_value: number }[]>([]);
   const [clientId, setClientId] = useState('');
 
   async function load() {
@@ -87,6 +88,9 @@ export default function StockPage() {
     const { data: log } = await supabase.from('lightspeed_sync_log')
       .select('finished_at, status, error').order('started_at', { ascending: false }).limit(1);
     setLastSync(log?.[0] ?? null);
+    const { data: hist } = await supabase.from('lightspeed_stock_value_history')
+      .select('snapshot_date, retail_value, dead_value').order('snapshot_date').limit(180);
+    setHistory((hist ?? []) as { snapshot_date: string; retail_value: number; dead_value: number }[]);
     setLoading(false);
   }
 
@@ -401,6 +405,45 @@ export default function StockPage() {
                     <p className="text-xs text-slate-400">{c.sub}</p>
                   </button>
                 ))}
+              </div>
+            );
+          })()}
+
+          {/* Stock value over time */}
+          {history.length > 0 && (() => {
+            const max = Math.max(1, ...history.map((h) => Number(h.retail_value)));
+            const w = Math.max(history.length * 44, 300);
+            const h = 120;
+            const x = (i: number) => history.length === 1 ? w / 2 : (i / (history.length - 1)) * (w - 20) + 10;
+            const y = (v: number) => h - 10 - (v / max) * (h - 20);
+            const line = (key: 'retail_value' | 'dead_value') =>
+              history.map((d, i) => `${i === 0 ? 'M' : 'L'} ${x(i).toFixed(1)} ${y(Number(d[key])).toFixed(1)}`).join(' ');
+            return (
+              <div className="mb-4 bg-white rounded-xl border border-slate-200 shadow-sm p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-sm font-semibold text-slate-700">Stock value over time</h3>
+                  <div className="text-xs text-slate-400 flex gap-3">
+                    <span className="flex items-center gap-1"><span className="h-2 w-3 rounded bg-slate-800 inline-block" /> Retail value</span>
+                    <span className="flex items-center gap-1"><span className="h-2 w-3 rounded bg-rose-400 inline-block" /> Not-moving</span>
+                  </div>
+                </div>
+                <div className="overflow-x-auto">
+                  <svg width={w} height={h} className="min-w-full">
+                    <path d={line('retail_value')} fill="none" stroke="#1e293b" strokeWidth="2" />
+                    <path d={line('dead_value')} fill="none" stroke="#fb7185" strokeWidth="2" />
+                    {history.map((d, i) => (
+                      <g key={d.snapshot_date}>
+                        <circle cx={x(i)} cy={y(Number(d.retail_value))} r="2.5" fill="#1e293b" />
+                        <title>{d.snapshot_date}: {formatKD(Number(d.retail_value))} KD retail</title>
+                      </g>
+                    ))}
+                  </svg>
+                </div>
+                <div className="flex justify-between text-[10px] text-slate-400 mt-1">
+                  <span>{history[0].snapshot_date}</span>
+                  <span>{history[history.length - 1].snapshot_date}</span>
+                </div>
+                {history.length === 1 && <p className="text-xs text-slate-400 mt-1">One data point so far — the trend line builds up as the daily 8:00 sync runs.</p>}
               </div>
             );
           })()}

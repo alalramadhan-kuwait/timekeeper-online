@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { History, ChevronUp, ChevronDown } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { History, ChevronUp, ChevronDown, ArrowRight } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Badge, Spinner } from '../components/ui';
 
@@ -19,6 +20,17 @@ const TABLE_LABELS: Record<string, string> = {
   waiting_list: 'Demand List', pre_orders: 'Pre-Orders', employees: 'Employees', leave_records: 'Leave',
   company_documents: 'Company Documents', customers: 'Customers', settings: 'Settings',
 };
+
+const TABLE_ROUTE: Record<string, string> = {
+  purchase_orders: '/purchase-orders', consignments: '/consignments', limited_projects: '/limited-projects',
+  waiting_list: '/waiting-list', pre_orders: '/waiting-list', employees: '/hr', leave_records: '/leave',
+  company_documents: '/company-documents', customers: '/vip', settings: '/settings',
+};
+
+/** Kuwait day label for a timestamp, e.g. "Sat, 11 Jul 2026". */
+function dayLabel(iso: string): string {
+  return new Date(iso).toLocaleDateString('en-GB', { timeZone: 'Asia/Kuwait', weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' });
+}
 
 const ACTION_STYLE: Record<string, string> = {
   INSERT: 'bg-emerald-100 text-emerald-700 border-emerald-200',
@@ -126,11 +138,19 @@ export default function HistoryLogPage() {
 
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm divide-y divide-slate-100">
         {filtered.length === 0 && <div className="px-4 py-8 text-center text-slate-400 text-sm">No history yet</div>}
-        {filtered.map((r) => {
+        {filtered.map((r, idx) => {
           const diff = diffOf(r);
           const isOpen = expanded === r.id;
+          const day = dayLabel(r.changed_at);
+          const newDay = idx === 0 || dayLabel(filtered[idx - 1].changed_at) !== day;
+          const route = TABLE_ROUTE[r.table_name];
           return (
             <div key={r.id}>
+              {newDay && (
+                <div className="sticky top-0 z-10 bg-slate-100/95 px-4 py-1.5 text-xs font-semibold text-slate-500 border-b border-slate-200">
+                  {day}
+                </div>
+              )}
               <button onClick={() => setExpanded(isOpen ? null : r.id)}
                 className={`w-full flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-2.5 text-left text-sm ${isOpen ? 'bg-slate-50' : 'hover:bg-slate-50'}`}>
                 <Badge className={ACTION_STYLE[r.action] ?? 'bg-slate-100 text-slate-600'}>
@@ -166,6 +186,11 @@ export default function HistoryLogPage() {
                     <p className="text-slate-500 break-all">Deleted record: {JSON.stringify(r.old_data)}</p>
                   ) : (
                     <p className="text-slate-500">New record created{r.action === 'UPDATE' ? ' (no visible field changes)' : ''}.</p>
+                  )}
+                  {route && r.action !== 'DELETE' && (
+                    <Link to={route} className="inline-flex items-center gap-1 mt-2 text-blue-600 hover:underline">
+                      Open in {TABLE_LABELS[r.table_name] ?? r.table_name} <ArrowRight size={11} />
+                    </Link>
                   )}
                 </div>
               )}
