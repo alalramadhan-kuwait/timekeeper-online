@@ -62,7 +62,19 @@ function TeamAccess() {
     setBusy(true); setMsg(null); setErr(null);
     const { data, error } = await supabase.functions.invoke('admin-users', { body });
     setBusy(false);
-    if (error) { setErr(error.message); return false; }
+    if (error) {
+      // surface the function's real error message, not the generic wrapper
+      let detail = error.message;
+      try {
+        const ctx = (error as { context?: Response }).context;
+        if (ctx && typeof ctx.json === 'function') {
+          const parsed = await ctx.clone().json();
+          if (parsed?.error) detail = parsed.error;
+        }
+      } catch { /* keep wrapper message */ }
+      setErr(detail);
+      return false;
+    }
     if (data?.error) { setErr(data.error); return false; }
     return true;
   }
