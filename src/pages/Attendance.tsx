@@ -28,6 +28,8 @@ interface GeofenceSettings {
   work_start_time: string | null;
 }
 
+interface Geofence { id: string; name: string; lat: number; lng: number; radius_m: number; active: boolean }
+
 function haversineMeters(lat1: number, lng1: number, lat2: number, lng2: number): number {
   const R = 6371000;
   const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -372,6 +374,7 @@ export default function AttendancePage() {
   const isManager = ['admin', 'manager', 'hr'].includes(role ?? '');
 
   const [settings, setSettings] = useState<GeofenceSettings | null>(null);
+  const [geofences, setGeofences] = useState<Geofence[]>([]);
   const [todayRecord, setTodayRecord] = useState<AttendanceRecord | null>(null);
   const [history, setHistory] = useState<AttendanceRecord[]>([]);
   const [loading, setLoading] = useState(true);
@@ -408,6 +411,8 @@ export default function AttendancePage() {
     if (settingsRes.data) setSettings(settingsRes.data as GeofenceSettings);
     setTodayRecord((todayRes.data?.[0] as AttendanceRecord) ?? null);
     setHistory((histRes.data as AttendanceRecord[]) ?? []);
+    const { data: geo } = await supabase.from('geofences').select('*').eq('active', true);
+    setGeofences((geo as Geofence[]) ?? []);
     setLoading(false);
   }
 
@@ -420,9 +425,16 @@ export default function AttendancePage() {
     });
   }
 
+  // active fences: prefer the geofences table; fall back to the legacy single settings fence
+  const activeFences: Geofence[] = geofences.length > 0
+    ? geofences
+    : (settings?.geofence_lat && settings?.geofence_lng
+        ? [{ id: 'legacy', name: 'Store', lat: settings.geofence_lat, lng: settings.geofence_lng, radius_m: settings.geofence_radius_m ?? 200, active: true }]
+        : []);
+
   async function handleClockIn() {
-    if (!settings?.geofence_lat || !settings?.geofence_lng) {
-      setGeoError('Geofence not configured. Ask your admin to set up the store location in Settings.');
+    if (activeFences.length === 0) {
+      setGeoError('No store location configured. Ask your admin to add a geofence in Settings.');
       return;
     }
     setGeoError(null);
@@ -430,17 +442,23 @@ export default function AttendancePage() {
     try {
       const pos = await getPosition();
       const { latitude, longitude } = pos.coords;
-      const dist = haversineMeters(latitude, longitude, settings.geofence_lat, settings.geofence_lng);
-      const radius = settings.geofence_radius_m ?? 200;
-      if (dist > radius) {
-        setGeoError(`You are ${Math.round(dist)}m from the store. You must be on-site to clock in (allowed radius: ${radius}m).`);
+      // check against every fence; clock in at the nearest one within range
+      let matched: Geofence | null = null;
+      let nearest = { name: '', dist: Infinity };
+      for (const f of activeFences) {
+        const d = haversineMeters(latitude, longitude, Number(f.lat), Number(f.lng));
+        if (d < nearest.dist) nearest = { name: f.name, dist: d };
+        if (d <= f.radius_m && (!matched || d < haversineMeters(latitude, longitude, Number(matched.lat), Number(matched.lng)))) matched = f;
+      }
+      if (!matched) {
+        setGeoError(`You are ${Math.round(nearest.dist)}m from the nearest location (${nearest.name}). You must be on-site to clock in.`);
         setGeoLoading(false);
         return;
       }
 
       // Determine if late
       const now = new Date();
-      const workStart = settings.work_start_time ?? '09:00';
+      const workStart = settings?.work_start_time ?? '09:00';
       const [wh, wm] = workStart.split(':').map(Number);
       const kuwaitNow = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Kuwait' }));
       const isLate = kuwaitNow.getHours() > wh || (kuwaitNow.getHours() === wh && kuwaitNow.getMinutes() > wm);
@@ -452,6 +470,7 @@ export default function AttendancePage() {
         clock_in_lat: latitude,
         clock_in_lng: longitude,
         is_late: isLate,
+        location: matched.name,
       });
       if (error) { setGeoError(error.message); }
       else { await load(); }
@@ -486,7 +505,7 @@ export default function AttendancePage() {
 
   if (loading) return <Spinner />;
 
-  const fenceConfigured = !!(settings?.geofence_lat && settings?.geofence_lng);
+  const fenceConfigured = activeFences.length > 0;
   const clockedIn = !!todayRecord;
   const clockedOut = !!todayRecord?.clock_out;
 
@@ -580,7 +599,7 @@ export default function AttendancePage() {
         {fenceConfigured && (
           <p className="mt-3 text-xs text-slate-400 flex items-center gap-1">
             <MapPin size={11} />
-            Geofence: {settings!.geofence_radius_m ?? 200}m radius · Work starts {settings!.work_start_time ?? '09:00'}
+            {activeFences.length} location{activeFences.length !== 1 ? 's' : ''}: {activeFences.map((f) => f.name).join(', ')} · Work starts {settings?.work_start_time ?? '09:00'}
           </p>
         )}
       </div>

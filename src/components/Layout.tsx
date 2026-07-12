@@ -1,7 +1,7 @@
 import { NavLink, Outlet } from 'react-router-dom';
 import {
   LayoutDashboard, TrendingUp, Hourglass, PackageCheck, Truck, Handshake,
-  Star, Users, CalendarRange, FileWarning, LogOut, Watch, Menu, Contact, Settings, Gem, ClipboardCheck, PhoneCall, Boxes, History, type LucideIcon,
+  Star, Users, CalendarRange, FileWarning, LogOut, Watch, Menu, Contact, Settings, Gem, ClipboardCheck, PhoneCall, Boxes, History, UserRound, type LucideIcon,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth, Role } from '../context/AuthContext';
@@ -23,6 +23,7 @@ const NAV_GROUPS: NavGroup[] = [
     title: null,
     items: [
       { to: '/', label: 'Dashboard', icon: LayoutDashboard, roles: ['admin', 'manager', 'staff', 'hr', 'viewer', 'sales', 'operations'] },
+      { to: '/me', label: 'My Portal', icon: UserRound, roles: ['admin', 'manager', 'staff', 'hr', 'viewer', 'sales', 'operations'] },
     ],
   },
   {
@@ -65,12 +66,12 @@ const NAV_GROUPS: NavGroup[] = [
 /** Flat catalogue of every page, for the per-user access editor in Settings. */
 export interface PageDef { to: string; label: string; group: string }
 export const PAGES: PageDef[] = NAV_GROUPS.flatMap((g) =>
-  g.items.filter((i) => i.to !== '/settings').map((i) => ({ to: i.to, label: i.label, group: g.title ?? 'Main' })),
+  g.items.filter((i) => i.to !== '/settings' && i.to !== '/me' && i.to !== '/').map((i) => ({ to: i.to, label: i.label, group: g.title ?? 'Main' })),
 );
 
 /** Whether a user may open a page, honouring per-user overrides then role defaults. */
 export function canAccessPath(to: string, role: Role | null, pageAccess: string[] | null): boolean {
-  if (to === '/') return true; // dashboard is always the landing page
+  if (to === '/' || to === '/me') return true; // dashboard and personal portal are always available
   // user management stays role-gated and cannot be granted via page_access
   if (to === '/settings') return role === 'admin' || role === 'manager';
   if (role === 'admin') return true;

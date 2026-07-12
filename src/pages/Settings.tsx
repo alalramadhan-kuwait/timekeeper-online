@@ -486,6 +486,120 @@ function ListEditor({ title, hint, items, onChange, disabled }: {
   );
 }
 
+interface GeofenceRow { id: string; name: string; lat: number; lng: number; radius_m: number; active: boolean }
+
+/** Admin: manage one geofence per location (HQ, Avenues, Time Gallery…). */
+function Geofences({ workStartTime, setWorkStartTime, onSaveHours, savedMsg }: {
+  workStartTime: string;
+  setWorkStartTime: (v: string) => void;
+  onSaveHours: () => void;
+  savedMsg: string | null;
+}) {
+  const [fences, setFences] = useState<GeofenceRow[]>([]);
+  const [name, setName] = useState('');
+  const [lat, setLat] = useState('');
+  const [lng, setLng] = useState('');
+  const [radius, setRadius] = useState('200');
+  const [msg, setMsg] = useState<string | null>(null);
+
+  async function load() {
+    const { data } = await supabase.from('geofences').select('*').order('name');
+    setFences((data as GeofenceRow[]) ?? []);
+  }
+  useEffect(() => { load(); }, []);
+
+  async function add() {
+    if (!name.trim() || !lat || !lng) { setMsg('Name, latitude and longitude are required'); return; }
+    const { error } = await supabase.from('geofences').insert({
+      name: name.trim(), lat: parseFloat(lat), lng: parseFloat(lng), radius_m: radius ? parseInt(radius) : 200,
+    });
+    if (error) { setMsg(error.message); return; }
+    setName(''); setLat(''); setLng(''); setRadius('200'); setMsg('Location added');
+    load();
+  }
+
+  async function toggle(f: GeofenceRow) {
+    await supabase.from('geofences').update({ active: !f.active }).eq('id', f.id);
+    load();
+  }
+
+  async function remove(f: GeofenceRow) {
+    if (!window.confirm(`Delete the "${f.name}" geofence? Staff there won't be able to clock in.`)) return;
+    await supabase.from('geofences').delete().eq('id', f.id);
+    load();
+  }
+
+  return (
+    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 lg:col-span-2">
+      <div className="flex items-center gap-2 mb-1">
+        <MapPin size={15} className="text-slate-500" />
+        <h2 className="text-sm font-semibold text-slate-700">Attendance Locations (Geofences)</h2>
+      </div>
+      <p className="text-xs text-slate-400 mb-3">
+        One geofence per site — HQ, Avenues, Time Gallery. Staff can clock in when within any active location's radius.
+        Get coordinates by right-clicking the site on{' '}
+        <a href="https://maps.google.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Google Maps</a>.
+      </p>
+      {msg && <div className="mb-3 px-3 py-2 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm">{msg}</div>}
+
+      <div className="overflow-x-auto mb-3">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="text-left text-xs text-slate-500 uppercase tracking-wide border-b border-slate-200">
+              <th className="px-2 py-2">Location</th>
+              <th className="px-2 py-2">Latitude</th>
+              <th className="px-2 py-2">Longitude</th>
+              <th className="px-2 py-2 text-right">Radius</th>
+              <th className="px-2 py-2">Active</th>
+              <th className="px-2 py-2 w-px" />
+            </tr>
+          </thead>
+          <tbody>
+            {fences.length === 0 && <tr><td colSpan={6} className="px-2 py-4 text-center text-slate-400">No locations yet — add one below.</td></tr>}
+            {fences.map((f) => (
+              <tr key={f.id} className="border-b border-slate-100 last:border-0">
+                <td className="px-2 py-2 font-medium text-slate-700 whitespace-nowrap">{f.name}</td>
+                <td className="px-2 py-2 text-slate-500 tabular-nums">{f.lat}</td>
+                <td className="px-2 py-2 text-slate-500 tabular-nums">{f.lng}</td>
+                <td className="px-2 py-2 text-right tabular-nums">{f.radius_m}m</td>
+                <td className="px-2 py-2">
+                  <button onClick={() => toggle(f)}>
+                    <Badge className={f.active ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-400 border-slate-200'}>
+                      {f.active ? 'Active' : 'Off'}
+                    </Badge>
+                  </button>
+                </td>
+                <td className="px-2 py-2 text-right whitespace-nowrap">
+                  <a href={`https://maps.google.com/?q=${f.lat},${f.lng}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 mr-2" title="View on map"><MapPin size={13} className="inline" /></a>
+                  <button onClick={() => remove(f)} className="text-slate-400 hover:text-red-600" title="Delete"><Trash2 size={13} /></button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Add location</h3>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-2">
+        <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Name (e.g. Avenues)" className="px-3 py-1.5 rounded-lg border border-slate-300 text-sm" />
+        <input type="number" step="any" value={lat} onChange={(e) => setLat(e.target.value)} placeholder="Latitude" className="px-3 py-1.5 rounded-lg border border-slate-300 text-sm" />
+        <input type="number" step="any" value={lng} onChange={(e) => setLng(e.target.value)} placeholder="Longitude" className="px-3 py-1.5 rounded-lg border border-slate-300 text-sm" />
+        <input type="number" value={radius} onChange={(e) => setRadius(e.target.value)} placeholder="Radius (m)" className="px-3 py-1.5 rounded-lg border border-slate-300 text-sm" />
+      </div>
+      <button onClick={add} className="flex items-center gap-1 px-4 py-1.5 rounded-lg bg-slate-900 text-white text-sm font-medium hover:bg-slate-700 mb-4"><Plus size={14} /> Add location</button>
+
+      <div className="border-t border-slate-100 pt-3 flex flex-wrap items-end gap-3">
+        <label className="text-xs">
+          <span className="block text-slate-500 mb-1">Work starts at (for late flagging)</span>
+          <input type="time" value={workStartTime} onChange={(e) => setWorkStartTime(e.target.value)} className="px-3 py-1.5 rounded-lg border border-slate-300 text-sm" />
+        </label>
+        <button onClick={onSaveHours} className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-slate-900 text-white text-sm font-medium hover:bg-slate-700"><Save size={13} /> Save work hours</button>
+        {savedMsg && <span className="text-xs text-emerald-600">{savedMsg}</span>}
+      </div>
+    </div>
+  );
+}
+
 export default function SettingsPage() {
   const { role } = useAuth();
   const isAdmin = role === 'admin';
@@ -545,17 +659,16 @@ export default function SettingsPage() {
     load();
   }
 
+  // work-start-time is global; the geofence locations live in their own table (managed in <Geofences/>)
   async function saveGeofence() {
     if (!settingsId) return;
     setGeofenceMsg(null);
+    void geofenceLat; void geofenceLng; void geofenceRadius; // retained for legacy settings compatibility
     const { error } = await supabase.from('settings').update({
-      geofence_lat: geofenceLat ? parseFloat(geofenceLat) : null,
-      geofence_lng: geofenceLng ? parseFloat(geofenceLng) : null,
-      geofence_radius_m: geofenceRadius ? parseInt(geofenceRadius) : 200,
       work_start_time: workStartTime || '09:00',
     }).eq('id', settingsId);
     if (error) setError(error.message);
-    else setGeofenceMsg('Geofence saved');
+    else setGeofenceMsg('Work hours saved');
   }
 
   async function toggleBrand(b: Brand) {
@@ -599,79 +712,7 @@ export default function SettingsPage() {
         {['admin', 'manager'].includes(role ?? '') && <TeamAccess />}
         {isAdmin && <DailyBriefing />}
 
-        {isAdmin && (
-          <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 lg:col-span-2">
-            <div className="flex items-center gap-2 mb-1">
-              <MapPin size={15} className="text-slate-500" />
-              <h2 className="text-sm font-semibold text-slate-700">Geofence & Work Hours</h2>
-            </div>
-            <p className="text-xs text-slate-400 mb-4">
-              Staff can only clock in within this radius of the store. Find coordinates by right-clicking your store on{' '}
-              <a href="https://maps.google.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Google Maps</a>.
-            </p>
-            {geofenceMsg && <div className="mb-3 px-3 py-2 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm">{geofenceMsg}</div>}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
-              <label className="text-xs">
-                <span className="block text-slate-500 mb-1">Latitude</span>
-                <input
-                  type="number"
-                  step="any"
-                  value={geofenceLat}
-                  onChange={(e) => setGeofenceLat(e.target.value)}
-                  placeholder="e.g. 29.3759"
-                  className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-sm"
-                />
-              </label>
-              <label className="text-xs">
-                <span className="block text-slate-500 mb-1">Longitude</span>
-                <input
-                  type="number"
-                  step="any"
-                  value={geofenceLng}
-                  onChange={(e) => setGeofenceLng(e.target.value)}
-                  placeholder="e.g. 47.9774"
-                  className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-sm"
-                />
-              </label>
-              <label className="text-xs">
-                <span className="block text-slate-500 mb-1">Radius (meters)</span>
-                <input
-                  type="number"
-                  value={geofenceRadius}
-                  onChange={(e) => setGeofenceRadius(e.target.value)}
-                  className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-sm"
-                />
-              </label>
-              <label className="text-xs">
-                <span className="block text-slate-500 mb-1">Work starts at</span>
-                <input
-                  type="time"
-                  value={workStartTime}
-                  onChange={(e) => setWorkStartTime(e.target.value)}
-                  className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-sm"
-                />
-              </label>
-            </div>
-            <div className="flex items-center gap-3">
-              <button
-                onClick={saveGeofence}
-                className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-slate-900 text-white text-sm font-medium hover:bg-slate-700"
-              >
-                <Save size={13} /> Save geofence
-              </button>
-              {geofenceLat && geofenceLng && (
-                <a
-                  href={`https://maps.google.com/?q=${geofenceLat},${geofenceLng}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-blue-600 hover:text-blue-800 text-xs"
-                >
-                  <MapPin size={12} /> View on map
-                </a>
-              )}
-            </div>
-          </div>
-        )}
+        {isAdmin && <Geofences workStartTime={workStartTime} setWorkStartTime={setWorkStartTime} onSaveHours={saveGeofence} savedMsg={geofenceMsg} />}
 
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 lg:col-span-2">
           <h2 className="text-sm font-semibold text-slate-700">Brands</h2>

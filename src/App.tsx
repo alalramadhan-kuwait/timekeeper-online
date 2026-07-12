@@ -8,6 +8,7 @@ import CrmPage from './pages/Crm';
 import FollowUpsPage from './pages/FollowUps';
 import StockPage from './pages/Stock';
 import HistoryLogPage from './pages/HistoryLog';
+import MyPortalPage from './pages/MyPortal';
 import SettingsPage from './pages/Settings';
 import LeavePage from './pages/Leave';
 import AttendancePage from './pages/Attendance';
@@ -30,6 +31,7 @@ function Shell() {
     <Routes>
       <Route element={<Layout />}>
         <Route path="/" element={<Dashboard />} />
+        <Route path="/me" element={<MyPortalPage />} />
         <Route path="/sales" element={g('/sales', <SalesPage />)} />
         <Route path="/crm" element={g('/crm', <CrmPage />)} />
         <Route path="/follow-ups" element={g('/follow-ups', <FollowUpsPage />)} />
