@@ -4,6 +4,7 @@ import { format, parseISO, eachDayOfInterval, startOfMonth, endOfMonth } from 'd
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { Spinner, Badge } from '../components/ui';
+import { locationType, LOCATION_TYPE_STYLE, LocationType } from '../lib/locationType';
 
 interface AttendanceRecord {
   id: string;
@@ -77,6 +78,7 @@ function ManagerDashboard() {
   const [employees, setEmployees] = useState<EmpLite[]>([]);
   const [empFilter, setEmpFilter] = useState('All');
   const [teamFilter, setTeamFilter] = useState('All');
+  const [typeFilter, setTypeFilter] = useState<'All' | LocationType>('All');
   const [statusFilter, setStatusFilter] = useState('All');
   const [editId, setEditId] = useState<string | null>(null);
   const [editNote, setEditNote] = useState('');
@@ -106,9 +108,10 @@ function ManagerDashboard() {
   const filtered = useMemo(() => records.filter((r) => {
     if (empFilter !== 'All' && r.employee_name !== empFilter) return false;
     if (teamFilter !== 'All' && empByName.get(r.employee_name)?.location !== teamFilter) return false;
+    if (typeFilter !== 'All' && locationType(empByName.get(r.employee_name)?.location) !== typeFilter) return false;
     if (statusFilter !== 'All' && statusOf(r) !== statusFilter) return false;
     return true;
-  }), [records, empFilter, teamFilter, statusFilter, empByName, today]);
+  }), [records, empFilter, teamFilter, typeFilter, statusFilter, empByName, today]);
 
   // summary
   const summary = useMemo(() => {
@@ -120,10 +123,11 @@ function ManagerDashboard() {
     const absentToday = (to >= today && from <= today)
       ? activeEmployees.filter((e) => !presentToday.has(e.full_name) &&
           (teamFilter === 'All' || e.location === teamFilter) &&
+          (typeFilter === 'All' || locationType(e.location) === typeFilter) &&
           (empFilter === 'All' || e.full_name === empFilter))
       : [];
     return { late, stillIn, missed, totalHours, records: filtered.length, absentToday };
-  }, [filtered, activeEmployees, today, from, to, teamFilter, empFilter]);
+  }, [filtered, activeEmployees, today, from, to, teamFilter, typeFilter, empFilter]);
 
   // per-employee report (payroll)
   const report = useMemo(() => {
@@ -195,6 +199,11 @@ function ManagerDashboard() {
         <select value={empFilter} onChange={(e) => setEmpFilter(e.target.value)} className="px-3 py-1.5 rounded-lg border border-slate-300 text-sm bg-white">
           <option value="All">All employees</option>
           {employees.map((e) => <option key={e.id} value={e.full_name}>{e.full_name}</option>)}
+        </select>
+        <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value as 'All' | LocationType)} className="px-3 py-1.5 rounded-lg border border-slate-300 text-sm bg-white">
+          <option value="All">Office + Store</option>
+          <option value="Head Office">Head Office only</option>
+          <option value="Retail Store">Retail Store only</option>
         </select>
         <select value={teamFilter} onChange={(e) => setTeamFilter(e.target.value)} className="px-3 py-1.5 rounded-lg border border-slate-300 text-sm bg-white">
           <option value="All">All areas</option>
@@ -283,7 +292,12 @@ function ManagerDashboard() {
               {report.length === 0 && <tr><td colSpan={7} className="px-4 py-6 text-center text-slate-400">No attendance in this range</td></tr>}
               {report.map((r) => (
                 <tr key={r.name} className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
-                  <td className="px-4 py-2.5 font-medium text-slate-700 whitespace-nowrap">{r.name}</td>
+                  <td className="px-4 py-2.5 font-medium text-slate-700 whitespace-nowrap">
+                    <span className="flex items-center gap-1.5">
+                      {(() => { const lt = locationType(empByName.get(r.name)?.location); return lt ? <span className={`h-2 w-2 rounded-full shrink-0 ${LOCATION_TYPE_STYLE[lt].dot}`} /> : null; })()}
+                      {r.name}
+                    </span>
+                  </td>
                   <td className="px-4 py-2.5 text-slate-500 hidden sm:table-cell">{r.area}</td>
                   <td className="px-4 py-2.5 text-right">{r.daysPresent}</td>
                   <td className={`px-4 py-2.5 text-right ${r.late ? 'text-amber-600 font-medium' : 'text-slate-400'}`}>{r.late || '—'}</td>

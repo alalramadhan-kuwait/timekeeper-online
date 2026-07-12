@@ -7,6 +7,7 @@ import { AlertTriangle, CalendarClock, Clock3, CalendarDays } from 'lucide-react
 import { CrudModule, CrudConfig } from '../components/CrudModule';
 import { Badge } from '../components/ui';
 import { supabase } from '../lib/supabase';
+import { locationType, LOCATION_TYPE_STYLE } from '../lib/locationType';
 
 /**
  * Kuwait Labor Law (Law No. 6 of 2010): annual leave is 30 paid WORKING days.
@@ -151,7 +152,9 @@ export default function LeavePage() {
   const plannerEmployees = useMemo(() =>
     employees.filter((e) => ['Active', 'On leave'].includes(e.status) &&
       (employeeFilter === 'All' || e.id === employeeFilter) &&
-      (areaFilter === 'All' || e.location === areaFilter)),
+      (areaFilter === 'All' || e.location === areaFilter))
+      // group Head Office staff together, then Retail Store, then by name
+      .sort((a, b) => (locationType(a.location) ?? 'zzz').localeCompare(locationType(b.location) ?? 'zzz') || a.full_name.localeCompare(b.full_name)),
     [employees, employeeFilter, areaFilter]);
 
   // ── balances (unchanged logic)
@@ -301,11 +304,16 @@ export default function LeavePage() {
               )}
               {plannerEmployees.map((e) => {
                 const cov = coverage.get(e.id);
+                const lt = locationType(e.location);
+                const ltStyle = lt ? LOCATION_TYPE_STYLE[lt] : null;
                 return (
                   <tr key={e.id}>
-                    <td className="sticky left-0 z-10 bg-white px-3 py-1.5 font-medium text-slate-700 border-b border-r border-slate-100 whitespace-nowrap">
-                      {e.full_name}
-                      {e.location && <span className="block text-[10px] text-slate-400">{e.location}</span>}
+                    <td className={`sticky left-0 z-10 bg-white px-3 py-1.5 font-medium text-slate-700 border-b border-r border-slate-100 whitespace-nowrap border-l-4 ${lt === 'Head Office' ? 'border-l-indigo-500' : lt === 'Retail Store' ? 'border-l-teal-500' : 'border-l-transparent'}`}>
+                      <span className="flex items-center gap-1.5">
+                        {ltStyle && <span className={`h-2 w-2 rounded-full shrink-0 ${ltStyle.dot}`} />}
+                        {e.full_name}
+                      </span>
+                      {e.location && <span className="block text-[10px] text-slate-400 ml-3.5">{e.location}</span>}
                     </td>
                     {monthDays.map((d) => {
                       const key = format(d, 'yyyy-MM-dd');
@@ -333,6 +341,8 @@ export default function LeavePage() {
           <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-sm bg-amber-300 inline-block" /> Pending</span>
           <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-sm ring-2 ring-rose-500 ring-inset inline-block" /> Overlap (same area/role)</span>
           <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-sm bg-amber-100 inline-block" /> Today · <span className="h-3 w-3 rounded-sm bg-slate-100 inline-block" /> Friday</span>
+          <span className="flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-full bg-indigo-500 inline-block" /> Head Office</span>
+          <span className="flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-full bg-teal-500 inline-block" /> Retail Store</span>
         </div>
       </div>
 

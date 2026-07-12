@@ -28,7 +28,16 @@ export interface ColumnDef {
   /** For computed columns (no matching field in the row) — returns the value to sort by */
   sortValue?: (row: Record<string, any>) => any;
   render?: (row: Record<string, any>) => React.ReactNode;
+  /** Hide this column below a breakpoint so wide tables fit on small screens. */
+  hideBelow?: 'sm' | 'md' | 'lg' | 'xl';
 }
+
+const HIDE_CLASS: Record<NonNullable<ColumnDef['hideBelow']>, string> = {
+  sm: 'hidden sm:table-cell',
+  md: 'hidden md:table-cell',
+  lg: 'hidden lg:table-cell',
+  xl: 'hidden xl:table-cell',
+};
 
 export interface ExtraFilter {
   key: string;
@@ -241,7 +250,7 @@ export function CrudModule({ config }: { config: CrudConfig }) {
                 {config.columns.map((c) => (
                   <th
                     key={c.key}
-                    className={`px-4 py-3 whitespace-nowrap select-none ${c.sortable ? 'cursor-pointer hover:text-slate-800' : ''}`}
+                    className={`px-4 py-3 whitespace-nowrap select-none ${c.hideBelow ? HIDE_CLASS[c.hideBelow] : ''} ${c.sortable ? 'cursor-pointer hover:text-slate-800' : ''}`}
                     onClick={c.sortable ? () => handleSort(c.key) : undefined}
                   >
                     <span className="inline-flex items-center gap-1">
@@ -268,7 +277,7 @@ export function CrudModule({ config }: { config: CrudConfig }) {
                   onClick={config.rowClickToEdit && writable ? () => { setEditing(row); setShowForm(true); } : undefined}
                 >
                   {config.columns.map((c) => (
-                    <td key={c.key} className="px-4 py-2.5 whitespace-nowrap">
+                    <td key={c.key} className={`px-4 py-2.5 whitespace-nowrap ${c.hideBelow ? HIDE_CLASS[c.hideBelow] : ''}`}>
                       {c.render ? c.render(row) : (
                         c.key === config.statusField || c.key === 'priority'
                           ? <StatusBadge value={String(row[c.key] ?? '')} />

@@ -268,16 +268,17 @@ const employees: CrudConfig = {
     { key: 'notes', label: 'Notes', type: 'textarea' },
   ],
   columns: [
-    { key: 'full_name', label: 'Employee' },
-    { key: 'job_title', label: 'Job title' },
-    { key: 'location', label: 'Location' },
-    { key: 'civil_id', label: 'Civil ID' },
-    { key: 'residency_expiry', label: 'Residency expiry', render: (r) => <ExpiryCell date={r.residency_expiry} /> },
-    { key: 'work_permit_expiry', label: 'Work permit expiry', render: (r) => <ExpiryCell date={r.work_permit_expiry} /> },
-    { key: 'phone', label: 'Phone' },
-    { key: 'joining_date', label: 'Joined' },
-    { key: 'status', label: 'Status' },
+    { key: 'full_name', label: 'Employee', sortable: true },
+    { key: 'job_title', label: 'Job title', sortable: true, hideBelow: 'sm' },
+    { key: 'location', label: 'Location', sortable: true, hideBelow: 'md' },
+    { key: 'civil_id', label: 'Civil ID', hideBelow: 'xl' },
+    { key: 'residency_expiry', label: 'Residency', sortable: true, hideBelow: 'lg', render: (r) => <ExpiryCell date={r.residency_expiry} /> },
+    { key: 'work_permit_expiry', label: 'Work permit', sortable: true, hideBelow: 'lg', render: (r) => <ExpiryCell date={r.work_permit_expiry} /> },
+    { key: 'phone', label: 'Phone', hideBelow: 'xl' },
+    { key: 'joining_date', label: 'Joined', sortable: true, hideBelow: 'xl' },
+    { key: 'status', label: 'Status', sortable: true },
   ],
+  rowClickToEdit: true,
 };
 export const EmployeesPage = () => <CrudModule config={employees} />;
 
