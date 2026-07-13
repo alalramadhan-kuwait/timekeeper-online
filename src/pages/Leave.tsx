@@ -26,7 +26,14 @@ export function workingDaysBetween(startStr: string, endStr: string): number {
 }
 
 interface Employee { id: string; full_name: string; annual_leave_entitlement: number; status: string; location: string | null; job_title: string | null }
-interface LeaveRow { id: string; employee_id: string; leave_start: string; leave_end: string; days: number; approval_status: string; notes: string | null }
+interface LeaveRow { id: string; employee_id: string; leave_type?: string; leave_start: string; leave_end: string; days: number; approval_status: string; notes: string | null }
+
+const LEAVE_TYPES = ['Annual', 'Sick', 'WFH'];
+const TYPE_BADGE: Record<string, string> = {
+  Annual: 'bg-blue-100 text-blue-700 border-blue-200',
+  Sick: 'bg-rose-100 text-rose-600 border-rose-200',
+  WFH: 'bg-violet-100 text-violet-700 border-violet-200',
+};
 
 type Phase = 'Pending' | 'Rejected' | 'Cancelled' | 'Upcoming' | 'Active' | 'Completed';
 const PHASE_STYLE: Record<Phase, string> = {
@@ -57,12 +64,13 @@ export default function LeavePage() {
   const [employeeFilter, setEmployeeFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState<'All' | Phase>('All');
   const [areaFilter, setAreaFilter] = useState('All');
+  const [ltypeFilter, setLtypeFilter] = useState('All');
   const [month, setMonth] = useState(format(new Date(), 'yyyy-MM'));
 
   useEffect(() => {
     supabase.from('employees').select('id, full_name, annual_leave_entitlement, status, location, job_title')
       .order('full_name').then(({ data }) => setEmployees((data as Employee[]) ?? []));
-    supabase.from('leave_records').select('id, employee_id, leave_start, leave_end, days, approval_status, notes')
+    supabase.from('leave_records').select('id, employee_id, leave_type, leave_start, leave_end, days, approval_status, notes')
       .then(({ data }) => setLeaves((data as LeaveRow[]) ?? []));
   }, [reload]);
 
@@ -80,8 +88,9 @@ export default function LeavePage() {
     if (employeeFilter !== 'All' && l.employee_id !== employeeFilter) return false;
     if (statusFilter !== 'All' && l.phase !== statusFilter) return false;
     if (areaFilter !== 'All' && l.emp?.location !== areaFilter) return false;
+    if (ltypeFilter !== 'All' && (l.leave_type ?? 'Annual') !== ltypeFilter) return false;
     return true;
-  }), [enriched, employeeFilter, statusFilter, areaFilter]);
+  }), [enriched, employeeFilter, statusFilter, areaFilter, ltypeFilter]);
 
   // ── overlap detection: two live leaves (Pending/Approved) sharing area OR role with intersecting dates
   const { overlaps, overlapCells } = useMemo(() => {
@@ -130,12 +139,12 @@ export default function LeavePage() {
     return eachDayOfInterval({ start, end: endOfMonth(start) });
   }, [month]);
 
-  // coverage[empId][yyyy-MM-dd] = 'Approved'|'Pending'
+  // coverage[empId][yyyy-MM-dd] = 'Approved'|'Pending'|'WFH'
   const coverage = useMemo(() => {
-    const map = new Map<string, Map<string, 'Approved' | 'Pending'>>();
+    const map = new Map<string, Map<string, 'Approved' | 'Pending' | 'WFH'>>();
     for (const l of filtered) {
       if (!['Pending', 'Upcoming', 'Active', 'Completed'].includes(l.phase)) continue;
-      const kind = l.approval_status === 'Approved' ? 'Approved' : 'Pending';
+      const kind = l.approval_status === 'Approved' ? (l.leave_type === 'WFH' ? 'WFH' : 'Approved') : 'Pending';
       const s = parseISO(l.leave_start), e = parseISO(l.leave_end);
       for (const d of eachDayOfInterval({ start: s, end: e })) {
         const key = format(d, 'yyyy-MM-dd');
@@ -163,10 +172,13 @@ export default function LeavePage() {
     return employees
       .filter((e) => ['Active', 'On leave'].includes(e.status))
       .map((e) => {
-        const taken = leaves
-          .filter((l) => l.employee_id === e.id && l.approval_status === 'Approved' && new Date(l.leave_start).getFullYear() === year)
-          .reduce((s, l) => s + Number(l.days), 0);
-        return { ...e, taken, remaining: Number(e.annual_leave_entitlement) - taken };
+        const approvedThisYear = leaves.filter((l) =>
+          l.employee_id === e.id && l.approval_status === 'Approved' && new Date(l.leave_start).getFullYear() === year);
+        // only Annual leave consumes the entitlement — Sick tracked separately, WFH never deducts
+        const taken = approvedThisYear.filter((l) => (l.leave_type ?? 'Annual') === 'Annual').reduce((s, l) => s + Number(l.days), 0);
+        const sick = approvedThisYear.filter((l) => l.leave_type === 'Sick').reduce((s, l) => s + Number(l.days), 0);
+        const wfh = approvedThisYear.filter((l) => l.leave_type === 'WFH').reduce((s, l) => s + Number(l.days), 0);
+        return { ...e, taken, sick, wfh, remaining: Number(e.annual_leave_entitlement) - taken };
       });
   }, [employees, leaves]);
 
@@ -182,6 +194,7 @@ export default function LeavePage() {
       if (employeeFilter !== 'All' && r.employee_id !== employeeFilter) return false;
       if (statusFilter !== 'All' && phaseOf(r as LeaveRow, today) !== statusFilter) return false;
       if (areaFilter !== 'All' && empById.get(r.employee_id)?.location !== areaFilter) return false;
+      if (ltypeFilter !== 'All' && (r.leave_type ?? 'Annual') !== ltypeFilter) return false;
       return true;
     },
     beforeSave: (p) => {
@@ -192,6 +205,7 @@ export default function LeavePage() {
     },
     fields: [
       { key: 'employee_id', label: 'Employee', type: 'select', required: true, options: employees.map((e) => ({ value: e.id, label: e.full_name })) },
+      { key: 'leave_type', label: 'Type', type: 'select', options: LEAVE_TYPES, defaultValue: 'Annual', required: true },
       { key: 'leave_start', label: 'Leave start', type: 'date', required: true },
       { key: 'leave_end', label: 'Leave end', type: 'date', required: true },
       { key: 'days', label: 'Working days (blank = auto, Fridays excluded)', type: 'number' },
@@ -200,6 +214,7 @@ export default function LeavePage() {
     ],
     columns: [
       { key: 'employee_id', label: 'Employee', sortable: true, sortValue: (r) => empNames[r.employee_id] ?? '', render: (r) => empNames[r.employee_id] ?? '—' },
+      { key: 'leave_type', label: 'Type', sortable: true, render: (r) => <Badge className={TYPE_BADGE[r.leave_type ?? 'Annual'] ?? 'bg-slate-100'}>{r.leave_type ?? 'Annual'}</Badge> },
       { key: 'leave_start', label: 'Start', sortable: true },
       { key: 'leave_end', label: 'End', sortable: true },
       { key: 'days', label: 'Days', sortable: true },
@@ -209,7 +224,7 @@ export default function LeavePage() {
       } },
       { key: 'notes', label: 'Notes' },
     ],
-  }), [employees, empNames, today, employeeFilter, statusFilter, areaFilter, empById]);
+  }), [employees, empNames, today, employeeFilter, statusFilter, areaFilter, ltypeFilter, empById]);
 
   const cardData: { label: string; value: number; icon: typeof CalendarDays; accent: string }[] = [
     { label: 'Pending approval', value: counts.Pending, icon: CalendarClock, accent: counts.Pending ? 'text-amber-600' : 'text-slate-400' },
@@ -275,6 +290,10 @@ export default function LeavePage() {
           <option value="All">All areas</option>
           {areas.map((a) => <option key={a} value={a}>{a}</option>)}
         </select>
+        <select value={ltypeFilter} onChange={(e) => setLtypeFilter(e.target.value)} className="px-3 py-1.5 rounded-lg border border-slate-300 text-sm bg-white">
+          <option value="All">All types</option>
+          {LEAVE_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+        </select>
         <input type="month" value={month} onChange={(e) => setMonth(e.target.value)} className="px-3 py-1.5 rounded-lg border border-slate-300 text-sm bg-white" />
       </div>
 
@@ -320,7 +339,7 @@ export default function LeavePage() {
                       const kind = cov?.get(key);
                       const overlap = overlapCells.has(`${e.id}|${key}`);
                       const fri = getDay(d) === 5;
-                      const bg = kind === 'Approved' ? 'bg-emerald-400' : kind === 'Pending' ? 'bg-amber-300' : fri ? 'bg-slate-50' : '';
+                      const bg = kind === 'Approved' ? 'bg-emerald-400' : kind === 'WFH' ? 'bg-violet-400' : kind === 'Pending' ? 'bg-amber-300' : fri ? 'bg-slate-50' : '';
                       return (
                         <td key={key} className="p-0 border-b border-slate-100 h-7">
                           <div
@@ -338,6 +357,7 @@ export default function LeavePage() {
         </div>
         <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-slate-400">
           <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-sm bg-emerald-400 inline-block" /> Approved</span>
+          <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-sm bg-violet-400 inline-block" /> WFH</span>
           <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-sm bg-amber-300 inline-block" /> Pending</span>
           <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-sm ring-2 ring-rose-500 ring-inset inline-block" /> Overlap (same area/role)</span>
           <span className="flex items-center gap-1"><span className="h-3 w-3 rounded-sm bg-amber-100 inline-block" /> Today · <span className="h-3 w-3 rounded-sm bg-slate-100 inline-block" /> Friday</span>
@@ -355,18 +375,22 @@ export default function LeavePage() {
               <tr className="text-left text-xs text-slate-500 uppercase tracking-wide border-b border-slate-200">
                 <th className="px-4 py-3">Employee</th>
                 <th className="px-4 py-3 text-right">Entitlement</th>
-                <th className="px-4 py-3 text-right">Taken (approved)</th>
+                <th className="px-4 py-3 text-right">Annual taken</th>
                 <th className="px-4 py-3 text-right">Remaining</th>
+                <th className="px-4 py-3 text-right hidden sm:table-cell">Sick</th>
+                <th className="px-4 py-3 text-right hidden sm:table-cell">WFH</th>
               </tr>
             </thead>
             <tbody>
-              {balances.length === 0 && <tr><td colSpan={4} className="px-4 py-6 text-center text-slate-400">Add employees in the HR module first</td></tr>}
+              {balances.length === 0 && <tr><td colSpan={6} className="px-4 py-6 text-center text-slate-400">Add employees in the HR module first</td></tr>}
               {balances.map((b) => (
                 <tr key={b.id} className="border-b border-slate-100 last:border-0">
                   <td className="px-4 py-2.5 font-medium">{b.full_name}</td>
                   <td className="px-4 py-2.5 text-right">{b.annual_leave_entitlement}</td>
                   <td className="px-4 py-2.5 text-right">{b.taken}</td>
                   <td className={`px-4 py-2.5 text-right font-semibold ${b.remaining < 0 ? 'text-red-600' : b.remaining <= 5 ? 'text-amber-600' : 'text-emerald-700'}`}>{b.remaining}</td>
+                  <td className="px-4 py-2.5 text-right text-slate-500 hidden sm:table-cell">{b.sick || '—'}</td>
+                  <td className="px-4 py-2.5 text-right text-slate-500 hidden sm:table-cell">{b.wfh || '—'}</td>
                 </tr>
               ))}
             </tbody>

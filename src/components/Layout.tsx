@@ -1,7 +1,7 @@
 import { NavLink, Outlet } from 'react-router-dom';
 import {
-  LayoutDashboard, TrendingUp, Hourglass, PackageCheck, Truck, Handshake,
-  Star, Users, CalendarRange, FileWarning, LogOut, Watch, Menu, Contact, Settings, Gem, ClipboardCheck, PhoneCall, Boxes, History, UserRound, type LucideIcon,
+  LayoutDashboard, TrendingUp, Hourglass, Truck, Handshake,
+  Star, Users, CalendarRange, LogOut, Watch, Menu, Contact, Settings, Gem, ClipboardCheck, PhoneCall, Boxes, History, UserRound, Wrench, type LucideIcon,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth, Role } from '../context/AuthContext';
@@ -43,15 +43,17 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/purchase-orders', label: 'Supplier Payments', icon: Truck, roles: ['admin', 'manager', 'staff', 'viewer', 'operations'] },
       { to: '/consignments', label: 'Consignments', icon: Handshake, roles: ['admin', 'manager', 'staff', 'viewer', 'operations'] },
       { to: '/limited-projects', label: 'Limited Projects', icon: Gem, roles: ['admin', 'manager', 'staff', 'viewer', 'operations'] },
+      { to: '/repairs', label: 'Repair Watches', icon: Wrench, roles: ['admin', 'manager', 'staff', 'viewer', 'operations'] },
     ],
   },
   {
     title: 'HR & Team',
     items: [
-      { to: '/attendance', label: 'Attendance', icon: ClipboardCheck, roles: ['admin', 'manager', 'staff', 'hr', 'sales', 'operations'] },
+      // staff clock in from My Portal; this page is the manager dashboard
+      { to: '/attendance', label: 'Attendance', icon: ClipboardCheck, roles: ['admin', 'manager', 'hr'] },
       { to: '/hr', label: 'Employees', icon: Users, roles: ['admin', 'manager', 'hr'] },
       { to: '/leave', label: 'Leave Tracking', icon: CalendarRange, roles: ['admin', 'manager', 'hr'] },
-      { to: '/company-documents', label: 'Company Documents', icon: FileWarning, roles: ['admin', 'manager', 'hr', 'viewer'] },
+      // Company Documents hidden from the menu while unused (module + data kept; direct URL still works)
     ],
   },
   {
@@ -74,6 +76,8 @@ export function canAccessPath(to: string, role: Role | null, pageAccess: string[
   if (to === '/' || to === '/me') return true; // dashboard and personal portal are always available
   // user management stays role-gated and cannot be granted via page_access
   if (to === '/settings') return role === 'admin' || role === 'manager';
+  // hidden from the menu but still reachable by URL for HR (module kept per cleanup decision)
+  if (to === '/company-documents') return ['admin', 'manager', 'hr'].includes(role ?? '');
   if (role === 'admin') return true;
   if (pageAccess && pageAccess.length > 0) return pageAccess.includes(to);
   const item = NAV_GROUPS.flatMap((g) => g.items).find((n) => n.to === to);

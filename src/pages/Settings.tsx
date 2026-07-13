@@ -710,7 +710,7 @@ export default function SettingsPage() {
         />
 
         {['admin', 'manager'].includes(role ?? '') && <TeamAccess />}
-        {isAdmin && <DailyBriefing />}
+        {/* Daily Briefing parked (cleanup item 14) — <DailyBriefing /> and the edge function are kept for when it's wanted */}
 
         {isAdmin && <Geofences workStartTime={workStartTime} setWorkStartTime={setWorkStartTime} onSaveHours={saveGeofence} savedMsg={geofenceMsg} />}
 

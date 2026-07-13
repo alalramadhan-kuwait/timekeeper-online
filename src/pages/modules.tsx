@@ -10,6 +10,68 @@ const salesRoles = (r: string | null) => ['admin', 'manager', 'staff', 'sales'].
 const purchasingRoles = (r: string | null) => ['admin', 'manager', 'operations'].includes(r ?? '');
 const hrRoles = (r: string | null) => ['admin', 'hr'].includes(r ?? '');
 
+/* ---------------- Repair Watches (Operations) ---------------- */
+const REPAIR_STATUSES = [
+  'Received', 'Under inspection', 'Waiting customer approval', 'Sent to supplier / brand',
+  'Under repair', 'Ready for pickup', 'Returned to customer', 'Cancelled',
+];
+const repairWatches: CrudConfig = {
+  table: 'repair_watches',
+  title: 'Repair Watches',
+  description: 'Watches received from customers for repair or service — from intake to return.',
+  canWrite: purchasingRoles,
+  statusField: 'status',
+  statusOptions: REPAIR_STATUSES,
+  searchKeys: ['repair_id', 'customer_name', 'customer_phone', 'brand', 'model', 'serial_number', 'issue'],
+  orderBy: { column: 'date_received', ascending: false },
+  extraFilters: [
+    { key: 'brand', label: 'Brand' },
+    { key: 'assigned_to', label: 'Assigned' },
+    { key: 'repair_location', label: 'Location', options: ['In-store', 'Supplier', 'Brand', 'Workshop'] },
+  ],
+  beforeSave: (p) => {
+    if (!p.repair_id) p.repair_id = `RW-${Date.now().toString().slice(-6)}`;
+    return p;
+  },
+  fields: [
+    { key: 'repair_id', label: 'Repair ID (blank = auto)', type: 'text' },
+    { key: 'date_received', label: 'Date received', type: 'date', required: true },
+    { key: 'customer_name', label: 'Customer name', type: 'text', required: true },
+    { key: 'customer_phone', label: 'Customer phone', type: 'text' },
+    { key: 'brand', label: 'Watch brand', type: 'combobox' },
+    { key: 'model', label: 'Watch model', type: 'text' },
+    { key: 'serial_number', label: 'Serial number', type: 'text' },
+    { key: 'issue', label: 'Issue / customer complaint', type: 'textarea' },
+    { key: 'received_by', label: 'Received by (staff)', type: 'combobox' },
+    { key: 'status', label: 'Status', type: 'select', options: REPAIR_STATUSES, defaultValue: 'Received', required: true },
+    { key: 'assigned_to', label: 'Assigned person', type: 'combobox' },
+    { key: 'repair_location', label: 'Repair location', type: 'select', options: ['In-store', 'Supplier', 'Brand', 'Workshop'] },
+    { key: 'estimated_completion', label: 'Estimated completion', type: 'date' },
+    { key: 'cost_estimate', label: 'Cost estimate (KD)', type: 'number' },
+    { key: 'customer_approval', label: 'Customer approval', type: 'select', options: ['Pending', 'Approved', 'Declined', 'Not needed'], defaultValue: 'Pending' },
+    { key: 'final_cost', label: 'Final cost (KD)', type: 'number' },
+    { key: 'date_returned', label: 'Date returned to customer', type: 'date' },
+    { key: 'photo_url', label: 'Photo of watch condition', type: 'image', bucket: 'project-photos' },
+    { key: 'notes', label: 'Notes / remarks', type: 'textarea' },
+  ],
+  columns: [
+    { key: 'photo_url', label: 'Photo', render: (r) => r.photo_url
+      ? <img src={r.photo_url} alt="" className="h-10 w-10 object-cover rounded-md border border-slate-200" />
+      : <span className="text-slate-300 text-xs">—</span> },
+    { key: 'repair_id', label: 'Repair ID', sortable: true },
+    { key: 'customer_name', label: 'Customer', sortable: true },
+    { key: 'brand', label: 'Brand', sortable: true, hideBelow: 'sm' },
+    { key: 'model', label: 'Model', hideBelow: 'lg' },
+    { key: 'date_received', label: 'Received', sortable: true, hideBelow: 'md' },
+    { key: 'status', label: 'Status', sortable: true },
+    { key: 'assigned_to', label: 'Assigned', hideBelow: 'lg' },
+    { key: 'estimated_completion', label: 'ETA', sortable: true, hideBelow: 'md', render: (r) => <ExpiryCell date={r.estimated_completion} /> },
+    { key: 'final_cost', label: 'Cost', sortable: true, hideBelow: 'sm', render: (r) => r.final_cost != null ? kd(r.final_cost) : (r.cost_estimate != null ? <span className="text-slate-400">~{kd(r.cost_estimate)}</span> : '—') },
+  ],
+  rowClickToEdit: true,
+};
+export const RepairWatchesPage = () => <CrudModule config={repairWatches} />;
+
 const kd = (v: number | null | undefined) => (v == null ? '—' : `${formatKD(Number(v))} KD`);
 
 function ExpiryCell({ date }: { date: string | null }) {
@@ -265,22 +327,60 @@ const employees: CrudConfig = {
     { key: 'location', label: 'Location', type: 'select', options: ['Timekeeper HQ', 'Avenues', 'Time Gallery'] },
     { key: 'status', label: 'Status', type: 'select', options: ['Active', 'On leave', 'Resigned', 'Terminated'], defaultValue: 'Active', required: true },
     { key: 'annual_leave_entitlement', label: 'Annual leave days', type: 'number', defaultValue: 30 },
+    { key: 'user_id', label: 'Linked user account (for My Portal)', type: 'select', options: [] }, // filled at runtime
+    { key: 'portal_enabled', label: 'Portal enabled', type: 'checkbox', defaultValue: true },
     { key: 'notes', label: 'Notes', type: 'textarea' },
   ],
-  columns: [
-    { key: 'full_name', label: 'Employee', sortable: true },
-    { key: 'job_title', label: 'Job title', sortable: true, hideBelow: 'sm' },
-    { key: 'location', label: 'Location', sortable: true, hideBelow: 'md' },
-    { key: 'civil_id', label: 'Civil ID', hideBelow: 'xl' },
-    { key: 'residency_expiry', label: 'Residency', sortable: true, hideBelow: 'lg', render: (r) => <ExpiryCell date={r.residency_expiry} /> },
-    { key: 'work_permit_expiry', label: 'Work permit', sortable: true, hideBelow: 'lg', render: (r) => <ExpiryCell date={r.work_permit_expiry} /> },
-    { key: 'phone', label: 'Phone', hideBelow: 'xl' },
-    { key: 'joining_date', label: 'Joined', sortable: true, hideBelow: 'xl' },
-    { key: 'status', label: 'Status', sortable: true },
-  ],
-  rowClickToEdit: true,
+  columns: [],
 };
-export const EmployeesPage = () => <CrudModule config={employees} />;
+
+/** HR Employees is the master list — accounts are linked manually here, never by name matching. */
+export function EmployeesPage() {
+  const [profiles, setProfiles] = useState<{ id: string; full_name: string; role: string }[]>([]);
+  useEffect(() => {
+    supabase.from('profiles').select('id, full_name, role').order('full_name')
+      .then(({ data }) => setProfiles((data as { id: string; full_name: string; role: string }[]) ?? []));
+  }, []);
+  const profById = useMemo(() => new Map(profiles.map((p) => [p.id, p])), [profiles]);
+
+  const config = useMemo<CrudConfig>(() => ({
+    ...employees,
+    fields: employees.fields.map((f) =>
+      f.key === 'user_id'
+        ? { ...f, options: [{ value: '', label: '— not linked —' }, ...profiles.map((p) => ({ value: p.id, label: `${p.full_name} (${p.role})` }))] }
+        : f),
+    columns: [
+      { key: 'full_name', label: 'Employee', sortable: true },
+      { key: 'job_title', label: 'Job title', sortable: true, hideBelow: 'sm' },
+      { key: 'location', label: 'Location', sortable: true, hideBelow: 'md' },
+      {
+        key: 'portal', label: 'Portal', sortable: true,
+        sortValue: (r) => (r.user_id ? (r.portal_enabled ? 2 : 1) : 0),
+        render: (r) => {
+          if (!r.user_id) return <Badge className="bg-slate-100 text-slate-500 border-slate-200">Not linked</Badge>;
+          const p = profById.get(r.user_id);
+          return (
+            <span className="flex items-center gap-1.5 whitespace-nowrap">
+              <Badge className={r.portal_enabled ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 'bg-amber-100 text-amber-700 border-amber-200'}>
+                {r.portal_enabled ? 'Linked' : 'Linked · portal off'}
+              </Badge>
+              {p && <span className="text-xs text-slate-400 capitalize">{p.role}</span>}
+            </span>
+          );
+        },
+      },
+      { key: 'residency_expiry', label: 'Residency', sortable: true, hideBelow: 'lg', render: (r) => <ExpiryCell date={r.residency_expiry} /> },
+      { key: 'work_permit_expiry', label: 'Work permit', sortable: true, hideBelow: 'lg', render: (r) => <ExpiryCell date={r.work_permit_expiry} /> },
+      { key: 'civil_id', label: 'Civil ID', hideBelow: 'xl' },
+      { key: 'phone', label: 'Phone', hideBelow: 'xl' },
+      { key: 'joining_date', label: 'Joined', sortable: true, hideBelow: 'xl' },
+      { key: 'status', label: 'Status', sortable: true },
+    ],
+    rowClickToEdit: true,
+  }), [profiles, profById]);
+
+  return <CrudModule config={config} />;
+}
 
 /* ---------------- Company documents ---------------- */
 const companyDocs: CrudConfig = {

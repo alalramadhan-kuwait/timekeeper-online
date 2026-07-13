@@ -14,7 +14,7 @@ import LeavePage from './pages/Leave';
 import AttendancePage from './pages/Attendance';
 import {
   WaitingListPage, PreOrdersPage, PurchaseOrdersPage, ConsignmentsPage,
-  VipCustomersPage, EmployeesPage, CompanyDocsPage, LimitedProjectsPage,
+  VipCustomersPage, EmployeesPage, CompanyDocsPage, LimitedProjectsPage, RepairWatchesPage,
 } from './pages/modules';
 import { Spinner } from './components/ui';
 
@@ -45,6 +45,7 @@ function Shell() {
         <Route path="/hr" element={g('/hr', <EmployeesPage />)} />
         <Route path="/leave" element={g('/leave', <LeavePage />)} />
         <Route path="/limited-projects" element={g('/limited-projects', <LimitedProjectsPage />)} />
+        <Route path="/repairs" element={g('/repairs', <RepairWatchesPage />)} />
         <Route path="/company-documents" element={g('/company-documents', <CompanyDocsPage />)} />
         <Route path="/history" element={g('/history', <HistoryLogPage />)} />
         <Route path="/settings" element={g('/settings', <SettingsPage />)} />
