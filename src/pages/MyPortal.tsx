@@ -15,7 +15,7 @@ interface EmpRecord {
   work_permit_expiry: string | null; joining_date: string | null; annual_leave_entitlement: number | null;
   status: string | null; portal_enabled: boolean | null; phone: string | null;
 }
-interface LeaveRec { id: string; employee_id: string; leave_type: string; leave_start: string; leave_end: string; days: number; approval_status: string; notes: string | null; created_at: string }
+interface LeaveRec { id: string; employee_id: string; leave_type: string; leave_start: string; leave_end: string; days: number; approval_status: string; notes: string | null; created_at: string; document_url: string | null }
 interface AttRec { id: string; clock_in: string; clock_out: string | null; is_late: boolean; justified: boolean; location: string | null; correction_reason: string | null }
 interface EmpRequest { id: string; request_type: string; details: string; status: string; manager_remarks: string | null; created_at: string }
 interface Geofence { id: string; name: string; lat: number; lng: number; radius_m: number; active: boolean }
@@ -66,6 +66,7 @@ export default function MyPortalPage() {
   const [lvStart, setLvStart] = useState('');
   const [lvEnd, setLvEnd] = useState('');
   const [lvNotes, setLvNotes] = useState('');
+  const [lvFile, setLvFile] = useState<File | null>(null);
   const [showReqForm, setShowReqForm] = useState<null | 'HR update' | 'Attendance correction'>(null);
   const [reqDetails, setReqDetails] = useState('');
   const [busy, setBusy] = useState(false);
@@ -161,15 +162,33 @@ export default function MyPortalPage() {
     if (!emp) return;
     if (!lvStart || !lvEnd || lvEnd < lvStart) { setMsg('Pick a valid start and end date'); return; }
     setBusy(true); setMsg(null);
+
+    // sick-note document goes to the private leave-docs bucket (own folder)
+    let documentPath: string | null = null;
+    if (lvFile) {
+      if (lvFile.size > 10 * 1024 * 1024) { setMsg('Could not submit: document is larger than 10 MB'); setBusy(false); return; }
+      const safeName = lvFile.name.replace(/[^\w.\-]+/g, '_');
+      const path = `${user!.id}/${Date.now()}-${safeName}`;
+      const { error: upErr } = await supabase.storage.from('leave-docs').upload(path, lvFile);
+      if (upErr) { setMsg(`Could not upload document: ${upErr.message}`); setBusy(false); return; }
+      documentPath = path;
+    }
+
     const { error } = await supabase.from('leave_records').insert({
       employee_id: emp.id, leave_type: lvType, leave_start: lvStart, leave_end: lvEnd,
-      days: lvDays, approval_status: 'Pending', notes: lvNotes || null,
+      days: lvDays, approval_status: 'Pending', notes: lvNotes || null, document_url: documentPath,
     });
     setBusy(false);
     if (error) { setMsg(`Could not submit: ${error.message}`); return; }
     setMsg(`${lvType} request submitted — awaiting approval`);
-    setShowLeaveForm(false); setLvStart(''); setLvEnd(''); setLvNotes('');
+    setShowLeaveForm(false); setLvStart(''); setLvEnd(''); setLvNotes(''); setLvFile(null);
     load();
+  }
+
+  async function openDocument(path: string) {
+    const { data, error } = await supabase.storage.from('leave-docs').createSignedUrl(path, 300);
+    if (error || !data?.signedUrl) { setMsg('Could not open document'); return; }
+    window.open(data.signedUrl, '_blank', 'noopener');
   }
 
   async function submitRequest() {
@@ -200,11 +219,11 @@ export default function MyPortalPage() {
     ...leaves.map((l) => ({
       id: `lv-${l.id}`, when: l.created_at,
       label: `${l.leave_type} leave · ${l.leave_start} → ${l.leave_end} (${l.days}d)`,
-      type: l.leave_type, status: l.approval_status, remarks: l.notes,
+      type: l.leave_type, status: l.approval_status, remarks: l.notes, doc: l.document_url,
     })),
     ...requests.map((r) => ({
       id: `rq-${r.id}`, when: r.created_at, label: `${r.request_type}: ${r.details}`,
-      type: r.request_type, status: r.status, remarks: r.manager_remarks,
+      type: r.request_type, status: r.status, remarks: r.manager_remarks, doc: null as string | null,
     })),
   ].sort((a, b) => (b.when ?? '').localeCompare(a.when ?? '')), [leaves, requests]);
 
@@ -331,8 +350,20 @@ export default function MyPortalPage() {
                 <div className="px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-sm font-semibold">{lvDays || '—'}</div></div>
             </div>
             <textarea value={lvNotes} onChange={(e) => setLvNotes(e.target.value)} rows={2}
-              placeholder={lvType === 'Sick' ? 'Reason — mention if you have a sick note document' : 'Reason / notes'}
+              placeholder="Reason / notes"
               className={`${input} w-full resize-none mb-2`} />
+            {lvType === 'Sick' && (
+              <label className="block text-xs mb-2">
+                <span className="block text-slate-500 mb-1">Sick note document (photo or PDF, optional)</span>
+                <input
+                  type="file"
+                  accept="image/*,application/pdf"
+                  onChange={(e) => setLvFile(e.target.files?.[0] ?? null)}
+                  className="block text-sm text-slate-600 file:mr-3 file:px-3 file:py-1.5 file:rounded-lg file:border-0 file:bg-slate-900 file:text-white file:text-xs file:font-medium hover:file:bg-slate-700"
+                />
+                {lvFile && <span className="text-slate-400">Attached: {lvFile.name}</span>}
+              </label>
+            )}
             <div className="flex gap-2">
               <button onClick={submitLeave} disabled={busy}
                 className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-slate-900 text-white text-xs font-medium disabled:opacity-60">
@@ -383,6 +414,9 @@ export default function MyPortalPage() {
               <div key={r.id} className="py-2.5 flex items-start gap-2 text-sm flex-wrap">
                 <Badge className={TYPE_BADGE[r.type] ?? 'bg-slate-100 text-slate-600 border-slate-200'}>{r.type}</Badge>
                 <span className="flex-1 min-w-40 text-slate-600">{r.label}</span>
+                {r.doc && (
+                  <button onClick={() => openDocument(r.doc!)} className="text-xs text-blue-600 hover:underline">📎 document</button>
+                )}
                 <Badge className={STATUS_BADGE[r.status] ?? 'bg-slate-100 text-slate-500'}>{r.status}</Badge>
                 {r.remarks && <span className="w-full text-xs text-slate-400 italic">↳ {r.remarks}</span>}
               </div>

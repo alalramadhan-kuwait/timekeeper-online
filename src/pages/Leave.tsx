@@ -26,7 +26,13 @@ export function workingDaysBetween(startStr: string, endStr: string): number {
 }
 
 interface Employee { id: string; full_name: string; annual_leave_entitlement: number; status: string; location: string | null; job_title: string | null }
-interface LeaveRow { id: string; employee_id: string; leave_type?: string; leave_start: string; leave_end: string; days: number; approval_status: string; notes: string | null }
+interface LeaveRow { id: string; employee_id: string; leave_type?: string; leave_start: string; leave_end: string; days: number; approval_status: string; notes: string | null; document_url?: string | null }
+
+/** Open a sick-note stored in the private leave-docs bucket via a short-lived signed URL. */
+async function openLeaveDocument(path: string) {
+  const { data } = await supabase.storage.from('leave-docs').createSignedUrl(path, 300);
+  if (data?.signedUrl) window.open(data.signedUrl, '_blank', 'noopener');
+}
 
 const LEAVE_TYPES = ['Annual', 'Sick', 'WFH'];
 const TYPE_BADGE: Record<string, string> = {
@@ -223,6 +229,9 @@ export default function LeavePage() {
         return <Badge className={PHASE_STYLE[p]}>{p}</Badge>;
       } },
       { key: 'notes', label: 'Notes' },
+      { key: 'document_url', label: 'Doc', render: (r) => r.document_url
+        ? <button onClick={(e) => { e.stopPropagation(); openLeaveDocument(r.document_url); }} className="text-blue-600 hover:underline text-xs">📎 view</button>
+        : <span className="text-slate-300 text-xs">—</span> },
     ],
   }), [employees, empNames, today, employeeFilter, statusFilter, areaFilter, ltypeFilter, empById]);
 
