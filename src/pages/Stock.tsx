@@ -13,6 +13,8 @@ interface StockRow {
 
 interface SalesAgg { units_30d: number; units_90d: number; revenue_90d: number; last_sold: string | null }
 
+interface HistPoint { snapshot_date: string; retail_value: number; cost_value: number; dead_value: number; units: number; products: number }
+
 type Movement = 'fast' | 'slow' | 'dead';
 
 interface ProductRow {
@@ -51,7 +53,8 @@ export default function StockPage() {
   const [view, setView] = useState<'products' | 'brands'>('brands');
   const [salesMap, setSalesMap] = useState<Map<string, SalesAgg>>(new Map());
   const [costMap, setCostMap] = useState<Map<string, number>>(new Map()); // `${product_id}|${outlet}` → cost (managers only, enforced by RLS)
-  const [history, setHistory] = useState<{ snapshot_date: string; retail_value: number; dead_value: number }[]>([]);
+  const [history, setHistory] = useState<HistPoint[]>([]);
+  const [selDay, setSelDay] = useState<number | null>(null);
   const [clientId, setClientId] = useState('');
 
   async function load() {
@@ -89,8 +92,8 @@ export default function StockPage() {
       .select('finished_at, status, error').order('started_at', { ascending: false }).limit(1);
     setLastSync(log?.[0] ?? null);
     const { data: hist } = await supabase.from('lightspeed_stock_value_history')
-      .select('snapshot_date, retail_value, dead_value').order('snapshot_date').limit(180);
-    setHistory((hist ?? []) as { snapshot_date: string; retail_value: number; dead_value: number }[]);
+      .select('snapshot_date, retail_value, cost_value, dead_value, units, products').order('snapshot_date').limit(365);
+    setHistory((hist ?? []) as HistPoint[]);
     setLoading(false);
   }
 
@@ -409,41 +412,65 @@ export default function StockPage() {
             );
           })()}
 
-          {/* Stock value over time */}
+          {/* Stock value over time — interactive */}
           {history.length > 0 && (() => {
-            const max = Math.max(1, ...history.map((h) => Number(h.retail_value)));
-            const w = Math.max(history.length * 44, 300);
-            const h = 120;
-            const x = (i: number) => history.length === 1 ? w / 2 : (i / (history.length - 1)) * (w - 20) + 10;
-            const y = (v: number) => h - 10 - (v / max) * (h - 20);
-            const line = (key: 'retail_value' | 'dead_value') =>
+            const W = Math.max(history.length * 52, 320), H = 150, padT = 12, padB = 26, padL = 6, padR = 6;
+            const vals = history.flatMap((d) => [Number(d.retail_value), Number(d.dead_value), Number(d.cost_value)]);
+            const max = Math.max(1, ...vals);
+            const x = (i: number) => history.length === 1 ? W / 2 : padL + (i / (history.length - 1)) * (W - padL - padR);
+            const y = (v: number) => padT + (1 - v / max) * (H - padT - padB);
+            const line = (key: 'retail_value' | 'dead_value' | 'cost_value') =>
               history.map((d, i) => `${i === 0 ? 'M' : 'L'} ${x(i).toFixed(1)} ${y(Number(d[key])).toFixed(1)}`).join(' ');
+            const area = `${line('retail_value')} L ${x(history.length - 1).toFixed(1)} ${(H - padB).toFixed(1)} L ${x(0).toFixed(1)} ${(H - padB).toFixed(1)} Z`;
+            const sel = selDay != null ? history[selDay] : history[history.length - 1];
+            const selIdx = selDay != null ? selDay : history.length - 1;
+            const prev = selIdx > 0 ? history[selIdx - 1] : null;
+            const delta = prev ? Number(sel.retail_value) - Number(prev.retail_value) : 0;
+            const profit = Number(sel.retail_value) - Number(sel.cost_value);
             return (
               <div className="mb-4 bg-white rounded-xl border border-slate-200 shadow-sm p-4">
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
                   <h3 className="text-sm font-semibold text-slate-700">Stock value over time</h3>
                   <div className="text-xs text-slate-400 flex gap-3">
-                    <span className="flex items-center gap-1"><span className="h-2 w-3 rounded bg-slate-800 inline-block" /> Retail value</span>
+                    <span className="flex items-center gap-1"><span className="h-2 w-3 rounded bg-slate-800 inline-block" /> Retail</span>
+                    {hasCost && <span className="flex items-center gap-1"><span className="h-2 w-3 rounded bg-emerald-500 inline-block" /> Cost</span>}
                     <span className="flex items-center gap-1"><span className="h-2 w-3 rounded bg-rose-400 inline-block" /> Not-moving</span>
                   </div>
                 </div>
+
+                {/* selected-day readout */}
+                <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 mb-2 text-sm">
+                  <span className="font-semibold text-slate-800">{sel.snapshot_date}</span>
+                  <span className="text-slate-500">Retail <b className="text-slate-800">{formatKD(Number(sel.retail_value))} KD</b></span>
+                  {hasCost && <span className="text-slate-500">Profit <b className="text-emerald-600">{formatKD(profit)} KD</b></span>}
+                  <span className="text-slate-500">Not-moving <b className="text-rose-600">{formatKD(Number(sel.dead_value))} KD</b></span>
+                  <span className="text-slate-500">{sel.units} units · {sel.products} products</span>
+                  {prev && <span className={`text-xs font-medium ${delta >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>{delta >= 0 ? '▲' : '▼'} {formatKD(Math.abs(delta))} KD vs prev</span>}
+                </div>
+
                 <div className="overflow-x-auto">
-                  <svg width={w} height={h} className="min-w-full">
-                    <path d={line('retail_value')} fill="none" stroke="#1e293b" strokeWidth="2" />
+                  <svg width={W} height={H} className="min-w-full" role="img" aria-label="Stock value over time">
+                    {[0.25, 0.5, 0.75].map((g) => (
+                      <line key={g} x1={padL} x2={W - padR} y1={y(max * g)} y2={y(max * g)} stroke="#eef1f4" strokeWidth="1" />
+                    ))}
+                    <path d={area} fill="#1e293b" fillOpacity="0.05" />
                     <path d={line('dead_value')} fill="none" stroke="#fb7185" strokeWidth="2" />
+                    {hasCost && <path d={line('cost_value')} fill="none" stroke="#10b981" strokeWidth="1.5" strokeDasharray="3 3" />}
+                    <path d={line('retail_value')} fill="none" stroke="#1e293b" strokeWidth="2" />
                     {history.map((d, i) => (
-                      <g key={d.snapshot_date}>
-                        <circle cx={x(i)} cy={y(Number(d.retail_value))} r="2.5" fill="#1e293b" />
-                        <title>{d.snapshot_date}: {formatKD(Number(d.retail_value))} KD retail</title>
+                      <g key={d.snapshot_date} onClick={() => setSelDay(i)} style={{ cursor: 'pointer' }}>
+                        <rect x={x(i) - (W / history.length) / 2} y={0} width={W / history.length} height={H - padB} fill="transparent" />
+                        <circle cx={x(i)} cy={y(Number(d.retail_value))} r={i === selIdx ? 5 : 3} fill={i === selIdx ? '#c07d16' : '#1e293b'} stroke="#fff" strokeWidth="1.5" />
+                        <text x={x(i)} y={H - 8} textAnchor="middle" fontSize="9" fill="#94a3b8">{d.snapshot_date.slice(5)}</text>
+                        <title>{d.snapshot_date}: {formatKD(Number(d.retail_value))} KD</title>
                       </g>
                     ))}
                   </svg>
                 </div>
-                <div className="flex justify-between text-[10px] text-slate-400 mt-1">
-                  <span>{history[0].snapshot_date}</span>
-                  <span>{history[history.length - 1].snapshot_date}</span>
-                </div>
-                {history.length === 1 && <p className="text-xs text-slate-400 mt-1">One data point so far — the trend line builds up as the daily 8:00 sync runs.</p>}
+                <p className="text-xs text-slate-400 mt-1">
+                  Tap any point for that day's figures. History is recorded from the first sync on {history[0].snapshot_date} and grows daily —
+                  Lightspeed doesn't expose stock value before then.
+                </p>
               </div>
             );
           })()}
