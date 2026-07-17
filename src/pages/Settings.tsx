@@ -12,12 +12,13 @@ interface TeamProfile { id: string; full_name: string; role: string; email?: str
 const usernameOf = (email?: string) =>
   email ? (email.toLowerCase().endsWith('@time-keeper.com') ? email.split('@')[0] : email) : '—';
 
-const ROLES = ['admin', 'manager', 'sales', 'operations', 'staff', 'hr', 'viewer'];
+const ROLES = ['admin', 'manager', 'sales', 'operations', 'marketing', 'staff', 'hr', 'viewer'];
 const ROLE_HINTS: Record<string, string> = {
   admin: 'Full access + settings & users',
   manager: 'Full access',
   sales: 'CRM, follow-ups, VIP, demand list',
-  operations: 'Supplier payments, consignments, limited projects, stock',
+  operations: 'Supplier payments, consignments, limited projects, stock, repairs',
+  marketing: 'Instagram performance, content planner',
   staff: 'Sales + purchasing view (legacy)',
   hr: 'Employees, leave, company documents',
   viewer: 'Read-only',

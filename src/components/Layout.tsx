@@ -1,7 +1,7 @@
 import { NavLink, Outlet } from 'react-router-dom';
 import {
   LayoutDashboard, TrendingUp, Hourglass, Truck, Handshake,
-  Star, Users, CalendarRange, LogOut, Watch, Menu, Contact, Settings, Gem, ClipboardCheck, PhoneCall, Boxes, History, UserRound, Wrench, type LucideIcon,
+  Star, Users, CalendarRange, LogOut, Watch, Menu, Contact, Settings, Gem, ClipboardCheck, PhoneCall, Boxes, History, UserRound, Wrench, Instagram, Clapperboard, type LucideIcon,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth, Role } from '../context/AuthContext';
@@ -54,6 +54,13 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/hr', label: 'Employees', icon: Users, roles: ['admin', 'manager', 'hr'] },
       { to: '/leave', label: 'Leave Tracking', icon: CalendarRange, roles: ['admin', 'manager', 'hr'] },
       // Company Documents hidden from the menu while unused (module + data kept; direct URL still works)
+    ],
+  },
+  {
+    title: 'Media & Marketing',
+    items: [
+      { to: '/instagram', label: 'Instagram Performance', icon: Instagram, roles: ['admin', 'manager', 'marketing', 'sales'] },
+      { to: '/content', label: 'Content Planner', icon: Clapperboard, roles: ['admin', 'manager', 'marketing', 'sales'] },
     ],
   },
   {

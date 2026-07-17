@@ -9,6 +9,139 @@ import { supabase } from '../lib/supabase';
 const salesRoles = (r: string | null) => ['admin', 'manager', 'staff', 'sales'].includes(r ?? '');
 const purchasingRoles = (r: string | null) => ['admin', 'manager', 'operations'].includes(r ?? '');
 const hrRoles = (r: string | null) => ['admin', 'hr'].includes(r ?? '');
+const marketingRoles = (r: string | null) => ['admin', 'manager', 'marketing'].includes(r ?? '');
+
+/* ---------------- Content Planner (Marketing) ---------------- */
+const CONTENT_STATUSES = ['Idea', 'In progress', 'Waiting approval', 'Approved', 'Scheduled', 'Posted', 'Cancelled'];
+const CONTENT_STATUS_COLOR: Record<string, string> = {
+  Idea: 'bg-slate-100 text-slate-600',
+  'In progress': 'bg-blue-100 text-blue-700',
+  'Waiting approval': 'bg-amber-100 text-amber-700',
+  Approved: 'bg-teal-100 text-teal-700',
+  Scheduled: 'bg-violet-100 text-violet-700',
+  Posted: 'bg-emerald-100 text-emerald-700',
+  Cancelled: 'bg-rose-100 text-rose-600',
+};
+const contentTasks: CrudConfig = {
+  table: 'content_tasks',
+  title: 'Content Planner',
+  description: 'Plan and track content from idea to posted — mainly for Instagram (@timekeeperkw).',
+  canWrite: marketingRoles,
+  statusField: 'status',
+  statusOptions: CONTENT_STATUSES,
+  searchKeys: ['title', 'caption', 'owner', 'channel'],
+  orderBy: { column: 'planned_date', ascending: true },
+  extraFilters: [
+    { key: 'content_type', label: 'Type', options: ['Post', 'Reel', 'Story', 'WhatsApp', 'Email', 'Event'] },
+    { key: 'channel', label: 'Channel' },
+    { key: 'owner', label: 'Owner' },
+  ],
+  fields: [
+    { key: 'title', label: 'Content title', type: 'text', required: true },
+    { key: 'content_type', label: 'Content type', type: 'select', options: ['Post', 'Reel', 'Story', 'WhatsApp', 'Email', 'Event'], defaultValue: 'Post' },
+    { key: 'channel', label: 'Channel', type: 'combobox', defaultValue: 'Instagram' },
+    { key: 'owner', label: 'Owner', type: 'combobox' },
+    { key: 'planned_date', label: 'Planned date', type: 'date' },
+    { key: 'status', label: 'Status', type: 'select', options: CONTENT_STATUSES, defaultValue: 'Idea', required: true },
+    { key: 'caption', label: 'Caption', type: 'textarea' },
+    { key: 'asset_url', label: 'Asset / file', type: 'image', bucket: 'project-photos' },
+    { key: 'approval_status', label: 'Approval status', type: 'select', options: ['Pending', 'Approved', 'Rejected'], defaultValue: 'Pending' },
+    { key: 'posted_date', label: 'Posted date', type: 'date' },
+    { key: 'notes', label: 'Notes', type: 'textarea' },
+  ],
+  columns: [
+    { key: 'asset_url', label: '', render: (r) => r.asset_url
+      ? <img src={r.asset_url} alt="" className="h-9 w-9 object-cover rounded-md border border-slate-200" />
+      : <span className="text-slate-300 text-xs">—</span> },
+    { key: 'title', label: 'Title', sortable: true },
+    { key: 'content_type', label: 'Type', sortable: true, hideBelow: 'sm' },
+    { key: 'channel', label: 'Channel', hideBelow: 'md' },
+    { key: 'owner', label: 'Owner', sortable: true, hideBelow: 'lg' },
+    { key: 'planned_date', label: 'Planned', sortable: true, render: (r) => <ExpiryCell date={r.planned_date} /> },
+    { key: 'status', label: 'Status', sortable: true },
+    { key: 'posted_date', label: 'Posted', sortable: true, hideBelow: 'lg' },
+  ],
+  rowClickToEdit: true,
+};
+
+export function ContentPlannerPage() {
+  const [view, setView] = useState<'list' | 'calendar'>('calendar');
+  const [month, setMonth] = useState(() => new Date().toISOString().slice(0, 7));
+  const [tasks, setTasks] = useState<any[]>([]);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  useEffect(() => {
+    supabase.from('content_tasks').select('id, title, content_type, planned_date, status')
+      .then(({ data }) => setTasks(data ?? []));
+  }, [refreshKey, view]);
+
+  const config = useMemo<CrudConfig>(() => ({ ...contentTasks, onChanged: () => setRefreshKey((k) => k + 1) }), []);
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-2">
+        <div className="flex rounded-lg border border-slate-300 overflow-hidden text-sm">
+          {(['calendar', 'list'] as const).map((v) => (
+            <button key={v} onClick={() => setView(v)}
+              className={`px-3 py-1.5 capitalize ${view === v ? 'bg-slate-900 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}>{v}</button>
+          ))}
+        </div>
+        {view === 'calendar' && (
+          <input type="month" value={month} onChange={(e) => setMonth(e.target.value)}
+            className="px-3 py-1.5 rounded-lg border border-slate-300 text-sm bg-white" />
+        )}
+      </div>
+
+      {view === 'calendar' && <ContentCalendar month={month} tasks={tasks} />}
+      <CrudModule key={refreshKey} config={config} />
+    </div>
+  );
+}
+
+function ContentCalendar({ month, tasks }: { month: string; tasks: any[] }) {
+  const first = new Date(`${month}-01T00:00:00`);
+  const daysInMonth = new Date(first.getFullYear(), first.getMonth() + 1, 0).getDate();
+  const leadBlanks = (first.getDay() + 1) % 7; // grid starts Saturday (Kuwait week)
+  const byDay = new Map<string, any[]>();
+  for (const t of tasks) {
+    if (!t.planned_date || t.planned_date.slice(0, 7) !== month) continue;
+    const d = t.planned_date.slice(8, 10);
+    if (!byDay.has(d)) byDay.set(d, []);
+    byDay.get(d)!.push(t);
+  }
+  const WD = ['Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+  const cells: (number | null)[] = [...Array(leadBlanks).fill(null), ...Array.from({ length: daysInMonth }, (_, i) => i + 1)];
+  const todayStr = new Date().toISOString().slice(0, 10);
+
+  return (
+    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-3">
+      <div className="grid grid-cols-7 gap-1 mb-1">
+        {WD.map((d) => <div key={d} className="text-[10px] font-semibold text-slate-400 uppercase text-center py-1">{d}</div>)}
+      </div>
+      <div className="grid grid-cols-7 gap-1">
+        {cells.map((day, i) => {
+          if (day == null) return <div key={i} />;
+          const dd = String(day).padStart(2, '0');
+          const dateStr = `${month}-${dd}`;
+          const items = byDay.get(dd) ?? [];
+          return (
+            <div key={i} className={`min-h-[68px] rounded-lg border p-1 ${dateStr === todayStr ? 'border-amber-400 bg-amber-50/40' : 'border-slate-100'}`}>
+              <div className="text-[10px] text-slate-400 mb-0.5">{day}</div>
+              <div className="space-y-0.5">
+                {items.slice(0, 3).map((t) => (
+                  <div key={t.id} className={`text-[10px] leading-tight px-1 py-0.5 rounded truncate ${CONTENT_STATUS_COLOR[t.status] ?? 'bg-slate-100 text-slate-600'}`} title={`${t.title} · ${t.status}`}>
+                    {t.title}
+                  </div>
+                ))}
+                {items.length > 3 && <div className="text-[9px] text-slate-400">+{items.length - 3} more</div>}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 /* ---------------- Repair Watches (Operations) ---------------- */
 const REPAIR_STATUSES = [
