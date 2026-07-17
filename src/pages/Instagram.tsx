@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Instagram, RefreshCw, PlugZap, Heart, MessageCircle, Bookmark, TrendingUp, Users } from 'lucide-react';
+import { Instagram, RefreshCw, PlugZap, Heart, MessageCircle, Bookmark, TrendingUp, Users, Pencil, X } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Spinner } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
@@ -12,6 +12,25 @@ const nf = (n: number | null | undefined) => (n == null ? '—' : n.toLocaleStri
 export default function InstagramPage() {
   const { role } = useAuth();
   const canSync = ['admin', 'manager'].includes(role ?? '');
+  const canEdit = ['admin', 'manager', 'marketing'].includes(role ?? '');
+  const todayKw = new Date(Date.now() + 3 * 3600_000).toISOString().slice(0, 10);
+  const [showManual, setShowManual] = useState(false);
+  const [mDate, setMDate] = useState(todayKw);
+  const [mFollowers, setMFollowers] = useState('');
+  const [mReach, setMReach] = useState('');
+  const [mViews, setMViews] = useState('');
+
+  async function saveManual() {
+    const patch: Record<string, unknown> = { snapshot_date: mDate, updated_at: new Date().toISOString() };
+    if (mFollowers) patch.followers = parseInt(mFollowers);
+    if (mReach) patch.reach = parseInt(mReach);
+    if (mViews) patch.profile_views = parseInt(mViews);
+    const { error } = await supabase.from('instagram_daily').upsert(patch);
+    if (error) { setMsg(`Save failed: ${error.message}`); return; }
+    setMsg('Numbers saved ✓');
+    setShowManual(false); setMFollowers(''); setMReach(''); setMViews('');
+    load();
+  }
   const [daily, setDaily] = useState<DailyRow[]>([]);
   const [media, setMedia] = useState<MediaRow[]>([]);
   const [username, setUsername] = useState<string | null>(null);
@@ -86,13 +105,42 @@ export default function InstagramPage() {
             {username ? <>@{username} · </> : ''}Auto-synced every morning.{latest && <> Latest: {latest.snapshot_date}.</>}
           </p>
         </div>
-        {canSync && connected && (
-          <button onClick={syncNow} disabled={syncing}
-            className="flex items-center gap-2 bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-700 disabled:opacity-60">
-            <RefreshCw size={15} className={syncing ? 'animate-spin' : ''} /> {syncing ? 'Syncing…' : 'Sync now'}
-          </button>
-        )}
+        <div className="flex gap-2">
+          {canEdit && (
+            <button onClick={() => { setShowManual((v) => !v); setMDate(todayKw); }}
+              className="flex items-center gap-2 bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-50">
+              <Pencil size={15} /> Log numbers
+            </button>
+          )}
+          {canSync && connected && (
+            <button onClick={syncNow} disabled={syncing}
+              className="flex items-center gap-2 bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-700 disabled:opacity-60">
+              <RefreshCw size={15} className={syncing ? 'animate-spin' : ''} /> {syncing ? 'Syncing…' : 'Sync now'}
+            </button>
+          )}
+        </div>
       </div>
+
+      {showManual && (
+        <div className="mb-4 bg-white rounded-xl border border-slate-200 shadow-sm p-4 max-w-2xl">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-sm font-semibold text-slate-700">Log numbers manually</h3>
+            <button onClick={() => setShowManual(false)} className="text-slate-400 hover:text-slate-600"><X size={16} /></button>
+          </div>
+          <p className="text-xs text-slate-400 mb-3">Copy these from the Instagram app → Professional dashboard / Insights. Leave a field blank to keep its current value.</p>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-2">
+            <label className="text-xs"><span className="block text-slate-500 mb-1">Date</span>
+              <input type="date" value={mDate} onChange={(e) => setMDate(e.target.value)} className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-sm" /></label>
+            <label className="text-xs"><span className="block text-slate-500 mb-1">Followers</span>
+              <input type="number" value={mFollowers} onChange={(e) => setMFollowers(e.target.value)} placeholder="e.g. 262100" className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-sm" /></label>
+            <label className="text-xs"><span className="block text-slate-500 mb-1">Reach (7/30d)</span>
+              <input type="number" value={mReach} onChange={(e) => setMReach(e.target.value)} placeholder="e.g. 48900" className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-sm" /></label>
+            <label className="text-xs"><span className="block text-slate-500 mb-1">Profile views</span>
+              <input type="number" value={mViews} onChange={(e) => setMViews(e.target.value)} placeholder="e.g. 3200" className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-sm" /></label>
+          </div>
+          <button onClick={saveManual} className="px-4 py-1.5 rounded-lg bg-slate-900 text-white text-sm font-medium hover:bg-slate-700">Save</button>
+        </div>
+      )}
 
       {msg && (
         <div className={`mb-3 px-4 py-2 rounded-lg text-sm border ${msg.includes('✓') || msg.startsWith('Connected') ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-red-50 border-red-200 text-red-700'}`}>{msg}</div>
