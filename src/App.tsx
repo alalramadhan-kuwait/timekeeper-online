@@ -10,12 +10,13 @@ import StockPage from './pages/Stock';
 import HistoryLogPage from './pages/HistoryLog';
 import MyPortalPage from './pages/MyPortal';
 import InstagramPage from './pages/Instagram';
+import UserActivityPage from './pages/UserActivity';
 import SettingsPage from './pages/Settings';
 import LeavePage from './pages/Leave';
 import AttendancePage from './pages/Attendance';
 import {
   WaitingListPage, PreOrdersPage, PurchaseOrdersPage, ConsignmentsPage,
-  VipCustomersPage, EmployeesPage, CompanyDocsPage, LimitedProjectsPage, RepairWatchesPage, ContentPlannerPage,
+  VipCustomersPage, EmployeesPage, CompanyDocsPage, LimitedProjectsPage, RepairWatchesPage, ContentPlannerPage, PaidAdsPage,
 } from './pages/modules';
 import { Spinner } from './components/ui';
 
@@ -49,6 +50,8 @@ function Shell() {
         <Route path="/repairs" element={g('/repairs', <RepairWatchesPage />)} />
         <Route path="/instagram" element={g('/instagram', <InstagramPage />)} />
         <Route path="/content" element={g('/content', <ContentPlannerPage />)} />
+        <Route path="/paid-ads" element={g('/paid-ads', <PaidAdsPage />)} />
+        <Route path="/activity" element={g('/activity', <UserActivityPage />)} />
         <Route path="/company-documents" element={g('/company-documents', <CompanyDocsPage />)} />
         <Route path="/history" element={g('/history', <HistoryLogPage />)} />
         <Route path="/settings" element={g('/settings', <SettingsPage />)} />

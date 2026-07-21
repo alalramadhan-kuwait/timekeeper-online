@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useState } from 'react';
 import { Plus, Pencil, Trash2, Search, ImageOff, ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Modal, Spinner, StatusBadge } from './ui';
@@ -63,6 +63,8 @@ export interface CrudConfig {
   toolbarExtra?: React.ReactNode;
   rowClickToEdit?: boolean;
   extraFilters?: ExtraFilter[];
+  /** Group rows under a heading row by this column (skipped while an explicit column sort is active). */
+  groupBy?: string;
 }
 
 export function CrudModule({ config }: { config: CrudConfig }) {
@@ -152,6 +154,10 @@ export function CrudModule({ config }: { config: CrudConfig }) {
           : String(av).localeCompare(String(bv));
         return sortAsc ? cmp : -cmp;
       });
+    } else if (config.groupBy) {
+      // keep group members contiguous so the heading rows read correctly
+      const g = config.groupBy;
+      r = [...r].sort((a, b) => String(a[g] ?? '～').localeCompare(String(b[g] ?? '～')));
     }
     return r;
   }, [rows, search, statusFilter, extraFilterValues, sortCol, sortAsc, config]);
@@ -270,9 +276,19 @@ export function CrudModule({ config }: { config: CrudConfig }) {
               {filtered.length === 0 && (
                 <tr><td colSpan={config.columns.length + 1} className="px-4 py-8 text-center text-slate-400">No records</td></tr>
               )}
-              {filtered.map((row) => (
+              {filtered.map((row, rowIdx) => (
+                <Fragment key={row.id}>
+                {config.groupBy && !sortCol && (rowIdx === 0 || String(filtered[rowIdx - 1][config.groupBy] ?? '') !== String(row[config.groupBy] ?? '')) && (
+                  <tr className="bg-slate-50 border-b border-slate-200">
+                    <td colSpan={config.columns.length + (writable ? 1 : 0)} className="px-4 py-1.5 text-xs font-bold text-slate-600 uppercase tracking-wide">
+                      {row[config.groupBy] || 'Unassigned'}
+                      <span className="ml-2 font-normal text-slate-400 normal-case">
+                        {filtered.filter((x) => String(x[config.groupBy!] ?? '') === String(row[config.groupBy!] ?? '')).length} records
+                      </span>
+                    </td>
+                  </tr>
+                )}
                 <tr
-                  key={row.id}
                   className={`border-b border-slate-100 last:border-0 hover:bg-slate-50 ${config.rowClickToEdit && writable ? 'cursor-pointer' : ''}`}
                   onClick={config.rowClickToEdit && writable ? () => { setEditing(row); setShowForm(true); } : undefined}
                 >
@@ -294,6 +310,7 @@ export function CrudModule({ config }: { config: CrudConfig }) {
                     </td>
                   )}
                 </tr>
+                </Fragment>
               ))}
             </tbody>
           </table>

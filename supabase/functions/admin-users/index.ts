@@ -40,6 +40,7 @@ Deno.serve(async (req: Request) => {
       full_name: profById.get(u.id)?.full_name ?? u.email ?? "Unknown",
       role: profById.get(u.id)?.role ?? "viewer",
       page_access: profById.get(u.id)?.page_access ?? null,
+      last_sign_in_at: u.last_sign_in_at ?? null,
     }));
     return json({ ok: true, team });
   }

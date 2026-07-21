@@ -1,10 +1,11 @@
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, TrendingUp, Hourglass, Truck, Handshake,
-  Star, Users, CalendarRange, LogOut, Watch, Menu, Contact, Settings, Gem, ClipboardCheck, PhoneCall, Boxes, History, UserRound, Wrench, Instagram, Clapperboard, type LucideIcon,
+  Star, Users, CalendarRange, LogOut, Watch, Menu, Contact, Settings, Gem, ClipboardCheck, PhoneCall, Boxes, History, UserRound, Wrench, Instagram, Clapperboard, Megaphone, Activity, type LucideIcon,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth, Role } from '../context/AuthContext';
+import { logActivity } from '../lib/activity';
 
 interface NavItem {
   to: string;
@@ -61,11 +62,13 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { to: '/instagram', label: 'Instagram Performance', icon: Instagram, roles: ['admin', 'manager', 'marketing', 'sales'] },
       { to: '/content', label: 'Content Planner', icon: Clapperboard, roles: ['admin', 'manager', 'marketing', 'sales'] },
+      { to: '/paid-ads', label: 'Paid Ads Tracker', icon: Megaphone, roles: ['admin', 'manager', 'marketing', 'sales'] },
     ],
   },
   {
     title: 'Admin',
     items: [
+      { to: '/activity', label: 'User Activity', icon: Activity, roles: ['admin', 'manager'] },
       { to: '/history', label: 'History Log', icon: History, roles: ['admin', 'manager'] },
       { to: '/settings', label: 'Settings', icon: Settings, roles: ['admin', 'manager'] },
     ],
@@ -98,9 +101,13 @@ function groupsFor(role: Role | null, pageAccess: string[] | null): NavGroup[] {
 }
 
 export default function Layout() {
-  const { profile, role, pageAccess, signOut } = useAuth();
+  const { profile, role, pageAccess, signOut, user } = useAuth();
   const [open, setOpen] = useState(false);
   const groups = groupsFor(role, pageAccess);
+  const location = useLocation();
+
+  // record page visits for the admin User Activity page (throttled, fire-and-forget)
+  useEffect(() => { logActivity(user?.id, location.pathname); }, [user?.id, location.pathname]);
 
   return (
     <div className="min-h-screen flex">
@@ -149,7 +156,8 @@ export default function Layout() {
           <button onClick={() => setOpen((o) => !o)} aria-label="Menu"><Menu size={20} /></button>
           <span className="font-semibold">Timekeeper Online</span>
         </div>
-        <main className="p-4 md:p-6 max-w-7xl mx-auto">
+        {/* full available width — tables were leaving a large empty gutter on wide screens */}
+        <main className="p-4 md:p-6 w-full">
           <Outlet />
         </main>
       </div>

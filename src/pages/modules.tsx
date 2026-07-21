@@ -143,6 +143,70 @@ function ContentCalendar({ month, tasks }: { month: string; tasks: any[] }) {
   );
 }
 
+/* ---------------- Paid Ads Tracker (Marketing) ---------------- */
+const AD_STATUSES = ['Planned', 'Waiting content', 'Waiting approval', 'Active', 'Completed', 'Paused', 'Cancelled'];
+const AD_PLATFORMS = ['Instagram', 'Meta', 'Google', 'TikTok', 'Snapchat', 'Other'];
+const paidAds: CrudConfig = {
+  rowClickToEdit: true,
+  table: 'paid_ads',
+  title: 'Paid Ads Tracker',
+  description: 'Ads we run for Timekeeper and paid contracts we run for external companies.',
+  canWrite: marketingRoles,
+  statusField: 'status',
+  statusOptions: AD_STATUSES,
+  searchKeys: ['ad_name', 'client_name', 'contract_ref', 'platform', 'product_brand', 'owner'],
+  orderBy: { column: 'start_date', ascending: false },
+  groupBy: 'client_type',
+  extraFilters: [
+    { key: 'client_type', label: 'Client', options: ['Timekeeper', 'External company'] },
+    { key: 'platform', label: 'Platform', options: AD_PLATFORMS },
+    { key: 'payment_status', label: 'Payment', options: ['Unpaid', 'Partially paid', 'Paid', 'Not applicable'] },
+    { key: 'owner', label: 'Owner' },
+  ],
+  fields: [
+    { key: 'ad_name', label: 'Ad name', type: 'text', required: true },
+    { key: 'client_type', label: 'Client type', type: 'select', options: ['Timekeeper', 'External company'], defaultValue: 'Timekeeper', required: true },
+    { key: 'client_name', label: 'Client name (if external)', type: 'combobox' },
+    { key: 'contract_ref', label: 'Contract reference', type: 'text' },
+    { key: 'platform', label: 'Platform', type: 'select', options: AD_PLATFORMS, defaultValue: 'Instagram' },
+    { key: 'owner', label: 'Campaign owner', type: 'combobox' },
+    { key: 'start_date', label: 'Start date', type: 'date' },
+    { key: 'end_date', label: 'End date', type: 'date' },
+    { key: 'budget', label: 'Budget (KD)', type: 'number' },
+    { key: 'amount_charged', label: 'Amount charged to client (KD)', type: 'number' },
+    { key: 'target_audience', label: 'Target audience', type: 'text' },
+    { key: 'product_brand', label: 'Product / brand promoted', type: 'combobox' },
+    { key: 'status', label: 'Ad status', type: 'select', options: AD_STATUSES, defaultValue: 'Planned', required: true },
+    { key: 'payment_status', label: 'Payment status', type: 'select', options: ['Unpaid', 'Partially paid', 'Paid', 'Not applicable'], defaultValue: 'Unpaid' },
+    { key: 'leads_generated', label: 'Leads generated', type: 'number' },
+    { key: 'sales_linked', label: 'Sales linked (reference)', type: 'text' },
+    { key: 'report_sent', label: 'Report sent to client', type: 'checkbox' },
+    { key: 'notes', label: 'Notes', type: 'textarea' },
+  ],
+  columns: [
+    { key: 'ad_name', label: 'Ad', sortable: true },
+    { key: 'client_name', label: 'Client', sortable: true, render: (r) => r.client_type === 'External company'
+      ? <span>{r.client_name || '—'}</span>
+      : <Badge className="bg-slate-100 text-slate-600 border-slate-200">Timekeeper</Badge> },
+    { key: 'platform', label: 'Platform', sortable: true, hideBelow: 'sm' },
+    { key: 'start_date', label: 'Start', sortable: true, hideBelow: 'md' },
+    { key: 'end_date', label: 'End', sortable: true, hideBelow: 'lg', render: (r) => <ExpiryCell date={r.end_date} /> },
+    { key: 'budget', label: 'Budget', sortable: true, hideBelow: 'md', render: (r) => kd(r.budget) },
+    { key: 'amount_charged', label: 'Charged', sortable: true, render: (r) => r.client_type === 'External company' ? kd(r.amount_charged) : <span className="text-slate-300 text-xs">—</span> },
+    { key: 'status', label: 'Status', sortable: true },
+    { key: 'payment_status', label: 'Payment', sortable: true, hideBelow: 'lg', render: (r) => {
+      const cls = r.payment_status === 'Paid' ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
+        : r.payment_status === 'Partially paid' ? 'bg-amber-100 text-amber-700 border-amber-200'
+        : r.payment_status === 'Not applicable' ? 'bg-slate-100 text-slate-500 border-slate-200'
+        : 'bg-rose-100 text-rose-600 border-rose-200';
+      return <Badge className={cls}>{r.payment_status ?? 'Unpaid'}</Badge>;
+    } },
+    { key: 'leads_generated', label: 'Leads', sortable: true, hideBelow: 'xl' },
+    { key: 'report_sent', label: 'Report', hideBelow: 'xl', render: (r) => r.report_sent ? '✓' : <span className="text-amber-600 text-xs">Pending</span> },
+  ],
+};
+export const PaidAdsPage = () => <CrudModule config={paidAds} />;
+
 /* ---------------- Repair Watches (Operations) ---------------- */
 const REPAIR_STATUSES = [
   'Received', 'Under inspection', 'Waiting customer approval', 'Sent to supplier / brand',
@@ -222,6 +286,7 @@ function ExpiryCell({ date }: { date: string | null }) {
 const DEMAND_STATUSES = ['Open', 'Contacted', 'Confirmed', 'Deposit paid', 'Ordered', 'Arrived', 'Delivered', 'Converted', 'Cancelled'];
 
 const demandListBase: CrudConfig = {
+  rowClickToEdit: true,
   table: 'waiting_list',
   title: 'Demand List',
   description: 'Waiting list and pre-orders in one place — track customer demand before stock arrives.',
@@ -296,7 +361,7 @@ export const PreOrdersPage = DemandListPage;
 const PO_STATUSES = ['Open', 'Sent', 'Dispatched', 'Partially received', 'Received', 'Cancelled', 'Returned'];
 const purchaseOrders: CrudConfig = {
   table: 'purchase_orders',
-  title: 'Supplier Payments & Inbound',
+  title: 'Supplier Payments & PO Tracking',
   description: 'Supplier payments, balances and inbound shipments. Stock receiving stays in Lightspeed — this page tracks the money side.',
   canWrite: purchasingRoles,
   statusField: 'status',
@@ -345,22 +410,63 @@ const purchaseOrders: CrudConfig = {
   rowClickToEdit: true,
 };
 
+/** A PO is finished when it's been received (or closed) and nothing is still owed. */
+const poIsCompleted = (r: Record<string, any>) => {
+  const balance = Number(r.total_cost ?? 0) - Number(r.amount_paid ?? 0);
+  return ['Received', 'Cancelled', 'Returned'].includes(r.status) && balance <= 0;
+};
+
 export function PurchaseOrdersPage() {
   const [projectNames, setProjectNames] = useState<string[]>([]);
+  const [showCompleted, setShowCompleted] = useState(false);
   useEffect(() => {
     supabase.from('limited_projects').select('project_name').order('project_name')
       .then(({ data }) => setProjectNames((data ?? []).map((p: any) => p.project_name).filter(Boolean)));
   }, []);
-  const config = useMemo<CrudConfig>(() => ({
+
+  const withProjects = useMemo<CrudConfig>(() => ({
     ...purchaseOrders,
     fields: purchaseOrders.fields.map((f) =>
       f.key === 'linked_project' ? { ...f, options: projectNames } : f),
   }), [projectNames]);
-  return <CrudModule config={config} />;
+
+  // Active POs — grouped by brand so the financial picture reads per brand
+  const activeConfig = useMemo<CrudConfig>(() => ({
+    ...withProjects,
+    title: 'Supplier Payments & PO Tracking',
+    description: 'Open POs and inbound shipments, grouped by brand. Stock receiving stays in Lightspeed — this page tracks the money side.',
+    groupBy: 'brand',
+    filter: (r) => !poIsCompleted(r),
+  }), [withProjects]);
+
+  // Completed POs — received and fully paid, kept out of the way
+  const completedConfig = useMemo<CrudConfig>(() => ({
+    ...withProjects,
+    title: 'Completed POs',
+    description: 'Received / closed and fully paid — kept here for reference.',
+    groupBy: 'brand',
+    filter: (r) => poIsCompleted(r),
+  }), [withProjects]);
+
+  return (
+    <div className="space-y-6">
+      <CrudModule config={activeConfig} />
+      <div>
+        <button
+          onClick={() => setShowCompleted((v) => !v)}
+          className="flex items-center gap-1.5 text-sm text-slate-600 hover:text-slate-900 font-medium mb-2"
+        >
+          {showCompleted ? '▾' : '▸'} Completed POs (received & fully paid)
+        </button>
+        {showCompleted && <CrudModule config={completedConfig} />}
+      </div>
+    </div>
+  );
 }
 
 /* ---------------- Consignments ---------------- */
 const consignments: CrudConfig = {
+  rowClickToEdit: true,
   table: 'consignments',
   title: 'Consignments Out',
   description: 'Items given to others for sale or display.',
@@ -406,6 +512,7 @@ const occasionsField = {
   display: (v: any) => (Array.isArray(v) ? v.map((o: any) => `${o.date} ${o.label}`.trim()).join('\n') : ''),
 };
 const vipCustomers: CrudConfig = {
+  rowClickToEdit: true,
   table: 'customers',
   title: 'VIP Customers',
   description: 'Important customers, preferences, birthdays and occasions.',
@@ -517,6 +624,7 @@ export function EmployeesPage() {
 
 /* ---------------- Company documents ---------------- */
 const companyDocs: CrudConfig = {
+  rowClickToEdit: true,
   table: 'company_documents',
   title: 'Company Documents',
   description: 'Licenses, lease, insurance and other papers with expiry tracking.',
@@ -610,6 +718,7 @@ function PhotoModal({ record, onClose, onPhotoChanged }: {
 }
 
 const lpBaseConfig: CrudConfig = {
+  rowClickToEdit: true,
   table: 'limited_projects',
   title: 'Limited Watch Projects',
   description: 'Track all Timekeeper limited edition watch projects — allocation, pricing and status across the system.',
@@ -628,6 +737,7 @@ const lpBaseConfig: CrudConfig = {
     { key: 'price_kd', label: 'Price (KD)', type: 'number' },
     { key: 'status', label: 'Status', type: 'select', options: LP_STATUSES, defaultValue: 'Upcoming', required: true },
     { key: 'launch_date', label: 'Launch date', type: 'date' },
+    { key: 'expected_delivery', label: 'Expected delivery date', type: 'date' },
     { key: 'outlet', label: 'Outlet', type: 'text', placeholder: 'e.g. Avenues, all outlets' },
     { key: 'notes', label: 'Notes', type: 'textarea' },
   ],
@@ -713,7 +823,19 @@ export function LimitedProjectsPage() {
           );
         },
       },
-      { key: 'launch_date', label: 'Launch', render: (r) => <ExpiryCell date={r.launch_date} /> },
+      { key: 'launch_date', label: 'Launch', sortable: true, render: (r) => <ExpiryCell date={r.launch_date} /> },
+      {
+        key: 'expected_delivery', label: 'Expected delivery', sortable: true,
+        // overdue = delivery date passed while the project hasn't been received yet
+        render: (r) => {
+          const overdue = r.expected_delivery && r.expected_delivery < new Date().toISOString().slice(0, 10)
+            && !['Received', 'Selling', 'Sold Out', 'Cancelled'].includes(r.status);
+          if (!r.expected_delivery) return <span className="text-slate-300 text-xs">—</span>;
+          return overdue
+            ? <Badge className="bg-rose-100 text-rose-700 border-rose-200">{r.expected_delivery} · overdue</Badge>
+            : <ExpiryCell date={r.expected_delivery} />;
+        },
+      },
       { key: 'outlet', label: 'Outlet' },
     ],
   }), [projectPOs]);
