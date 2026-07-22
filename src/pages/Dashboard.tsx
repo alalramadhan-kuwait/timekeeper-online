@@ -183,7 +183,7 @@ export default function Dashboard() {
         supabase.from('lightspeed_stock_summary').select('*').single(),
         supabase.from('lightspeed_low_stock').select('product_id', { count: 'exact', head: true }),
         supabase.from('lightspeed_stock').select('product_id', { count: 'exact', head: true }),
-        supabase.from('purchase_orders').select('status, total_cost, amount_paid').not('status', 'in', '("Cancelled","Returned")'),
+        supabase.from('purchase_orders').select('status, total_cost, amount_paid').not('status', 'in', '("Cancelled")').is('merged_into', null),
         supabase.from('attendance_records').select('employee_name').gte('clock_in', `${today}T00:00:00+03:00`).lte('clock_in', `${today}T23:59:59+03:00`),
         supabase.from('attendance_records').select('id', { count: 'exact', head: true }).eq('is_late', true).eq('justified', false).gte('clock_in', `${monthStart}T00:00:00+03:00`),
         supabase.from('leave_records').select('leave_type').eq('approval_status', 'Pending'),
@@ -223,8 +223,8 @@ export default function Dashboard() {
       const deadValue = stockSumQ.data ? Number(stockSumQ.data.dead_value) : null;
       const lowStock = (stockCntQ.count ?? 0) > 0 ? (lowQ.count ?? 0) : null;
       const poRows = (poQ.data ?? []) as any[];
-      const openPOs = poRows.filter((p) => !['Received'].includes(p.status)).length;
-      const shipments = poRows.filter((p) => ['Sent', 'Dispatched', 'Partially received'].includes(p.status)).length;
+      const openPOs = poRows.filter((p) => !['Fully Received'].includes(p.status)).length;
+      const shipments = poRows.filter((p) => ['Ordered', 'Partially Received'].includes(p.status)).length;
       const supplierBalance = poRows.reduce((s, p) => s + Number(p.total_cost ?? 0) - Number(p.amount_paid ?? 0), 0);
 
       // HR

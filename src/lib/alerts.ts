@@ -59,7 +59,7 @@ export async function buildAlerts(role: string | null): Promise<Alert[]> {
   const [wl, demandPO, pur, docs, emp, leave, vip, actions] = await Promise.all([
     supabase.from('waiting_list').select('customer_name, status, follow_up_date, list_type').eq('list_type', 'Waiting List').in('status', ['Open', 'Contacted']),
     supabase.from('waiting_list').select('customer_name, brand, product, status, expected_arrival').eq('list_type', 'Pre-Order').not('status', 'in', '("Delivered","Cancelled","Converted")'),
-    supabase.from('purchase_orders').select('po_number, supplier, status, expected_arrival, invoice_received').not('status', 'in', '("Received","Cancelled","Returned")'),
+    supabase.from('purchase_orders').select('po_number, supplier, status, expected_arrival, invoice_received').not('status', 'in', '("Fully Received","Cancelled")').is('merged_into', null),
     supabase.from('company_documents').select('doc_name, expiry_date, renewal_status'),
     canHR ? supabase.from('employees').select('full_name, residency_expiry, work_permit_expiry, status').in('status', ['Active', 'On leave']) : Promise.resolve({ data: [] as any[] }),
     canHR ? supabase.from('leave_records').select('id, approval_status').eq('approval_status', 'Pending') : Promise.resolve({ data: [] as any[] }),
@@ -87,7 +87,7 @@ export async function buildAlerts(role: string | null): Promise<Alert[]> {
   for (const r of pur.data ?? []) {
     push(alerts, `pur_${r.po_number}`, 'Purchase orders', '/purchase-orders', r.expected_arrival, (d) =>
       d < 0 ? `PO ${r.po_number} (${r.supplier ?? ''}) is delayed — ${dayWord(d)}` : `PO ${r.po_number} expected ${dayWord(d)}`);
-    if (!r.invoice_received && ['Dispatched', 'Partially received'].includes(r.status)) {
+    if (!r.invoice_received && ['Ordered', 'Partially Received'].includes(r.status)) {
       alerts.push({ key: `pur_inv_${r.po_number}`, module: 'Purchase orders', link: '/purchase-orders', severity: 'd30', message: `PO ${r.po_number}: invoice not received` });
     }
   }

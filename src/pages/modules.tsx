@@ -357,113 +357,6 @@ export function DemandListPage() {
 export const WaitingListPage = DemandListPage;
 export const PreOrdersPage = DemandListPage;
 
-/* ---------------- Purchase orders ---------------- */
-const PO_STATUSES = ['Open', 'Sent', 'Dispatched', 'Partially received', 'Received', 'Cancelled', 'Returned'];
-const purchaseOrders: CrudConfig = {
-  table: 'purchase_orders',
-  title: 'Supplier Payments & PO Tracking',
-  description: 'Supplier payments, balances and inbound shipments. Stock receiving stays in Lightspeed — this page tracks the money side.',
-  canWrite: purchasingRoles,
-  statusField: 'status',
-  statusOptions: PO_STATUSES,
-  searchKeys: ['po_number', 'supplier', 'brand', 'notes'],
-  extraFilters: [
-    { key: 'supplier', label: 'Supplier' },
-    { key: 'brand', label: 'Brand' },
-    { key: 'po_type', label: 'Type', options: ['PO', 'Inbound'] },
-    { key: 'linked_project', label: 'Project' },
-  ],
-  fields: [
-    { key: 'po_number', label: 'PO number', type: 'text', required: true },
-    { key: 'supplier', label: 'Supplier', type: 'combobox' },
-    { key: 'brand', label: 'Brand', type: 'combobox' },
-    { key: 'po_type', label: 'Type', type: 'select', options: ['PO', 'Inbound'], defaultValue: 'PO', required: true },
-    { key: 'created_date', label: 'Created date', type: 'date' },
-    { key: 'item_count', label: 'Item count', type: 'number', defaultValue: 0 },
-    { key: 'total_cost', label: 'Total cost (KD)', type: 'number', defaultValue: 0 },
-    { key: 'amount_paid', label: 'Amount paid (KD)', type: 'number', defaultValue: 0 },
-    { key: 'status', label: 'Status', type: 'select', options: PO_STATUSES, defaultValue: 'Open', required: true },
-    { key: 'shipment_status', label: 'Shipment status', type: 'text', placeholder: 'e.g. At customs / DHL in transit' },
-    { key: 'expected_arrival', label: 'Expected arrival', type: 'date' },
-    { key: 'invoice_received', label: 'Invoice received', type: 'checkbox' },
-    { key: 'team_notified', label: 'Team notified', type: 'checkbox' },
-    { key: 'linked_project', label: 'Limited project', type: 'select', options: [] }, // options filled at runtime
-    { key: 'update_date', label: 'Last update date', type: 'date' },
-    { key: 'notes', label: 'Notes', type: 'textarea' },
-  ],
-  columns: [
-    { key: 'po_number', label: 'PO #', sortable: true },
-    { key: 'supplier', label: 'Supplier', sortable: true },
-    { key: 'brand', label: 'Brand', sortable: true },
-    { key: 'po_type', label: 'Type', sortable: true },
-    { key: 'item_count', label: 'Items', sortable: true },
-    { key: 'total_cost', label: 'Total', sortable: true, render: (r) => kd(r.total_cost) },
-    { key: 'balance', label: 'Balance', sortable: true, sortValue: (r) => Number(r.total_cost ?? 0) - Number(r.amount_paid ?? 0), render: (r) => kd(Number(r.total_cost ?? 0) - Number(r.amount_paid ?? 0)) },
-    { key: 'status', label: 'Status', sortable: true },
-    { key: 'shipment_status', label: 'Shipment' },
-    { key: 'expected_arrival', label: 'Expected', sortable: true, render: (r) => <ExpiryCell date={r.expected_arrival} /> },
-    { key: 'invoice_received', label: 'Invoice', render: (r) => (r.invoice_received ? '✓' : <span className="text-amber-600">Pending</span>) },
-    { key: 'linked_project', label: 'Project', sortable: true, render: (r) => r.linked_project
-      ? <Badge className="bg-violet-100 text-violet-700 border-violet-200">{r.linked_project}</Badge>
-      : <span className="text-slate-300 text-xs">—</span> },
-  ],
-  rowClickToEdit: true,
-};
-
-/** A PO is finished when it's been received (or closed) and nothing is still owed. */
-const poIsCompleted = (r: Record<string, any>) => {
-  const balance = Number(r.total_cost ?? 0) - Number(r.amount_paid ?? 0);
-  return ['Received', 'Cancelled', 'Returned'].includes(r.status) && balance <= 0;
-};
-
-export function PurchaseOrdersPage() {
-  const [projectNames, setProjectNames] = useState<string[]>([]);
-  const [showCompleted, setShowCompleted] = useState(false);
-  useEffect(() => {
-    supabase.from('limited_projects').select('project_name').order('project_name')
-      .then(({ data }) => setProjectNames((data ?? []).map((p: any) => p.project_name).filter(Boolean)));
-  }, []);
-
-  const withProjects = useMemo<CrudConfig>(() => ({
-    ...purchaseOrders,
-    fields: purchaseOrders.fields.map((f) =>
-      f.key === 'linked_project' ? { ...f, options: projectNames } : f),
-  }), [projectNames]);
-
-  // Active POs — grouped by brand so the financial picture reads per brand
-  const activeConfig = useMemo<CrudConfig>(() => ({
-    ...withProjects,
-    title: 'Supplier Payments & PO Tracking',
-    description: 'Open POs and inbound shipments, grouped by brand. Stock receiving stays in Lightspeed — this page tracks the money side.',
-    groupBy: 'brand',
-    filter: (r) => !poIsCompleted(r),
-  }), [withProjects]);
-
-  // Completed POs — received and fully paid, kept out of the way
-  const completedConfig = useMemo<CrudConfig>(() => ({
-    ...withProjects,
-    title: 'Completed POs',
-    description: 'Received / closed and fully paid — kept here for reference.',
-    groupBy: 'brand',
-    filter: (r) => poIsCompleted(r),
-  }), [withProjects]);
-
-  return (
-    <div className="space-y-6">
-      <CrudModule config={activeConfig} />
-      <div>
-        <button
-          onClick={() => setShowCompleted((v) => !v)}
-          className="flex items-center gap-1.5 text-sm text-slate-600 hover:text-slate-900 font-medium mb-2"
-        >
-          {showCompleted ? '▾' : '▸'} Completed POs (received & fully paid)
-        </button>
-        {showCompleted && <CrudModule config={completedConfig} />}
-      </div>
-    </div>
-  );
-}
-
 /* ---------------- Consignments ---------------- */
 const consignments: CrudConfig = {
   rowClickToEdit: true,
@@ -748,7 +641,7 @@ interface ProjectPO {
   po_number: string; supplier: string | null; status: string;
   total_cost: number; amount_paid: number; linked_project: string;
 }
-const PO_CLOSED = ['Received', 'Cancelled', 'Returned'];
+const PO_CLOSED = ['Fully Received', 'Cancelled'];
 
 export function LimitedProjectsPage() {
   const [photoModal, setPhotoModal] = useState<PhotoModalRecord | null>(null);

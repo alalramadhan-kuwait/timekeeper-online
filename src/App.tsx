@@ -14,8 +14,9 @@ import UserActivityPage from './pages/UserActivity';
 import SettingsPage from './pages/Settings';
 import LeavePage from './pages/Leave';
 import AttendancePage from './pages/Attendance';
+import { PurchaseOrdersPage } from './pages/PurchaseOrders';
 import {
-  WaitingListPage, PreOrdersPage, PurchaseOrdersPage, ConsignmentsPage,
+  WaitingListPage, PreOrdersPage, ConsignmentsPage,
   VipCustomersPage, EmployeesPage, CompanyDocsPage, LimitedProjectsPage, RepairWatchesPage, ContentPlannerPage, PaidAdsPage,
 } from './pages/modules';
 import { Spinner } from './components/ui';

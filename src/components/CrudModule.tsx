@@ -19,6 +19,10 @@ export interface FieldDef {
   bucket?: string;
   parse?: (v: any) => any;
   display?: (v: any) => any;
+  /** Shown but not editable — for values another system owns (e.g. synced from Lightspeed). */
+  readOnly?: boolean;
+  /** Small grey note under the input. */
+  hint?: string;
 }
 
 export interface ColumnDef {
@@ -65,6 +69,12 @@ export interface CrudConfig {
   extraFilters?: ExtraFilter[];
   /** Group rows under a heading row by this column (skipped while an explicit column sort is active). */
   groupBy?: string;
+  /** Hide the Add button — for tables another system is the source of truth for. */
+  allowCreate?: boolean;
+  /** Per-row delete guard; defaults to allowed. */
+  allowDelete?: (row: Record<string, any>) => boolean;
+  /** Extra content rendered inside the edit form, below the fields. */
+  formExtra?: (row: Record<string, any> | null) => React.ReactNode;
 }
 
 export function CrudModule({ config }: { config: CrudConfig }) {
@@ -201,7 +211,7 @@ export function CrudModule({ config }: { config: CrudConfig }) {
           <h1 className="text-xl font-bold text-slate-900">{config.title}</h1>
           {config.description && <p className="text-sm text-slate-500">{config.description}</p>}
         </div>
-        {writable && (
+        {writable && config.allowCreate !== false && (
           <button
             onClick={() => { setEditing(null); setShowForm(true); }}
             className="flex items-center gap-2 bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-700"
@@ -305,7 +315,9 @@ export function CrudModule({ config }: { config: CrudConfig }) {
                     <td className="px-4 py-2.5" onClick={(e) => e.stopPropagation()}>
                       <div className="flex gap-2 justify-end">
                         <button onClick={() => { setEditing(row); setShowForm(true); }} className="text-slate-400 hover:text-blue-600" aria-label="Edit"><Pencil size={15} /></button>
-                        <button onClick={() => remove(row)} className="text-slate-400 hover:text-red-600" aria-label="Delete"><Trash2 size={15} /></button>
+                        {(config.allowDelete?.(row) ?? true) && (
+                          <button onClick={() => remove(row)} className="text-slate-400 hover:text-red-600" aria-label="Delete"><Trash2 size={15} /></button>
+                        )}
                       </div>
                     </td>
                   )}
@@ -366,7 +378,11 @@ function RecordForm({ config, initial, comboboxOptions, onCancel, onSave }: {
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
-    onSave(form);
+    // Never write back read-only fields — another system owns them and may have
+    // refreshed the row while this form was open.
+    const payload = { ...form };
+    for (const fd of config.fields) if (fd.readOnly) delete payload[fd.key];
+    onSave(payload);
   }
 
   return (
@@ -379,7 +395,13 @@ function RecordForm({ config, initial, comboboxOptions, onCancel, onSave }: {
           >
             <span className="block text-slate-600 mb-1">{f.label}{f.required && ' *'}</span>
 
-            {f.type === 'select' ? (
+            {f.readOnly ? (
+              <div className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-slate-50 text-slate-600 min-h-[2.5rem]">
+                {f.type === 'checkbox'
+                  ? (form[f.key] ? 'Yes' : 'No')
+                  : (form[f.key] === '' || form[f.key] == null ? '—' : String(form[f.key]))}
+              </div>
+            ) : f.type === 'select' ? (
               <select
                 value={form[f.key] ?? ''}
                 onChange={(e) => set(f.key, e.target.value)}
@@ -470,8 +492,10 @@ function RecordForm({ config, initial, comboboxOptions, onCancel, onSave }: {
                 className="w-full px-3 py-2 rounded-lg border border-slate-300"
               />
             )}
+            {f.hint && <span className="block text-xs text-slate-400 mt-1">{f.hint}</span>}
           </label>
         ))}
+        {config.formExtra && <div className="sm:col-span-2">{config.formExtra(initial)}</div>}
         <div className="sm:col-span-2 flex justify-end gap-2 pt-2">
           <button type="button" onClick={onCancel} className="px-4 py-2 rounded-lg border border-slate-300 text-sm">Cancel</button>
           <button type="submit" disabled={!!uploading} className="px-4 py-2 rounded-lg bg-slate-900 text-white text-sm font-medium hover:bg-slate-700 disabled:opacity-60">
