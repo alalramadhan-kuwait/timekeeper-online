@@ -207,6 +207,87 @@ const paidAds: CrudConfig = {
 };
 export const PaidAdsPage = () => <CrudModule config={paidAds} />;
 
+/* ---------------- Influencer Tracker (Marketing) ---------------- */
+const INF_STATUSES = ['Negotiating', 'Agreed', 'Content received', 'Posted', 'Completed', 'Cancelled'];
+const INF_PLATFORMS = ['Instagram', 'TikTok', 'Snapchat', 'YouTube', 'X (Twitter)', 'Other'];
+const INF_TIERS = ['Nano (<10K)', 'Micro (10–100K)', 'Mid (100–500K)', 'Macro (500K–1M)', 'Celebrity (1M+)'];
+const INF_COVERAGE = ['Reel', 'Story', 'Feed post', 'Video', 'Review', 'Event attendance', 'Unboxing'];
+const INF_PAYMENT = ['Unpaid', 'Partially paid', 'Paid', 'Gifted'];
+const influencers: CrudConfig = {
+  rowClickToEdit: true,
+  table: 'influencer_campaigns',
+  title: 'Influencer Tracker',
+  description: 'Influencers we pay (or gift) to post coverage and ads for Timekeeper — deliverables, fees, payment and reach.',
+  canWrite: marketingRoles,
+  statusField: 'status',
+  statusOptions: INF_STATUSES,
+  searchKeys: ['influencer_name', 'handle', 'campaign', 'product_brand', 'owner'],
+  orderBy: { column: 'agreed_date', ascending: false },
+  extraFilters: [
+    { key: 'platform', label: 'Platform', options: INF_PLATFORMS },
+    { key: 'tier', label: 'Tier', options: INF_TIERS },
+    { key: 'payment_status', label: 'Payment', options: INF_PAYMENT },
+    { key: 'product_brand', label: 'Brand' },
+    { key: 'owner', label: 'Owner' },
+  ],
+  fields: [
+    { key: 'influencer_name', label: 'Influencer name', type: 'text', required: true },
+    { key: 'handle', label: 'Handle (@)', type: 'text', placeholder: '@username' },
+    { key: 'platform', label: 'Platform', type: 'select', options: INF_PLATFORMS, defaultValue: 'Instagram' },
+    { key: 'tier', label: 'Tier', type: 'select', options: INF_TIERS },
+    { key: 'followers', label: 'Followers', type: 'number' },
+    { key: 'coverage_type', label: 'Coverage type', type: 'select', options: INF_COVERAGE },
+    { key: 'deliverables', label: 'Agreed deliverables', type: 'text', placeholder: 'e.g. 2 stories + 1 reel' },
+    { key: 'product_brand', label: 'Product / brand promoted', type: 'combobox' },
+    { key: 'campaign', label: 'Campaign / occasion', type: 'combobox' },
+    { key: 'owner', label: 'Relationship owner', type: 'combobox' },
+    { key: 'agreed_date', label: 'Agreed date', type: 'date' },
+    { key: 'posted_date', label: 'Posted date', type: 'date' },
+    { key: 'post_url', label: 'Post link', type: 'text', placeholder: 'https://…' },
+    { key: 'fee', label: 'Fee (KD)', type: 'number', defaultValue: 0 },
+    { key: 'amount_paid', label: 'Amount paid (KD)', type: 'number', defaultValue: 0 },
+    { key: 'payment_method', label: 'Payment method', type: 'select', options: ['Bank transfer', 'Cash', 'Cheque', 'Gift / product', 'Credit card'] },
+    { key: 'payment_status', label: 'Payment status', type: 'select', options: INF_PAYMENT, defaultValue: 'Unpaid' },
+    { key: 'status', label: 'Status', type: 'select', options: INF_STATUSES, defaultValue: 'Negotiating', required: true },
+    { key: 'content_received', label: 'Content received', type: 'checkbox' },
+    { key: 'reach', label: 'Reach', type: 'number' },
+    { key: 'likes', label: 'Likes', type: 'number' },
+    { key: 'comments', label: 'Comments', type: 'number' },
+    { key: 'saves', label: 'Saves', type: 'number' },
+    { key: 'story_views', label: 'Story views', type: 'number' },
+    { key: 'link_clicks', label: 'Link clicks', type: 'number' },
+    { key: 'leads_generated', label: 'Leads generated', type: 'number' },
+    { key: 'sales_linked', label: 'Sales linked (reference)', type: 'text' },
+    { key: 'notes', label: 'Notes', type: 'textarea' },
+  ],
+  columns: [
+    { key: 'influencer_name', label: 'Influencer', sortable: true, render: (r) => (
+      <span className="whitespace-nowrap">
+        <span className="font-medium text-slate-800">{r.influencer_name}</span>
+        {r.handle && <span className="block text-xs text-slate-400">{r.handle}</span>}
+      </span>
+    ) },
+    { key: 'platform', label: 'Platform', sortable: true, hideBelow: 'sm' },
+    { key: 'followers', label: 'Followers', sortable: true, hideBelow: 'lg', render: (r) => r.followers != null ? Number(r.followers).toLocaleString() : '—' },
+    { key: 'coverage_type', label: 'Coverage', sortable: true, hideBelow: 'md' },
+    { key: 'product_brand', label: 'Brand', sortable: true, hideBelow: 'lg' },
+    { key: 'agreed_date', label: 'Agreed', sortable: true, hideBelow: 'md' },
+    { key: 'fee', label: 'Fee', sortable: true, render: (r) => <span className="whitespace-nowrap">{kd(r.fee)}</span> },
+    { key: 'payment_status', label: 'Payment', sortable: true, render: (r) => {
+      const cls = r.payment_status === 'Paid' ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
+        : r.payment_status === 'Partially paid' ? 'bg-amber-100 text-amber-700 border-amber-200'
+        : r.payment_status === 'Gifted' ? 'bg-violet-100 text-violet-700 border-violet-200'
+        : 'bg-rose-100 text-rose-600 border-rose-200';
+      return <Badge className={cls}>{r.payment_status ?? 'Unpaid'}</Badge>;
+    } },
+    { key: 'status', label: 'Status', sortable: true },
+    { key: 'post_url', label: 'Post', hideBelow: 'xl', render: (r) => r.post_url
+      ? <a href={r.post_url} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} className="text-blue-600 hover:underline text-xs">View</a>
+      : <span className="text-slate-300 text-xs">—</span> },
+  ],
+};
+export const InfluencersPage = () => <CrudModule config={influencers} />;
+
 /* ---------------- Repair Watches (Operations) ---------------- */
 const REPAIR_STATUSES = [
   'Received', 'Under inspection', 'Waiting customer approval', 'Sent to supplier / brand',
