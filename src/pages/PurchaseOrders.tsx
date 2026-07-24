@@ -246,6 +246,9 @@ const baseConfig: CrudConfig = {
     { key: 'linked_project', label: 'Limited project', type: 'select', options: [] }, // filled at runtime
     { key: 'notes', label: 'Notes', type: 'textarea' },
   ],
+  // Kept deliberately narrow — the full record (invoice #, outlet, paid, expected
+  // arrival, project, line items) opens on row click, so the table only shows what
+  // matters at a glance. Order #, Balance, Payment and Status always stay visible.
   columns: [
     { key: 'po_number', label: 'Order #', sortable: true, render: (r) => (
       <span className="flex items-center gap-2 whitespace-nowrap">
@@ -253,10 +256,8 @@ const baseConfig: CrudConfig = {
         {!isSynced(r) && <Badge className="bg-slate-100 text-slate-500 border-slate-200">legacy</Badge>}
       </span>
     ) },
-    { key: 'supplier_invoice_no', label: 'Invoice #', sortable: true, hideBelow: 'xl' },
     { key: 'supplier', label: 'Supplier', sortable: true },
-    { key: 'brand', label: 'Brand', sortable: true, hideBelow: 'md' },
-    { key: 'outlet', label: 'Outlet', sortable: true, hideBelow: 'lg' },
+    { key: 'brand', label: 'Brand', sortable: true, hideBelow: 'lg' },
     { key: 'received_qty', label: 'Received', sortable: true, hideBelow: 'lg',
       sortValue: (r) => Number(r.received_qty ?? 0),
       render: (r) => r.ordered_qty == null
@@ -264,8 +265,7 @@ const baseConfig: CrudConfig = {
         : <span className={Number(r.received_qty ?? 0) < Number(r.ordered_qty) ? 'text-amber-600' : ''}>
             {Number(r.received_qty ?? 0)} / {r.ordered_qty}
           </span> },
-    { key: 'total_cost', label: 'Total', sortable: true, render: (r) => <span className="whitespace-nowrap">{kd(r.total_cost)}</span> },
-    { key: 'amount_paid', label: 'Paid', sortable: true, hideBelow: 'md', render: (r) => <span className="whitespace-nowrap">{kd(r.amount_paid)}</span> },
+    { key: 'total_cost', label: 'Total', sortable: true, hideBelow: 'md', render: (r) => <span className="whitespace-nowrap">{kd(r.total_cost)}</span> },
     { key: 'balance', label: 'Balance', sortable: true,
       sortValue: balanceOf,
       render: (r) => {
@@ -279,11 +279,7 @@ const baseConfig: CrudConfig = {
         : 'bg-rose-100 text-rose-700 border-rose-200';
       return <Badge className={cls}>{s}</Badge>;
     } },
-    { key: 'status', label: 'Status', sortable: true },
-    { key: 'expected_arrival', label: 'Expected', sortable: true, hideBelow: 'lg', render: (r) => <ExpiryCell date={r.expected_arrival} /> },
-    { key: 'linked_project', label: 'Project', sortable: true, hideBelow: 'xl', render: (r) => r.linked_project
-      ? <Badge className="bg-violet-100 text-violet-700 border-violet-200">{r.linked_project}</Badge>
-      : <span className="text-slate-300 text-xs">—</span> },
+    { key: 'status', label: 'Status', sortable: true, hideBelow: 'sm' },
   ],
 };
 
