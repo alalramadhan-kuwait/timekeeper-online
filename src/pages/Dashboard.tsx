@@ -172,7 +172,7 @@ export default function Dashboard() {
         stockSumQ, lowQ, stockCntQ, poQ, attTodayQ, attLateQ, leaveQ, empQ,
         repairsQ, contentQ, igQ, setQ, alertList, actMap,
       ] = await Promise.all([
-        supabase.from('cases').select('amount_kd, date_logged, sale_items(amount_kd)').eq('case_type', 'Sale').eq('deleted', false).gte('date_logged', monthStart),
+        supabase.from('cases').select('amount_kd, date_logged, outlet, sale_items(amount_kd)').eq('case_type', 'Sale').eq('deleted', false).gte('date_logged', monthStart),
         supabase.from('cases').select('amount_kd').eq('case_type', 'Lost Sale').eq('deleted', false).gte('date_logged', monthStart),
         supabase.from('cases').select('id', { count: 'exact', head: true }).eq('case_type', 'Follow-up').eq('status', 'Open').eq('deleted', false).lt('promised_callback', today),
         supabase.from('customers').select('id', { count: 'exact', head: true }).gte('created_at', monthStart),
@@ -191,7 +191,7 @@ export default function Dashboard() {
         supabase.from('repair_watches').select('status, estimated_completion, date_returned'),
         supabase.from('content_tasks').select('status, planned_date, posted_date'),
         supabase.from('instagram_daily').select('followers').order('snapshot_date', { ascending: false }).limit(1),
-        supabase.from('settings').select('sales_target_month').single(),
+        supabase.from('settings').select('sales_target_month, sales_target_avenues, sales_target_timegallery').single(),
         buildAlerts(role),
         loadAlertActions(),
       ]);
@@ -201,6 +201,12 @@ export default function Dashboard() {
       const salesMonth = monthCases.reduce((s, c) => s + caseTotal(c), 0);
       const salesToday = monthCases.filter((c) => c.date_logged === today).reduce((s, c) => s + caseTotal(c), 0);
       const salesTarget = setQ.data?.sales_target_month != null ? Number(setQ.data.sales_target_month) : null;
+      // per-outlet month sales vs their own targets (cases.outlet = 'Avenues' | 'TimeGallery')
+      const outletSales = (name: string) => monthCases.filter((c) => c.outlet === name).reduce((s, c) => s + caseTotal(c), 0);
+      const avenuesSales = outletSales('Avenues');
+      const timeGallerySales = outletSales('TimeGallery');
+      const avenuesTarget = setQ.data?.sales_target_avenues != null ? Number(setQ.data.sales_target_avenues) : null;
+      const timeGalleryTarget = setQ.data?.sales_target_timegallery != null ? Number(setQ.data.sales_target_timegallery) : null;
       const lostMonth = ((lostQ.data ?? []) as any[]).reduce((s, c) => s + Number(c.amount_kd ?? 0), 0);
 
       // vip occasions this month
@@ -252,7 +258,9 @@ export default function Dashboard() {
       const igFollowers = igQ.data?.[0]?.followers != null ? Number(igQ.data[0].followers) : null;
 
       setD({
-        salesToday, salesMonth, salesTarget, lostMonth, overdueFu: overdueFuQ.count ?? 0,
+        salesToday, salesMonth, salesTarget,
+        avenuesSales, timeGallerySales, avenuesTarget, timeGalleryTarget,
+        lostMonth, overdueFu: overdueFuQ.count ?? 0,
         newCust: newCustQ.count ?? 0, vipOcc, openWaiting: wlQ.count ?? 0, openPre: preQ.count ?? 0,
         activeProjects, delayedProjects, stockValue, deadValue, lowStock, openPOs, shipments, supplierBalance,
         presentToday, lateMonth, pendingLeave, sickReq, wfhReq, empDocs,
@@ -285,8 +293,21 @@ export default function Dashboard() {
     { label: 'Action alerts', value: activeAlerts.length, accent: activeAlerts.length ? 'text-rose-600' : 'text-emerald-600', onClick: () => alertsRef.current?.scrollIntoView({ behavior: 'smooth' }) },
   ];
 
+  // per-outlet "sales vs target" — only shown once a target for that outlet is set
+  const outletTargetCard = (label: string, sales: number | null, target: number | null): Kpi => {
+    const pct = target ? Math.round((Number(sales) / Number(target)) * 100) : null;
+    return {
+      label, value: `${kd(sales)}${pct != null ? ` · ${pct}%` : ''}`,
+      sub: pct != null ? `of ${kd(target)} target` : 'no target set',
+      accent: pct == null ? undefined : pct >= 100 ? 'text-emerald-600' : pct >= 70 ? 'text-amber-600' : 'text-rose-600',
+      link: '/sales',
+    };
+  };
+
   const salesCards: Kpi[] = [
     { label: 'Month sales', value: kd(d.salesMonth), accent: 'text-emerald-600', link: '/sales' },
+    ...(d.avenuesTarget != null ? [outletTargetCard('Avenues vs target', d.avenuesSales, d.avenuesTarget)] : []),
+    ...(d.timeGalleryTarget != null ? [outletTargetCard('Time Gallery vs target', d.timeGallerySales, d.timeGalleryTarget)] : []),
     { label: 'Lost sales (month)', value: kd(d.lostMonth), accent: Number(d.lostMonth) ? 'text-rose-600' : undefined, link: '/sales' },
     { label: 'Overdue follow-ups', value: d.overdueFu ?? 0, accent: Number(d.overdueFu) ? 'text-red-600' : undefined, link: '/follow-ups' },
     { label: 'New customers (month)', value: d.newCust ?? 0, link: '/crm' },

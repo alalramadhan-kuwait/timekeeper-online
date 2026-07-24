@@ -601,33 +601,55 @@ function Geofences({ workStartTime, setWorkStartTime, onSaveHours, savedMsg }: {
   );
 }
 
-/** Admin: monthly sales target used by the dashboard "Sales vs target" KPI. */
+/** Admin: monthly sales targets used by the dashboard "Sales vs target" KPIs. */
 function SalesTarget() {
   const [target, setTarget] = useState('');
+  const [avenues, setAvenues] = useState('');
+  const [timeGallery, setTimeGallery] = useState('');
   const [id, setId] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
   useEffect(() => {
-    supabase.from('settings').select('id, sales_target_month').single().then(({ data }) => {
-      if (data) { setId(data.id); setTarget(data.sales_target_month != null ? String(data.sales_target_month) : ''); }
+    supabase.from('settings').select('id, sales_target_month, sales_target_avenues, sales_target_timegallery').single().then(({ data }) => {
+      if (data) {
+        setId(data.id);
+        setTarget(data.sales_target_month != null ? String(data.sales_target_month) : '');
+        setAvenues(data.sales_target_avenues != null ? String(data.sales_target_avenues) : '');
+        setTimeGallery(data.sales_target_timegallery != null ? String(data.sales_target_timegallery) : '');
+      }
     });
   }, []);
   async function save() {
     if (!id) return;
-    const { error } = await supabase.from('settings').update({ sales_target_month: target ? parseFloat(target) : null }).eq('id', id);
-    setMsg(error ? `Failed: ${error.message}` : 'Target saved');
+    const num = (v: string) => (v ? parseFloat(v) : null);
+    const { error } = await supabase.from('settings').update({
+      sales_target_month: num(target),
+      sales_target_avenues: num(avenues),
+      sales_target_timegallery: num(timeGallery),
+    }).eq('id', id);
+    setMsg(error ? `Failed: ${error.message}` : 'Targets saved');
   }
   return (
     <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 lg:col-span-2">
-      <h2 className="text-sm font-semibold text-slate-700 mb-1">Monthly sales target</h2>
-      <p className="text-xs text-slate-400 mb-3">Shown on the dashboard as “Sales vs target”. Leave blank to hide it.</p>
+      <h2 className="text-sm font-semibold text-slate-700 mb-1">Monthly sales targets</h2>
+      <p className="text-xs text-slate-400 mb-3">Shown on the dashboard as “Sales vs target”. Set an overall target and, if you like, one per outlet. Leave a field blank to hide that card.</p>
       <div className="flex flex-wrap items-end gap-2">
         <label className="text-xs">
-          <span className="block text-slate-500 mb-1">Target (KD / month)</span>
+          <span className="block text-slate-500 mb-1">Overall (KD / month)</span>
           <input type="number" value={target} onChange={(e) => setTarget(e.target.value)} placeholder="e.g. 50000"
-            className="px-3 py-1.5 rounded-lg border border-slate-300 text-sm w-40" />
+            className="px-3 py-1.5 rounded-lg border border-slate-300 text-sm w-36" />
         </label>
-        <button onClick={save} className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-slate-900 text-white text-sm font-medium hover:bg-slate-700"><Save size={13} /> Save target</button>
-        {msg && <span className={`text-xs ${msg === 'Target saved' ? 'text-emerald-600' : 'text-red-600'}`}>{msg}</span>}
+        <label className="text-xs">
+          <span className="block text-slate-500 mb-1">Avenues (KD / month)</span>
+          <input type="number" value={avenues} onChange={(e) => setAvenues(e.target.value)} placeholder="e.g. 30000"
+            className="px-3 py-1.5 rounded-lg border border-slate-300 text-sm w-36" />
+        </label>
+        <label className="text-xs">
+          <span className="block text-slate-500 mb-1">Time Gallery (KD / month)</span>
+          <input type="number" value={timeGallery} onChange={(e) => setTimeGallery(e.target.value)} placeholder="e.g. 20000"
+            className="px-3 py-1.5 rounded-lg border border-slate-300 text-sm w-36" />
+        </label>
+        <button onClick={save} className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-slate-900 text-white text-sm font-medium hover:bg-slate-700"><Save size={13} /> Save targets</button>
+        {msg && <span className={`text-xs ${msg === 'Targets saved' ? 'text-emerald-600' : 'text-red-600'}`}>{msg}</span>}
       </div>
     </div>
   );
