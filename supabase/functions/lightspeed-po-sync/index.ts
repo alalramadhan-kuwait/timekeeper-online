@@ -14,6 +14,10 @@ const json = (b: unknown, s = 200) =>
 
 interface Consignment {
   id: string; name?: string; type?: string; status?: string;
+  /** The order number shown in the Lightspeed back office (e.g. MAI-1234). */
+  reference?: string | null;
+  /** The supplier's own invoice number, when it has been entered. */
+  supplier_invoice?: string | null;
   supplier_id?: string | null; outlet_id?: string | null;
   due_at?: string | null; received_at?: string | null; created_at?: string | null;
 }
@@ -133,13 +137,14 @@ Deno.serve(async (req: Request) => {
     // sync sees the same slice every run and never makes progress.
     type ExistingPo = {
       id: string; ls_consignment_id: string | null; status: string;
+      po_number: string | null; supplier_invoice_no: string | null;
       item_count: number | null; total_cost: number | null;
       ordered_qty: number | null; received_qty: number | null;
     };
     const existingRows: ExistingPo[] = [];
     for (let from = 0; ; from += 1000) {
       const { data, error } = await admin.from("purchase_orders")
-        .select("id, ls_consignment_id, status, item_count, total_cost, ordered_qty, received_qty")
+        .select("id, ls_consignment_id, status, po_number, supplier_invoice_no, item_count, total_cost, ordered_qty, received_qty")
         .range(from, from + 999);
       if (error) return await fail(`Read POs: ${error.message}`);
       existingRows.push(...(data ?? []) as ExistingPo[]);
@@ -190,7 +195,10 @@ Deno.serve(async (req: Request) => {
       const row: Record<string, unknown> = {
         ls_consignment_id: c.id,
         source: "lightspeed",
-        po_number: c.name || `LS-${c.id.slice(0, 8)}`,
+        // "reference" is the order number staff see in Lightspeed; "name" is blank on
+        // nearly every supplier consignment, so it is only a fallback.
+        po_number: (c.reference || "").trim() || (c.name || "").trim() || `LS-${c.id.slice(0, 8)}`,
+        supplier_invoice_no: (c.supplier_invoice || "").trim() || null,
         po_type: "PO",
         supplier: c.supplier_id ? (supMap.get(c.supplier_id) ?? null) : null,
         outlet: c.outlet_id ? (outMap.get(c.outlet_id) ?? null) : null,
@@ -227,7 +235,9 @@ Deno.serve(async (req: Request) => {
       const prev = byLsId.get(r.ls_consignment_id as string);
       if (!prev) return true;
       if (itemsById.has(r.ls_consignment_id as string)) return true;
-      return prev.status !== r.status;
+      return prev.status !== r.status
+        || prev.po_number !== r.po_number
+        || prev.supplier_invoice_no !== r.supplier_invoice_no;
     });
 
     // Upsert writes only the columns above, so Timekeeper-owned payment/notes/project

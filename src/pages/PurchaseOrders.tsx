@@ -209,7 +209,7 @@ const baseConfig: CrudConfig = {
   canWrite: purchasingRoles,
   statusField: 'status',
   statusOptions: PO_STATUSES,
-  searchKeys: ['po_number', 'supplier', 'brand', 'notes'],
+  searchKeys: ['po_number', 'supplier_invoice_no', 'supplier', 'brand', 'notes'],
   allowCreate: false,
   allowDelete: (r) => !isSynced(r),
   rowClickToEdit: true,
@@ -223,7 +223,8 @@ const baseConfig: CrudConfig = {
   ],
   fields: [
     // ── owned by Lightspeed ──
-    { key: 'po_number', label: 'PO number', type: 'text', readOnly: true, hint: 'Created in Lightspeed' },
+    { key: 'po_number', label: 'Order number', type: 'text', readOnly: true, hint: 'The Lightspeed order reference' },
+    { key: 'supplier_invoice_no', label: 'Supplier invoice #', type: 'text', readOnly: true },
     { key: 'supplier', label: 'Supplier', type: 'text', readOnly: true },
     { key: 'outlet', label: 'Outlet', type: 'text', readOnly: true },
     { key: 'created_date', label: 'Created date', type: 'date', readOnly: true },
@@ -246,12 +247,13 @@ const baseConfig: CrudConfig = {
     { key: 'notes', label: 'Notes', type: 'textarea' },
   ],
   columns: [
-    { key: 'po_number', label: 'PO #', sortable: true, render: (r) => (
+    { key: 'po_number', label: 'Order #', sortable: true, render: (r) => (
       <span className="flex items-center gap-2 whitespace-nowrap">
         {r.po_number}
         {!isSynced(r) && <Badge className="bg-slate-100 text-slate-500 border-slate-200">legacy</Badge>}
       </span>
     ) },
+    { key: 'supplier_invoice_no', label: 'Invoice #', sortable: true, hideBelow: 'xl' },
     { key: 'supplier', label: 'Supplier', sortable: true },
     { key: 'brand', label: 'Brand', sortable: true, hideBelow: 'md' },
     { key: 'outlet', label: 'Outlet', sortable: true, hideBelow: 'lg' },
