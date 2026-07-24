@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { RefreshCw, Link2, X, Wallet, Truck, FileText } from 'lucide-react';
+import { RefreshCw, Link2, X, Wallet, Truck, FileText, Flag } from 'lucide-react';
 import { CrudModule, CrudConfig } from '../components/CrudModule';
 import { Badge, Spinner } from '../components/ui';
 import { formatKD } from '../lib/format';
@@ -292,8 +292,15 @@ const baseConfig: CrudConfig = {
   // arrival, project, line items) opens on row click, so the table only shows what
   // matters at a glance. Order #, Balance, Payment and Status always stay visible.
   columns: [
-    { key: 'po_number', label: 'Order #', sortable: true, render: (r) => (
+    { key: 'po_number', label: 'Order #', sortable: true,
+      sortValue: (r) => `${r.linked_project ? '0' : '1'}${r.po_number ?? ''}`, // project POs sort first
+      render: (r) => (
       <span className="flex items-center gap-2 whitespace-nowrap">
+        {r.linked_project && (
+          <span title={`Limited project: ${r.linked_project}`} className="shrink-0 inline-flex">
+            <Flag size={14} className="text-violet-600 fill-violet-500" aria-label={`Linked to ${r.linked_project}`} />
+          </span>
+        )}
         {r.po_number}
         {!isSynced(r) && <Badge className="bg-slate-100 text-slate-500 border-slate-200">legacy</Badge>}
       </span>
