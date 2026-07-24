@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { RefreshCw, Link2, X } from 'lucide-react';
+import { RefreshCw, Link2, X, Wallet, Truck, FileText } from 'lucide-react';
 import { CrudModule, CrudConfig } from '../components/CrudModule';
 import { Badge, Spinner } from '../components/ui';
 import { formatKD } from '../lib/format';
@@ -37,6 +37,48 @@ const poIsCompleted = (r: Record<string, any>) =>
   ['Fully Received', 'Cancelled'].includes(r.status) && balanceOf(r) <= 0;
 
 const isSynced = (r: Record<string, any>) => r.source === 'lightspeed';
+
+/* ---------------- Summary cards ---------------- */
+
+type QuickFilter = 'owed' | 'receipt' | 'invoice';
+
+// Keep these in lockstep with po_summary() so the cards and the list they filter agree.
+const NOT_RECEIVED = ['Ordered', 'Pending Approval', 'Partially Received'];
+const matchesQuick: Record<QuickFilter, (r: Record<string, any>) => boolean> = {
+  owed: (r) => r.status !== 'Cancelled' && balanceOf(r) > 0.0005,
+  receipt: (r) => NOT_RECEIVED.includes(r.status),
+  invoice: (r) => ['Fully Received', 'Partially Received'].includes(r.status)
+    && r.invoice_received !== true && balanceOf(r) > 0.0005,
+};
+
+interface Summary {
+  owed_kd: number; owed_count: number;
+  receipt_count: number; receipt_kd: number;
+  invoice_count: number;
+}
+
+function SummaryCard({ icon, label, value, sub, tone, active, onClick }: {
+  icon: JSX.Element; label: string; value: string; sub: string;
+  tone: 'rose' | 'sky' | 'amber'; active: boolean; onClick: () => void;
+}) {
+  const toneRing = active
+    ? { rose: 'ring-rose-400 border-rose-300', sky: 'ring-sky-400 border-sky-300', amber: 'ring-amber-400 border-amber-300' }[tone]
+    : 'border-slate-200 hover:border-slate-300';
+  const toneIcon = { rose: 'text-rose-600 bg-rose-50', sky: 'text-sky-600 bg-sky-50', amber: 'text-amber-600 bg-amber-50' }[tone];
+  return (
+    <button
+      onClick={onClick}
+      className={`text-left rounded-xl border bg-white px-4 py-3 transition-shadow ${toneRing} ${active ? 'ring-2 shadow-sm' : ''}`}
+    >
+      <div className="flex items-center gap-2 mb-1">
+        <span className={`p-1.5 rounded-lg ${toneIcon}`}>{icon}</span>
+        <span className="text-sm text-slate-600">{label}</span>
+      </div>
+      <div className="text-2xl font-bold text-slate-900">{value}</div>
+      <div className="text-xs text-slate-500 mt-0.5">{active ? 'Showing these — click to clear' : sub}</div>
+    </button>
+  );
+}
 
 /* ---------------- Line items (read-only, from Lightspeed) ---------------- */
 
@@ -291,6 +333,8 @@ export function PurchaseOrdersPage() {
   const [syncing, setSyncing] = useState(false);
   const [syncMsg, setSyncMsg] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
+  const [summary, setSummary] = useState<Summary | null>(null);
+  const [quick, setQuick] = useState<QuickFilter | null>(null);
 
   const loadSyncTime = useCallback(() => {
     supabase.from('purchase_orders').select('ls_synced_at')
@@ -299,11 +343,16 @@ export function PurchaseOrdersPage() {
       .then(({ data }) => setLastSync(data?.[0]?.ls_synced_at ?? null));
   }, []);
 
+  const loadSummary = useCallback(() => {
+    supabase.rpc('po_summary').then(({ data }) => setSummary((data as Summary) ?? null));
+  }, []);
+
   useEffect(() => {
     supabase.from('limited_projects').select('project_name').order('project_name')
       .then(({ data }) => setProjectNames((data ?? []).map((p: any) => p.project_name).filter(Boolean)));
     loadSyncTime();
-  }, [loadSyncTime]);
+    loadSummary();
+  }, [loadSyncTime, loadSummary]);
 
   async function syncNow() {
     setSyncing(true);
@@ -322,6 +371,7 @@ export function PurchaseOrdersPage() {
       );
       setReloadKey((k) => k + 1);
       loadSyncTime();
+      loadSummary();
     }
     setSyncing(false);
   }
@@ -331,13 +381,26 @@ export function PurchaseOrdersPage() {
     fields: baseConfig.fields.map((f) =>
       f.key === 'linked_project' ? { ...f, options: projectNames } : f),
     formExtra: (row) => (row?.id && isSynced(row) ? <LineItems poId={row.id} /> : null),
-  }), [projectNames]);
+    onChanged: loadSummary, // recording a payment should move the cards
+  }), [projectNames, loadSummary]);
 
   const activeConfig = useMemo<CrudConfig>(() => ({
     ...withRuntime,
+    title: quick
+      ? { owed: 'Outstanding balance', receipt: 'Awaiting receipt', invoice: 'Awaiting invoice' }[quick]
+      : baseConfig.title,
+    description: quick
+      ? 'Filtered by the highlighted card above — click it again to clear.'
+      : baseConfig.description,
     groupBy: 'brand',
-    filter: (r) => !r.merged_into && !poIsCompleted(r),
-  }), [withRuntime]);
+    // A card overrides the default active/completed split so it can surface matching POs
+    // wherever they sit (a settled PO can still be awaiting its invoice, etc.).
+    filter: (r) => {
+      if (r.merged_into) return false;
+      if (quick) return matchesQuick[quick](r);
+      return !poIsCompleted(r);
+    },
+  }), [withRuntime, quick]);
 
   const completedConfig = useMemo<CrudConfig>(() => ({
     ...withRuntime,
@@ -371,19 +434,45 @@ export function PurchaseOrdersPage() {
         )}
       </div>
 
-      {purchasingRoles(role) && <LegacyMatches onLinked={() => setReloadKey((k) => k + 1)} />}
-
-      <CrudModule key={`active-${reloadKey}`} config={activeConfig} />
-
-      <div>
-        <button
-          onClick={() => setShowCompleted((v) => !v)}
-          className="flex items-center gap-1.5 text-sm text-slate-600 hover:text-slate-900 font-medium mb-2"
-        >
-          {showCompleted ? '▾' : '▸'} Completed POs (received & fully paid)
-        </button>
-        {showCompleted && <CrudModule key={`done-${reloadKey}`} config={completedConfig} />}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <SummaryCard
+          icon={<Wallet size={16} />} tone="rose"
+          label="Outstanding balance"
+          value={summary ? kd(summary.owed_kd) : '—'}
+          sub={summary ? `${summary.owed_count} PO${summary.owed_count === 1 ? '' : 's'} still owed` : ' '}
+          active={quick === 'owed'} onClick={() => setQuick((q) => (q === 'owed' ? null : 'owed'))}
+        />
+        <SummaryCard
+          icon={<Truck size={16} />} tone="sky"
+          label="Awaiting receipt"
+          value={summary ? String(summary.receipt_count) : '—'}
+          sub={summary ? `${kd(summary.receipt_kd)} on order` : ' '}
+          active={quick === 'receipt'} onClick={() => setQuick((q) => (q === 'receipt' ? null : 'receipt'))}
+        />
+        <SummaryCard
+          icon={<FileText size={16} />} tone="amber"
+          label="Awaiting invoice"
+          value={summary ? String(summary.invoice_count) : '—'}
+          sub="Received & owed, no invoice logged"
+          active={quick === 'invoice'} onClick={() => setQuick((q) => (q === 'invoice' ? null : 'invoice'))}
+        />
       </div>
+
+      {purchasingRoles(role) && <LegacyMatches onLinked={() => { setReloadKey((k) => k + 1); loadSummary(); }} />}
+
+      <CrudModule key={`active-${reloadKey}-${quick ?? 'all'}`} config={activeConfig} />
+
+      {!quick && (
+        <div>
+          <button
+            onClick={() => setShowCompleted((v) => !v)}
+            className="flex items-center gap-1.5 text-sm text-slate-600 hover:text-slate-900 font-medium mb-2"
+          >
+            {showCompleted ? '▾' : '▸'} Completed POs (received & fully paid)
+          </button>
+          {showCompleted && <CrudModule key={`done-${reloadKey}`} config={completedConfig} />}
+        </div>
+      )}
     </div>
   );
 }

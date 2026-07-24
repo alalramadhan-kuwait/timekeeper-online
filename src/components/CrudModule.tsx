@@ -95,12 +95,23 @@ export function CrudModule({ config }: { config: CrudConfig }) {
   async function load() {
     setLoading(true);
     const order = config.orderBy ?? { column: 'created_at', ascending: false };
-    const { data, error } = await supabase
-      .from(config.table)
-      .select('*')
-      .order(order.column, { ascending: order.ascending ?? false });
-    if (error) setError(error.message);
-    else setRows(data ?? []);
+    // PostgREST caps a select at 1000 rows; page through so tables that have grown past
+    // that (e.g. ~2,000 purchase orders) are fully loaded and client-side filters see
+    // every row, not just the newest 1000.
+    const PAGE = 1000;
+    const all: Record<string, any>[] = [];
+    for (let from = 0; ; from += PAGE) {
+      const { data, error } = await supabase
+        .from(config.table)
+        .select('*')
+        .order(order.column, { ascending: order.ascending ?? false })
+        .range(from, from + PAGE - 1);
+      if (error) { setError(error.message); setLoading(false); return; }
+      all.push(...(data ?? []));
+      if (!data || data.length < PAGE) break;
+    }
+    setError(null);
+    setRows(all);
     setLoading(false);
   }
 
