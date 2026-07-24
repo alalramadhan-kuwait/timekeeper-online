@@ -28,6 +28,15 @@ interface ProductRow {
   costValue: number; // Σ qty × avg cost — 0 when cost not visible to this role
 }
 
+/** Average unit cost = Σ(qty×cost) ÷ units in stock. 0 when cost isn't visible (RLS). */
+const avgCost = (p: ProductRow): number => (p.totalQty > 0 ? p.costValue / p.totalQty : 0);
+/** Gross margin on the average unit: (retail − cost) ÷ retail, as a percentage. */
+const unitMargin = (p: ProductRow): number => {
+  const price = Number(p.price ?? 0);
+  const cost = avgCost(p);
+  return price > 0 && cost > 0 ? ((price - cost) / price) * 100 : 0;
+};
+
 const movementStyle: Record<Movement, { label: string; cls: string }> = {
   fast: { label: 'Fast', cls: 'bg-emerald-100 text-emerald-700' },
   slow: { label: 'Slow', cls: 'bg-amber-100 text-amber-700' },
@@ -155,6 +164,8 @@ export default function StockPage() {
           case 'total': return p.totalQty;
           case 'value': return p.totalQty * Number(p.price ?? 0);
           case 'price': return Number(p.price ?? 0);
+          case 'cost': return avgCost(p);
+          case 'margin': return unitMargin(p);
           case 'sold30': return p.units30;
           case 'lastSold': return p.lastSold ?? '';
           default: return 0;
@@ -571,14 +582,16 @@ export default function StockPage() {
                   {outlets.map((o) => <th key={o} className="px-4 py-3 text-right whitespace-nowrap hidden md:table-cell">{o}</th>)}
                   <SortTh col="total" label="Total" sort={prodSort} onSort={toggleSort(setProdSort)} className="text-right" />
                   <SortTh col="value" label="Value" sort={prodSort} onSort={toggleSort(setProdSort)} className="text-right" />
-                  <SortTh col="price" label="Price" sort={prodSort} onSort={toggleSort(setProdSort)} className="text-right hidden sm:table-cell" />
+                  {hasCost && <SortTh col="cost" label="Avg cost" sort={prodSort} onSort={toggleSort(setProdSort)} className="text-right hidden md:table-cell" />}
+                  <SortTh col="price" label="Retail" sort={prodSort} onSort={toggleSort(setProdSort)} className="text-right hidden sm:table-cell" />
+                  {hasCost && <SortTh col="margin" label="Margin" sort={prodSort} onSort={toggleSort(setProdSort)} className="text-right hidden md:table-cell" />}
                   <SortTh col="sold30" label="Sold 30d" sort={prodSort} onSort={toggleSort(setProdSort)} className="text-right" />
                   <SortTh col="lastSold" label="Last sold" sort={prodSort} onSort={toggleSort(setProdSort)} className="text-right hidden sm:table-cell" />
                 </tr>
               </thead>
               <tbody>
                 {products.length === 0 && (
-                  <tr><td colSpan={outlets.length + 7} className="px-4 py-8 text-center text-slate-400">No products in stock match</td></tr>
+                  <tr><td colSpan={outlets.length + 7 + (hasCost ? 2 : 0)} className="px-4 py-8 text-center text-slate-400">No products in stock match</td></tr>
                 )}
                 {products.slice(0, 500).map((p, idx, arr) => {
                   const brandLabel = p.brand ?? 'No brand';
@@ -587,7 +600,7 @@ export default function StockPage() {
                   return (
                     <Fragment key={p.product_id}>{newBrand && (
                       <tr key={`hdr-${brandLabel}`} className="bg-slate-50 border-b border-slate-200">
-                        <td colSpan={outlets.length + 7} className="px-4 py-1.5 text-xs font-bold text-slate-600 uppercase tracking-wide">
+                        <td colSpan={outlets.length + 7 + (hasCost ? 2 : 0)} className="px-4 py-1.5 text-xs font-bold text-slate-600 uppercase tracking-wide">
                           {brandLabel}
                           <span className="ml-2 font-normal text-slate-400 normal-case">
                             {arr.filter((x) => (x.brand ?? 'No brand') === brandLabel).length} items
@@ -622,7 +635,20 @@ export default function StockPage() {
                       })}
                       <td className="px-4 py-2.5 text-right font-bold text-slate-800">{p.totalQty}</td>
                       <td className="px-4 py-2.5 text-right font-semibold text-slate-800 whitespace-nowrap">{formatKD(p.totalQty * Number(p.price ?? 0))} KD</td>
+                      {hasCost && (
+                        <td className="px-4 py-2.5 text-right text-slate-500 hidden md:table-cell whitespace-nowrap">
+                          {avgCost(p) > 0 ? `${formatKD(avgCost(p))} KD` : '—'}
+                        </td>
+                      )}
                       <td className="px-4 py-2.5 text-right hidden sm:table-cell whitespace-nowrap">{p.price != null ? `${formatKD(Number(p.price))} KD` : '—'}</td>
+                      {hasCost && (
+                        <td className={`px-4 py-2.5 text-right font-medium hidden md:table-cell ${
+                          avgCost(p) <= 0 ? 'text-slate-300'
+                            : unitMargin(p) >= 40 ? 'text-emerald-600'
+                            : unitMargin(p) >= 20 ? 'text-amber-600' : 'text-rose-600'}`}>
+                          {avgCost(p) > 0 ? `${unitMargin(p).toFixed(0)}%` : '—'}
+                        </td>
+                      )}
                       <td className="px-4 py-2.5 text-right">
                         {p.units30 > 0
                           ? <span className="text-emerald-600 font-semibold">{p.units30}</span>
