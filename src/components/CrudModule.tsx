@@ -187,6 +187,10 @@ export function CrudModule({ config }: { config: CrudConfig }) {
     setError(null);
     let payload: Record<string, any> = {};
     for (const f of config.fields) {
+      // Read-only fields are owned by another system (e.g. the Lightspeed sync). Never
+      // write them back — the form doesn't carry a value, so rebuilding one here would
+      // send null and blow past NOT NULL constraints (item_count, total_cost, …).
+      if (f.readOnly) continue;
       let v = form[f.key];
       if (f.type === 'number') v = v === '' || v == null ? null : Number(v);
       if (f.type !== 'image' && v === '') v = null;
