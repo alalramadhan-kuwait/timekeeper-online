@@ -2,6 +2,8 @@
 
 > **Purpose of this file:** the single source of truth for how the Timekeeper systems fit together — architecture, data model, modules, integrations, conventions. It is the reference Claude reads before making changes, and **it must be updated in the same change whenever the system changes** (new module, table, edge function, cron job, role, convention, or a notable fix). Keep the Changelog at the bottom current.
 >
+> **This is a mirror.** The same file lives in both repos (`timekeeper-online/SYSTEM.md` and `watch-store-crm/SYSTEM.md`) because the two apps share one system — keep the two copies identical when you update either.
+>
 > Last updated: **2026-07-25**
 
 ---
