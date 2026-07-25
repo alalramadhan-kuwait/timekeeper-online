@@ -11,6 +11,17 @@ import { buildAlerts, loadAlertActions, saveAlertAction, Alert, AlertAction } fr
 import { tierClass, tierLabel } from '../lib/expiry';
 import { useAuth } from '../context/AuthContext';
 import { canAccessPath } from '../components/Layout';
+import { ChartCard, LineChart, BarChart, Point, Bar } from '../components/Charts';
+
+interface Charts {
+  salesTrend: Point[];       // cumulative sales day-by-day this month
+  outletSales: Bar[];        // month sales per outlet, with target marker
+  stockHistory: Point[];     // stock retail value over time
+  supplierByBrand: Bar[];    // outstanding supplier balance per brand
+  repairsByStatus: Bar[];    // open repair cases per status
+  igTrend: Point[];          // Instagram followers over time
+}
+const EMPTY_CHARTS: Charts = { salesTrend: [], outletSales: [], stockHistory: [], supplierByBrand: [], repairsByStatus: [], igTrend: [] };
 
 function caseTotal(c: any): number {
   // sale_items.amount_kd is already the line total (quantity included) — do not multiply
@@ -123,7 +134,7 @@ function KpiCard({ k }: { k: Kpi }) {
   return inner;
 }
 
-function Section({ title, detailLink, cards }: { title: string; detailLink?: string; cards: Kpi[] }) {
+function Section({ title, detailLink, cards, charts }: { title: string; detailLink?: string; cards: Kpi[]; charts?: React.ReactNode }) {
   if (cards.length === 0) return null;
   return (
     <div className="mb-6">
@@ -135,6 +146,7 @@ function Section({ title, detailLink, cards }: { title: string; detailLink?: str
       <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
         {cards.map((c) => <KpiCard key={c.label} k={c} />)}
       </div>
+      {charts && <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mt-3">{charts}</div>}
     </div>
   );
 }
@@ -143,6 +155,7 @@ function Section({ title, detailLink, cards }: { title: string; detailLink?: str
 export default function Dashboard() {
   const { role, profile, pageAccess } = useAuth();
   const [d, setD] = useState<Record<string, number | null>>({});
+  const [charts, setCharts] = useState<Charts>(EMPTY_CHARTS);
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [actionMap, setActionMap] = useState<Map<string, AlertAction>>(new Map());
   const [loading, setLoading] = useState(true);
@@ -170,7 +183,7 @@ export default function Dashboard() {
       const [
         salesQ, lostQ, overdueFuQ, newCustQ, vipQ, wlQ, preQ, projQ,
         stockSumQ, lowQ, stockCntQ, poQ, attTodayQ, attLateQ, leaveQ, empQ,
-        repairsQ, contentQ, igQ, setQ, alertList, actMap,
+        repairsQ, contentQ, igQ, setQ, alertList, actMap, stockHistQ,
       ] = await Promise.all([
         supabase.from('cases').select('amount_kd, date_logged, outlet, sale_items(amount_kd)').eq('case_type', 'Sale').eq('deleted', false).gte('date_logged', monthStart),
         supabase.from('cases').select('amount_kd').eq('case_type', 'Lost Sale').eq('deleted', false).gte('date_logged', monthStart),
@@ -183,17 +196,18 @@ export default function Dashboard() {
         supabase.from('lightspeed_stock_summary').select('*').single(),
         supabase.from('lightspeed_low_stock').select('product_id', { count: 'exact', head: true }),
         supabase.from('lightspeed_stock').select('product_id', { count: 'exact', head: true }),
-        supabase.from('purchase_orders').select('status, total_cost, amount_paid').not('status', 'in', '("Cancelled")').is('merged_into', null),
+        supabase.from('purchase_orders').select('status, total_cost, amount_paid, brand').not('status', 'in', '("Cancelled")').is('merged_into', null),
         supabase.from('attendance_records').select('employee_name').gte('clock_in', `${today}T00:00:00+03:00`).lte('clock_in', `${today}T23:59:59+03:00`),
         supabase.from('attendance_records').select('id', { count: 'exact', head: true }).eq('is_late', true).eq('justified', false).gte('clock_in', `${monthStart}T00:00:00+03:00`),
         supabase.from('leave_records').select('leave_type').eq('approval_status', 'Pending'),
         canHR ? supabase.from('employees').select('residency_expiry, work_permit_expiry, status').in('status', ['Active', 'On leave']) : Promise.resolve({ data: [] as any[] }),
         supabase.from('repair_watches').select('status, estimated_completion, date_returned'),
         supabase.from('content_tasks').select('status, planned_date, posted_date'),
-        supabase.from('instagram_daily').select('followers').order('snapshot_date', { ascending: false }).limit(1),
+        supabase.from('instagram_daily').select('snapshot_date, followers').order('snapshot_date', { ascending: true }).limit(90),
         supabase.from('settings').select('sales_target_month, sales_target_avenues, sales_target_timegallery').single(),
         buildAlerts(role),
         loadAlertActions(),
+        supabase.from('lightspeed_stock_value_history').select('snapshot_date, retail_value').order('snapshot_date', { ascending: true }).limit(90),
       ]);
 
       // sales
@@ -255,7 +269,50 @@ export default function Dashboard() {
       const contentPending = content.filter((c) => !['Posted', 'Cancelled'].includes(c.status)).length;
       const scheduledMonth = content.filter((c) => ['Scheduled', 'Approved'].includes(c.status) && c.planned_date && c.planned_date.slice(0, 7) === monthStart.slice(0, 7)).length;
       const postedMonth = content.filter((c) => c.posted_date && c.posted_date.slice(0, 7) === monthStart.slice(0, 7)).length;
-      const igFollowers = igQ.data?.[0]?.followers != null ? Number(igQ.data[0].followers) : null;
+      const igRows = (igQ.data ?? []) as any[];
+      const igFollowers = igRows.length ? Number(igRows[igRows.length - 1].followers) : null;
+
+      // ── chart series ──
+      const dayNum = (iso: string) => iso.slice(8, 10);
+      // cumulative sales per day this month → shows the shape of the month
+      const byDay = new Map<string, number>();
+      for (const c of monthCases) byDay.set(c.date_logged, (byDay.get(c.date_logged) ?? 0) + caseTotal(c));
+      const todayDay = Number(today.slice(8, 10));
+      let running = 0;
+      const salesTrend: Point[] = [];
+      for (let day = 1; day <= todayDay; day++) {
+        const iso = `${monthStart.slice(0, 8)}${String(day).padStart(2, '0')}`;
+        running += byDay.get(iso) ?? 0;
+        salesTrend.push({ label: String(day), value: running });
+      }
+
+      const outletBars: Bar[] = [
+        { label: 'Avenues', value: avenuesSales, target: avenuesTarget, color: '#0ea5e9' },
+        { label: 'Time Gallery', value: timeGallerySales, target: timeGalleryTarget, color: '#8b5cf6' },
+      ];
+
+      const stockHistory: Point[] = ((stockHistQ.data ?? []) as any[])
+        .map((r) => ({ label: dayNum(r.snapshot_date), value: Number(r.retail_value) }));
+
+      // outstanding supplier balance grouped by brand (owed only)
+      const balByBrand = new Map<string, number>();
+      for (const p of poRows) {
+        const bal = Number(p.total_cost ?? 0) - Number(p.amount_paid ?? 0);
+        if (bal > 0) balByBrand.set(p.brand || 'Unassigned', (balByBrand.get(p.brand || 'Unassigned') ?? 0) + bal);
+      }
+      const supplierByBrand: Bar[] = [...balByBrand.entries()].map(([label, value]) => ({ label, value }));
+
+      // open repair cases grouped by status
+      const repByStatus = new Map<string, number>();
+      for (const r of repairs) {
+        if (['Returned to customer', 'Cancelled'].includes(r.status)) continue;
+        repByStatus.set(r.status ?? 'Unknown', (repByStatus.get(r.status ?? 'Unknown') ?? 0) + 1);
+      }
+      const repairsByStatus: Bar[] = [...repByStatus.entries()].map(([label, value]) => ({ label, value }));
+
+      const igTrend: Point[] = igRows.map((r) => ({ label: dayNum(r.snapshot_date), value: Number(r.followers) }));
+
+      setCharts({ salesTrend, outletSales: outletBars, stockHistory, supplierByBrand, repairsByStatus, igTrend });
 
       setD({
         salesToday, salesMonth, salesTarget,
@@ -277,6 +334,7 @@ export default function Dashboard() {
   if (loading) return <Spinner />;
 
   const kd = (v: number | null | undefined) => v == null ? '—' : `${formatKDCompact(v)} KD`;
+  const kdC = (n: number) => `${formatKDCompact(n)} KD`; // chart axis/label formatter
   const activeAlerts = alerts.filter((a) => actionMap.get(a.key)?.action !== 'dismissed');
   const handledCount = [...actionMap.values()].filter((a) => a.action === 'dismissed').length;
 
@@ -374,12 +432,40 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {can('/sales') && <Section title="Sales & Customers" cards={salesCards} />}
+      {can('/sales') && <Section title="Sales & Customers" cards={salesCards} charts={
+        <>
+          <ChartCard title="Sales trend this month" hint="cumulative KD" link="/sales">
+            <LineChart data={charts.salesTrend} color="#059669" fmt={kdC} />
+          </ChartCard>
+          <ChartCard title="Sales by outlet vs target" hint="this month" link="/sales">
+            <BarChart data={charts.outletSales} fmt={kdC} />
+          </ChartCard>
+        </>
+      } />}
       {(can('/waiting-list') || can('/limited-projects')) && <Section title="Demand & Projects" cards={demandCards} />}
-      {(can('/stock') || can('/purchase-orders')) && <Section title="Stock & Purchasing" detailLink={can('/purchase-orders') ? '/purchase-orders' : '/stock'} cards={stockCards} />}
+      {(can('/stock') || can('/purchase-orders')) && <Section title="Stock & Purchasing" detailLink={can('/purchase-orders') ? '/purchase-orders' : '/stock'} cards={stockCards} charts={
+        <>
+          {can('/stock') && <ChartCard title="Stock value over time" hint="retail KD" link="/stock">
+            <LineChart data={charts.stockHistory} color="#1e293b" fmt={kdC} />
+          </ChartCard>}
+          {can('/purchase-orders') && <ChartCard title="Supplier balance by brand" hint="outstanding KD" link="/purchase-orders">
+            <BarChart data={charts.supplierByBrand} fmt={kdC} barColor="#e11d48" />
+          </ChartCard>}
+        </>
+      } />}
       {(can('/hr') || can('/attendance')) && <Section title="HR & Attendance" cards={hrCards} />}
-      {can('/repairs') && <Section title="Repair Watches" detailLink="/repairs" cards={repairCards} />}
-      {(can('/instagram') || can('/content')) && <Section title="Marketing" cards={marketingCards} />}
+      {can('/repairs') && <Section title="Repair Watches" detailLink="/repairs" cards={repairCards} charts={
+        <ChartCard title="Repairs by status" hint="open cases" link="/repairs">
+          <BarChart data={charts.repairsByStatus} barColor="#2563eb" />
+        </ChartCard>
+      } />}
+      {(can('/instagram') || can('/content')) && <Section title="Marketing" cards={marketingCards} charts={
+        can('/instagram') ? (
+          <ChartCard title="Instagram followers trend" hint="@timekeeperkw" link="/instagram">
+            <LineChart data={charts.igTrend} color="#db2777" />
+          </ChartCard>
+        ) : undefined
+      } />}
 
       {/* Alerts & Actions */}
       <div ref={alertsRef} className="mb-3 flex items-center gap-3 scroll-mt-4">
