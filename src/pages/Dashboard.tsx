@@ -20,11 +20,12 @@ interface Charts {
   stockHistory: Point[];     // stock retail value over time
   supplierByBrand: Bar[];    // outstanding supplier balance per brand
   repairsByStatus: Bar[];    // open repair cases per status
-  igTrend: Point[];          // main account followers over time
+  igSeries: { username: string; points: Point[] }[]; // followers trend per account
   igAccounts: IgAccount[];   // per-account followers / change / last post
 }
-const EMPTY_CHARTS: Charts = { salesTrend: [], outletSales: [], stockHistory: [], supplierByBrand: [], repairsByStatus: [], igTrend: [], igAccounts: [] };
+const EMPTY_CHARTS: Charts = { salesTrend: [], outletSales: [], stockHistory: [], supplierByBrand: [], repairsByStatus: [], igSeries: [], igAccounts: [] };
 const IG_MAIN = 'timekeeperkw';
+const IG_COLOR: Record<string, string> = { timekeeperkw: '#db2777', timegallerykw: '#0ea5e9', timekeeperkwshop: '#8b5cf6' };
 
 function caseTotal(c: any): number {
   // sale_items.amount_kd is already the line total (quantity included) — do not multiply
@@ -356,7 +357,15 @@ export default function Dashboard() {
       }
       const repairsByStatus: Bar[] = [...repByStatus.entries()].map(([label, value]) => ({ label, value }));
 
-      const igTrend: Point[] = mainSeries.map((r) => ({ label: dayNum(r.snapshot_date), value: Number(r.followers) }));
+      // one followers-trend series per account, main first then by size
+      const igSeries = [...igByAccount.entries()]
+        .sort((a, b) =>
+          (a[0] === IG_MAIN ? -1 : b[0] === IG_MAIN ? 1 : 0) ||
+          Number(b[1][b[1].length - 1]?.followers ?? 0) - Number(a[1][a[1].length - 1]?.followers ?? 0))
+        .map(([username, rows]) => ({
+          username,
+          points: rows.map((r) => ({ label: dayNum(r.snapshot_date), value: Number(r.followers) })),
+        }));
 
       // per-account comparison: latest snapshot, day-over-day change, days since last post
       const daysBetween = (iso: string) =>
@@ -375,7 +384,7 @@ export default function Dashboard() {
         })
         .sort((a, b) => (b.followers ?? 0) - (a.followers ?? 0));
 
-      setCharts({ salesTrend, outletSales: outletBars, stockHistory, supplierByBrand, repairsByStatus, igTrend, igAccounts });
+      setCharts({ salesTrend, outletSales: outletBars, stockHistory, supplierByBrand, repairsByStatus, igSeries, igAccounts });
 
       setD({
         salesToday, salesMonth, salesTarget,
@@ -528,9 +537,11 @@ export default function Dashboard() {
             <ChartCard title="Instagram accounts" hint="followers · Δ today · days idle" link="/instagram">
               <IgComparison accounts={charts.igAccounts} />
             </ChartCard>
-            <ChartCard title="Followers trend" hint="@timekeeperkw" link="/instagram">
-              <LineChart data={charts.igTrend} color="#db2777" />
-            </ChartCard>
+            {charts.igSeries.map((s) => (
+              <ChartCard key={s.username} title="Followers trend" hint={`@${s.username}`} link="/instagram">
+                <LineChart data={s.points} color={IG_COLOR[s.username] ?? '#db2777'} />
+              </ChartCard>
+            ))}
           </>
         ) : undefined
       } />}
