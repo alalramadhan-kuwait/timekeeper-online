@@ -25,7 +25,7 @@ interface ConsignmentProduct {
   product_id?: string; count?: number; received?: number; cost?: number;
 }
 
-/** Lightspeed status → Timekeeper lifecycle (Partially Received is derived from line items). */
+/** Lightspeed status -> Timekeeper lifecycle (Partially Received is derived from line items). */
 function mapStatus(s?: string): string {
   switch ((s ?? "").toUpperCase()) {
     case "OPEN": return "Pending Approval";
@@ -47,7 +47,7 @@ async function pageAll<T>(base: string, path: string, token: string, cap = 40): 
       headers: { Authorization: `Bearer ${token}` },
     });
     if (res.status === 429) { await new Promise((r) => setTimeout(r, 3000)); page--; continue; }
-    if (!res.ok) throw new Error(`${path} → ${res.status}: ${(await res.text()).slice(0, 200)}`);
+    if (!res.ok) throw new Error(`${path} -> ${res.status}: ${(await res.text()).slice(0, 200)}`);
     const body = await res.json();
     const data: T[] = body.data ?? [];
     out.push(...data);
@@ -122,7 +122,7 @@ Deno.serve(async (req: Request) => {
     try {
       const sups = await pageAll<{ id: string; name?: string }>(base, "/api/2.0/suppliers", token, 5);
       for (const s of sups) if (s.name) supMap.set(s.id, s.name);
-    } catch { /* names are cosmetic — keep going without them */ }
+    } catch { /* names are cosmetic - keep going without them */ }
 
     const outMap = new Map<string, string>();
     const outRes = await fetch(`${base}/api/2.0/outlets`, { headers: { Authorization: `Bearer ${token}` } });
@@ -133,7 +133,7 @@ Deno.serve(async (req: Request) => {
       .filter((c) => (c.type ?? "").toUpperCase() === "SUPPLIER");
 
     // Existing rows tell us which POs still need their line items refreshed. PostgREST
-    // caps a select at 1000 rows, and there are ~2,000 POs — read it in pages or the
+    // caps a select at 1000 rows, and there are ~2,000 POs - read it in pages or the
     // sync sees the same slice every run and never makes progress.
     type ExistingPo = {
       id: string; ls_consignment_id: string | null; status: string;
@@ -214,11 +214,11 @@ Deno.serve(async (req: Request) => {
         row.item_count = items.length;
         row.ordered_qty = orderedQty;
         row.received_qty = receivedQty;
-        // Partially Received is derived — Lightspeed has no such status
+        // Partially Received is derived - Lightspeed has no such status
         if (receivedQty > 0 && receivedQty < orderedQty) row.status = "Partially Received";
       } else {
         // A bulk upsert sends the same key set for every row, so totals have to be
-        // restated explicitly — carry forward what the last run stored.
+        // restated explicitly - carry forward what the last run stored.
         const prev = byLsId.get(c.id);
         row.total_cost = prev?.total_cost ?? 0;
         row.item_count = prev?.item_count ?? 0;
@@ -229,7 +229,7 @@ Deno.serve(async (req: Request) => {
       return row;
     });
 
-    // Most of the ~2,000 POs are settled history that never changes — only write the
+    // Most of the ~2,000 POs are settled history that never changes - only write the
     // ones that are new, just had items fetched, or whose status actually moved.
     const changed = poRows.filter((r) => {
       const prev = byLsId.get(r.ls_consignment_id as string);
@@ -253,7 +253,7 @@ Deno.serve(async (req: Request) => {
       .select("id, ls_consignment_id").in("ls_consignment_id", [...itemsById.keys()]);
     const idByLs = new Map((idRows ?? []).map((r) => [r.ls_consignment_id as string, r.id as string]));
 
-    // A PO can list the same product on more than one line — collapse them, or the
+    // A PO can list the same product on more than one line - collapse them, or the
     // upsert would try to touch the same (po_id, ls_product_id) twice in one statement.
     const itemByKey = new Map<string, Record<string, unknown>>();
     for (const [lsId, items] of itemsById) {
@@ -289,7 +289,41 @@ Deno.serve(async (req: Request) => {
 
     // (product names/SKUs come from the stock sync via purchase_order_items_view)
 
-    // consignments carry no brand — take it from the products on the PO
+    // -- reconcile cancellations --
+    // The /consignments list endpoint DROPS cancelled consignments, so a PO cancelled in
+    // Lightspeed just vanishes from the feed and would otherwise stay frozen at its last
+    // status forever. Any of our still-open POs that are missing from this run's feed get
+    // single-fetched (that endpoint DOES return cancelled/deleted) to read their true state.
+    const seen = new Set(cons.map((c) => c.id));
+    const stillOpen = existingRows.filter(
+      (r) => r.ls_consignment_id && !TERMINAL.includes(r.status) && !seen.has(r.ls_consignment_id),
+    );
+    let cancelled = 0;
+    for (const r of stillOpen.slice(0, 60)) {
+      const pr = await fetch(`${base}/api/2.0/consignments/${r.ls_consignment_id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      let newStatus: string | null = null;
+      if (pr.status === 404) {
+        newStatus = "Cancelled"; // hard-deleted in Lightspeed
+      } else if (pr.ok) {
+        const body = await pr.json();
+        const c = (body.data ?? body) as Consignment;
+        if ((c.status ?? "").toUpperCase() === "CANCELLED" || (c as { deleted_at?: string }).deleted_at) {
+          newStatus = "Cancelled";
+        } else {
+          newStatus = mapStatus(c.status); // e.g. it moved to RECEIVED between pages
+        }
+      }
+      if (newStatus && newStatus !== r.status) {
+        await admin.from("purchase_orders")
+          .update({ status: newStatus, ls_synced_at: syncedAt })
+          .eq("id", r.id);
+        if (newStatus === "Cancelled") cancelled++;
+      }
+    }
+
+    // consignments carry no brand - take it from the products on the PO
     await admin.rpc("po_fill_brands");
 
     const { data: match } = await admin.rpc("po_match_legacy");
@@ -301,7 +335,7 @@ Deno.serve(async (req: Request) => {
     }).eq("id", logRow!.id);
 
     return json({
-      ok: true, purchase_orders: poRows.length, updated: changed.length,
+      ok: true, purchase_orders: poRows.length, updated: changed.length, cancelled,
       line_items: itemRows.length, backfill_remaining: Math.max(0, queue.length - wanted.length),
       auto_linked: m?.auto_linked ?? 0, suggested: m?.suggested ?? 0, truncated,
     });
