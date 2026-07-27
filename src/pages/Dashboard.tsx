@@ -13,15 +13,18 @@ import { useAuth } from '../context/AuthContext';
 import { canAccessPath } from '../components/Layout';
 import { ChartCard, LineChart, BarChart, Point, Bar } from '../components/Charts';
 
+interface IgAccount { username: string; followers: number | null; change: number | null; lastPost: string | null; daysSince: number | null }
 interface Charts {
   salesTrend: Point[];       // cumulative sales day-by-day this month
   outletSales: Bar[];        // month sales per outlet, with target marker
   stockHistory: Point[];     // stock retail value over time
   supplierByBrand: Bar[];    // outstanding supplier balance per brand
   repairsByStatus: Bar[];    // open repair cases per status
-  igTrend: Point[];          // Instagram followers over time
+  igTrend: Point[];          // main account followers over time
+  igAccounts: IgAccount[];   // per-account followers / change / last post
 }
-const EMPTY_CHARTS: Charts = { salesTrend: [], outletSales: [], stockHistory: [], supplierByBrand: [], repairsByStatus: [], igTrend: [] };
+const EMPTY_CHARTS: Charts = { salesTrend: [], outletSales: [], stockHistory: [], supplierByBrand: [], repairsByStatus: [], igTrend: [], igAccounts: [] };
+const IG_MAIN = 'timekeeperkw';
 
 function caseTotal(c: any): number {
   // sale_items.amount_kd is already the line total (quantity included) — do not multiply
@@ -151,6 +154,42 @@ function Section({ title, detailLink, cards, charts }: { title: string; detailLi
   );
 }
 
+/** Compact per-account comparison — a risk/comparison widget, not a detail table. */
+function IgComparison({ accounts }: { accounts: IgAccount[] }) {
+  if (!accounts.length) return <div className="text-xs text-slate-400 py-4 text-center">No data yet</div>;
+  const num = (n: number | null) => (n == null ? '—' : Number(n).toLocaleString());
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="text-[11px] uppercase tracking-wide text-slate-400 text-left">
+            <th className="py-1 font-medium">Account</th>
+            <th className="py-1 font-medium text-right">Followers</th>
+            <th className="py-1 font-medium text-right">Δ today</th>
+            <th className="py-1 font-medium text-right">Last post</th>
+            <th className="py-1 font-medium text-right">Idle</th>
+          </tr>
+        </thead>
+        <tbody>
+          {accounts.map((a) => (
+            <tr key={a.username} className="border-t border-slate-100">
+              <td className="py-1.5 font-medium text-slate-700 whitespace-nowrap">@{a.username}</td>
+              <td className="py-1.5 text-right tabular-nums text-slate-700">{num(a.followers)}</td>
+              <td className={`py-1.5 text-right tabular-nums ${a.change == null ? 'text-slate-300' : a.change > 0 ? 'text-emerald-600' : a.change < 0 ? 'text-rose-600' : 'text-slate-400'}`}>
+                {a.change == null ? '—' : `${a.change > 0 ? '+' : ''}${a.change.toLocaleString()}`}
+              </td>
+              <td className="py-1.5 text-right text-slate-500 whitespace-nowrap">{a.lastPost ?? '—'}</td>
+              <td className={`py-1.5 text-right font-medium ${a.daysSince == null ? 'text-slate-300' : a.daysSince >= 7 ? 'text-rose-600' : a.daysSince >= 3 ? 'text-amber-600' : 'text-slate-500'}`}>
+                {a.daysSince == null ? '—' : `${a.daysSince}d`}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 // ── Dashboard ─────────────────────────────────────────────────────────────────
 export default function Dashboard() {
   const { role, profile, pageAccess } = useAuth();
@@ -203,7 +242,7 @@ export default function Dashboard() {
         canHR ? supabase.from('employees').select('residency_expiry, work_permit_expiry, status').in('status', ['Active', 'On leave']) : Promise.resolve({ data: [] as any[] }),
         supabase.from('repair_watches').select('status, estimated_completion, date_returned'),
         supabase.from('content_tasks').select('status, planned_date, posted_date'),
-        supabase.from('instagram_daily').select('snapshot_date, followers').order('snapshot_date', { ascending: true }).limit(90),
+        supabase.from('instagram_daily').select('snapshot_date, followers, username, last_post_date').order('snapshot_date', { ascending: true }).limit(400),
         supabase.from('settings').select('sales_target_month, sales_target_avenues, sales_target_timegallery').single(),
         buildAlerts(role),
         loadAlertActions(),
@@ -269,8 +308,15 @@ export default function Dashboard() {
       const contentPending = content.filter((c) => !['Posted', 'Cancelled'].includes(c.status)).length;
       const scheduledMonth = content.filter((c) => ['Scheduled', 'Approved'].includes(c.status) && c.planned_date && c.planned_date.slice(0, 7) === monthStart.slice(0, 7)).length;
       const postedMonth = content.filter((c) => c.posted_date && c.posted_date.slice(0, 7) === monthStart.slice(0, 7)).length;
+      // instagram_daily now holds several accounts — split by username
       const igRows = (igQ.data ?? []) as any[];
-      const igFollowers = igRows.length ? Number(igRows[igRows.length - 1].followers) : null;
+      const igByAccount = new Map<string, any[]>();
+      for (const r of igRows) {
+        const u = (r.username ?? IG_MAIN) as string;
+        (igByAccount.get(u) ?? igByAccount.set(u, []).get(u)!).push(r);
+      }
+      const mainSeries = igByAccount.get(IG_MAIN) ?? [];
+      const igFollowers = mainSeries.length ? Number(mainSeries[mainSeries.length - 1].followers) : null;
 
       // ── chart series ──
       const dayNum = (iso: string) => iso.slice(8, 10);
@@ -310,9 +356,26 @@ export default function Dashboard() {
       }
       const repairsByStatus: Bar[] = [...repByStatus.entries()].map(([label, value]) => ({ label, value }));
 
-      const igTrend: Point[] = igRows.map((r) => ({ label: dayNum(r.snapshot_date), value: Number(r.followers) }));
+      const igTrend: Point[] = mainSeries.map((r) => ({ label: dayNum(r.snapshot_date), value: Number(r.followers) }));
 
-      setCharts({ salesTrend, outletSales: outletBars, stockHistory, supplierByBrand, repairsByStatus, igTrend });
+      // per-account comparison: latest snapshot, day-over-day change, days since last post
+      const daysBetween = (iso: string) =>
+        Math.floor((Date.parse(`${today}T00:00:00Z`) - Date.parse(`${iso}T00:00:00Z`)) / 86400000);
+      const igAccounts: IgAccount[] = [...igByAccount.entries()]
+        .map(([username, rows]) => {
+          const latest = rows[rows.length - 1];
+          const prev = rows.length > 1 ? rows[rows.length - 2] : null;
+          const followers = latest?.followers != null ? Number(latest.followers) : null;
+          const change = prev?.followers != null && followers != null ? followers - Number(prev.followers) : null;
+          return {
+            username, followers, change,
+            lastPost: latest?.last_post_date ?? null,
+            daysSince: latest?.last_post_date ? daysBetween(latest.last_post_date) : null,
+          };
+        })
+        .sort((a, b) => (b.followers ?? 0) - (a.followers ?? 0));
+
+      setCharts({ salesTrend, outletSales: outletBars, stockHistory, supplierByBrand, repairsByStatus, igTrend, igAccounts });
 
       setD({
         salesToday, salesMonth, salesTarget,
@@ -461,9 +524,14 @@ export default function Dashboard() {
       } />}
       {(can('/instagram') || can('/content')) && <Section title="Marketing" cards={marketingCards} charts={
         can('/instagram') ? (
-          <ChartCard title="Instagram followers trend" hint="@timekeeperkw" link="/instagram">
-            <LineChart data={charts.igTrend} color="#db2777" />
-          </ChartCard>
+          <>
+            <ChartCard title="Instagram accounts" hint="followers · Δ today · days idle" link="/instagram">
+              <IgComparison accounts={charts.igAccounts} />
+            </ChartCard>
+            <ChartCard title="Followers trend" hint="@timekeeperkw" link="/instagram">
+              <LineChart data={charts.igTrend} color="#db2777" />
+            </ChartCard>
+          </>
         ) : undefined
       } />}
 
