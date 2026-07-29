@@ -210,6 +210,7 @@ export default function Dashboard() {
   }
 
   const can = (p: string) => canAccessPath(p, role, pageAccess);
+  const stockCostView = ['admin', 'manager'].includes(role ?? ''); // cost is manager-only
 
   useEffect(() => {
     const today = format(new Date(), 'yyyy-MM-dd');
@@ -247,7 +248,7 @@ export default function Dashboard() {
         supabase.from('settings').select('sales_target_month, sales_target_avenues, sales_target_timegallery').single(),
         buildAlerts(role),
         loadAlertActions(),
-        supabase.from('lightspeed_stock_value_history').select('snapshot_date, retail_value').order('snapshot_date', { ascending: true }).limit(90),
+        supabase.from('lightspeed_stock_value_history').select('snapshot_date, retail_value, cost_value').order('snapshot_date', { ascending: true }).limit(90),
       ]);
 
       // sales
@@ -338,8 +339,10 @@ export default function Dashboard() {
         { label: 'Time Gallery', value: timeGallerySales, target: timeGalleryTarget, color: '#8b5cf6' },
       ];
 
+      // Show cost to managers/admin (cost is manager-only across the app); staff see retail.
+      const canCost = ['admin', 'manager'].includes(role ?? '');
       const stockHistory: Point[] = ((stockHistQ.data ?? []) as any[])
-        .map((r) => ({ label: dayNum(r.snapshot_date), value: Number(r.retail_value) }));
+        .map((r) => ({ label: dayNum(r.snapshot_date), value: Number(canCost ? r.cost_value : r.retail_value) }));
 
       // outstanding supplier balance grouped by brand (owed only)
       const balByBrand = new Map<string, number>();
@@ -517,7 +520,7 @@ export default function Dashboard() {
       {(can('/waiting-list') || can('/limited-projects')) && <Section title="Demand & Projects" cards={demandCards} />}
       {(can('/stock') || can('/purchase-orders')) && <Section title="Stock & Purchasing" detailLink={can('/purchase-orders') ? '/purchase-orders' : '/stock'} cards={stockCards} charts={
         <>
-          {can('/stock') && <ChartCard title="Stock value over time" hint="retail KD" link="/stock">
+          {can('/stock') && <ChartCard title={stockCostView ? 'Stock cost over time' : 'Stock value over time'} hint={stockCostView ? 'cost KD' : 'retail KD'} link="/stock">
             <LineChart data={charts.stockHistory} color="#1e293b" fmt={kdC} />
           </ChartCard>}
           {can('/purchase-orders') && <ChartCard title="Supplier balance by brand" hint="outstanding KD" link="/purchase-orders">
