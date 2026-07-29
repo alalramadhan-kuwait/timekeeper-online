@@ -214,8 +214,10 @@ Deno.serve(async (req: Request) => {
         row.item_count = items.length;
         row.ordered_qty = orderedQty;
         row.received_qty = receivedQty;
-        // Partially Received is derived - Lightspeed has no such status
-        if (receivedQty > 0 && receivedQty < orderedQty) row.status = "Partially Received";
+        // "Partially Received" is derived only while the order is still in flight.
+        // A RECEIVED/CLOSED consignment stays Fully Received even if short-shipped
+        // (Lightspeed closes short orders as RECEIVED) - otherwise it would look open forever.
+        if (row.status === "Ordered" && receivedQty > 0 && receivedQty < orderedQty) row.status = "Partially Received";
       } else {
         // A bulk upsert sends the same key set for every row, so totals have to be
         // restated explicitly - carry forward what the last run stored.
