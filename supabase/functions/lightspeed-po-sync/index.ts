@@ -140,11 +140,12 @@ Deno.serve(async (req: Request) => {
       po_number: string | null; supplier_invoice_no: string | null;
       item_count: number | null; total_cost: number | null;
       ordered_qty: number | null; received_qty: number | null;
+      closed_override: boolean | null;
     };
     const existingRows: ExistingPo[] = [];
     for (let from = 0; ; from += 1000) {
       const { data, error } = await admin.from("purchase_orders")
-        .select("id, ls_consignment_id, status, po_number, supplier_invoice_no, item_count, total_cost, ordered_qty, received_qty")
+        .select("id, ls_consignment_id, status, po_number, supplier_invoice_no, item_count, total_cost, ordered_qty, received_qty, closed_override")
         .range(from, from + 999);
       if (error) return await fail(`Read POs: ${error.message}`);
       existingRows.push(...(data ?? []) as ExistingPo[]);
@@ -214,10 +215,11 @@ Deno.serve(async (req: Request) => {
         row.item_count = items.length;
         row.ordered_qty = orderedQty;
         row.received_qty = receivedQty;
-        // "Partially Received" is derived only while the order is still in flight.
-        // A RECEIVED/CLOSED consignment stays Fully Received even if short-shipped
-        // (Lightspeed closes short orders as RECEIVED) - otherwise it would look open forever.
-        if (row.status === "Ordered" && receivedQty > 0 && receivedQty < orderedQty) row.status = "Partially Received";
+        // Partially Received is derived - Lightspeed has no such status. A short-received
+        // order (received < ordered) shows Partially Received so the shortfall stays
+        // visible, even once Lightspeed closes it. To force-close a specific old order,
+        // set closed_override on the row (applied just before return).
+        if (receivedQty > 0 && receivedQty < orderedQty) row.status = "Partially Received";
       } else {
         // A bulk upsert sends the same key set for every row, so totals have to be
         // restated explicitly - carry forward what the last run stored.
@@ -228,6 +230,8 @@ Deno.serve(async (req: Request) => {
         row.received_qty = prev?.received_qty ?? null;
         if (prev?.status === "Partially Received") row.status = prev.status;
       }
+      // an operator can force-close an old short order regardless of the shortfall
+      if (byLsId.get(c.id)?.closed_override) row.status = "Fully Received";
       return row;
     });
 
@@ -317,7 +321,7 @@ Deno.serve(async (req: Request) => {
           newStatus = mapStatus(c.status); // e.g. it moved to RECEIVED between pages
         }
       }
-      if (newStatus && newStatus !== r.status) {
+      if (newStatus && newStatus !== r.status && !byLsId.get(r.ls_consignment_id!)?.closed_override) {
         await admin.from("purchase_orders")
           .update({ status: newStatus, ls_synced_at: syncedAt })
           .eq("id", r.id);

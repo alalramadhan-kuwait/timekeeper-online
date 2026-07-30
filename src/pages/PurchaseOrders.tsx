@@ -255,6 +255,9 @@ const baseConfig: CrudConfig = {
   allowCreate: false,
   allowDelete: (r) => !isSynced(r),
   rowClickToEdit: true,
+  // Ticking "closed" on a short-received order forces it to Fully Received and keeps the
+  // sync from reopening it (status is otherwise Lightspeed-owned, so set it here on save).
+  beforeSave: (p) => (p.closed_override ? { ...p, status: 'Fully Received' } : p),
   extraFilters: [
     { key: 'supplier', label: 'Supplier' },
     { key: 'brand', label: 'Brand' },
@@ -285,6 +288,7 @@ const baseConfig: CrudConfig = {
     { key: 'shipment_status', label: 'Shipment status', type: 'text', placeholder: 'e.g. At customs / DHL in transit' },
     { key: 'invoice_received', label: 'Invoice received', type: 'checkbox' },
     { key: 'team_notified', label: 'Team notified', type: 'checkbox' },
+    { key: 'closed_override', label: 'Close order (short receipt)', type: 'checkbox', hint: 'Mark a short-received order as done — shows Fully Received and the sync won’t reopen it' },
     { key: 'linked_project', label: 'Limited project', type: 'select', options: [] }, // filled at runtime
     { key: 'notes', label: 'Notes', type: 'textarea' },
   ],
