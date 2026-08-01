@@ -14,6 +14,7 @@ import { canAccessPath } from '../components/Layout';
 import { ChartCard, LineChart, BarChart, Point, Bar } from '../components/Charts';
 
 interface IgAccount { username: string; followers: number | null; change: number | null; lastPost: string | null; daysSince: number | null }
+interface IgPostRow { date: string | null; type: string | null; likes: number; comments: number; url: string | null; caption: string | null }
 interface Charts {
   salesTrend: Point[];       // cumulative sales day-by-day this month
   outletSales: Bar[];        // month sales per outlet, with target marker
@@ -22,8 +23,9 @@ interface Charts {
   repairsByStatus: Bar[];    // open repair cases per status
   igSeries: { username: string; points: Point[] }[]; // followers trend per account
   igAccounts: IgAccount[];   // per-account followers / change / last post
+  igTopPosts: IgPostRow[];   // best recent posts for the main account
 }
-const EMPTY_CHARTS: Charts = { salesTrend: [], outletSales: [], stockHistory: [], supplierByBrand: [], repairsByStatus: [], igSeries: [], igAccounts: [] };
+const EMPTY_CHARTS: Charts = { salesTrend: [], outletSales: [], stockHistory: [], supplierByBrand: [], repairsByStatus: [], igSeries: [], igAccounts: [], igTopPosts: [] };
 const IG_MAIN = 'timekeeperkw';
 const IG_COLOR: Record<string, string> = { timekeeperkw: '#db2777', timegallerykw: '#0ea5e9', timekeeperkwshop: '#8b5cf6' };
 
@@ -187,6 +189,28 @@ function IgComparison({ accounts }: { accounts: IgAccount[] }) {
           ))}
         </tbody>
       </table>
+    </div>
+  );
+}
+
+/** Best recent posts for the main IG account — compact, click through to the post. */
+function IgTopPosts({ posts }: { posts: IgPostRow[] }) {
+  if (!posts.length) return <div className="text-xs text-slate-400 py-4 text-center">No posts yet</div>;
+  const typeLabel = (t: string | null) => (t === 'Sidecar' ? 'Carousel' : t === 'Video' ? 'Reel' : t ?? '—');
+  return (
+    <div className="space-y-1.5">
+      {posts.map((p, i) => (
+        <div key={i} className="flex items-center gap-2 text-sm">
+          <span className="w-4 shrink-0 text-slate-400 tabular-nums">{i + 1}</span>
+          <a href={p.url ?? '#'} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()}
+            className="flex-1 min-w-0 truncate text-slate-700 hover:text-blue-600" title={p.caption ?? ''}>
+            {p.caption ? p.caption.replace(/\s+/g, ' ').trim() : '(no caption)'}
+          </a>
+          <span className="shrink-0 text-[11px] text-slate-400 hidden sm:inline">{typeLabel(p.type)}</span>
+          <span className="shrink-0 tabular-nums text-slate-600">♥ {p.likes.toLocaleString()}</span>
+          <span className="shrink-0 tabular-nums text-slate-400">💬 {p.comments.toLocaleString()}</span>
+        </div>
+      ))}
     </div>
   );
 }
@@ -387,7 +411,21 @@ export default function Dashboard() {
         })
         .sort((a, b) => (b.followers ?? 0) - (a.followers ?? 0));
 
-      setCharts({ salesTrend, outletSales: outletBars, stockHistory, supplierByBrand, repairsByStatus, igSeries, igAccounts });
+      // main-account post engagement (Phase 3): avg engagement + best recent posts
+      const { data: postData } = await supabase.from('instagram_posts')
+        .select('posted_at, type, likes, comments, url, caption')
+        .eq('username', IG_MAIN)
+        .order('posted_at', { ascending: false }).limit(30);
+      const posts = (postData ?? []) as any[];
+      const eng = (p: any) => Number(p.likes ?? 0) + Number(p.comments ?? 0);
+      const igTopPosts: IgPostRow[] = posts
+        .map((p) => ({ date: p.posted_at ? String(p.posted_at).slice(0, 10) : null, type: p.type, likes: Number(p.likes ?? 0), comments: Number(p.comments ?? 0), url: p.url, caption: p.caption }))
+        .sort((a, b) => (b.likes + b.comments) - (a.likes + a.comments))
+        .slice(0, 5);
+      const igAvgEng = posts.length ? Math.round(posts.reduce((s, p) => s + eng(p), 0) / posts.length) : null;
+      const igEngRate = igAvgEng != null && igFollowers ? (igAvgEng / igFollowers) * 100 : null;
+
+      setCharts({ salesTrend, outletSales: outletBars, stockHistory, supplierByBrand, repairsByStatus, igSeries, igAccounts, igTopPosts });
 
       setD({
         salesToday, salesMonth, salesTarget,
@@ -397,7 +435,7 @@ export default function Dashboard() {
         activeProjects, delayedProjects, stockValue, deadValue, lowStock, openPOs, shipments, supplierBalance,
         presentToday, lateMonth, pendingLeave, sickReq, wfhReq, empDocs,
         openRepairs, waitingApproval, sentSupplier, readyPickup, overdueRepairs,
-        contentPending, scheduledMonth, postedMonth, igFollowers,
+        contentPending, scheduledMonth, postedMonth, igFollowers, igAvgEng, igEngRate,
       });
       setAlerts(alertList);
       setActionMap(actMap);
@@ -485,6 +523,7 @@ export default function Dashboard() {
     { label: 'Scheduled (month)', value: d.scheduledMonth ?? 0, link: '/content' },
     { label: 'Posted (month)', value: d.postedMonth ?? 0, accent: 'text-emerald-600', link: '/content' },
     ...(d.igFollowers != null ? [{ label: 'Instagram followers', value: formatKDCompact(d.igFollowers).replace(' KD', ''), sub: '@timekeeperkw', link: '/instagram' } as Kpi] : [{ label: 'Instagram', value: 'Connect', link: '/instagram' } as Kpi]),
+    ...(d.igAvgEng != null ? [{ label: 'Avg engagement / post', value: formatKDCompact(d.igAvgEng).replace(' KD', ''), sub: d.igEngRate != null ? `${Number(d.igEngRate).toFixed(2)}% of followers · @timekeeperkw` : '@timekeeperkw', accent: 'text-emerald-600', link: '/instagram' } as Kpi] : []),
   ];
 
   return (
@@ -539,6 +578,9 @@ export default function Dashboard() {
           <>
             <ChartCard title="Instagram accounts" hint="followers · Δ today · days idle" link="/instagram">
               <IgComparison accounts={charts.igAccounts} />
+            </ChartCard>
+            <ChartCard title="Top posts (30d)" hint="@timekeeperkw · by engagement" link="/instagram">
+              <IgTopPosts posts={charts.igTopPosts} />
             </ChartCard>
             {charts.igSeries.map((s) => (
               <ChartCard key={s.username} title="Followers trend" hint={`@${s.username}`} link="/instagram">

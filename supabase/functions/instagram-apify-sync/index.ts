@@ -18,8 +18,15 @@ const ACCOUNTS = ["timekeeperkw", "timegallerykw", "timekeeperkwshop"];
 const APIFY = "https://api.apify.com/v2";
 const ACTOR = "apify~instagram-profile-scraper";
 
-interface IgPost { timestamp?: string; isPinned?: boolean }
-interface IgProfile { username?: string; followersCount?: number; postsCount?: number; latestPosts?: IgPost[] }
+interface IgPost {
+  shortCode?: string; timestamp?: string; isPinned?: boolean; type?: string;
+  likesCount?: number; commentsCount?: number; videoViewCount?: number | null;
+  caption?: string; hashtags?: string[]; url?: string;
+}
+interface IgProfile {
+  username?: string; followersCount?: number; followsCount?: number;
+  postsCount?: number; latestPosts?: IgPost[];
+}
 
 async function apify(method: string, path: string, token: string, body?: unknown) {
   const sep = path.includes("?") ? "&" : "?";
@@ -91,8 +98,9 @@ Deno.serve(async (req: Request) => {
     const items = (await apify("GET", `/datasets/${datasetId}/items`, token)) as IgProfile[];
     const today = kuwaitToday();
     const nowIso = new Date().toISOString();
-    let saved = 0;
+    let saved = 0, postsSaved = 0;
     const summary: Record<string, unknown>[] = [];
+    const postRows: Record<string, unknown>[] = [];
 
     for (const p of items) {
       const username = (p.username ?? "").toLowerCase();
@@ -109,6 +117,7 @@ Deno.serve(async (req: Request) => {
         snapshot_date: today,
         username,
         followers: p.followersCount ?? null,
+        follows_count: p.followsCount ?? null,
         media_count: p.postsCount ?? null,
         last_post_date: newest ? newest.slice(0, 10) : null,
         updated_at: nowIso,
@@ -118,10 +127,35 @@ Deno.serve(async (req: Request) => {
       if (error) throw new Error(`Upsert ${username}: ${error.message}`);
       saved++;
       summary.push({ username, followers: row.followers, last_post_date: row.last_post_date });
+
+      // per-post engagement — accumulates history as the last ~12 posts refresh daily
+      for (const post of posts) {
+        if (!post.shortCode) continue;
+        postRows.push({
+          shortcode: post.shortCode,
+          username,
+          posted_at: post.timestamp ?? null,
+          type: post.type ?? null,
+          likes: post.likesCount ?? null,
+          comments: post.commentsCount ?? null,
+          video_views: post.videoViewCount ?? null,
+          caption: (post.caption ?? "").slice(0, 2000) || null,
+          hashtags: post.hashtags ?? null,
+          url: post.url ?? null,
+          synced_at: nowIso,
+        });
+      }
     }
 
+    // upsert on shortcode so engagement counts refresh in place, not duplicate
+    for (let k = 0; k < postRows.length; k += 200) {
+      const { error } = await admin.from("instagram_posts").upsert(postRows.slice(k, k + 200), { onConflict: "shortcode" });
+      if (error) throw new Error(`Upsert posts: ${error.message}`);
+    }
+    postsSaved = postRows.length;
+
     await finish("ok", saved === ACCOUNTS.length ? null : `only ${saved}/${ACCOUNTS.length} accounts returned`);
-    return json({ ok: true, accounts: saved, snapshot_date: today, profiles: summary });
+    return json({ ok: true, accounts: saved, posts: postsSaved, snapshot_date: today, profiles: summary });
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     await finish("error", msg.slice(0, 450));
