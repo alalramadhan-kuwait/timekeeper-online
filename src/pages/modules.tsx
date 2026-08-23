@@ -237,7 +237,7 @@ const influencers: CrudConfig = {
     { key: 'handle', label: 'Handle (@)', type: 'text', placeholder: '@username' },
     { key: 'platform', label: 'Platform', type: 'select', options: INF_PLATFORMS, defaultValue: 'Instagram' },
     { key: 'tier', label: 'Tier', type: 'select', options: INF_TIERS },
-    { key: 'country', label: 'Country', type: 'combobox', options: INF_COUNTRIES },
+    { key: 'country', label: 'Country', type: 'select', options: INF_COUNTRIES },
     { key: 'followers', label: 'Followers', type: 'number' },
     { key: 'coverage_type', label: 'Coverage type', type: 'select', options: INF_COVERAGE },
     { key: 'deliverables', label: 'Agreed deliverables', type: 'text', placeholder: 'e.g. 2 stories + 1 reel' },
