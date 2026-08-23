@@ -213,6 +213,7 @@ const INF_PLATFORMS = ['Instagram', 'TikTok', 'Snapchat', 'YouTube', 'X (Twitter
 const INF_TIERS = ['Nano (<10K)', 'Micro (10–100K)', 'Mid (100–500K)', 'Macro (500K–1M)', 'Celebrity (1M+)'];
 const INF_COVERAGE = ['Reel', 'Story', 'Feed post', 'Video', 'Review', 'Event attendance', 'Unboxing'];
 const INF_PAYMENT = ['Unpaid', 'Partially paid', 'Paid', 'Gifted'];
+const INF_COUNTRIES = ['Kuwait', 'Saudi Arabia', 'UAE', 'Qatar', 'Bahrain', 'Oman', 'Egypt', 'Jordan', 'Lebanon', 'United Kingdom', 'United States', 'Other'];
 const influencers: CrudConfig = {
   rowClickToEdit: true,
   table: 'influencer_campaigns',
@@ -221,11 +222,12 @@ const influencers: CrudConfig = {
   canWrite: marketingRoles,
   statusField: 'status',
   statusOptions: INF_STATUSES,
-  searchKeys: ['influencer_name', 'handle', 'campaign', 'product_brand', 'owner'],
+  searchKeys: ['influencer_name', 'handle', 'campaign', 'product_brand', 'owner', 'country'],
   orderBy: { column: 'agreed_date', ascending: false },
   extraFilters: [
     { key: 'platform', label: 'Platform', options: INF_PLATFORMS },
     { key: 'tier', label: 'Tier', options: INF_TIERS },
+    { key: 'country', label: 'Country' },
     { key: 'payment_status', label: 'Payment', options: INF_PAYMENT },
     { key: 'product_brand', label: 'Brand' },
     { key: 'owner', label: 'Owner' },
@@ -235,6 +237,7 @@ const influencers: CrudConfig = {
     { key: 'handle', label: 'Handle (@)', type: 'text', placeholder: '@username' },
     { key: 'platform', label: 'Platform', type: 'select', options: INF_PLATFORMS, defaultValue: 'Instagram' },
     { key: 'tier', label: 'Tier', type: 'select', options: INF_TIERS },
+    { key: 'country', label: 'Country', type: 'combobox', options: INF_COUNTRIES },
     { key: 'followers', label: 'Followers', type: 'number' },
     { key: 'coverage_type', label: 'Coverage type', type: 'select', options: INF_COVERAGE },
     { key: 'deliverables', label: 'Agreed deliverables', type: 'text', placeholder: 'e.g. 2 stories + 1 reel' },
@@ -268,6 +271,7 @@ const influencers: CrudConfig = {
       </span>
     ) },
     { key: 'platform', label: 'Platform', sortable: true, hideBelow: 'sm' },
+    { key: 'country', label: 'Country', sortable: true, hideBelow: 'md' },
     { key: 'followers', label: 'Followers', sortable: true, hideBelow: 'lg', render: (r) => r.followers != null ? Number(r.followers).toLocaleString() : '—' },
     { key: 'coverage_type', label: 'Coverage', sortable: true, hideBelow: 'md' },
     { key: 'product_brand', label: 'Brand', sortable: true, hideBelow: 'lg' },
