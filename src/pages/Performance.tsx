@@ -54,11 +54,12 @@ function Kpi({ icon, label, value, sub, accent, link }: { icon: React.ReactNode;
 }
 
 // Cumulative performance points — transparent formula, shown as a legend on the leaderboard.
-interface Score { user_id: string; days_present: number; late_count: number; active_days: number; views: number; created: number; updated: number }
+interface Score { user_id: string; days_present: number; late_count: number; full_days: number; active_days: number; views: number; created: number; updated: number }
 const pointsOf = (s: Score) =>
   s.days_present * 3                              // showing up
   + Math.max(0, s.days_present - s.late_count) * 2 // on-time days
   - s.late_count * 5                              // late penalty (heavier)
+  + s.full_days * 3                               // completed the 8h shift
   + s.active_days * 2                             // using the system
   + s.created * 3 + s.updated * 1;                // contributions (edits)
 function SectionTitle({ children }: { children: React.ReactNode }) {
@@ -123,6 +124,9 @@ export default function PerformancePage() {
     const daysPresent = dayset.size;
     const onTimePct = daysPresent ? Math.round(((daysPresent - lateCount) / daysPresent) * 100) : null;
     const totalHours = arows.reduce((s, r) => s + hoursBetween(r.clock_in, r.clock_out), 0);
+    const hoursByDay = new Map<string, number>();
+    for (const r of arows) if (r.clock_out) hoursByDay.set(kdate(r.clock_in), (hoursByDay.get(kdate(r.clock_in)) ?? 0) + hoursBetween(r.clock_in, r.clock_out));
+    const fullDays = [...hoursByDay.values()].filter((h) => h >= 7.9).length;
     const missedOut = arows.filter((r) => !r.clock_out && kdate(r.clock_in) < new Date().toISOString().slice(0, 10)).length;
     const arrivalMins = arows.map((r) => { const t = hm(r.clock_in); return parseInt(t.slice(0, 2)) * 60 + parseInt(t.slice(3)); });
     const avgArr = arrivalMins.length ? Math.round(arrivalMins.reduce((s, m) => s + m, 0) / arrivalMins.length) : null;
@@ -158,7 +162,7 @@ export default function PerformancePage() {
     }, 0);
 
     setData({
-      daysPresent, lateCount, onTimePct, avgHours: daysPresent ? totalHours / daysPresent : 0, avgArrStr, lastClock, missedOut,
+      daysPresent, lateCount, fullDays, onTimePct, avgHours: daysPresent ? totalHours / daysPresent : 0, avgArrStr, lastClock, missedOut,
       views: acts.length, activeDays: actDays.size, lastActive, topPages,
       editTotal: erows.length, byAction, topTables, recentEdits,
       leaveDays, pendingReq,
@@ -222,7 +226,7 @@ export default function PerformancePage() {
         boardBusy || !board ? <div className="py-10"><Spinner /></div> : (
           <div>
             <p className="text-xs text-slate-400 mb-3">
-              Cumulative points = days present ×3 · on-time days ×2 · late −5 · active days ×2 · created ×3 · updated ×1.
+              Cumulative points = days present ×3 · on-time days ×2 · late −5 · full 8h days ×3 · active days ×2 · created ×3 · updated ×1.
             </p>
             <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
               <table className="w-full text-sm">
@@ -232,6 +236,7 @@ export default function PerformancePage() {
                     <th className="text-left px-4 py-2">Employee</th>
                     <th className="text-right px-4 py-2">Points</th>
                     <th className="text-right px-4 py-2 hidden sm:table-cell">Present</th>
+                    <th className="text-right px-4 py-2 hidden md:table-cell">Full 8h</th>
                     <th className="text-right px-4 py-2 hidden sm:table-cell">Late</th>
                     <th className="text-right px-4 py-2 hidden md:table-cell">Active days</th>
                     <th className="text-right px-4 py-2 hidden md:table-cell">Created</th>
@@ -251,6 +256,7 @@ export default function PerformancePage() {
                       </td>
                       <td className="px-4 py-2.5 text-right font-bold text-slate-900 tabular-nums">{r.pts.toLocaleString()}</td>
                       <td className="px-4 py-2.5 text-right tabular-nums hidden sm:table-cell">{r.days_present}</td>
+                      <td className="px-4 py-2.5 text-right tabular-nums hidden md:table-cell text-emerald-600">{r.full_days}</td>
                       <td className={`px-4 py-2.5 text-right tabular-nums hidden sm:table-cell ${r.late_count ? 'text-rose-600' : 'text-slate-400'}`}>{r.late_count}</td>
                       <td className="px-4 py-2.5 text-right tabular-nums hidden md:table-cell">{r.active_days}</td>
                       <td className="px-4 py-2.5 text-right tabular-nums hidden md:table-cell text-emerald-600">{r.created}</td>
@@ -287,6 +293,7 @@ export default function PerformancePage() {
           <SectionTitle>Attendance</SectionTitle>
           <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
             <Kpi icon={<Clock size={13} />} label="Days present" value={String(data.daysPresent)} link="/attendance" />
+            <Kpi icon={<Clock size={13} />} label="Full days (8h)" value={`${data.fullDays}/${data.daysPresent}`} accent={data.daysPresent && data.fullDays === data.daysPresent ? 'text-emerald-600' : undefined} link="/attendance" />
             <Kpi icon={<Clock size={13} />} label="On-time rate" value={data.onTimePct != null ? `${data.onTimePct}%` : '—'} accent={data.onTimePct == null ? undefined : data.onTimePct >= 90 ? 'text-emerald-600' : data.onTimePct >= 70 ? 'text-amber-600' : 'text-rose-600'} sub={`${data.lateCount} late`} link="/attendance" />
             <Kpi icon={<Clock size={13} />} label="Avg hours / day" value={data.avgHours ? data.avgHours.toFixed(1) : '—'} link="/attendance" />
             <Kpi icon={<Clock size={13} />} label="Avg arrival" value={data.avgArrStr} link="/attendance" />
