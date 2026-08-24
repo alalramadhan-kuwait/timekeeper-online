@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { UserRound, Clock, Activity as ActivityIcon, Pencil, CalendarDays, MapPin, Briefcase } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { UserRound, Clock, Activity as ActivityIcon, Pencil, CalendarDays, MapPin, Briefcase, Trophy, Medal } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Spinner, Badge } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
@@ -41,15 +42,25 @@ const rel = (iso: string | null) => {
   return `${Math.floor(h / 24)}d ago`;
 };
 
-function Kpi({ icon, label, value, sub, accent }: { icon: React.ReactNode; label: string; value: string; sub?: string; accent?: string }) {
-  return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm px-4 py-3">
+function Kpi({ icon, label, value, sub, accent, link }: { icon: React.ReactNode; label: string; value: string; sub?: string; accent?: string; link?: string }) {
+  const inner = (
+    <div className="h-full bg-white rounded-xl border border-slate-200 shadow-sm px-4 py-3 hover:border-slate-400 hover:shadow-md transition-all">
       <div className="flex items-center gap-1.5 text-xs text-slate-500 mb-0.5">{icon} {label}</div>
       <p className={`text-xl font-bold ${accent ?? 'text-slate-800'}`}>{value}</p>
       {sub && <p className="text-xs text-slate-400 mt-0.5">{sub}</p>}
     </div>
   );
+  return link ? <Link to={link}>{inner}</Link> : inner;
 }
+
+// Cumulative performance points — transparent formula, shown as a legend on the leaderboard.
+interface Score { user_id: string; days_present: number; late_count: number; active_days: number; views: number; created: number; updated: number }
+const pointsOf = (s: Score) =>
+  s.days_present * 3                              // showing up
+  + Math.max(0, s.days_present - s.late_count) * 2 // on-time days
+  - s.late_count * 2                              // late penalty
+  + s.active_days * 2                             // using the system
+  + s.created * 3 + s.updated * 1;                // contributions (edits)
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return <h2 className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-2 mt-6">{children}</h2>;
 }
@@ -60,9 +71,12 @@ export default function PerformancePage() {
   const [people, setPeople] = useState<Person[]>([]);
   const [sel, setSel] = useState<string>('');
   const [range, setRange] = useState('30');
+  const [mode, setMode] = useState<'individual' | 'overall'>('individual');
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<any>(null);
   const [busy, setBusy] = useState(false);
+  const [board, setBoard] = useState<Score[] | null>(null);
+  const [boardBusy, setBoardBusy] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -152,7 +166,26 @@ export default function PerformancePage() {
     setBusy(false);
   }, [person, range]);
 
-  useEffect(() => { loadPerson(); }, [loadPerson]);
+  useEffect(() => { if (mode === 'individual') loadPerson(); }, [loadPerson, mode]);
+
+  const loadBoard = useCallback(async () => {
+    setBoardBusy(true);
+    const days = RANGES.find((r) => r.key === range)?.days ?? null;
+    const sinceIso = days ? new Date(Date.now() - days * 86400_000).toISOString() : '1970-01-01T00:00:00Z';
+    const { data: rows } = await supabase.rpc('employee_scoreboard', { since: sinceIso });
+    setBoard((rows as Score[]) ?? []);
+    setBoardBusy(false);
+  }, [range]);
+  useEffect(() => { if (mode === 'overall') loadBoard(); }, [loadBoard, mode]);
+
+  const ranked = useMemo(() => {
+    if (!board) return [];
+    const nameById = new Map(people.map((p) => [p.id, p]));
+    return board
+      .map((s) => ({ ...s, person: nameById.get(s.user_id), pts: Math.round(pointsOf(s)) }))
+      .filter((r) => r.person) // only real people
+      .sort((a, b) => b.pts - a.pts);
+  }, [board, people]);
 
   if (!canView) return <div className="text-slate-500 py-16 text-center">Only an admin or manager can view performance.</div>;
   if (loading) return <Spinner />;
@@ -164,18 +197,76 @@ export default function PerformancePage() {
           <h1 className="text-xl font-bold text-slate-900 flex items-center gap-2"><UserRound size={20} /> Employee Performance</h1>
           <p className="text-sm text-slate-500">Attendance, app activity and edits for one person — all from their login.</p>
         </div>
-        <div className="flex gap-2">
-          <select value={sel} onChange={(e) => setSel(e.target.value)} className="px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm">
-            {people.map((p) => <option key={p.id} value={p.id}>{p.name} · {p.role}</option>)}
-          </select>
+        <div className="flex flex-wrap gap-2">
+          <div className="flex rounded-lg border border-slate-300 overflow-hidden text-sm">
+            {(['individual', 'overall'] as const).map((m) => (
+              <button key={m} onClick={() => setMode(m)}
+                className={`px-3 py-2 ${mode === m ? 'bg-slate-900 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}>
+                {m === 'individual' ? 'Individual' : 'Overall'}
+              </button>
+            ))}
+          </div>
+          {mode === 'individual' && (
+            <select value={sel} onChange={(e) => setSel(e.target.value)} className="px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm">
+              {people.map((p) => <option key={p.id} value={p.id}>{p.name} · {p.role}</option>)}
+            </select>
+          )}
           <select value={range} onChange={(e) => setRange(e.target.value)} className="px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm">
             {RANGES.map((r) => <option key={r.key} value={r.key}>{r.label}</option>)}
           </select>
         </div>
       </div>
 
+      {/* Overall leaderboard */}
+      {mode === 'overall' && (
+        boardBusy || !board ? <div className="py-10"><Spinner /></div> : (
+          <div>
+            <p className="text-xs text-slate-400 mb-3">
+              Cumulative points = days present ×3 · on-time days ×2 · late −2 · active days ×2 · created ×3 · updated ×1.
+            </p>
+            <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-slate-50 text-xs text-slate-500 uppercase">
+                  <tr>
+                    <th className="text-left px-4 py-2 w-10">#</th>
+                    <th className="text-left px-4 py-2">Employee</th>
+                    <th className="text-right px-4 py-2">Points</th>
+                    <th className="text-right px-4 py-2 hidden sm:table-cell">Present</th>
+                    <th className="text-right px-4 py-2 hidden sm:table-cell">Late</th>
+                    <th className="text-right px-4 py-2 hidden md:table-cell">Active days</th>
+                    <th className="text-right px-4 py-2 hidden md:table-cell">Created</th>
+                    <th className="text-right px-4 py-2 hidden md:table-cell">Updated</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {ranked.map((r, i) => (
+                    <tr key={r.user_id} className={`hover:bg-slate-50 cursor-pointer ${i < 3 ? 'bg-amber-50/40' : ''}`}
+                      onClick={() => { setSel(r.user_id); setMode('individual'); }}>
+                      <td className="px-4 py-2.5 font-bold text-slate-500">
+                        {i === 0 ? <Trophy size={16} className="text-amber-500" /> : i < 3 ? <Medal size={16} className="text-slate-400" /> : i + 1}
+                      </td>
+                      <td className="px-4 py-2.5">
+                        <span className="font-medium text-slate-800">{r.person!.name}</span>
+                        <span className="text-xs text-slate-400 ml-1.5 capitalize">{r.person!.role}</span>
+                      </td>
+                      <td className="px-4 py-2.5 text-right font-bold text-slate-900 tabular-nums">{r.pts.toLocaleString()}</td>
+                      <td className="px-4 py-2.5 text-right tabular-nums hidden sm:table-cell">{r.days_present}</td>
+                      <td className={`px-4 py-2.5 text-right tabular-nums hidden sm:table-cell ${r.late_count ? 'text-rose-600' : 'text-slate-400'}`}>{r.late_count}</td>
+                      <td className="px-4 py-2.5 text-right tabular-nums hidden md:table-cell">{r.active_days}</td>
+                      <td className="px-4 py-2.5 text-right tabular-nums hidden md:table-cell text-emerald-600">{r.created}</td>
+                      <td className="px-4 py-2.5 text-right tabular-nums hidden md:table-cell text-blue-600">{r.updated}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="text-xs text-slate-400 mt-2">Click a row to open that person's full profile.</p>
+          </div>
+        )
+      )}
+
       {/* Identity */}
-      {person && (
+      {mode === 'individual' && person && (
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 flex flex-wrap items-center gap-x-6 gap-y-2">
           <div className="w-14 h-14 rounded-full bg-slate-100 flex items-center justify-center text-xl font-bold text-slate-400">{person.name.slice(0, 1).toUpperCase()}</div>
           <div>
@@ -190,25 +281,25 @@ export default function PerformancePage() {
         </div>
       )}
 
-      {busy || !data ? <div className="py-10"><Spinner /></div> : (
+      {mode === 'individual' && (busy || !data ? <div className="py-10"><Spinner /></div> : (
         <>
           {/* Attendance */}
           <SectionTitle>Attendance</SectionTitle>
           <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
-            <Kpi icon={<Clock size={13} />} label="Days present" value={String(data.daysPresent)} />
-            <Kpi icon={<Clock size={13} />} label="On-time rate" value={data.onTimePct != null ? `${data.onTimePct}%` : '—'} accent={data.onTimePct == null ? undefined : data.onTimePct >= 90 ? 'text-emerald-600' : data.onTimePct >= 70 ? 'text-amber-600' : 'text-rose-600'} sub={`${data.lateCount} late`} />
-            <Kpi icon={<Clock size={13} />} label="Avg hours / day" value={data.avgHours ? data.avgHours.toFixed(1) : '—'} />
-            <Kpi icon={<Clock size={13} />} label="Avg arrival" value={data.avgArrStr} />
-            <Kpi icon={<Clock size={13} />} label="Missed clock-outs" value={String(data.missedOut)} accent={data.missedOut ? 'text-amber-600' : undefined} />
-            <Kpi icon={<Clock size={13} />} label="Last clock-in" value={data.lastClock ? kdate(data.lastClock) : '—'} sub={data.lastClock ? hm(data.lastClock) : undefined} />
+            <Kpi icon={<Clock size={13} />} label="Days present" value={String(data.daysPresent)} link="/attendance" />
+            <Kpi icon={<Clock size={13} />} label="On-time rate" value={data.onTimePct != null ? `${data.onTimePct}%` : '—'} accent={data.onTimePct == null ? undefined : data.onTimePct >= 90 ? 'text-emerald-600' : data.onTimePct >= 70 ? 'text-amber-600' : 'text-rose-600'} sub={`${data.lateCount} late`} link="/attendance" />
+            <Kpi icon={<Clock size={13} />} label="Avg hours / day" value={data.avgHours ? data.avgHours.toFixed(1) : '—'} link="/attendance" />
+            <Kpi icon={<Clock size={13} />} label="Avg arrival" value={data.avgArrStr} link="/attendance" />
+            <Kpi icon={<Clock size={13} />} label="Missed clock-outs" value={String(data.missedOut)} accent={data.missedOut ? 'text-amber-600' : undefined} link="/attendance" />
+            <Kpi icon={<Clock size={13} />} label="Last clock-in" value={data.lastClock ? kdate(data.lastClock) : '—'} sub={data.lastClock ? hm(data.lastClock) : undefined} link="/attendance" />
           </div>
 
           {/* Activity */}
           <SectionTitle>App activity</SectionTitle>
           <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
-            <Kpi icon={<ActivityIcon size={13} />} label="Active days" value={String(data.activeDays)} />
-            <Kpi icon={<ActivityIcon size={13} />} label="Page views" value={String(data.views)} />
-            <Kpi icon={<ActivityIcon size={13} />} label="Last active" value={rel(data.lastActive)} />
+            <Kpi icon={<ActivityIcon size={13} />} label="Active days" value={String(data.activeDays)} link="/activity" />
+            <Kpi icon={<ActivityIcon size={13} />} label="Page views" value={String(data.views)} link="/activity" />
+            <Kpi icon={<ActivityIcon size={13} />} label="Last active" value={rel(data.lastActive)} link="/activity" />
             <div className="bg-white rounded-xl border border-slate-200 shadow-sm px-4 py-3 col-span-2 xl:col-span-3">
               <div className="text-xs text-slate-500 mb-1">Most-used pages</div>
               <div className="flex flex-wrap gap-1.5">
@@ -222,10 +313,10 @@ export default function PerformancePage() {
           {/* Edits / contributions */}
           <SectionTitle>Edits &amp; input changes</SectionTitle>
           <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
-            <Kpi icon={<Pencil size={13} />} label="Total changes" value={String(data.editTotal)} accent="text-slate-800" />
-            <Kpi icon={<Pencil size={13} />} label="Created" value={String(data.byAction.INSERT ?? 0)} accent="text-emerald-600" />
-            <Kpi icon={<Pencil size={13} />} label="Updated" value={String(data.byAction.UPDATE ?? 0)} accent="text-blue-600" />
-            <Kpi icon={<Pencil size={13} />} label="Deleted" value={String(data.byAction.DELETE ?? 0)} accent={data.byAction.DELETE ? 'text-rose-600' : undefined} />
+            <Kpi icon={<Pencil size={13} />} label="Total changes" value={String(data.editTotal)} accent="text-slate-800" link="/history" />
+            <Kpi icon={<Pencil size={13} />} label="Created" value={String(data.byAction.INSERT ?? 0)} accent="text-emerald-600" link="/history" />
+            <Kpi icon={<Pencil size={13} />} label="Updated" value={String(data.byAction.UPDATE ?? 0)} accent="text-blue-600" link="/history" />
+            <Kpi icon={<Pencil size={13} />} label="Deleted" value={String(data.byAction.DELETE ?? 0)} accent={data.byAction.DELETE ? 'text-rose-600' : undefined} link="/history" />
             <div className="bg-white rounded-xl border border-slate-200 shadow-sm px-4 py-3 col-span-2">
               <div className="text-xs text-slate-500 mb-1">Where they work</div>
               <div className="flex flex-wrap gap-1.5">
@@ -259,13 +350,13 @@ export default function PerformancePage() {
             <>
               <SectionTitle>Leave</SectionTitle>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                <Kpi icon={<CalendarDays size={13} />} label="Approved leave days" value={String(data.leaveDays)} />
-                <Kpi icon={<CalendarDays size={13} />} label="Pending requests" value={String(data.pendingReq)} accent={data.pendingReq ? 'text-amber-600' : undefined} />
+                <Kpi icon={<CalendarDays size={13} />} label="Approved leave days" value={String(data.leaveDays)} link="/leave" />
+                <Kpi icon={<CalendarDays size={13} />} label="Pending requests" value={String(data.pendingReq)} accent={data.pendingReq ? 'text-amber-600' : undefined} link="/leave" />
               </div>
             </>
           )}
         </>
-      )}
+      ))}
     </div>
   );
 }
