@@ -62,6 +62,7 @@ function ManagerDashboard() {
   const [statusFilter, setStatusFilter] = useState('All');
   const [reload, setReload] = useState(0);
   const [err, setErr] = useState<string | null>(null);
+  const [view, setView] = useState<'list' | 'week'>('list');
 
   // record editor state (item 11)
   const [editId, setEditId] = useState<string | null>(null);
@@ -261,6 +262,16 @@ function ManagerDashboard() {
 
       {err && <div className="px-4 py-2 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">{err}</div>}
 
+      <div className="flex rounded-lg border border-slate-300 overflow-hidden text-sm w-fit">
+        {(['list', 'week'] as const).map((v) => (
+          <button key={v} onClick={() => setView(v)}
+            className={`px-4 py-1.5 ${view === v ? 'bg-slate-900 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}>
+            {v === 'list' ? 'List' : 'Week calendar'}
+          </button>
+        ))}
+      </div>
+
+      {view === 'week' ? <WeekCalendar employees={activeEmployees} today={today} workStart={workStart} /> : (<>
       {/* filters */}
       <div className="flex flex-wrap gap-2">
         <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className={input} />
@@ -489,6 +500,127 @@ function ManagerDashboard() {
             </tbody>
           </table>
         </div>
+      </div>
+      </>)}
+    </div>
+  );
+}
+
+// ── Week calendar: one row per employee, one column per day. Flags a day the person
+// missed while others were in and they're not on approved leave ("absent without reason"). ──
+const ymdAdd = (ymd: string, n: number) => { const d = new Date(`${ymd}T12:00:00Z`); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
+const satOfWeek = (ymd: string) => ymdAdd(ymd, -((new Date(`${ymd}T12:00:00Z`).getUTCDay() + 1) % 7)); // Kuwait week starts Saturday
+const DOW = ['Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+
+function WeekCalendar({ employees, today, workStart }: { employees: EmpLite[]; today: string; workStart: string }) {
+  const [weekStart, setWeekStart] = useState(() => satOfWeek(today));
+  const [recs, setRecs] = useState<AttendanceRecord[]>([]);
+  const [leaves, setLeaves] = useState<LeaveLite[]>([]);
+  const [loading, setLoading] = useState(true);
+  const days = useMemo(() => Array.from({ length: 7 }, (_, i) => ymdAdd(weekStart, i)), [weekStart]);
+  const weekEnd = days[6];
+  const linked = useMemo(() => employees.filter((e) => e.user_id), [employees]);
+
+  useEffect(() => {
+    setLoading(true);
+    Promise.all([
+      supabase.from('attendance_records').select('*')
+        .gte('clock_in', `${weekStart}T00:00:00+03:00`).lte('clock_in', `${weekEnd}T23:59:59+03:00`),
+      supabase.from('leave_records').select('employee_id, leave_type, leave_start, leave_end, approval_status')
+        .eq('approval_status', 'Approved').lte('leave_start', weekEnd).gte('leave_end', weekStart),
+    ]).then(([r, l]) => {
+      setRecs((r.data as AttendanceRecord[]) ?? []);
+      setLeaves((l.data as LeaveLite[]) ?? []);
+      setLoading(false);
+    });
+  }, [weekStart, weekEnd]);
+
+  // a day counts as a working day if anyone clocked in — avoids flagging holidays/off-days
+  const workingDays = useMemo(() => new Set(recs.map((r) => kuwaitDate(r.clock_in))), [recs]);
+  const recByCell = useMemo(() => {
+    const m = new Map<string, AttendanceRecord>();
+    for (const r of recs) { const k = `${r.user_id}|${kuwaitDate(r.clock_in)}`; if (!m.has(k)) m.set(k, r); }
+    return m;
+  }, [recs]);
+  const leaveOn = (empId: string, day: string) => leaves.find((l) => l.employee_id === empId && l.leave_start <= day && l.leave_end >= day);
+
+  type Cell = { kind: 'present' | 'late' | 'leave' | 'absent' | 'off' | 'future'; label?: string };
+  const cellFor = (e: EmpLite, day: string): Cell => {
+    if (day > today) return { kind: 'future' };
+    const r = e.user_id ? recByCell.get(`${e.user_id}|${day}`) : undefined;
+    if (r) return { kind: r.is_late && !r.justified ? 'late' : 'present' };
+    const lv = leaveOn(e.id, day);
+    if (lv) return { kind: 'leave', label: lv.leave_type };
+    if (workingDays.has(day)) return { kind: 'absent' };
+    return { kind: 'off' };
+  };
+  const absentCount = useMemo(() => linked.reduce((s, e) => s + days.filter((d) => cellFor(e, d).kind === 'absent').length, 0), [linked, days, recByCell, leaves, workingDays]);
+
+  const CELL: Record<Cell['kind'], { cls: string; txt: string }> = {
+    present: { cls: 'bg-emerald-100 text-emerald-700', txt: '✓' },
+    late: { cls: 'bg-amber-100 text-amber-700', txt: 'Late' },
+    leave: { cls: 'bg-sky-100 text-sky-700', txt: 'Leave' },
+    absent: { cls: 'bg-rose-100 text-rose-700 font-semibold', txt: 'Absent' },
+    off: { cls: 'text-slate-300', txt: '—' },
+    future: { cls: 'text-slate-200', txt: '·' },
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <button onClick={() => setWeekStart(ymdAdd(weekStart, -7))} className="px-2 py-1 rounded-lg border border-slate-300 text-sm hover:bg-slate-50">←</button>
+          <span className="text-sm font-medium text-slate-700">{weekStart} → {weekEnd}</span>
+          <button onClick={() => setWeekStart(ymdAdd(weekStart, 7))} className="px-2 py-1 rounded-lg border border-slate-300 text-sm hover:bg-slate-50">→</button>
+          <button onClick={() => setWeekStart(satOfWeek(today))} className="px-2 py-1 rounded-lg border border-slate-300 text-sm hover:bg-slate-50">This week</button>
+        </div>
+        <div className="flex items-center gap-3 text-xs">
+          {absentCount > 0
+            ? <Badge className="bg-rose-100 text-rose-700 border-rose-200">{absentCount} unexplained absence{absentCount > 1 ? 's' : ''} this week</Badge>
+            : <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">No unexplained absences</Badge>}
+        </div>
+      </div>
+
+      {loading ? <Spinner /> : (
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-xs text-slate-500 border-b border-slate-200">
+                <th className="text-left px-3 py-2 sticky left-0 bg-white">Employee</th>
+                {days.map((d, i) => (
+                  <th key={d} className={`px-2 py-2 text-center whitespace-nowrap ${d === today ? 'bg-slate-50' : ''}`}>
+                    <div className="font-semibold text-slate-600">{DOW[i]}</div>
+                    <div className="text-[10px] text-slate-400">{d.slice(5)}</div>
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {linked.length === 0 && <tr><td colSpan={8} className="px-3 py-6 text-center text-slate-400 text-sm">No employees with a linked account yet — link accounts in HR → Employees.</td></tr>}
+              {linked.map((e) => (
+                <tr key={e.id} className="hover:bg-slate-50">
+                  <td className="px-3 py-2 font-medium text-slate-700 whitespace-nowrap sticky left-0 bg-white">{e.full_name}</td>
+                  {days.map((d) => {
+                    const c = cellFor(e, d);
+                    const st = CELL[c.kind];
+                    return (
+                      <td key={d} className={`px-2 py-2 text-center ${d === today ? 'bg-slate-50/60' : ''}`}>
+                        <span className={`inline-block min-w-[3rem] px-2 py-0.5 rounded text-[11px] ${st.cls}`} title={c.label}>{c.label ?? st.txt}</span>
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      <div className="flex flex-wrap gap-3 text-[11px] text-slate-500">
+        <span><span className="inline-block w-3 h-3 rounded bg-emerald-100 align-middle" /> Present</span>
+        <span><span className="inline-block w-3 h-3 rounded bg-amber-100 align-middle" /> Late</span>
+        <span><span className="inline-block w-3 h-3 rounded bg-sky-100 align-middle" /> Leave / WFH</span>
+        <span><span className="inline-block w-3 h-3 rounded bg-rose-100 align-middle" /> Absent (missed a working day, no leave)</span>
+        <span><span className="inline-block w-3 h-3 rounded bg-slate-100 align-middle" /> Off / no working day</span>
       </div>
     </div>
   );
