@@ -141,18 +141,24 @@ function KpiCard({ k }: { k: Kpi }) {
 }
 
 function Section({ title, detailLink, cards, charts }: { title: string; detailLink?: string; cards: Kpi[]; charts?: React.ReactNode }) {
+  const [showCharts, setShowCharts] = useState(false);
   if (cards.length === 0) return null;
   return (
     <div className="mb-6">
       <div className="flex items-center gap-2 mb-2">
         <h2 className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">{title}</h2>
         <div className="flex-1 h-px bg-slate-200" />
+        {charts && (
+          <button onClick={() => setShowCharts((v) => !v)} className="text-xs text-slate-500 hover:text-slate-800 flex items-center gap-0.5">
+            {showCharts ? '▾' : '▸'} Trends
+          </button>
+        )}
         {detailLink && <Link to={detailLink} className="text-xs text-blue-600 hover:underline flex items-center gap-0.5">View details <ArrowRight size={11} /></Link>}
       </div>
       <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
         {cards.map((c) => <KpiCard key={c.label} k={c} />)}
       </div>
-      {charts && <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mt-3">{charts}</div>}
+      {charts && showCharts && <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mt-3">{charts}</div>}
     </div>
   );
 }
@@ -453,77 +459,51 @@ export default function Dashboard() {
 
   // ── Top row: business health ──
   const targetPct = d.salesTarget ? Math.round((Number(d.salesMonth) / Number(d.salesTarget)) * 100) : null;
+  // Headline strip — the few numbers to check first (4 cards)
   const topRow: Kpi[] = [
-    { label: 'Sales today', value: kd(d.salesToday), accent: 'text-emerald-600', link: can('/sales') ? '/sales' : undefined },
-    { label: 'Sales this month', value: kd(d.salesMonth), accent: 'text-emerald-600', link: can('/sales') ? '/sales' : undefined },
-    d.salesTarget != null
-      ? { label: 'Sales vs target', value: `${targetPct}%`, sub: `of ${kd(d.salesTarget)}`, accent: (targetPct ?? 0) >= 100 ? 'text-emerald-600' : (targetPct ?? 0) >= 70 ? 'text-amber-600' : 'text-rose-600', link: can('/sales') ? '/sales' : undefined }
-      : { label: 'Sales vs target', value: 'Set target', sub: 'in Settings', link: '/settings' },
-    ...(d.stockValue != null ? [{ label: 'Stock value', value: kd(d.stockValue), link: can('/stock') ? '/stock' : undefined } as Kpi] : []),
+    { label: 'Sales this month', value: kd(d.salesMonth),
+      sub: d.salesTarget != null ? `${targetPct}% of ${kd(d.salesTarget)} target` : 'set a target in Settings',
+      accent: 'text-emerald-600', link: can('/sales') ? '/sales' : undefined },
     { label: 'Supplier balance', value: kd(d.supplierBalance), accent: Number(d.supplierBalance) > 0 ? 'text-rose-600' : 'text-emerald-600', link: can('/purchase-orders') ? '/purchase-orders' : undefined },
+    ...(d.stockValue != null ? [{ label: 'Stock value', value: kd(d.stockValue), link: can('/stock') ? '/stock' : undefined } as Kpi] : []),
     { label: 'Action alerts', value: activeAlerts.length, accent: activeAlerts.length ? 'text-rose-600' : 'text-emerald-600', onClick: () => alertsRef.current?.scrollIntoView({ behavior: 'smooth' }) },
   ];
 
-  // per-outlet "sales vs target" — only shown once a target for that outlet is set
-  const outletTargetCard = (label: string, sales: number | null, target: number | null): Kpi => {
-    const pct = target ? Math.round((Number(sales) / Number(target)) * 100) : null;
-    return {
-      label, value: `${kd(sales)}${pct != null ? ` · ${pct}%` : ''}`,
-      sub: pct != null ? `of ${kd(target)} target` : 'no target set',
-      accent: pct == null ? undefined : pct >= 100 ? 'text-emerald-600' : pct >= 70 ? 'text-amber-600' : 'text-rose-600',
-      link: '/sales',
-    };
-  };
-
+  // Each section = its few must-follow KPIs; the fuller breakdown lives on the section's page.
   const salesCards: Kpi[] = [
-    { label: 'Month sales', value: kd(d.salesMonth), accent: 'text-emerald-600', link: '/sales' },
-    ...(d.avenuesTarget != null ? [outletTargetCard('Avenues vs target', d.avenuesSales, d.avenuesTarget)] : []),
-    ...(d.timeGalleryTarget != null ? [outletTargetCard('Time Gallery vs target', d.timeGallerySales, d.timeGalleryTarget)] : []),
+    { label: 'Sales today', value: kd(d.salesToday), accent: 'text-emerald-600', link: '/sales' },
     { label: 'Lost sales (month)', value: kd(d.lostMonth), accent: Number(d.lostMonth) ? 'text-rose-600' : undefined, link: '/sales' },
     { label: 'Overdue follow-ups', value: d.overdueFu ?? 0, accent: Number(d.overdueFu) ? 'text-red-600' : undefined, link: '/follow-ups' },
-    { label: 'New customers (month)', value: d.newCust ?? 0, link: '/crm' },
-    { label: 'VIP occasions (month)', value: d.vipOcc ?? 0, accent: Number(d.vipOcc) ? 'text-amber-600' : undefined, link: '/vip' },
   ];
 
   const demandCards: Kpi[] = [
-    { label: 'Open waiting list', value: d.openWaiting ?? 0, link: '/waiting-list' },
     { label: 'Open pre-orders', value: d.openPre ?? 0, link: '/waiting-list' },
     { label: 'Active limited projects', value: d.activeProjects ?? 0, link: '/limited-projects' },
     { label: 'Delayed projects', value: d.delayedProjects ?? 0, accent: Number(d.delayedProjects) ? 'text-rose-600' : undefined, link: '/limited-projects' },
   ];
 
   const stockCards: Kpi[] = [
-    ...(d.stockValue != null ? [{ label: 'Stock value', value: kd(d.stockValue), link: '/stock' } as Kpi] : []),
     ...(d.deadValue != null ? [{ label: 'Not-moving stock', value: kd(d.deadValue), accent: Number(d.deadValue) ? 'text-rose-600' : 'text-emerald-600', link: '/stock' } as Kpi] : []),
     ...(d.lowStock != null ? [{ label: 'Low stock items', value: d.lowStock, accent: Number(d.lowStock) ? 'text-amber-600' : undefined, link: '/stock' } as Kpi] : []),
     { label: 'Open POs', value: d.openPOs ?? 0, link: '/purchase-orders' },
-    { label: 'Pending shipments', value: d.shipments ?? 0, accent: Number(d.shipments) ? 'text-amber-600' : undefined, link: '/purchase-orders' },
-    { label: 'Supplier balance', value: kd(d.supplierBalance), accent: Number(d.supplierBalance) > 0 ? 'text-rose-600' : undefined, link: '/purchase-orders' },
   ];
 
   const hrCards: Kpi[] = [
     { label: 'Present today', value: d.presentToday ?? 0, accent: 'text-emerald-600', link: '/attendance' },
-    { label: 'Late (month, unjustified)', value: d.lateMonth ?? 0, accent: Number(d.lateMonth) ? 'text-amber-600' : undefined, link: '/attendance' },
     { label: 'Pending leave', value: d.pendingLeave ?? 0, accent: Number(d.pendingLeave) ? 'text-amber-600' : undefined, link: '/leave' },
-    { label: 'Sick requests', value: d.sickReq ?? 0, accent: Number(d.sickReq) ? 'text-rose-600' : undefined, link: '/leave' },
-    { label: 'WFH requests', value: d.wfhReq ?? 0, link: '/leave' },
     { label: 'Expiring docs ≤60d', value: d.empDocs ?? 0, accent: Number(d.empDocs) ? 'text-red-600' : undefined, link: '/hr' },
   ];
 
   const repairCards: Kpi[] = [
     { label: 'Open repairs', value: d.openRepairs ?? 0, link: '/repairs' },
-    { label: 'Waiting approval', value: d.waitingApproval ?? 0, accent: Number(d.waitingApproval) ? 'text-amber-600' : undefined, link: '/repairs' },
-    { label: 'Sent to supplier', value: d.sentSupplier ?? 0, link: '/repairs' },
     { label: 'Ready for pickup', value: d.readyPickup ?? 0, accent: Number(d.readyPickup) ? 'text-emerald-600' : undefined, link: '/repairs' },
     { label: 'Overdue repairs', value: d.overdueRepairs ?? 0, accent: Number(d.overdueRepairs) ? 'text-rose-600' : undefined, link: '/repairs' },
   ];
 
   const marketingCards: Kpi[] = [
-    { label: 'Content pending', value: d.contentPending ?? 0, accent: Number(d.contentPending) ? 'text-amber-600' : undefined, link: '/content' },
-    { label: 'Scheduled (month)', value: d.scheduledMonth ?? 0, link: '/content' },
-    { label: 'Posted (month)', value: d.postedMonth ?? 0, accent: 'text-emerald-600', link: '/content' },
     ...(d.igFollowers != null ? [{ label: 'Instagram followers', value: formatKDCompact(d.igFollowers).replace(' KD', ''), sub: '@timekeeperkw', link: '/instagram' } as Kpi] : [{ label: 'Instagram', value: 'Connect', link: '/instagram' } as Kpi]),
-    ...(d.igAvgEng != null ? [{ label: 'Avg engagement / post', value: formatKDCompact(d.igAvgEng).replace(' KD', ''), sub: d.igEngRate != null ? `${Number(d.igEngRate).toFixed(2)}% of followers · @timekeeperkw` : '@timekeeperkw', accent: 'text-emerald-600', link: '/instagram' } as Kpi] : []),
+    ...(d.igAvgEng != null ? [{ label: 'Avg engagement / post', value: formatKDCompact(d.igAvgEng).replace(' KD', ''), sub: d.igEngRate != null ? `${Number(d.igEngRate).toFixed(2)}% of followers` : '@timekeeperkw', accent: 'text-emerald-600', link: '/instagram' } as Kpi] : []),
+    { label: 'Content pending', value: d.contentPending ?? 0, accent: Number(d.contentPending) ? 'text-amber-600' : undefined, link: '/content' },
   ];
 
   return (
@@ -541,12 +521,12 @@ export default function Dashboard() {
 
       {/* Top KPI row — business health */}
       <div className="mb-6">
-        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {topRow.map((c) => <KpiCard key={c.label} k={c} />)}
         </div>
       </div>
 
-      {can('/sales') && <Section title="Sales & Customers" cards={salesCards} charts={
+      {can('/sales') && <Section title="Sales & Customers" detailLink="/sales" cards={salesCards} charts={
         <>
           <ChartCard title="Sales trend this month" hint="cumulative KD" link="/sales">
             <LineChart data={charts.salesTrend} color="#059669" fmt={kdC} />
@@ -556,7 +536,7 @@ export default function Dashboard() {
           </ChartCard>
         </>
       } />}
-      {(can('/waiting-list') || can('/limited-projects')) && <Section title="Demand & Projects" cards={demandCards} />}
+      {(can('/waiting-list') || can('/limited-projects')) && <Section title="Demand & Projects" detailLink={can('/limited-projects') ? '/limited-projects' : '/waiting-list'} cards={demandCards} />}
       {(can('/stock') || can('/purchase-orders')) && <Section title="Stock & Purchasing" detailLink={can('/purchase-orders') ? '/purchase-orders' : '/stock'} cards={stockCards} charts={
         <>
           {can('/stock') && <ChartCard title={stockCostView ? 'Stock cost over time' : 'Stock value over time'} hint={stockCostView ? 'cost KD' : 'retail KD'} link="/stock">
@@ -567,13 +547,13 @@ export default function Dashboard() {
           </ChartCard>}
         </>
       } />}
-      {(can('/hr') || can('/attendance')) && <Section title="HR & Attendance" cards={hrCards} />}
+      {(can('/hr') || can('/attendance')) && <Section title="HR & Attendance" detailLink={can('/attendance') ? '/attendance' : '/hr'} cards={hrCards} />}
       {can('/repairs') && <Section title="Repair Watches" detailLink="/repairs" cards={repairCards} charts={
         <ChartCard title="Repairs by status" hint="open cases" link="/repairs">
           <BarChart data={charts.repairsByStatus} barColor="#2563eb" />
         </ChartCard>
       } />}
-      {(can('/instagram') || can('/content')) && <Section title="Marketing" cards={marketingCards} charts={
+      {(can('/instagram') || can('/content')) && <Section title="Marketing" detailLink={can('/instagram') ? '/instagram' : '/content'} cards={marketingCards} charts={
         can('/instagram') ? (
           <>
             <ChartCard title="Instagram accounts" hint="followers · Δ today · days idle" link="/instagram">
