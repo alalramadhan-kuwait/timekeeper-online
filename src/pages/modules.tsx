@@ -755,6 +755,7 @@ const lpBaseConfig: CrudConfig = {
     { key: 'status', label: 'Status', type: 'select', options: LP_STATUSES, defaultValue: 'Upcoming', required: true },
     { key: 'launch_date', label: 'Launch date', type: 'date' },
     { key: 'expected_delivery', label: 'Expected delivery date', type: 'date' },
+    { key: 'delivered_date', label: 'Actual delivery date', type: 'date', hint: 'Set this to confirm the delivery arrived — clears the “overdue” flag' },
     { key: 'outlet', label: 'Outlet', type: 'text', placeholder: 'e.g. Avenues, all outlets' },
     { key: 'notes', label: 'Notes', type: 'textarea' },
   ],
@@ -843,15 +844,18 @@ export function LimitedProjectsPage() {
       },
       { key: 'launch_date', label: 'Launch', sortable: true, render: (r) => <ExpiryCell date={r.launch_date} /> },
       {
-        key: 'expected_delivery', label: 'Expected delivery', sortable: true,
-        // overdue = delivery date passed while the project hasn't been received yet
+        key: 'expected_delivery', label: 'Delivery', sortable: true,
+        // A recorded actual delivery date confirms receipt and clears "overdue".
         render: (r) => {
-          const overdue = r.expected_delivery && r.expected_delivery < new Date().toISOString().slice(0, 10)
-            && !['Received', 'Selling', 'Sold Out', 'Completed', 'Cancelled'].includes(r.status);
+          if (r.delivered_date) return (
+            <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 whitespace-nowrap">✓ Delivered {r.delivered_date}</Badge>
+          );
           if (!r.expected_delivery) return <span className="text-slate-300 text-xs">—</span>;
+          const overdue = r.expected_delivery < new Date().toISOString().slice(0, 10)
+            && !['Received', 'Selling', 'Sold Out', 'Completed', 'Cancelled'].includes(r.status);
           return overdue
-            ? <Badge className="bg-rose-100 text-rose-700 border-rose-200">{r.expected_delivery} · overdue</Badge>
-            : <ExpiryCell date={r.expected_delivery} />;
+            ? <Badge className="bg-rose-100 text-rose-700 border-rose-200 whitespace-nowrap">{r.expected_delivery} · overdue</Badge>
+            : <span className="whitespace-nowrap text-xs text-slate-500">exp. <ExpiryCell date={r.expected_delivery} /></span>;
         },
       },
       { key: 'outlet', label: 'Outlet' },
