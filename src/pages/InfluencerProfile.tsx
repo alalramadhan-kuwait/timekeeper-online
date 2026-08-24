@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Instagram, ExternalLink, Pencil, X, Star, Users, Handshake, Wallet, Gift, TrendingUp, Calendar } from 'lucide-react';
+import { ArrowLeft, Instagram, ExternalLink, Pencil, X, Star, Users, Handshake, Wallet, Gift, TrendingUp, Calendar, RefreshCw } from 'lucide-react';
 import { CrudModule, CrudConfig } from '../components/CrudModule';
 import { Badge, Spinner } from '../components/ui';
 import { formatKD } from '../lib/format';
@@ -56,6 +56,7 @@ export default function InfluencerProfilePage() {
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState<Partial<Influencer>>({});
   const [saving, setSaving] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
 
   const loadAgg = useCallback(async () => {
@@ -100,6 +101,22 @@ export default function InfluencerProfilePage() {
   };
   const g30 = growth(30), g90 = growth(90);
   const roi = agg.paid + agg.gift > 0 ? agg.revenue / (agg.paid + agg.gift) : null;
+
+  async function refreshFollowers() {
+    setRefreshing(true); setMsg(null);
+    const { data, error } = await supabase.functions.invoke('influencer-followers-sync', { body: { influencer_id: id } });
+    if (error || (data as any)?.error) {
+      let detail = (data as any)?.error ?? error?.message;
+      try { detail = (await (error as any)?.context?.clone().json())?.error ?? detail; } catch { /* keep */ }
+      setMsg(`Refresh failed: ${detail}`);
+    } else if (data?.updated) {
+      setMsg('Followers refreshed ✓');
+    } else {
+      setMsg('Couldn’t fetch followers — the account may be private or the handle is wrong.');
+    }
+    setRefreshing(false);
+    load();
+  }
 
   function startEdit() {
     if (!inf) return;
@@ -225,7 +242,7 @@ export default function InfluencerProfilePage() {
         <ArrowLeft size={16} /> Influencers
       </button>
 
-      {msg && <div className="px-4 py-2 rounded-lg text-sm border bg-red-50 border-red-200 text-red-700">{msg}</div>}
+      {msg && <div className={`px-4 py-2 rounded-lg text-sm border ${msg.includes('✓') ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-red-50 border-red-200 text-red-700'}`}>{msg}</div>}
 
       {/* 1. Profile header */}
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
@@ -260,6 +277,7 @@ export default function InfluencerProfilePage() {
             </div>
             <div className="flex flex-col gap-2 shrink-0">
               {ig && <a href={ig} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 bg-gradient-to-r from-fuchsia-500 to-pink-500 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:opacity-90"><Instagram size={15} /> Open Instagram <ExternalLink size={12} /></a>}
+              {canEdit && inf.handle && <button onClick={refreshFollowers} disabled={refreshing} className="flex items-center gap-1.5 border border-slate-300 text-slate-700 px-3 py-1.5 rounded-lg text-sm hover:bg-slate-50 disabled:opacity-60"><RefreshCw size={14} className={refreshing ? 'animate-spin' : ''} /> {refreshing ? 'Fetching…' : 'Refresh followers'}</button>}
               {canEdit && <button onClick={startEdit} className="flex items-center gap-1.5 border border-slate-300 text-slate-700 px-3 py-1.5 rounded-lg text-sm hover:bg-slate-50"><Pencil size={14} /> Edit profile</button>}
             </div>
           </div>
