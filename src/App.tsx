@@ -14,6 +14,7 @@ import UserActivityPage from './pages/UserActivity';
 import SettingsPage from './pages/Settings';
 import LeavePage from './pages/Leave';
 import AttendancePage from './pages/Attendance';
+import InfluencerProfilePage from './pages/InfluencerProfile';
 import { PurchaseOrdersPage } from './pages/PurchaseOrders';
 import {
   WaitingListPage, PreOrdersPage, ConsignmentsPage,
@@ -53,6 +54,7 @@ function Shell() {
         <Route path="/content" element={g('/content', <ContentPlannerPage />)} />
         <Route path="/paid-ads" element={g('/paid-ads', <PaidAdsPage />)} />
         <Route path="/influencers" element={g('/influencers', <InfluencersPage />)} />
+        <Route path="/influencers/:id" element={g('/influencers', <InfluencerProfilePage />)} />
         <Route path="/activity" element={g('/activity', <UserActivityPage />)} />
         <Route path="/company-documents" element={g('/company-documents', <CompanyDocsPage />)} />
         <Route path="/history" element={g('/history', <HistoryLogPage />)} />

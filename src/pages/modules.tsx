@@ -214,83 +214,63 @@ const INF_TIERS = ['Nano (<10K)', 'Micro (10–100K)', 'Mid (100–500K)', 'Macr
 const INF_COVERAGE = ['Reel', 'Story', 'Feed post', 'Video', 'Review', 'Event attendance', 'Unboxing'];
 const INF_PAYMENT = ['Unpaid', 'Partially paid', 'Paid', 'Gifted'];
 const INF_COUNTRIES = ['Kuwait', 'Saudi Arabia', 'UAE', 'Qatar', 'Bahrain', 'Oman', 'Egypt', 'Jordan', 'Lebanon', 'United Kingdom', 'United States', 'Other'];
-const influencers: CrudConfig = {
-  rowClickToEdit: true,
-  table: 'influencer_campaigns',
+const INF_REL_STATUS = ['Active', 'Prospect', 'Paused', 'Inactive'];
+const REL_STATUS_COLOR: Record<string, string> = {
+  Active: 'bg-emerald-100 text-emerald-700 border-emerald-200',
+  Prospect: 'bg-sky-100 text-sky-700 border-sky-200',
+  Paused: 'bg-amber-100 text-amber-700 border-amber-200',
+  Inactive: 'bg-slate-100 text-slate-500 border-slate-200',
+};
+// Shared with the profile page (src/pages/InfluencerProfile.tsx)
+export const INFLUENCER_OPTS = { INF_PLATFORMS, INF_TIERS, INF_COVERAGE, INF_PAYMENT, INF_COUNTRIES, INF_STATUSES, INF_REL_STATUS };
+
+// Main list: one row per permanent influencer profile; click a row to open the profile.
+const influencerList: CrudConfig = {
+  rowLink: (r) => `/influencers/${r.id}`,
+  table: 'influencers',
   title: 'Influencer Tracker',
-  description: 'Influencers we pay (or gift) to post coverage and ads for Timekeeper — deliverables, fees, payment and reach.',
+  description: 'Each influencer is a permanent profile — click one to see their collaborations, fees and follower growth.',
   canWrite: marketingRoles,
   statusField: 'status',
-  statusOptions: INF_STATUSES,
-  searchKeys: ['influencer_name', 'handle', 'campaign', 'product_brand', 'owner', 'country'],
-  orderBy: { column: 'agreed_date', ascending: false },
+  statusOptions: INF_REL_STATUS,
+  searchKeys: ['name', 'handle', 'country', 'tier', 'contact'],
+  orderBy: { column: 'name', ascending: true },
   extraFilters: [
     { key: 'platform', label: 'Platform', options: INF_PLATFORMS },
     { key: 'tier', label: 'Tier', options: INF_TIERS },
     { key: 'country', label: 'Country' },
-    { key: 'payment_status', label: 'Payment', options: INF_PAYMENT },
-    { key: 'product_brand', label: 'Brand' },
-    { key: 'owner', label: 'Owner' },
+    { key: 'status', label: 'Status', options: INF_REL_STATUS },
   ],
   fields: [
-    { key: 'influencer_name', label: 'Influencer name', type: 'text', required: true },
-    { key: 'handle', label: 'Handle (@)', type: 'text', placeholder: '@username' },
+    { key: 'name', label: 'Influencer name', type: 'text', required: true },
+    { key: 'handle', label: 'Instagram handle (@)', type: 'text', placeholder: '@username' },
     { key: 'platform', label: 'Platform', type: 'select', options: INF_PLATFORMS, defaultValue: 'Instagram' },
     { key: 'tier', label: 'Tier', type: 'select', options: INF_TIERS },
     { key: 'country', label: 'Country', type: 'select', options: INF_COUNTRIES },
-    { key: 'followers', label: 'Followers', type: 'number' },
-    { key: 'coverage_type', label: 'Coverage type', type: 'select', options: INF_COVERAGE },
-    { key: 'deliverables', label: 'Agreed deliverables', type: 'text', placeholder: 'e.g. 2 stories + 1 reel' },
-    { key: 'product_brand', label: 'Product / brand promoted', type: 'combobox' },
-    { key: 'campaign', label: 'Campaign / occasion', type: 'combobox' },
-    { key: 'owner', label: 'Relationship owner', type: 'combobox' },
-    { key: 'agreed_date', label: 'Agreed date', type: 'date' },
-    { key: 'posted_date', label: 'Posted date', type: 'date' },
-    { key: 'post_url', label: 'Post link', type: 'text', placeholder: 'https://…' },
-    { key: 'fee', label: 'Fee (KD)', type: 'number', defaultValue: 0 },
-    { key: 'amount_paid', label: 'Amount paid (KD)', type: 'number', defaultValue: 0 },
-    { key: 'payment_method', label: 'Payment method', type: 'select', options: ['Bank transfer', 'Cash', 'Cheque', 'Gift / product', 'Credit card'] },
-    { key: 'payment_status', label: 'Payment status', type: 'select', options: INF_PAYMENT, defaultValue: 'Unpaid' },
-    { key: 'status', label: 'Status', type: 'select', options: INF_STATUSES, defaultValue: 'Negotiating', required: true },
-    { key: 'content_received', label: 'Content received', type: 'checkbox' },
-    { key: 'reach', label: 'Reach', type: 'number' },
-    { key: 'likes', label: 'Likes', type: 'number' },
-    { key: 'comments', label: 'Comments', type: 'number' },
-    { key: 'saves', label: 'Saves', type: 'number' },
-    { key: 'story_views', label: 'Story views', type: 'number' },
-    { key: 'link_clicks', label: 'Link clicks', type: 'number' },
-    { key: 'leads_generated', label: 'Leads generated', type: 'number' },
-    { key: 'sales_linked', label: 'Sales linked (reference)', type: 'text' },
-    { key: 'notes', label: 'Notes', type: 'textarea' },
+    { key: 'followers', label: 'Current followers', type: 'number' },
+    { key: 'followers_updated', label: 'Followers last updated', type: 'date' },
+    { key: 'contact', label: 'Contact details', type: 'text', placeholder: 'phone / email / agency' },
+    { key: 'photo_url', label: 'Profile photo URL', type: 'text', placeholder: 'https://…' },
+    { key: 'status', label: 'Relationship status', type: 'select', options: INF_REL_STATUS, defaultValue: 'Active' },
+    { key: 'rating', label: 'Rating (1–5)', type: 'number' },
+    { key: 'notes', label: 'Internal notes', type: 'textarea' },
   ],
   columns: [
-    { key: 'influencer_name', label: 'Influencer', sortable: true, render: (r) => (
+    { key: 'name', label: 'Influencer', sortable: true, render: (r) => (
       <span className="whitespace-nowrap">
-        <span className="font-medium text-slate-800">{r.influencer_name}</span>
+        <span className="font-medium text-slate-800">{r.name}</span>
         {r.handle && <span className="block text-xs text-slate-400">{r.handle}</span>}
       </span>
     ) },
     { key: 'platform', label: 'Platform', sortable: true, hideBelow: 'sm' },
     { key: 'country', label: 'Country', sortable: true, hideBelow: 'md' },
-    { key: 'followers', label: 'Followers', sortable: true, hideBelow: 'lg', render: (r) => r.followers != null ? Number(r.followers).toLocaleString() : '—' },
-    { key: 'coverage_type', label: 'Coverage', sortable: true, hideBelow: 'md' },
-    { key: 'product_brand', label: 'Brand', sortable: true, hideBelow: 'lg' },
-    { key: 'agreed_date', label: 'Agreed', sortable: true, hideBelow: 'md' },
-    { key: 'fee', label: 'Fee', sortable: true, render: (r) => <span className="whitespace-nowrap">{kd(r.fee)}</span> },
-    { key: 'payment_status', label: 'Payment', sortable: true, render: (r) => {
-      const cls = r.payment_status === 'Paid' ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
-        : r.payment_status === 'Partially paid' ? 'bg-amber-100 text-amber-700 border-amber-200'
-        : r.payment_status === 'Gifted' ? 'bg-violet-100 text-violet-700 border-violet-200'
-        : 'bg-rose-100 text-rose-600 border-rose-200';
-      return <Badge className={cls}>{r.payment_status ?? 'Unpaid'}</Badge>;
-    } },
-    { key: 'status', label: 'Status', sortable: true },
-    { key: 'post_url', label: 'Post', hideBelow: 'xl', render: (r) => r.post_url
-      ? <a href={r.post_url} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} className="text-blue-600 hover:underline text-xs">View</a>
-      : <span className="text-slate-300 text-xs">—</span> },
+    { key: 'tier', label: 'Tier', sortable: true, hideBelow: 'lg' },
+    { key: 'followers', label: 'Followers', sortable: true, render: (r) => r.followers != null ? Number(r.followers).toLocaleString() : '—' },
+    { key: 'status', label: 'Status', sortable: true, render: (r) => <Badge className={REL_STATUS_COLOR[r.status] ?? REL_STATUS_COLOR.Inactive}>{r.status ?? 'Active'}</Badge> },
+    { key: 'open', label: '', render: () => <span className="text-xs text-blue-600">Open →</span> },
   ],
 };
-export const InfluencersPage = () => <CrudModule config={influencers} />;
+export const InfluencersPage = () => <CrudModule config={influencerList} />;
 
 /* ---------------- Repair Watches (Operations) ---------------- */
 const REPAIR_STATUSES = [

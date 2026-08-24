@@ -1,4 +1,5 @@
 import { Fragment, useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Plus, Pencil, Trash2, Search, ImageOff, ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Modal, Spinner, StatusBadge } from './ui';
@@ -66,6 +67,8 @@ export interface CrudConfig {
   filter?: (row: Record<string, any>) => boolean;
   toolbarExtra?: React.ReactNode;
   rowClickToEdit?: boolean;
+  /** When set, clicking a row navigates to this route instead of opening the edit modal. */
+  rowLink?: (row: Record<string, any>) => string;
   extraFilters?: ExtraFilter[];
   /** Group rows under a heading row by this column (skipped while an explicit column sort is active). */
   groupBy?: string;
@@ -91,6 +94,7 @@ export function CrudModule({ config }: { config: CrudConfig }) {
   const [error, setError] = useState<string | null>(null);
 
   const writable = config.canWrite(role);
+  const navigate = useNavigate();
 
   async function load() {
     setLoading(true);
@@ -314,8 +318,8 @@ export function CrudModule({ config }: { config: CrudConfig }) {
                   </tr>
                 )}
                 <tr
-                  className={`border-b border-slate-100 last:border-0 hover:bg-slate-50 ${config.rowClickToEdit && writable ? 'cursor-pointer' : ''}`}
-                  onClick={config.rowClickToEdit && writable ? () => { setEditing(row); setShowForm(true); } : undefined}
+                  className={`border-b border-slate-100 last:border-0 hover:bg-slate-50 ${config.rowLink || (config.rowClickToEdit && writable) ? 'cursor-pointer' : ''}`}
+                  onClick={config.rowLink ? () => navigate(config.rowLink!(row)) : (config.rowClickToEdit && writable ? () => { setEditing(row); setShowForm(true); } : undefined)}
                 >
                   {config.columns.map((c) => (
                     <td key={c.key} className={`px-4 py-2.5 whitespace-nowrap ${c.hideBelow ? HIDE_CLASS[c.hideBelow] : ''}`}>
