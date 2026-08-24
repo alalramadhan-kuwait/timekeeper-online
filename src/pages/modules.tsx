@@ -671,6 +671,8 @@ export const CompanyDocsPage = () => <CrudModule config={companyDocs} />;
 
 /* ---------------- Limited Watch Projects ---------------- */
 const LP_STATUSES = ['Upcoming', 'Confirmed', 'Received', 'Selling', 'Sold Out', 'Completed', 'Cancelled'];
+// terminal states — moved into the collapsible "Completed / closed" section below the active list
+const LP_CLOSED = ['Completed', 'Cancelled'];
 
 interface PhotoModalRecord { id: string; photo_url: string; project_name: string }
 
@@ -770,6 +772,7 @@ export function LimitedProjectsPage() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [projectPOs, setProjectPOs] = useState<Map<string, ProjectPO[]>>(new Map());
   const [poDetail, setPODetail] = useState<{ project: string; pos: ProjectPO[] } | null>(null);
+  const [showCompleted, setShowCompleted] = useState(false);
 
   useEffect(() => {
     supabase.from('purchase_orders')
@@ -855,9 +858,30 @@ export function LimitedProjectsPage() {
     ],
   }), [projectPOs]);
 
+  // Active list hides completed/cancelled; those live in a collapsible section below.
+  const activeConfig = useMemo<CrudConfig>(() => ({
+    ...config,
+    filter: (r) => !LP_CLOSED.includes(r.status),
+  }), [config]);
+  const completedConfig = useMemo<CrudConfig>(() => ({
+    ...config,
+    title: 'Completed & closed projects',
+    description: 'Finished (Completed) or Cancelled — kept here for reference.',
+    filter: (r) => LP_CLOSED.includes(r.status),
+  }), [config]);
+
   return (
     <>
-      <CrudModule key={refreshKey} config={config} />
+      <CrudModule key={`active-${refreshKey}`} config={activeConfig} />
+      <div className="mt-6">
+        <button
+          onClick={() => setShowCompleted((v) => !v)}
+          className="flex items-center gap-1.5 text-sm text-slate-600 hover:text-slate-900 font-medium mb-2"
+        >
+          {showCompleted ? '▾' : '▸'} Completed & closed projects
+        </button>
+        {showCompleted && <CrudModule key={`done-${refreshKey}`} config={completedConfig} />}
+      </div>
       {photoModal && (
         <PhotoModal
           record={photoModal}
