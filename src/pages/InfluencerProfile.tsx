@@ -6,7 +6,7 @@ import { Badge, Spinner } from '../components/ui';
 import { formatKD } from '../lib/format';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
-import { INFLUENCER_OPTS as O } from './modules';
+import { INFLUENCER_OPTS as O, cleanHandle } from './modules';
 
 const marketingRoles = (r: string | null) => ['admin', 'manager', 'marketing'].includes(r ?? '');
 const kd = (v: number | null | undefined) => (v == null ? '—' : `${formatKD(Number(v))} KD`);
@@ -129,7 +129,7 @@ export default function InfluencerProfilePage() {
     if (!inf) return;
     setSaving(true);
     const patch: Record<string, unknown> = {
-      name: form.name, handle: form.handle || null, platform: form.platform || null, tier: form.tier || null,
+      name: form.name, handle: cleanHandle(form.handle), platform: form.platform || null, tier: form.tier || null,
       country: form.country || null, contact: form.contact || null, photo_url: form.photo_url || null,
       status: form.status || 'Active', rating: form.rating != null && String(form.rating) !== '' ? Number(form.rating) : null,
       notes: form.notes || null, updated_at: new Date().toISOString(),
@@ -262,7 +262,7 @@ export default function InfluencerProfilePage() {
                 )}
               </div>
               <div className="text-sm text-slate-500 mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-1">
-                {inf.handle && <span>{inf.handle}</span>}
+                {inf.handle && <span>@{inf.handle}</span>}
                 {inf.platform && <span>· {inf.platform}</span>}
                 {inf.country && <span>· {inf.country}</span>}
                 {inf.tier && <span>· {inf.tier}</span>}

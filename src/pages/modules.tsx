@@ -1,10 +1,21 @@
 import { useEffect, useMemo, useState } from 'react';
-import { X, Upload, Trash2 as TrashIcon } from 'lucide-react';
+import { X, Upload, Trash2 as TrashIcon, RefreshCw } from 'lucide-react';
 import { CrudModule, CrudConfig } from '../components/CrudModule';
 import { StatusBadge, Badge } from '../components/ui';
 import { formatKD } from '../lib/format';
 import { expiryTier, tierClass, tierLabel } from '../lib/expiry';
 import { supabase } from '../lib/supabase';
+import { useAuth } from '../context/AuthContext';
+
+/** Unify any Instagram handle (@name / profile URL / bare) to a clean bare username. */
+export const cleanHandle = (h: unknown): string | null => {
+  if (!h) return null;
+  let s = String(h).trim();
+  const m = s.match(/instagram\.com\/([^/?#\s]+)/i);
+  if (m) s = m[1];
+  s = s.replace(/^@+/, '').replace(/\/+$/, '').trim().toLowerCase();
+  return s || null;
+};
 
 const salesRoles = (r: string | null) => ['admin', 'manager', 'staff', 'sales'].includes(r ?? '');
 const purchasingRoles = (r: string | null) => ['admin', 'manager', 'operations'].includes(r ?? '');
@@ -235,6 +246,7 @@ const influencerList: CrudConfig = {
   statusOptions: INF_REL_STATUS,
   searchKeys: ['name', 'handle', 'country', 'tier', 'contact'],
   orderBy: { column: 'name', ascending: true },
+  beforeSave: (p) => ({ ...p, handle: cleanHandle(p.handle) }),
   extraFilters: [
     { key: 'platform', label: 'Platform', options: INF_PLATFORMS },
     { key: 'tier', label: 'Tier', options: INF_TIERS },
@@ -259,7 +271,7 @@ const influencerList: CrudConfig = {
     { key: 'name', label: 'Influencer', sortable: true, render: (r) => (
       <span className="whitespace-nowrap">
         <span className="font-medium text-slate-800">{r.name}</span>
-        {r.handle && <span className="block text-xs text-slate-400">{r.handle}</span>}
+        {r.handle && <span className="block text-xs text-slate-400">@{r.handle}</span>}
       </span>
     ) },
     { key: 'platform', label: 'Platform', sortable: true, hideBelow: 'sm' },
@@ -270,7 +282,42 @@ const influencerList: CrudConfig = {
     { key: 'open', label: '', render: () => <span className="text-xs text-blue-600">Open →</span> },
   ],
 };
-export const InfluencersPage = () => <CrudModule config={influencerList} />;
+export function InfluencersPage() {
+  const { role } = useAuth();
+  const canSync = ['admin', 'manager', 'marketing'].includes(role ?? '');
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
+
+  async function refreshAll() {
+    setBusy(true); setMsg(null);
+    const { data, error } = await supabase.functions.invoke('influencer-followers-sync', { body: {} });
+    if (error || (data as any)?.error) {
+      let detail = (data as any)?.error ?? error?.message;
+      try { detail = (await (error as any)?.context?.clone().json())?.error ?? detail; } catch { /* keep */ }
+      setMsg(`Refresh failed: ${detail}`);
+    } else {
+      setMsg(`Followers refreshed ✓ ${data?.updated ?? 0}/${data?.requested ?? 0} influencers`);
+      setReloadKey((k) => k + 1);
+    }
+    setBusy(false);
+  }
+
+  return (
+    <div>
+      {canSync && (
+        <div className="flex flex-wrap items-center justify-end gap-3 mb-3">
+          {msg && <span className={`text-xs ${msg.includes('✓') ? 'text-emerald-600' : 'text-red-600'}`}>{msg}</span>}
+          <button onClick={refreshAll} disabled={busy}
+            className="flex items-center gap-2 bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-50 disabled:opacity-60">
+            <RefreshCw size={15} className={busy ? 'animate-spin' : ''} /> {busy ? 'Refreshing…' : 'Refresh all followers'}
+          </button>
+        </div>
+      )}
+      <CrudModule key={reloadKey} config={influencerList} />
+    </div>
+  );
+}
 
 /* ---------------- Repair Watches (Operations) ---------------- */
 const REPAIR_STATUSES = [
