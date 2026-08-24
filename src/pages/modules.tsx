@@ -845,17 +845,20 @@ export function LimitedProjectsPage() {
       { key: 'launch_date', label: 'Launch', sortable: true, render: (r) => <ExpiryCell date={r.launch_date} /> },
       {
         key: 'expected_delivery', label: 'Delivery', sortable: true,
-        // A recorded actual delivery date confirms receipt and clears "overdue".
+        // A recorded actual delivery date confirms receipt; once the project has arrived
+        // (Received+) or is closed, a past expected date is NOT overdue — show it muted so
+        // the generic expiry helper doesn't stamp a misleading red badge on it.
         render: (r) => {
+          const arrived = ['Received', 'Selling', 'Sold Out', 'Completed', 'Cancelled'].includes(r.status);
           if (r.delivered_date) return (
             <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 whitespace-nowrap">✓ Delivered {r.delivered_date}</Badge>
           );
           if (!r.expected_delivery) return <span className="text-slate-300 text-xs">—</span>;
-          const overdue = r.expected_delivery < new Date().toISOString().slice(0, 10)
-            && !['Received', 'Selling', 'Sold Out', 'Completed', 'Cancelled'].includes(r.status);
+          if (arrived) return <span className="text-xs text-slate-400 whitespace-nowrap">exp. {r.expected_delivery}</span>;
+          const overdue = r.expected_delivery < new Date().toISOString().slice(0, 10);
           return overdue
             ? <Badge className="bg-rose-100 text-rose-700 border-rose-200 whitespace-nowrap">{r.expected_delivery} · overdue</Badge>
-            : <span className="whitespace-nowrap text-xs text-slate-500">exp. <ExpiryCell date={r.expected_delivery} /></span>;
+            : <ExpiryCell date={r.expected_delivery} />;
         },
       },
       { key: 'outlet', label: 'Outlet' },
