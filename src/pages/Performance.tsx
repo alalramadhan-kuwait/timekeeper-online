@@ -58,7 +58,7 @@ interface Score { user_id: string; days_present: number; late_count: number; act
 const pointsOf = (s: Score) =>
   s.days_present * 3                              // showing up
   + Math.max(0, s.days_present - s.late_count) * 2 // on-time days
-  - s.late_count * 2                              // late penalty
+  - s.late_count * 5                              // late penalty (heavier)
   + s.active_days * 2                             // using the system
   + s.created * 3 + s.updated * 1;                // contributions (edits)
 function SectionTitle({ children }: { children: React.ReactNode }) {
@@ -222,7 +222,7 @@ export default function PerformancePage() {
         boardBusy || !board ? <div className="py-10"><Spinner /></div> : (
           <div>
             <p className="text-xs text-slate-400 mb-3">
-              Cumulative points = days present ×3 · on-time days ×2 · late −2 · active days ×2 · created ×3 · updated ×1.
+              Cumulative points = days present ×3 · on-time days ×2 · late −5 · active days ×2 · created ×3 · updated ×1.
             </p>
             <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
               <table className="w-full text-sm">
