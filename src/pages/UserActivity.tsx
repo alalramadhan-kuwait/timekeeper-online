@@ -34,12 +34,19 @@ export default function UserActivityPage() {
 
   async function load() {
     setLoading(true); setErr(null);
-    const [{ data: fnData, error: fnErr }, { data: actData }] = await Promise.all([
+    const [{ data: fnData, error: fnErr }, { data: actData }, { data: empData }] = await Promise.all([
       supabase.functions.invoke('admin-users', { body: { action: 'list' } }),
       supabase.from('user_activity_summary').select('*'),
+      supabase.from('employees').select('user_id, full_name'),
     ]);
     if (fnErr) setErr(fnErr.message);
-    setTeam(((fnData?.team ?? []) as TeamRow[]).sort((a, b) => a.full_name.localeCompare(b.full_name)));
+    // show the canonical name (HR name when the account is linked to an employee) so this
+    // page matches Team Attendance exactly
+    const empName = new Map(((empData ?? []) as { user_id: string | null; full_name: string }[])
+      .filter((e) => e.user_id).map((e) => [e.user_id as string, (e.full_name ?? '').trim()]));
+    const teamRows = ((fnData?.team ?? []) as TeamRow[])
+      .map((t) => ({ ...t, full_name: empName.get(t.id) || (t.full_name ?? '').trim() }));
+    setTeam(teamRows.sort((a, b) => a.full_name.localeCompare(b.full_name)));
     setActs(new Map(((actData ?? []) as ActivityRow[]).map((a) => [a.user_id, a])));
     setLoading(false);
   }

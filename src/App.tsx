@@ -15,6 +15,7 @@ import SettingsPage from './pages/Settings';
 import LeavePage from './pages/Leave';
 import AttendancePage from './pages/Attendance';
 import InfluencerProfilePage from './pages/InfluencerProfile';
+import PerformancePage from './pages/Performance';
 import { PurchaseOrdersPage } from './pages/PurchaseOrders';
 import {
   WaitingListPage, PreOrdersPage, ConsignmentsPage,
@@ -56,6 +57,7 @@ function Shell() {
         <Route path="/influencers" element={g('/influencers', <InfluencersPage />)} />
         <Route path="/influencers/:id" element={g('/influencers', <InfluencerProfilePage />)} />
         <Route path="/activity" element={g('/activity', <UserActivityPage />)} />
+        <Route path="/performance" element={g('/performance', <PerformancePage />)} />
         <Route path="/company-documents" element={g('/company-documents', <CompanyDocsPage />)} />
         <Route path="/history" element={g('/history', <HistoryLogPage />)} />
         <Route path="/settings" element={g('/settings', <SettingsPage />)} />
