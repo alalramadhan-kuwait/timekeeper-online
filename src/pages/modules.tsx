@@ -613,7 +613,7 @@ const companyDocs: CrudConfig = {
 export const CompanyDocsPage = () => <CrudModule config={companyDocs} />;
 
 /* ---------------- Limited Watch Projects ---------------- */
-const LP_STATUSES = ['Upcoming', 'Confirmed', 'Received', 'Selling', 'Sold Out', 'Cancelled'];
+const LP_STATUSES = ['Upcoming', 'Confirmed', 'Received', 'Selling', 'Sold Out', 'Completed', 'Cancelled'];
 
 interface PhotoModalRecord { id: string; photo_url: string; project_name: string }
 
@@ -787,7 +787,7 @@ export function LimitedProjectsPage() {
         // overdue = delivery date passed while the project hasn't been received yet
         render: (r) => {
           const overdue = r.expected_delivery && r.expected_delivery < new Date().toISOString().slice(0, 10)
-            && !['Received', 'Selling', 'Sold Out', 'Cancelled'].includes(r.status);
+            && !['Received', 'Selling', 'Sold Out', 'Completed', 'Cancelled'].includes(r.status);
           if (!r.expected_delivery) return <span className="text-slate-300 text-xs">—</span>;
           return overdue
             ? <Badge className="bg-rose-100 text-rose-700 border-rose-200">{r.expected_delivery} · overdue</Badge>

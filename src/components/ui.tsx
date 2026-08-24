@@ -21,6 +21,8 @@ export function Badge({ children, className }: { children: React.ReactNode; clas
 export const statusColors: Record<string, string> = {
   // shared
   Cancelled: 'bg-slate-100 text-slate-500 border-slate-200',
+  Completed: 'bg-emerald-100 text-emerald-700 border-emerald-200',
+  'Sold Out': 'bg-emerald-100 text-emerald-700 border-emerald-200',
   // waiting list
   Open: 'bg-blue-100 text-blue-700 border-blue-200',
   Contacted: 'bg-amber-100 text-amber-700 border-amber-200',

@@ -300,7 +300,7 @@ export default function Dashboard() {
 
       // projects
       const projects = (projQ.data ?? []) as any[];
-      const activeProjects = projects.filter((p) => !['Sold Out', 'Cancelled'].includes(p.status)).length;
+      const activeProjects = projects.filter((p) => !['Sold Out', 'Completed', 'Cancelled'].includes(p.status)).length;
       const delayedProjects = projects.filter((p) => ['Upcoming', 'Confirmed'].includes(p.status) && p.launch_date && p.launch_date < today).length;
 
       // stock + purchasing
