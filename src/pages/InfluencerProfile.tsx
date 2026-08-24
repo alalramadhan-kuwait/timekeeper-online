@@ -103,18 +103,25 @@ export default function InfluencerProfilePage() {
   const roi = agg.paid + agg.gift > 0 ? agg.revenue / (agg.paid + agg.gift) : null;
 
   async function refreshFollowers() {
-    setRefreshing(true); setMsg(null);
+    setRefreshing(true); setMsg('Fetching fresh followers… this takes about a minute.');
+    // baseline so we can tell when the background scrape has landed
+    const { data: base } = await supabase.from('influencers').select('updated_at').eq('id', id).single();
+    const before = base?.updated_at ?? null;
     const { data, error } = await supabase.functions.invoke('influencer-followers-sync', { body: { influencer_id: id } });
     if (error || (data as any)?.error) {
       let detail = (data as any)?.error ?? error?.message;
       try { detail = (await (error as any)?.context?.clone().json())?.error ?? detail; } catch { /* keep */ }
-      setMsg(`Refresh failed: ${detail}`);
-    } else if (data?.updated) {
-      setMsg('Followers refreshed ✓');
-    } else {
-      setMsg('Couldn’t fetch followers — the account may be private or the handle is wrong.');
+      setMsg(`Refresh failed: ${detail}`); setRefreshing(false); return;
+    }
+    // the scrape runs in the background — poll until this row's updated_at changes
+    let done = false;
+    for (let i = 0; i < 18 && !done; i++) {
+      await new Promise((r) => setTimeout(r, 7000));
+      const { data: row } = await supabase.from('influencers').select('updated_at').eq('id', id).single();
+      if (row?.updated_at && row.updated_at !== before) done = true;
     }
     setRefreshing(false);
+    setMsg(done ? 'Followers refreshed ✓' : 'Still refreshing in the background — reload in a moment.');
     load();
   }
 

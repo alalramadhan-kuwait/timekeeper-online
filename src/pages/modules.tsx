@@ -290,17 +290,27 @@ export function InfluencersPage() {
   const [reloadKey, setReloadKey] = useState(0);
 
   async function refreshAll() {
-    setBusy(true); setMsg(null);
+    setBusy(true); setMsg('Refreshing all followers… this takes a minute or two.');
+    // baseline updated_at per influencer, so we can detect the background scrape landing
+    const { data: base } = await supabase.from('influencers').select('id, updated_at, handle');
+    const withHandle = (base ?? []).filter((r: any) => r.handle);
+    const before = new Map(withHandle.map((r: any) => [r.id, r.updated_at]));
     const { data, error } = await supabase.functions.invoke('influencer-followers-sync', { body: {} });
     if (error || (data as any)?.error) {
       let detail = (data as any)?.error ?? error?.message;
       try { detail = (await (error as any)?.context?.clone().json())?.error ?? detail; } catch { /* keep */ }
-      setMsg(`Refresh failed: ${detail}`);
-    } else {
-      setMsg(`Followers refreshed ✓ ${data?.updated ?? 0}/${data?.requested ?? 0} influencers`);
-      setReloadKey((k) => k + 1);
+      setMsg(`Refresh failed: ${detail}`); setBusy(false); return;
+    }
+    const target = data?.requested ?? withHandle.length;
+    let changed = 0;
+    for (let i = 0; i < 22 && changed < target; i++) {
+      await new Promise((r) => setTimeout(r, 7000));
+      const { data: now } = await supabase.from('influencers').select('id, updated_at');
+      changed = (now ?? []).filter((r: any) => before.has(r.id) && r.updated_at !== before.get(r.id)).length;
     }
     setBusy(false);
+    setMsg(changed > 0 ? `Followers refreshed ✓ ${changed}/${target}` : 'Still refreshing in the background — reload shortly.');
+    setReloadKey((k) => k + 1);
   }
 
   return (

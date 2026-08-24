@@ -79,39 +79,44 @@ Deno.serve(async (req: Request) => {
     if (targets.length === 0) return json({ error: "No Instagram handle to look up" }, 400);
 
     const usernames = [...new Set(targets.map((t) => t.username!))];
-
-    // run the scraper (async start-poll-fetch, within the ~150s budget)
-    const run = (await apify("POST", `/acts/${ACTOR}/runs`, token, { usernames })).data;
-    const runId = run.id as string, datasetId = run.defaultDatasetId as string;
-    const deadline = Date.now() + 125_000;
-    let status = run.status as string;
-    while (!["SUCCEEDED", "FAILED", "ABORTED", "TIMED-OUT"].includes(status)) {
-      if (Date.now() > deadline) throw new Error(`Apify run ${runId} still ${status} after 125s`);
-      await new Promise((r) => setTimeout(r, 5000));
-      status = (await apify("GET", `/actor-runs/${runId}`, token)).data.status;
-    }
-    if (status !== "SUCCEEDED") throw new Error(`Apify run ${runId} ended ${status}`);
-
-    const items = (await apify("GET", `/datasets/${datasetId}/items`, token)) as { username?: string; followersCount?: number }[];
-    const byUser = new Map<string, number>();
-    for (const p of items) if (p.username && p.followersCount != null) byUser.set(p.username.toLowerCase(), Number(p.followersCount));
-
     const today = kuwaitToday();
-    const nowIso = new Date().toISOString();
-    let updated = 0;
-    const results: Record<string, unknown>[] = [];
 
-    for (const t of targets) {
-      const followers = byUser.get(t.username!);
-      if (followers == null) { results.push({ username: t.username, ok: false }); continue; }
-      await admin.from("influencers").update({ followers, followers_updated: today, updated_at: nowIso }).eq("id", t.id);
-      await admin.from("influencer_follower_snapshots")
-        .upsert({ influencer_id: t.id, snapshot_date: today, followers }, { onConflict: "influencer_id,snapshot_date" });
-      updated++;
-      results.push({ username: t.username, followers });
-    }
+    // The Apify scrape takes ~45s — far longer than a browser will hold the request
+    // open. So run it as a background task and return immediately; the client polls the
+    // DB (influencers.updated_at) to know when the numbers have landed.
+    const work = async () => {
+      try {
+        const run = (await apify("POST", `/acts/${ACTOR}/runs`, token, { usernames })).data;
+        const runId = run.id as string, datasetId = run.defaultDatasetId as string;
+        const deadline = Date.now() + 140_000;
+        let status = run.status as string;
+        while (!["SUCCEEDED", "FAILED", "ABORTED", "TIMED-OUT"].includes(status)) {
+          if (Date.now() > deadline) throw new Error(`Apify run ${runId} still ${status} after 140s`);
+          await new Promise((r) => setTimeout(r, 5000));
+          status = (await apify("GET", `/actor-runs/${runId}`, token)).data.status;
+        }
+        if (status !== "SUCCEEDED") throw new Error(`Apify run ${runId} ended ${status}`);
 
-    return json({ ok: true, requested: targets.length, updated, snapshot_date: today, results });
+        const items = (await apify("GET", `/datasets/${datasetId}/items`, token)) as { username?: string; followersCount?: number }[];
+        const byUser = new Map<string, number>();
+        for (const p of items) if (p.username && p.followersCount != null) byUser.set(p.username.toLowerCase(), Number(p.followersCount));
+
+        const nowIso = new Date().toISOString();
+        for (const t of targets) {
+          const followers = byUser.get(t.username!);
+          if (followers == null) continue;
+          await admin.from("influencers").update({ followers, followers_updated: today, updated_at: nowIso }).eq("id", t.id);
+          await admin.from("influencer_follower_snapshots")
+            .upsert({ influencer_id: t.id, snapshot_date: today, followers }, { onConflict: "influencer_id,snapshot_date" });
+        }
+      } catch (e) {
+        console.error("influencer-followers-sync bg error:", e instanceof Error ? e.message : String(e));
+      }
+    };
+
+    const wu = (globalThis as { EdgeRuntime?: { waitUntil: (p: Promise<unknown>) => void } }).EdgeRuntime?.waitUntil;
+    if (wu) wu(work()); else await work(); // browser → background + return now; cron → inline is fine too
+    return json({ started: true, requested: targets.length, snapshot_date: today });
   } catch (e) {
     return json({ error: e instanceof Error ? e.message : String(e) }, 500);
   }
