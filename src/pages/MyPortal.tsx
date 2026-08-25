@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
-  UserRound, CalendarDays, Clock, LogIn, LogOut, MapPin, AlertCircle, CheckCircle,
+  UserRound, CalendarDays, Clock, LogIn, LogOut, MapPin, AlertCircle, CheckCircle, Home,
   Plus, Send, X, Inbox, Pencil,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
@@ -319,10 +319,19 @@ export default function MyPortalPage() {
           <CalendarDays size={16} className="text-slate-500" />
           <h2 className="text-sm font-semibold text-slate-700">My Leave — {new Date().getFullYear()}</h2>
           {portalReady && (
-            <button onClick={() => { setShowLeaveForm((v) => !v); setShowReqForm(null); }}
-              className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 text-white text-xs font-medium hover:bg-slate-700">
-              <Plus size={13} /> Apply for Leave
-            </button>
+            <div className="ml-auto flex gap-2">
+              <button onClick={() => {
+                const t = new Date(Date.now() + 3 * 3600_000).toISOString().slice(0, 10);
+                setLvType('WFH'); setLvStart(t); setLvEnd(t); setShowLeaveForm(true); setShowReqForm(null);
+              }}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-violet-600 text-white text-xs font-medium hover:bg-violet-700">
+                <Home size={13} /> Request WFH
+              </button>
+              <button onClick={() => { setShowLeaveForm((v) => !v); setShowReqForm(null); }}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 text-white text-xs font-medium hover:bg-slate-700">
+                <Plus size={13} /> Apply for Leave
+              </button>
+            </div>
           )}
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4 text-center">

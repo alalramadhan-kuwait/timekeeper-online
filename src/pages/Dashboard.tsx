@@ -241,6 +241,7 @@ export default function Dashboard() {
 
   const can = (p: string) => canAccessPath(p, role, pageAccess);
   const stockCostView = ['admin', 'manager'].includes(role ?? ''); // cost is manager-only
+  const isManager = ['admin', 'manager'].includes(role ?? ''); // sees company-wide financials + alerts
 
   useEffect(() => {
     const today = format(new Date(), 'yyyy-MM-dd');
@@ -459,14 +460,15 @@ export default function Dashboard() {
 
   // ── Top row: business health ──
   const targetPct = d.salesTarget ? Math.round((Number(d.salesMonth) / Number(d.salesTarget)) * 100) : null;
-  // Headline strip — the few numbers to check first (4 cards)
+  // Headline strip — only the company-wide numbers this role is allowed to see. A
+  // non-financial role (e.g. marketing) sees none of these and gets its own sections below.
   const topRow: Kpi[] = [
-    { label: 'Sales this month', value: kd(d.salesMonth),
+    ...(can('/sales') ? [{ label: 'Sales this month', value: kd(d.salesMonth),
       sub: d.salesTarget != null ? `${targetPct}% of ${kd(d.salesTarget)} target` : 'set a target in Settings',
-      accent: 'text-emerald-600', link: can('/sales') ? '/sales' : undefined },
-    { label: 'Supplier balance', value: kd(d.supplierBalance), accent: Number(d.supplierBalance) > 0 ? 'text-rose-600' : 'text-emerald-600', link: can('/purchase-orders') ? '/purchase-orders' : undefined },
-    ...(d.stockValue != null ? [{ label: 'Stock value', value: kd(d.stockValue), link: can('/stock') ? '/stock' : undefined } as Kpi] : []),
-    { label: 'Action alerts', value: activeAlerts.length, accent: activeAlerts.length ? 'text-rose-600' : 'text-emerald-600', onClick: () => alertsRef.current?.scrollIntoView({ behavior: 'smooth' }) },
+      accent: 'text-emerald-600', link: '/sales' } as Kpi] : []),
+    ...(can('/purchase-orders') ? [{ label: 'Supplier balance', value: kd(d.supplierBalance), accent: Number(d.supplierBalance) > 0 ? 'text-rose-600' : 'text-emerald-600', link: '/purchase-orders' } as Kpi] : []),
+    ...(can('/stock') && d.stockValue != null ? [{ label: 'Stock value', value: kd(d.stockValue), link: '/stock' } as Kpi] : []),
+    ...(isManager ? [{ label: 'Action alerts', value: activeAlerts.length, accent: activeAlerts.length ? 'text-rose-600' : 'text-emerald-600', onClick: () => alertsRef.current?.scrollIntoView({ behavior: 'smooth' }) } as Kpi] : []),
   ];
 
   // Each section = its few must-follow KPIs; the fuller breakdown lives on the section's page.
@@ -513,18 +515,22 @@ export default function Dashboard() {
           <h1 className="text-xl font-bold text-slate-900">Dashboard</h1>
           <p className="text-sm text-slate-500">Welcome back{profile ? `, ${profile.full_name}` : ''} — business health at a glance.</p>
         </div>
-        <a href="https://alalramadhan-kuwait.github.io/watch-store-crm/#/reports" target="_blank" rel="noopener noreferrer"
-          className="flex items-center gap-2 bg-amber-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-amber-600">
-          <ExternalLink size={15} /> Store Daily Report
-        </a>
+        {can('/sales') && (
+          <a href="https://alalramadhan-kuwait.github.io/watch-store-crm/#/reports" target="_blank" rel="noopener noreferrer"
+            className="flex items-center gap-2 bg-amber-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-amber-600">
+            <ExternalLink size={15} /> Store Daily Report
+          </a>
+        )}
       </div>
 
-      {/* Top KPI row — business health */}
-      <div className="mb-6">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {topRow.map((c) => <KpiCard key={c.label} k={c} />)}
+      {/* Top KPI row — business health (only the numbers this role may see) */}
+      {topRow.length > 0 && (
+        <div className="mb-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {topRow.map((c) => <KpiCard key={c.label} k={c} />)}
+          </div>
         </div>
-      </div>
+      )}
 
       {can('/sales') && <Section title="Sales & Customers" detailLink="/sales" cards={salesCards} charts={
         <>
@@ -571,7 +577,8 @@ export default function Dashboard() {
         ) : undefined
       } />}
 
-      {/* Alerts & Actions */}
+      {/* Alerts & Actions — cross-cutting operational risks, managers only */}
+      {isManager && (<>
       <div ref={alertsRef} className="mb-3 flex items-center gap-3 scroll-mt-4">
         <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2"><Bell size={17} /> Alerts & Actions</h2>
         <Badge className="bg-slate-900 text-white border-slate-900">{activeAlerts.length}</Badge>
@@ -618,6 +625,7 @@ export default function Dashboard() {
           })()}
         </div>
       )}
+      </>)}
     </div>
   );
 }
