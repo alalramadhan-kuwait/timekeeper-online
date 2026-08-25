@@ -1,11 +1,12 @@
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, TrendingUp, Hourglass, Truck, Handshake,
-  Star, Users, CalendarRange, LogOut, Watch, Menu, Contact, Settings, Gem, ClipboardCheck, PhoneCall, Boxes, History, UserRound, Wrench, Instagram, Clapperboard, Megaphone, Sparkles, Activity, Gauge, type LucideIcon,
+  Star, Users, CalendarRange, LogOut, Watch, Menu, Contact, Settings, Gem, ClipboardCheck, PhoneCall, Boxes, History, UserRound, Wrench, Instagram, Clapperboard, Megaphone, Sparkles, Activity, Gauge, Inbox, type LucideIcon,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useAuth, Role } from '../context/AuthContext';
 import { logActivity } from '../lib/activity';
+import { loadInbox, inboxCount } from '../lib/inbox';
 
 interface NavItem {
   to: string;
@@ -25,6 +26,7 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { to: '/', label: 'Dashboard', icon: LayoutDashboard, roles: ['admin', 'manager', 'staff', 'hr', 'viewer', 'sales', 'operations'] },
       { to: '/me', label: 'My Portal', icon: UserRound, roles: ['admin', 'manager', 'staff', 'hr', 'viewer', 'sales', 'operations'] },
+      { to: '/inbox', label: 'Inbox', icon: Inbox, roles: ['admin', 'manager', 'staff', 'hr', 'viewer', 'sales', 'operations'] },
     ],
   },
   {
@@ -80,12 +82,12 @@ const NAV_GROUPS: NavGroup[] = [
 /** Flat catalogue of every page, for the per-user access editor in Settings. */
 export interface PageDef { to: string; label: string; group: string }
 export const PAGES: PageDef[] = NAV_GROUPS.flatMap((g) =>
-  g.items.filter((i) => i.to !== '/settings' && i.to !== '/me' && i.to !== '/').map((i) => ({ to: i.to, label: i.label, group: g.title ?? 'Main' })),
+  g.items.filter((i) => i.to !== '/settings' && i.to !== '/me' && i.to !== '/' && i.to !== '/inbox').map((i) => ({ to: i.to, label: i.label, group: g.title ?? 'Main' })),
 );
 
 /** Whether a user may open a page, honouring per-user overrides then role defaults. */
 export function canAccessPath(to: string, role: Role | null, pageAccess: string[] | null): boolean {
-  if (to === '/' || to === '/me') return true; // dashboard and personal portal are always available
+  if (to === '/' || to === '/me' || to === '/inbox') return true; // dashboard, personal portal and inbox are always available
   // user management stays role-gated and cannot be granted via page_access
   if (to === '/settings') return role === 'admin' || role === 'manager';
   // hidden from the menu but still reachable by URL for HR (module kept per cleanup decision)
@@ -105,11 +107,18 @@ function groupsFor(role: Role | null, pageAccess: string[] | null): NavGroup[] {
 export default function Layout() {
   const { profile, role, pageAccess, signOut, user } = useAuth();
   const [open, setOpen] = useState(false);
+  const [inboxN, setInboxN] = useState(0);
   const groups = groupsFor(role, pageAccess);
   const location = useLocation();
 
   // record page visits for the admin User Activity page (throttled, fire-and-forget)
   useEffect(() => { logActivity(user?.id, location.pathname); }, [user?.id, location.pathname]);
+
+  // inbox badge — refresh on login and whenever the user opens the Inbox (acting on items updates it)
+  useEffect(() => {
+    if (!user) { setInboxN(0); return; }
+    loadInbox(user, profile, role).then((d) => setInboxN(inboxCount(d))).catch(() => {});
+  }, [user?.id, role, location.pathname === '/inbox']);
 
   return (
     <div className="min-h-screen flex">
@@ -138,7 +147,10 @@ export default function Layout() {
                   className={({ isActive }) =>
                     `flex items-center gap-3 px-5 py-2 text-sm ${isActive ? 'bg-slate-800 text-white border-r-2 border-amber-400' : 'text-slate-300 hover:bg-slate-800/60'}`}
                 >
-                  <n.icon size={16} /> {n.label}
+                  <n.icon size={16} /> <span className="flex-1">{n.label}</span>
+                  {n.to === '/inbox' && inboxN > 0 && (
+                    <span className="min-w-[1.25rem] h-5 px-1.5 rounded-full bg-amber-400 text-slate-900 text-[11px] font-bold flex items-center justify-center">{inboxN}</span>
+                  )}
                 </NavLink>
               ))}
             </div>
