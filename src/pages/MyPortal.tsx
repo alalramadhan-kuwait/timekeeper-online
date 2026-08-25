@@ -240,7 +240,7 @@ export default function MyPortalPage() {
   const input = 'px-3 py-1.5 rounded-lg border border-slate-300 text-sm bg-white';
 
   return (
-    <div className="max-w-3xl space-y-6">
+    <div className="max-w-6xl space-y-5">
       <div>
         <h1 className="text-xl font-bold text-slate-900">My Portal</h1>
         <p className="text-sm text-slate-500">Clock in, apply for leave, track your requests — visible only to you.</p>
@@ -313,6 +313,9 @@ export default function MyPortalPage() {
         )}
       </div>
 
+      {/* two columns on desktop: leave/actions | requests + HR */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
+        <div className="space-y-5">
       {/* ── 2/3 · My Leave + apply ── */}
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
         <div className="flex items-center gap-2 mb-4 flex-wrap">
@@ -408,6 +411,8 @@ export default function MyPortalPage() {
         </div>
       )}
 
+        </div>
+        <div className="space-y-5">
       {/* ── 4 · My Requests ── */}
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
         <div className="flex items-center gap-2 mb-3">
@@ -459,6 +464,8 @@ export default function MyPortalPage() {
             <Info label="Status" value={emp.status} />
           </div>
         )}
+      </div>
+        </div>
       </div>
     </div>
   );
