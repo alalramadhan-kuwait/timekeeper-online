@@ -266,12 +266,12 @@ function ManagerDashboard() {
         {(['list', 'week'] as const).map((v) => (
           <button key={v} onClick={() => setView(v)}
             className={`px-4 py-1.5 ${view === v ? 'bg-slate-900 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}>
-            {v === 'list' ? 'List' : 'Week calendar'}
+            {v === 'list' ? 'List' : 'Calendar'}
           </button>
         ))}
       </div>
 
-      {view === 'week' ? <WeekCalendar employees={activeEmployees} today={today} workStart={workStart} /> : (<>
+      {view === 'week' ? <Calendar employees={activeEmployees} today={today} workStart={workStart} /> : (<>
       {/* filters */}
       <div className="flex flex-wrap gap-2">
         <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className={input} />
@@ -506,36 +506,49 @@ function ManagerDashboard() {
   );
 }
 
-// ── Week calendar: one row per employee, one column per day. Flags a day the person
-// missed while others were in and they're not on approved leave ("absent without reason"). ──
+// ── Attendance calendar: one row per employee, one column per day (month or week).
+// Flags a day the person missed while others were in and they had no approved leave
+// ("absent without reason"). Employees can be hidden (persisted in localStorage). ──
 const ymdAdd = (ymd: string, n: number) => { const d = new Date(`${ymd}T12:00:00Z`); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
 const satOfWeek = (ymd: string) => ymdAdd(ymd, -((new Date(`${ymd}T12:00:00Z`).getUTCDay() + 1) % 7)); // Kuwait week starts Saturday
-const DOW = ['Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+const monthFirst = (ymd: string) => `${ymd.slice(0, 8)}01`;
+const monthShift = (ymd: string, n: number) => { const [y, m] = ymd.split('-').map(Number); return new Date(Date.UTC(y, m - 1 + n, 1)).toISOString().slice(0, 10); };
+const monthDays = (ymd: string) => { const [y, m] = ymd.split('-').map(Number); const last = new Date(Date.UTC(y, m, 0)).getUTCDate(); return Array.from({ length: last }, (_, i) => `${y}-${String(m).padStart(2, '0')}-${String(i + 1).padStart(2, '0')}`); };
+const dowLetter = (ymd: string) => ['S', 'M', 'T', 'W', 'T', 'F', 'S'][new Date(`${ymd}T12:00:00Z`).getUTCDay()];
+const monthLabel = (ymd: string) => new Date(`${ymd}T12:00:00Z`).toLocaleDateString('en-GB', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+const HIDE_KEY = 'att-cal-hidden';
 
-function WeekCalendar({ employees, today, workStart }: { employees: EmpLite[]; today: string; workStart: string }) {
-  const [weekStart, setWeekStart] = useState(() => satOfWeek(today));
+function Calendar({ employees, today, workStart }: { employees: EmpLite[]; today: string; workStart: string }) {
+  const [period, setPeriod] = useState<'month' | 'week'>('month');
+  const [anchor, setAnchor] = useState(() => monthFirst(today)); // month-first or any day in the week
   const [recs, setRecs] = useState<AttendanceRecord[]>([]);
   const [leaves, setLeaves] = useState<LeaveLite[]>([]);
   const [loading, setLoading] = useState(true);
-  const days = useMemo(() => Array.from({ length: 7 }, (_, i) => ymdAdd(weekStart, i)), [weekStart]);
-  const weekEnd = days[6];
-  const linked = useMemo(() => employees.filter((e) => e.user_id), [employees]);
+  const [hidden, setHidden] = useState<Set<string>>(() => { try { return new Set<string>(JSON.parse(localStorage.getItem(HIDE_KEY) || '[]')); } catch { return new Set(); } });
+
+  const days = useMemo(() => period === 'month' ? monthDays(anchor) : Array.from({ length: 7 }, (_, i) => ymdAdd(satOfWeek(anchor), i)), [period, anchor]);
+  const rangeStart = days[0], rangeEnd = days[days.length - 1];
 
   useEffect(() => {
     setLoading(true);
     Promise.all([
       supabase.from('attendance_records').select('*')
-        .gte('clock_in', `${weekStart}T00:00:00+03:00`).lte('clock_in', `${weekEnd}T23:59:59+03:00`),
+        .gte('clock_in', `${rangeStart}T00:00:00+03:00`).lte('clock_in', `${rangeEnd}T23:59:59+03:00`),
       supabase.from('leave_records').select('employee_id, leave_type, leave_start, leave_end, approval_status')
-        .eq('approval_status', 'Approved').lte('leave_start', weekEnd).gte('leave_end', weekStart),
+        .eq('approval_status', 'Approved').lte('leave_start', rangeEnd).gte('leave_end', rangeStart),
     ]).then(([r, l]) => {
       setRecs((r.data as AttendanceRecord[]) ?? []);
       setLeaves((l.data as LeaveLite[]) ?? []);
       setLoading(false);
     });
-  }, [weekStart, weekEnd]);
+  }, [rangeStart, rangeEnd]);
 
-  // a day counts as a working day if anyone clocked in — avoids flagging holidays/off-days
+  const toggleHide = (id: string) => setHidden((h) => { const n = new Set(h); n.has(id) ? n.delete(id) : n.add(id); localStorage.setItem(HIDE_KEY, JSON.stringify([...n])); return n; });
+  const clearHidden = () => { setHidden(new Set()); localStorage.setItem(HIDE_KEY, '[]'); };
+
+  const rows = useMemo(() => employees.filter((e) => !hidden.has(e.id)), [employees, hidden]);
+  const hiddenList = useMemo(() => employees.filter((e) => hidden.has(e.id)), [employees, hidden]);
+
   const workingDays = useMemo(() => new Set(recs.map((r) => kuwaitDate(r.clock_in))), [recs]);
   const recByCell = useMemo(() => {
     const m = new Map<string, AttendanceRecord>();
@@ -544,68 +557,78 @@ function WeekCalendar({ employees, today, workStart }: { employees: EmpLite[]; t
   }, [recs]);
   const leaveOn = (empId: string, day: string) => leaves.find((l) => l.employee_id === empId && l.leave_start <= day && l.leave_end >= day);
 
-  type Cell = { kind: 'present' | 'late' | 'leave' | 'absent' | 'off' | 'future'; label?: string };
-  const cellFor = (e: EmpLite, day: string): Cell => {
+  type Kind = 'present' | 'late' | 'leave' | 'absent' | 'off' | 'future';
+  const cellFor = (e: EmpLite, day: string): { kind: Kind; label?: string } => {
+    if (!e.user_id) return { kind: 'off' }; // no login → can't clock in, don't flag absent
     if (day > today) return { kind: 'future' };
-    const r = e.user_id ? recByCell.get(`${e.user_id}|${day}`) : undefined;
+    const r = recByCell.get(`${e.user_id}|${day}`);
     if (r) return { kind: r.is_late && !r.justified ? 'late' : 'present' };
     const lv = leaveOn(e.id, day);
     if (lv) return { kind: 'leave', label: lv.leave_type };
     if (workingDays.has(day)) return { kind: 'absent' };
     return { kind: 'off' };
   };
-  const absentCount = useMemo(() => linked.reduce((s, e) => s + days.filter((d) => cellFor(e, d).kind === 'absent').length, 0), [linked, days, recByCell, leaves, workingDays]);
+  const absentCount = useMemo(() => rows.reduce((s, e) => s + days.filter((d) => cellFor(e, d).kind === 'absent').length, 0), [rows, days, recByCell, leaves, workingDays]);
 
-  const CELL: Record<Cell['kind'], { cls: string; txt: string }> = {
-    present: { cls: 'bg-emerald-100 text-emerald-700', txt: '✓' },
-    late: { cls: 'bg-amber-100 text-amber-700', txt: 'Late' },
-    leave: { cls: 'bg-sky-100 text-sky-700', txt: 'Leave' },
-    absent: { cls: 'bg-rose-100 text-rose-700 font-semibold', txt: 'Absent' },
-    off: { cls: 'text-slate-300', txt: '—' },
-    future: { cls: 'text-slate-200', txt: '·' },
+  const CELL: Record<Kind, string> = {
+    present: 'bg-emerald-400', late: 'bg-amber-400', leave: 'bg-sky-300',
+    absent: 'bg-rose-500', off: 'bg-slate-100', future: 'bg-transparent border border-dashed border-slate-200',
   };
+  const shift = (n: number) => setAnchor((a) => period === 'month' ? monthShift(a, n) : ymdAdd(a, n * 7));
+  const goCurrent = () => setAnchor(period === 'month' ? monthFirst(today) : today);
+  const switchPeriod = (p: 'month' | 'week') => { setPeriod(p); setAnchor(p === 'month' ? monthFirst(today) : today); };
 
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <button onClick={() => setWeekStart(ymdAdd(weekStart, -7))} className="px-2 py-1 rounded-lg border border-slate-300 text-sm hover:bg-slate-50">←</button>
-          <span className="text-sm font-medium text-slate-700">{weekStart} → {weekEnd}</span>
-          <button onClick={() => setWeekStart(ymdAdd(weekStart, 7))} className="px-2 py-1 rounded-lg border border-slate-300 text-sm hover:bg-slate-50">→</button>
-          <button onClick={() => setWeekStart(satOfWeek(today))} className="px-2 py-1 rounded-lg border border-slate-300 text-sm hover:bg-slate-50">This week</button>
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex rounded-lg border border-slate-300 overflow-hidden text-xs">
+            {(['month', 'week'] as const).map((p) => (
+              <button key={p} onClick={() => switchPeriod(p)} className={`px-3 py-1.5 capitalize ${period === p ? 'bg-slate-800 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}>{p}</button>
+            ))}
+          </div>
+          <button onClick={() => shift(-1)} className="px-2 py-1 rounded-lg border border-slate-300 text-sm hover:bg-slate-50">←</button>
+          <span className="text-sm font-medium text-slate-700 min-w-[9rem] text-center">{period === 'month' ? monthLabel(anchor) : `${rangeStart} → ${rangeEnd}`}</span>
+          <button onClick={() => shift(1)} className="px-2 py-1 rounded-lg border border-slate-300 text-sm hover:bg-slate-50">→</button>
+          <button onClick={goCurrent} className="px-2 py-1 rounded-lg border border-slate-300 text-sm hover:bg-slate-50">This {period}</button>
         </div>
-        <div className="flex items-center gap-3 text-xs">
-          {absentCount > 0
-            ? <Badge className="bg-rose-100 text-rose-700 border-rose-200">{absentCount} unexplained absence{absentCount > 1 ? 's' : ''} this week</Badge>
-            : <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">No unexplained absences</Badge>}
-        </div>
+        {absentCount > 0
+          ? <Badge className="bg-rose-100 text-rose-700 border-rose-200">{absentCount} unexplained absence{absentCount > 1 ? 's' : ''}</Badge>
+          : <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">No unexplained absences</Badge>}
       </div>
 
       {loading ? <Spinner /> : (
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="text-sm border-collapse">
             <thead>
               <tr className="text-xs text-slate-500 border-b border-slate-200">
-                <th className="text-left px-3 py-2 sticky left-0 bg-white">Employee</th>
-                {days.map((d, i) => (
-                  <th key={d} className={`px-2 py-2 text-center whitespace-nowrap ${d === today ? 'bg-slate-50' : ''}`}>
-                    <div className="font-semibold text-slate-600">{DOW[i]}</div>
-                    <div className="text-[10px] text-slate-400">{d.slice(5)}</div>
+                <th className="text-left px-3 py-2 sticky left-0 bg-white z-10 min-w-[10rem]">Employee</th>
+                {days.map((d) => (
+                  <th key={d} className={`px-1 py-1 text-center ${d === today ? 'bg-slate-100' : ''}`}>
+                    <div className="text-[9px] text-slate-400 leading-tight">{dowLetter(d)}</div>
+                    <div className="font-semibold text-slate-600 leading-tight">{Number(d.slice(8))}</div>
                   </th>
                 ))}
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {linked.length === 0 && <tr><td colSpan={8} className="px-3 py-6 text-center text-slate-400 text-sm">No employees with a linked account yet — link accounts in HR → Employees.</td></tr>}
-              {linked.map((e) => (
-                <tr key={e.id} className="hover:bg-slate-50">
-                  <td className="px-3 py-2 font-medium text-slate-700 whitespace-nowrap sticky left-0 bg-white">{e.full_name}</td>
+              {rows.length === 0 && <tr><td colSpan={days.length + 1} className="px-3 py-6 text-center text-slate-400 text-sm">No employees to show — link accounts in HR → Employees, or unhide someone below.</td></tr>}
+              {rows.map((e) => (
+                <tr key={e.id} className="hover:bg-slate-50/60">
+                  <td className="px-3 py-1.5 whitespace-nowrap sticky left-0 bg-white z-10">
+                    <div className="flex items-center gap-2 group">
+                      <span className="font-medium text-slate-700">{e.full_name}</span>
+                      {!e.user_id && <span className="text-[9px] text-slate-400 border border-slate-200 rounded px-1">no account</span>}
+                      <button onClick={() => toggleHide(e.id)} title="Hide from calendar" className="text-slate-300 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-opacity ml-auto">
+                        <X size={13} />
+                      </button>
+                    </div>
+                  </td>
                   {days.map((d) => {
                     const c = cellFor(e, d);
-                    const st = CELL[c.kind];
                     return (
-                      <td key={d} className={`px-2 py-2 text-center ${d === today ? 'bg-slate-50/60' : ''}`}>
-                        <span className={`inline-block min-w-[3rem] px-2 py-0.5 rounded text-[11px] ${st.cls}`} title={c.label}>{c.label ?? st.txt}</span>
+                      <td key={d} className={`px-1 py-1 text-center ${d === today ? 'bg-slate-50' : ''}`}>
+                        <span className={`inline-block w-6 h-6 rounded ${CELL[c.kind]}`} title={`${e.full_name} · ${d}${c.label ? ` · ${c.label}` : c.kind === 'absent' ? ' · Absent (no reason)' : c.kind === 'late' ? ' · Late' : c.kind === 'present' ? ' · Present' : ''}`} />
                       </td>
                     );
                   })}
@@ -615,13 +638,26 @@ function WeekCalendar({ employees, today, workStart }: { employees: EmpLite[]; t
           </table>
         </div>
       )}
+
       <div className="flex flex-wrap gap-3 text-[11px] text-slate-500">
-        <span><span className="inline-block w-3 h-3 rounded bg-emerald-100 align-middle" /> Present</span>
-        <span><span className="inline-block w-3 h-3 rounded bg-amber-100 align-middle" /> Late</span>
-        <span><span className="inline-block w-3 h-3 rounded bg-sky-100 align-middle" /> Leave / WFH</span>
-        <span><span className="inline-block w-3 h-3 rounded bg-rose-100 align-middle" /> Absent (missed a working day, no leave)</span>
+        <span><span className="inline-block w-3 h-3 rounded bg-emerald-400 align-middle" /> Present</span>
+        <span><span className="inline-block w-3 h-3 rounded bg-amber-400 align-middle" /> Late</span>
+        <span><span className="inline-block w-3 h-3 rounded bg-sky-300 align-middle" /> Leave / WFH</span>
+        <span><span className="inline-block w-3 h-3 rounded bg-rose-500 align-middle" /> Absent (missed a working day, no leave)</span>
         <span><span className="inline-block w-3 h-3 rounded bg-slate-100 align-middle" /> Off / no working day</span>
       </div>
+
+      {hiddenList.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2 text-xs">
+          <span className="text-slate-400">Hidden:</span>
+          {hiddenList.map((e) => (
+            <button key={e.id} onClick={() => toggleHide(e.id)} className="px-2 py-0.5 rounded-full border border-slate-300 text-slate-600 hover:bg-slate-50 flex items-center gap-1">
+              {e.full_name} <span className="text-blue-600">+ show</span>
+            </button>
+          ))}
+          <button onClick={clearHidden} className="text-blue-600 hover:underline">Show all</button>
+        </div>
+      )}
     </div>
   );
 }
