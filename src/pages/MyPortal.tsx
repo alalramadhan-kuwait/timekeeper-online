@@ -235,14 +235,7 @@ export default function MyPortalPage() {
     })),
   ].sort((a, b) => (b.when ?? '').localeCompare(a.when ?? '')), [leaves, requests]);
 
-  if (loading) return <Spinner />;
-
-  const clockedIn = !!todayRec;
-  const clockedOut = !!todayRec?.clock_out;
-  const lateClass = todayRec ? lateClassOf(todayRec.clock_in, workStart) : null;
-  const portalReady = !!emp && emp.portal_enabled !== false;
-
-  // this week's attendance summary (Kuwait week, Sat→now)
+  // this week's attendance summary (Kuwait week, Sat→now) — must stay above the early return (Rules of Hooks)
   const weekStats = useMemo(() => {
     const byDay = new Map<string, number>();
     for (const r of weekRecs) byDay.set(kwDate(r.clock_in), (byDay.get(kwDate(r.clock_in)) ?? 0) + hoursBetween(r.clock_in, r.clock_out));
@@ -251,6 +244,13 @@ export default function MyPortalPage() {
     const late = weekRecs.filter((r) => r.is_late && !r.justified).length;
     return { days, hours, onTime: Math.max(0, days - late), late };
   }, [weekRecs]);
+
+  if (loading) return <Spinner />;
+
+  const clockedIn = !!todayRec;
+  const clockedOut = !!todayRec?.clock_out;
+  const lateClass = todayRec ? lateClassOf(todayRec.clock_in, workStart) : null;
+  const portalReady = !!emp && emp.portal_enabled !== false;
 
   const Info = ({ label, value }: { label: string; value: React.ReactNode }) => (
     <div><div className="text-xs text-slate-400">{label}</div><div className="text-sm font-medium text-slate-700">{value ?? '—'}</div></div>
