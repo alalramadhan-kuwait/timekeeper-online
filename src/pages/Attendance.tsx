@@ -546,8 +546,22 @@ function Calendar({ employees, today, workStart }: { employees: EmpLite[]; today
   const toggleHide = (id: string) => setHidden((h) => { const n = new Set(h); n.has(id) ? n.delete(id) : n.add(id); localStorage.setItem(HIDE_KEY, JSON.stringify([...n])); return n; });
   const clearHidden = () => { setHidden(new Set()); localStorage.setItem(HIDE_KEY, '[]'); };
 
-  const rows = useMemo(() => employees.filter((e) => !hidden.has(e.id)), [employees, hidden]);
-  const hiddenList = useMemo(() => employees.filter((e) => hidden.has(e.id)), [employees, hidden]);
+  // Roster = HR employees + anyone who clocked in this period but has no HR record
+  // (e.g. a profile that self-clocks without an employees row). Keyed by user_id.
+  const roster = useMemo(() => {
+    const empUserIds = new Set(employees.filter((e) => e.user_id).map((e) => e.user_id));
+    const extra: EmpLite[] = [];
+    const seen = new Set<string>();
+    for (const r of recs) {
+      if (r.user_id && !empUserIds.has(r.user_id) && !seen.has(r.user_id)) {
+        seen.add(r.user_id);
+        extra.push({ id: r.user_id, full_name: (r.employee_name || 'Unknown').trim(), location: null, job_title: null, status: 'Active', user_id: r.user_id });
+      }
+    }
+    return [...employees, ...extra].sort((a, b) => a.full_name.localeCompare(b.full_name));
+  }, [employees, recs]);
+  const rows = useMemo(() => roster.filter((e) => !hidden.has(e.id)), [roster, hidden]);
+  const hiddenList = useMemo(() => roster.filter((e) => hidden.has(e.id)), [roster, hidden]);
 
   const workingDays = useMemo(() => new Set(recs.map((r) => kuwaitDate(r.clock_in))), [recs]);
   const recByCell = useMemo(() => {
