@@ -36,6 +36,46 @@ const durationStr = (a: string, b: string | null) => {
   const mins = Math.floor(((b ? new Date(b) : new Date()).getTime() - new Date(a).getTime()) / 60000);
   return mins >= 60 ? `${Math.floor(mins / 60)}h ${mins % 60}m` : `${mins}m`;
 };
+// decimal hours → "32h 12m"; live/elapsed duration between two instants → "1h 11m"
+const hm = (hours: number) => { const m = Math.max(0, Math.round(hours * 60)); return `${Math.floor(m / 60)}h ${String(m % 60).padStart(2, '0')}m`; };
+const fmtDur = (aIso: string, bIso: string | null, now: number) => {
+  const mins = Math.max(0, Math.floor(((bIso ? new Date(bIso).getTime() : now) - new Date(aIso).getTime()) / 60000));
+  return `${Math.floor(mins / 60)}h ${String(mins % 60).padStart(2, '0')}m`;
+};
+const fmtDate = (iso?: string | null) => (iso ? new Date(`${iso}`).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Asia/Kuwait' }) : '');
+const dayLabel = (ymd?: string | null) => (ymd ? new Date(`${ymd}T12:00:00Z`).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' }) : '');
+
+// one consistent status system — dot + text (never colour alone)
+const STATUS_STYLE: Record<string, { dot: string; cls: string }> = {
+  Pending: { dot: 'bg-amber-500', cls: 'bg-amber-50 text-amber-700 border-amber-200' },
+  Approved: { dot: 'bg-emerald-500', cls: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+  Completed: { dot: 'bg-emerald-500', cls: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+  Rejected: { dot: 'bg-rose-500', cls: 'bg-rose-50 text-rose-700 border-rose-200' },
+  Cancelled: { dot: 'bg-slate-400', cls: 'bg-slate-100 text-slate-500 border-slate-200' },
+};
+const StatusPill = ({ s }: { s: string }) => {
+  const st = STATUS_STYLE[s] ?? { dot: 'bg-slate-400', cls: 'bg-slate-100 text-slate-600 border-slate-200' };
+  return <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border text-xs font-medium whitespace-nowrap ${st.cls}`}><span className={`h-1.5 w-1.5 rounded-full ${st.dot}`} aria-hidden />{s}</span>;
+};
+const HrInfo = ({ label, value }: { label: string; value?: React.ReactNode }) => (
+  <div>
+    <div className="text-xs text-slate-400 mb-1">{label}</div>
+    <div className="text-sm font-medium text-slate-700 break-words">
+      {value == null || value === '' ? <span className="text-slate-400 font-normal">Not provided</span> : value}
+    </div>
+  </div>
+);
+const SkeletonBand = ({ h }: { h: string }) => <div className={`bg-white rounded-2xl border border-slate-200 ${h} animate-pulse`} />;
+function PortalSkeleton() {
+  return (
+    <div className="max-w-6xl space-y-5">
+      <div className="h-12 w-56 bg-slate-100 rounded-lg animate-pulse" />
+      <SkeletonBand h="h-56" />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5"><SkeletonBand h="h-64" /><SkeletonBand h="h-64" /></div>
+      <SkeletonBand h="h-40" />
+    </div>
+  );
+}
 
 const STATUS_BADGE: Record<string, string> = {
   Approved: 'bg-emerald-100 text-emerald-700 border-emerald-200',
@@ -60,9 +100,16 @@ export default function MyPortalPage() {
   const [geofences, setGeofences] = useState<Geofence[]>([]);
   const [workStart, setWorkStart] = useState('09:00');
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [geoLoading, setGeoLoading] = useState(false);
   const [geoError, setGeoError] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
+  const [nowMs, setNowMs] = useState(Date.now());
+  const [showAllReq, setShowAllReq] = useState(false);
+  const [openReqId, setOpenReqId] = useState<string | null>(null);
+
+  // tick every 30s so the live shift duration updates while clocked in
+  useEffect(() => { const t = setInterval(() => setNowMs(Date.now()), 30_000); return () => clearInterval(t); }, []);
 
   // forms
   const [showLeaveForm, setShowLeaveForm] = useState(false);
@@ -77,6 +124,8 @@ export default function MyPortalPage() {
 
   async function load() {
     if (!user) { setLoading(false); return; }
+    setLoadError(false);
+    try {
     const today = todayKuwait();
     const weekStart = satOfWeek(today);
     const [empQ, geoQ, setQ, attQ, reqQ, weekQ] = await Promise.all([
@@ -102,6 +151,7 @@ export default function MyPortalPage() {
       const { data: lv } = await supabase.from('leave_records').select('*').eq('employee_id', mine.id).order('created_at', { ascending: false });
       setLeaves((lv as LeaveRec[]) ?? []);
     }
+    } catch { setLoadError(true); }
     setLoading(false);
   }
   useEffect(() => { load(); }, [user?.id]);
@@ -226,14 +276,22 @@ export default function MyPortalPage() {
   const allRequests = useMemo(() => [
     ...leaves.map((l) => ({
       id: `lv-${l.id}`, when: l.created_at,
-      label: `${l.leave_type} leave · ${l.leave_start} → ${l.leave_end} (${l.days}d)`,
+      title: `${l.leave_type === 'WFH' ? 'WFH' : `${l.leave_type} leave`}${l.days ? ` — ${l.days} day${Number(l.days) > 1 ? 's' : ''}` : ''}`,
+      subtitle: l.leave_start === l.leave_end ? l.leave_start : `${l.leave_start} → ${l.leave_end}`,
       type: l.leave_type, status: l.approval_status, remarks: l.notes, doc: l.document_url,
     })),
     ...requests.map((r) => ({
-      id: `rq-${r.id}`, when: r.created_at, label: `${r.request_type}: ${r.details}`,
+      id: `rq-${r.id}`, when: r.created_at,
+      title: r.request_type, subtitle: r.details,
       type: r.request_type, status: r.status, remarks: r.manager_remarks, doc: null as string | null,
     })),
   ].sort((a, b) => (b.when ?? '').localeCompare(a.when ?? '')), [leaves, requests]);
+
+  // is today an approved leave / WFH day? (drives the attendance banner)
+  const todayLeave = useMemo(() => {
+    const t = todayKuwait();
+    return leaves.find((l) => l.approval_status === 'Approved' && l.leave_start <= t && l.leave_end >= t) ?? null;
+  }, [leaves]);
 
   // this week's attendance summary (Kuwait week, Sat→now) — must stay above the early return (Rules of Hooks)
   const weekStats = useMemo(() => {
@@ -245,262 +303,303 @@ export default function MyPortalPage() {
     return { days, hours, onTime: Math.max(0, days - late), late };
   }, [weekRecs]);
 
-  if (loading) return <Spinner />;
+  if (loading) return <PortalSkeleton />;
+  if (loadError) return (
+    <div className="max-w-6xl">
+      <div className="bg-white rounded-2xl border border-slate-200 p-10 text-center">
+        <AlertCircle size={36} className="mx-auto text-rose-500 mb-3" />
+        <div className="font-semibold text-slate-700">Your portal data couldn't be loaded</div>
+        <button onClick={() => { setLoading(true); load(); }}
+          className="mt-4 px-4 py-2 rounded-lg bg-slate-900 text-white text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2">Try again</button>
+      </div>
+    </div>
+  );
 
   const clockedIn = !!todayRec;
   const clockedOut = !!todayRec?.clock_out;
   const lateClass = todayRec ? lateClassOf(todayRec.clock_in, workStart) : null;
+  const lateLabel = lateClass && lateClass !== 'On time' && !todayRec?.justified ? lateClass : null;
   const portalReady = !!emp && emp.portal_enabled !== false;
+  const onPaidLeaveToday = !!todayLeave && todayLeave.leave_type !== 'WFH';
+  const wfhToday = todayLeave?.leave_type === 'WFH';
+  const input = 'px-3 py-2 rounded-lg border border-slate-300 text-sm bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400';
 
-  const Info = ({ label, value }: { label: string; value: React.ReactNode }) => (
-    <div><div className="text-xs text-slate-400">{label}</div><div className="text-sm font-medium text-slate-700">{value ?? '—'}</div></div>
-  );
-  const input = 'px-3 py-1.5 rounded-lg border border-slate-300 text-sm bg-white';
+  // header status line
+  const headerStatus = onPaidLeaveToday ? `On ${todayLeave!.leave_type.toLowerCase()} leave today`
+    : wfhToday ? 'Working from home today'
+    : clockedIn && !clockedOut ? `Clocked in since ${fmtTime(todayRec!.clock_in)}${lateLabel ? ` · ${lateLabel}` : ''}`
+    : clockedOut ? `Clocked out · ${fmtTime(todayRec!.clock_out!)}`
+    : 'Not clocked in';
+  const headerDot = onPaidLeaveToday ? 'bg-sky-500' : wfhToday ? 'bg-violet-500' : clockedIn && !clockedOut ? (lateLabel ? 'bg-amber-500' : 'bg-emerald-500') : clockedOut ? 'bg-slate-400' : 'bg-slate-300';
+
+  // on time until = work start + 1h grace
+  const graceEnd = (() => { const [h, m] = workStart.split(':').map(Number); const t = h * 60 + m + 60; const hr = Math.floor(t / 60), mn = t % 60; const ap = hr >= 12 ? 'PM' : 'AM'; return `${((hr + 11) % 12) + 1}:${String(mn).padStart(2, '0')} ${ap}`; })();
+
+  const entitlement = leaveSummary.entitlement;
+  const usedPct = entitlement > 0 ? Math.min(100, Math.round((leaveSummary.annualTaken / entitlement) * 100)) : 0;
+  const shownRequests = showAllReq ? allRequests.slice(0, 20) : allRequests.slice(0, 4);
+
+  const clockBusy = geoLoading;
+  const btnFocus = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2';
 
   return (
     <div className="max-w-6xl space-y-5">
+      {/* ── Band 1 · Header ── */}
       <div>
-        <h1 className="text-xl font-bold text-slate-900">My Portal</h1>
-        <p className="text-sm text-slate-500">Clock in, apply for leave, track your requests — visible only to you.</p>
+        <h1 className="text-2xl font-bold text-slate-900">My Portal</h1>
+        <p className="mt-1 text-sm text-slate-500 flex items-center gap-2">
+          <span className={`h-2 w-2 rounded-full ${headerDot}`} aria-hidden />{headerStatus}
+        </p>
       </div>
 
       {msg && (
-        <div className={`px-4 py-2.5 rounded-lg text-sm border ${msg.startsWith('Could') || msg.startsWith('Pick') || msg.startsWith('Describe') ? 'bg-red-50 border-red-200 text-red-700' : 'bg-emerald-50 border-emerald-200 text-emerald-700'}`}>
+        <div role="status" className={`px-4 py-2.5 rounded-lg text-sm border ${msg.startsWith('Could') || msg.startsWith('Pick') || msg.startsWith('Describe') ? 'bg-red-50 border-red-200 text-red-700' : 'bg-emerald-50 border-emerald-200 text-emerald-700'}`}>
           {msg}
         </div>
       )}
 
-      {/* ── 1 · Today Attendance ── */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
-        <div className="flex items-center gap-2 mb-4 flex-wrap">
-          <Clock size={18} className="text-slate-500" />
-          <h2 className="text-sm font-semibold text-slate-700">Today's Attendance</h2>
-          {clockedIn && lateClass && (
-            <Badge className={todayRec!.justified ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : LATE_STYLE[lateClass]}>
-              {todayRec!.justified ? 'Justified' : lateClass}
-            </Badge>
-          )}
-          {clockedIn && todayRec!.location && <span className="text-xs text-slate-400 flex items-center gap-1"><MapPin size={11} />{todayRec!.location}</span>}
-          {!clockedIn && <Badge className="bg-slate-100 text-slate-500 border-slate-200">Not clocked in</Badge>}
+      {/* ── Band 2 · Today's Attendance (strongest priority) ── */}
+      <section className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div>
+            <h2 className="text-base font-semibold text-slate-800">Today's Attendance</h2>
+            <div className="mt-1 flex items-center gap-2 text-sm text-slate-500">
+              <span>{emp?.location ?? todayRec?.location ?? 'Timekeeper HQ'}</span>
+              {lateLabel && <><span className="text-slate-300" aria-hidden>·</span><span className="inline-flex items-center gap-1.5 text-amber-700"><span className="h-1.5 w-1.5 rounded-full bg-amber-500" aria-hidden />{lateLabel}</span></>}
+              {todayRec?.justified && <><span className="text-slate-300" aria-hidden>·</span><span className="text-emerald-600">Justified</span></>}
+            </div>
+          </div>
+          {/* only the current valid action, strongest button on the page */}
+          <div className="shrink-0">
+            {clockedOut ? (
+              <span className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 font-semibold"><CheckCircle size={18} aria-hidden /> Completed · {fmtDur(todayRec!.clock_in, todayRec!.clock_out, nowMs)}</span>
+            ) : onPaidLeaveToday ? (
+              <span className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-sky-50 border border-sky-200 text-sky-700 font-semibold">On {todayLeave!.leave_type.toLowerCase()} leave</span>
+            ) : !clockedIn ? (
+              <button onClick={clockIn} disabled={clockBusy || geofences.length === 0}
+                className={`inline-flex items-center gap-2 px-7 py-3.5 min-h-[52px] rounded-xl bg-emerald-600 text-white text-base font-semibold hover:bg-emerald-700 disabled:opacity-50 transition-colors ${btnFocus} focus-visible:ring-emerald-400`}>
+                {clockBusy ? <Spinner /> : <LogIn size={20} aria-hidden />}{clockBusy ? 'Getting location…' : 'Clock In'}
+              </button>
+            ) : (
+              <button onClick={clockOut} disabled={clockBusy}
+                className={`inline-flex items-center gap-2 px-7 py-3.5 min-h-[52px] rounded-xl bg-slate-900 text-white text-base font-semibold hover:bg-slate-800 disabled:opacity-50 transition-colors ${btnFocus} focus-visible:ring-slate-400`}>
+                {clockBusy ? <Spinner /> : <LogOut size={20} aria-hidden />}{clockBusy ? 'Getting location…' : 'Clock Out'}
+              </button>
+            )}
+          </div>
         </div>
 
-        {/* This week summary */}
-        <div className="grid grid-cols-3 gap-3 mb-5">
-          <div className="rounded-xl bg-blue-50 border border-blue-100 p-3">
-            <div className="text-[11px] font-medium text-blue-500 uppercase tracking-wide mb-0.5">This week</div>
-            <div className="text-2xl font-bold text-blue-700 leading-none">{weekStats.hours.toFixed(1)}<span className="text-sm font-medium text-blue-400 ml-1">hrs</span></div>
-          </div>
-          <div className="rounded-xl bg-slate-50 border border-slate-200 p-3">
-            <div className="text-[11px] font-medium text-slate-400 uppercase tracking-wide mb-0.5">Days present</div>
-            <div className="text-2xl font-bold text-slate-800 leading-none">{weekStats.days}</div>
-          </div>
-          <div className="rounded-xl bg-emerald-50 border border-emerald-100 p-3">
-            <div className="text-[11px] font-medium text-emerald-500 uppercase tracking-wide mb-0.5">On time</div>
-            <div className="text-2xl font-bold text-emerald-700 leading-none">{weekStats.onTime}<span className="text-sm font-medium text-emerald-400">/{weekStats.days}</span></div>
-          </div>
+        {/* Weekly summary — plain values, hours are hours and days are days */}
+        <dl className="mt-5 grid grid-cols-3 gap-4 border-y border-slate-100 py-4">
+          <div><dt className="text-xs text-slate-400 uppercase tracking-wide">This week</dt><dd className="mt-1 text-xl font-bold text-slate-800">{hm(weekStats.hours)}</dd></div>
+          <div><dt className="text-xs text-slate-400 uppercase tracking-wide">Days present</dt><dd className="mt-1 text-xl font-bold text-slate-800">{weekStats.days} {weekStats.days === 1 ? 'day' : 'days'}</dd></div>
+          <div><dt className="text-xs text-slate-400 uppercase tracking-wide">On time</dt><dd className="mt-1 text-xl font-bold text-slate-800">{weekStats.onTime} {weekStats.onTime === 1 ? 'day' : 'days'}</dd></div>
+        </dl>
+
+        {/* Today's punch — one horizontal strip */}
+        <div className="mt-4 flex flex-wrap items-center gap-x-8 gap-y-2">
+          <div className="flex items-baseline gap-2"><span className="text-[11px] font-semibold text-slate-400 uppercase">In</span><span className="text-base font-semibold text-slate-800">{clockedIn ? fmtTime(todayRec!.clock_in) : '—'}</span></div>
+          <div className="flex items-baseline gap-2"><span className="text-[11px] font-semibold text-slate-400 uppercase">Out</span><span className="text-base font-semibold text-slate-800">{clockedOut ? fmtTime(todayRec!.clock_out!) : '—'}</span></div>
+          <div className="flex items-baseline gap-2"><span className="text-[11px] font-semibold text-slate-400 uppercase">Duration</span><span className="text-base font-semibold text-slate-800">{clockedIn ? fmtDur(todayRec!.clock_in, todayRec!.clock_out, nowMs) : '—'}</span></div>
         </div>
 
-        {clockedIn && (
-          <div className="grid grid-cols-3 gap-4 mb-5 text-center">
-            <div className="bg-slate-50 rounded-xl p-3"><div className="text-xs text-slate-400 mb-1">Clock In</div><div className="font-semibold text-slate-800">{fmtTime(todayRec!.clock_in)}</div></div>
-            <div className="bg-slate-50 rounded-xl p-3"><div className="text-xs text-slate-400 mb-1">Clock Out</div><div className="font-semibold text-slate-800">{todayRec!.clock_out ? fmtTime(todayRec!.clock_out) : <span className="text-amber-500">—</span>}</div></div>
-            <div className="bg-slate-50 rounded-xl p-3"><div className="text-xs text-slate-400 mb-1">Duration</div><div className="font-semibold text-slate-800">{durationStr(todayRec!.clock_in, todayRec!.clock_out)}</div></div>
-          </div>
-        )}
-        {clockedOut && isEarlyLeave(todayRec!.clock_out) && (
-          <p className="mb-3 text-xs text-amber-600">Clock-out before 5:00 PM — counts as early leave unless approved.</p>
-        )}
-        {todayRec?.correction_reason && (
-          <p className="mb-3 text-xs text-blue-600">Corrected by manager: {todayRec.correction_reason}</p>
-        )}
+        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
+          <span className="text-slate-400">Expected by {graceEnd}</span>
+          {clockedOut && isEarlyLeave(todayRec!.clock_out) && <span className="text-amber-600">Clock-out before 5:00 PM — counts as early leave unless approved.</span>}
+          {todayRec?.correction_reason && <span className="text-blue-600">Corrected by manager: {todayRec.correction_reason}</span>}
+        </div>
 
         {geoError && (
-          <div className="flex items-start gap-2 mb-4 px-3 py-2.5 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
-            <AlertCircle size={15} className="mt-0.5 shrink-0" /><span>{geoError}</span>
+          <div role="alert" className="mt-3 flex items-start gap-2 px-3 py-2.5 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
+            <AlertCircle size={15} className="mt-0.5 shrink-0" aria-hidden /><span>{geoError}</span>
           </div>
         )}
 
-        <div className="flex flex-wrap gap-3 items-center">
-          {!clockedIn && (
-            <button onClick={clockIn} disabled={geoLoading || geofences.length === 0}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700 disabled:opacity-50 transition-colors">
-              {geoLoading ? <Spinner /> : <LogIn size={18} />}{geoLoading ? 'Getting location…' : 'Clock In'}
+        {!clockedOut && !onPaidLeaveToday && (
+          <div className="mt-3">
+            <button onClick={() => { setShowReqForm(showReqForm === 'Attendance correction' ? null : 'Attendance correction'); setShowLeaveForm(false); }}
+              className={`inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-800 rounded ${btnFocus} focus-visible:ring-slate-300`}>
+              <Pencil size={13} aria-hidden /> Request a correction →
             </button>
-          )}
-          {clockedIn && !clockedOut && (
-            <button onClick={clockOut} disabled={geoLoading}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-800 text-white font-semibold hover:bg-slate-700 disabled:opacity-50 transition-colors">
-              {geoLoading ? <Spinner /> : <LogOut size={18} />}{geoLoading ? 'Getting location…' : 'Clock Out'}
-            </button>
-          )}
-          {clockedIn && clockedOut && (
-            <span className="flex items-center gap-2 text-emerald-600 font-medium"><CheckCircle size={18} /> Shift complete</span>
-          )}
-          <button onClick={() => { setShowReqForm(showReqForm === 'Attendance correction' ? null : 'Attendance correction'); setShowLeaveForm(false); }}
-            className="text-xs text-blue-600 hover:underline flex items-center gap-1"><Pencil size={12} /> Request a correction</button>
-        </div>
-
-        {geofences.length > 0 && (
-          <p className="mt-3 text-xs text-slate-400 flex items-center gap-1">
-            <MapPin size={11} /> {geofences.length} location{geofences.length !== 1 ? 's' : ''}: {geofences.map((f) => f.name).join(', ')} · On time until {(() => { const [h, m] = workStart.split(':').map(Number); const t = h * 60 + m + 60; return `${String(Math.floor(t / 60)).padStart(2, '0')}:${String(t % 60).padStart(2, '0')}`; })()}
-          </p>
-        )}
-      </div>
-
-      {/* two columns on desktop: leave/actions | requests + HR */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
-        <div className="space-y-5">
-      {/* ── 2/3 · My Leave + apply ── */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
-        <div className="flex items-center gap-2 mb-4 flex-wrap">
-          <CalendarDays size={16} className="text-slate-500" />
-          <h2 className="text-sm font-semibold text-slate-700">My Leave — {new Date().getFullYear()}</h2>
-          {portalReady && (
-            <div className="ml-auto flex gap-2">
-              <button onClick={() => {
-                const t = new Date(Date.now() + 3 * 3600_000).toISOString().slice(0, 10);
-                setLvType('WFH'); setLvStart(t); setLvEnd(t); setShowLeaveForm(true); setShowReqForm(null);
-              }}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-violet-600 text-white text-xs font-medium hover:bg-violet-700">
-                <Home size={13} /> Request WFH
-              </button>
-              <button onClick={() => { setShowLeaveForm((v) => !v); setShowReqForm(null); }}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 text-white text-xs font-medium hover:bg-slate-700">
-                <Plus size={13} /> Apply for Leave
-              </button>
-            </div>
-          )}
-        </div>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
-          <div className="bg-slate-50 rounded-xl p-4"><div className="text-xs text-slate-400 mb-1.5 uppercase tracking-wide font-medium">Entitlement</div><div className="text-3xl font-bold text-slate-800 leading-none">{leaveSummary.entitlement}<span className="text-sm font-medium text-slate-400 ml-1">days</span></div></div>
-          <div className="bg-slate-50 rounded-xl p-4"><div className="text-xs text-slate-400 mb-1.5 uppercase tracking-wide font-medium">Annual taken</div><div className="text-3xl font-bold text-slate-800 leading-none">{leaveSummary.annualTaken}</div></div>
-          <div className={`rounded-xl p-4 border ${leaveSummary.remaining <= 5 ? 'bg-amber-50 border-amber-100' : 'bg-emerald-50 border-emerald-100'}`}><div className={`text-xs mb-1.5 uppercase tracking-wide font-medium ${leaveSummary.remaining <= 5 ? 'text-amber-500' : 'text-emerald-500'}`}>Remaining</div><div className={`text-3xl font-bold leading-none ${leaveSummary.remaining <= 5 ? 'text-amber-600' : 'text-emerald-700'}`}>{leaveSummary.remaining}<span className={`text-sm font-medium ml-1 ${leaveSummary.remaining <= 5 ? 'text-amber-400' : 'text-emerald-400'}`}>days</span></div></div>
-          <div className="bg-slate-50 rounded-xl p-4"><div className="text-xs text-slate-400 mb-1.5 uppercase tracking-wide font-medium">Sick taken</div><div className="text-3xl font-bold text-slate-800 leading-none">{leaveSummary.sickTaken}</div></div>
-        </div>
-
-        {showLeaveForm && (
-          <div className="mb-4 p-4 rounded-xl bg-slate-50 border border-slate-200">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-2">
-              <label className="text-xs"><span className="block text-slate-500 mb-1">Type</span>
-                <select value={lvType} onChange={(e) => setLvType(e.target.value as typeof lvType)} className={`${input} w-full`}>
-                  <option value="Annual">Annual leave</option>
-                  <option value="Sick">Sick leave</option>
-                  <option value="WFH">Work from home</option>
-                </select>
-              </label>
-              <label className="text-xs"><span className="block text-slate-500 mb-1">Start</span>
-                <input type="date" value={lvStart} onChange={(e) => setLvStart(e.target.value)} className={`${input} w-full`} /></label>
-              <label className="text-xs"><span className="block text-slate-500 mb-1">End</span>
-                <input type="date" value={lvEnd} onChange={(e) => setLvEnd(e.target.value)} className={`${input} w-full`} /></label>
-              <div className="text-xs"><span className="block text-slate-500 mb-1">Working days</span>
-                <div className="px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-sm font-semibold">{lvDays || '—'}</div></div>
-            </div>
-            <textarea value={lvNotes} onChange={(e) => setLvNotes(e.target.value)} rows={2}
-              placeholder="Reason / notes"
-              className={`${input} w-full resize-none mb-2`} />
-            {lvType === 'Sick' && (
-              <label className="block text-xs mb-2">
-                <span className="block text-slate-500 mb-1">Sick note document (photo or PDF, optional)</span>
-                <input
-                  type="file"
-                  accept="image/*,application/pdf"
-                  onChange={(e) => setLvFile(e.target.files?.[0] ?? null)}
-                  className="block text-sm text-slate-600 file:mr-3 file:px-3 file:py-1.5 file:rounded-lg file:border-0 file:bg-slate-900 file:text-white file:text-xs file:font-medium hover:file:bg-slate-700"
-                />
-                {lvFile && <span className="text-slate-400">Attached: {lvFile.name}</span>}
-              </label>
-            )}
-            <div className="flex gap-2">
-              <button onClick={submitLeave} disabled={busy}
-                className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-slate-900 text-white text-xs font-medium disabled:opacity-60">
-                <Send size={12} /> {busy ? 'Submitting…' : 'Submit request'}
-              </button>
-              <button onClick={() => setShowLeaveForm(false)} className="text-slate-400 hover:text-slate-600"><X size={15} /></button>
-              {lvType === 'WFH' && <span className="text-xs text-slate-400 self-center">WFH does not reduce your leave balance.</span>}
-            </div>
           </div>
         )}
+      </section>
 
-        {!portalReady && (
-          <p className="text-sm text-slate-400">
-            {emp ? 'Portal access is switched off for your account — ask HR.' : "Your HR record isn't linked to this account yet. Ask the admin to link it in HR → Employees."}
-          </p>
-        )}
-      </div>
-
-      {/* ── request form (HR update / attendance correction) ── */}
+      {/* ── request form (HR update / attendance correction) — full width ── */}
       {showReqForm && (
-        <div className="bg-white rounded-xl border border-blue-200 shadow-sm p-5">
+        <section className="bg-white rounded-2xl border border-blue-200 p-5 sm:p-6">
           <h2 className="text-sm font-semibold text-slate-700 mb-2">{showReqForm === 'HR update' ? 'Request an update to my HR information' : 'Request an attendance correction'}</h2>
           <textarea value={reqDetails} onChange={(e) => setReqDetails(e.target.value)} rows={3} autoFocus
             placeholder={showReqForm === 'HR update' ? 'e.g. My phone number changed to 9xxxxxxx' : 'e.g. I forgot to clock out yesterday — I left at 5:30 PM'}
             className={`${input} w-full resize-none mb-2`} />
           <div className="flex gap-2">
             <button onClick={submitRequest} disabled={busy}
-              className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-medium disabled:opacity-60">
-              <Send size={12} /> {busy ? 'Submitting…' : 'Send to manager'}
+              className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium disabled:opacity-60 ${btnFocus} focus-visible:ring-blue-400`}>
+              <Send size={13} aria-hidden /> {busy ? 'Submitting…' : 'Send to manager'}
             </button>
-            <button onClick={() => setShowReqForm(null)} className="text-slate-400 hover:text-slate-600"><X size={15} /></button>
+            <button onClick={() => setShowReqForm(null)} aria-label="Cancel request" className={`p-2 text-slate-400 hover:text-slate-600 rounded ${btnFocus} focus-visible:ring-slate-300`}><X size={16} /></button>
           </div>
-        </div>
+        </section>
       )}
 
-        </div>
-        <div className="space-y-5">
-      {/* ── 4 · My Requests ── */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
-        <div className="flex items-center gap-2 mb-3">
-          <Inbox size={16} className="text-slate-500" />
-          <h2 className="text-sm font-semibold text-slate-700">My Requests</h2>
-          {leaveSummary.pending > 0 && <Badge className="bg-amber-100 text-amber-700 border-amber-200">{leaveSummary.pending} pending</Badge>}
-        </div>
-        {allRequests.length === 0 ? (
-          <p className="text-sm text-slate-400">No requests yet.</p>
-        ) : (
-          <div className="divide-y divide-slate-100">
-            {allRequests.slice(0, 15).map((r) => (
-              <div key={r.id} className="py-2.5 flex items-start gap-2 text-sm flex-wrap">
-                <Badge className={TYPE_BADGE[r.type] ?? 'bg-slate-100 text-slate-600 border-slate-200'}>{r.type}</Badge>
-                <span className="flex-1 min-w-40 text-slate-600">{r.label}</span>
-                {r.doc && (
-                  <button onClick={() => openDocument(r.doc!)} className="text-xs text-blue-600 hover:underline">📎 document</button>
-                )}
-                <Badge className={STATUS_BADGE[r.status] ?? 'bg-slate-100 text-slate-500'}>{r.status}</Badge>
-                {r.remarks && <span className="w-full text-xs text-slate-400 italic">↳ {r.remarks}</span>}
-              </div>
-            ))}
+      {/* ── Band 3 · My Leave (3A) + My Requests (3B), 50/50 on desktop ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
+        {/* 3A · My Leave */}
+        <section className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6">
+          <div className="flex items-center justify-between gap-3 mb-4">
+            <h2 className="text-base font-semibold text-slate-800">My Leave</h2>
+            {portalReady && (
+              <button onClick={() => { setShowLeaveForm((v) => !v); setLvType('Annual'); setShowReqForm(null); }}
+                className={`inline-flex items-center gap-1.5 px-3.5 py-2 min-h-[40px] rounded-lg border border-slate-300 text-slate-700 text-sm font-medium hover:bg-slate-50 ${btnFocus} focus-visible:ring-slate-300`}>
+                <Plus size={15} aria-hidden /> Apply for Leave
+              </button>
+            )}
           </div>
-        )}
+
+          {!portalReady ? (
+            <p className="text-sm text-slate-400">
+              {emp ? 'Portal access is switched off for your account — ask HR.' : "Your HR record isn't linked to this account yet. Ask the admin to link it in HR → Employees."}
+            </p>
+          ) : (
+            <>
+              {/* primary — annual */}
+              <div className="text-sm font-medium text-slate-500">Annual Leave</div>
+              <div className="mt-1 flex items-baseline gap-2">
+                <span className={`text-4xl font-bold leading-none ${leaveSummary.remaining <= 5 ? 'text-amber-600' : 'text-slate-900'}`}>{leaveSummary.remaining}</span>
+                <span className="text-sm text-slate-500">days remaining</span>
+              </div>
+              <div className="mt-3">
+                <div className="flex justify-between text-xs text-slate-500 mb-1"><span>{leaveSummary.annualTaken} of {entitlement} used</span><span>{usedPct}%</span></div>
+                <div className="h-2.5 rounded-full bg-slate-100 overflow-hidden" role="progressbar" aria-valuenow={leaveSummary.annualTaken} aria-valuemin={0} aria-valuemax={entitlement} aria-label="Annual leave used">
+                  <div className={`h-full rounded-full ${leaveSummary.remaining <= 5 ? 'bg-amber-500' : 'bg-emerald-500'}`} style={{ width: `${usedPct}%` }} />
+                </div>
+              </div>
+
+              {/* secondary — sick, visually separated */}
+              <div className="mt-5 pt-4 border-t border-slate-100">
+                <div className="text-sm font-medium text-slate-500">Sick Leave</div>
+                <div className="mt-0.5 text-slate-800"><span className="text-lg font-semibold">{leaveSummary.sickTaken}</span> <span className="text-sm text-slate-500">{leaveSummary.sickTaken === 1 ? 'day' : 'days'} taken</span></div>
+              </div>
+
+              {showLeaveForm && (
+                <div className="mt-4 p-4 rounded-xl bg-slate-50 border border-slate-200">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-2">
+                    <label className="text-xs"><span className="block text-slate-500 mb-1">Type</span>
+                      <select value={lvType} onChange={(e) => setLvType(e.target.value as typeof lvType)} className={`${input} w-full`}>
+                        <option value="Annual">Annual leave</option>
+                        <option value="Sick">Sick leave</option>
+                        <option value="WFH">Work from home</option>
+                      </select>
+                    </label>
+                    <label className="text-xs"><span className="block text-slate-500 mb-1">Start</span>
+                      <input type="date" value={lvStart} onChange={(e) => setLvStart(e.target.value)} className={`${input} w-full`} /></label>
+                    <label className="text-xs"><span className="block text-slate-500 mb-1">End</span>
+                      <input type="date" value={lvEnd} onChange={(e) => setLvEnd(e.target.value)} className={`${input} w-full`} /></label>
+                    <div className="text-xs"><span className="block text-slate-500 mb-1">Working days</span>
+                      <div className="px-3 py-2 rounded-lg bg-white border border-slate-200 text-sm font-semibold">{lvDays || '—'}</div></div>
+                  </div>
+                  <textarea value={lvNotes} onChange={(e) => setLvNotes(e.target.value)} rows={2} placeholder="Reason / notes" className={`${input} w-full resize-none mb-2`} />
+                  {lvType === 'Sick' && (
+                    <label className="block text-xs mb-2">
+                      <span className="block text-slate-500 mb-1">Sick note document (photo or PDF, optional)</span>
+                      <input type="file" accept="image/*,application/pdf" onChange={(e) => setLvFile(e.target.files?.[0] ?? null)}
+                        className="block text-sm text-slate-600 file:mr-3 file:px-3 file:py-1.5 file:rounded-lg file:border-0 file:bg-slate-900 file:text-white file:text-xs file:font-medium hover:file:bg-slate-700" />
+                      {lvFile && <span className="text-slate-400">Attached: {lvFile.name}</span>}
+                    </label>
+                  )}
+                  <div className="flex items-center gap-2">
+                    <button onClick={submitLeave} disabled={busy}
+                      className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-slate-900 text-white text-sm font-medium disabled:opacity-60 ${btnFocus} focus-visible:ring-slate-400`}>
+                      <Send size={13} aria-hidden /> {busy ? 'Submitting…' : 'Submit request'}
+                    </button>
+                    <button onClick={() => setShowLeaveForm(false)} aria-label="Cancel" className={`p-2 text-slate-400 hover:text-slate-600 rounded ${btnFocus} focus-visible:ring-slate-300`}><X size={16} /></button>
+                    {lvType === 'WFH' && <span className="text-xs text-slate-400">WFH does not reduce your leave balance.</span>}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </section>
+
+        {/* 3B · My Requests */}
+        <section className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6">
+          <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
+            <h2 className="text-base font-semibold text-slate-800">My Requests</h2>
+            <div className="flex items-center gap-3">
+              {portalReady && (
+                <button onClick={() => {
+                  const t = new Date(Date.now() + 3 * 3600_000).toISOString().slice(0, 10);
+                  setLvType('WFH'); setLvStart(t); setLvEnd(t); setShowLeaveForm(true); setShowReqForm(null);
+                }}
+                  className={`inline-flex items-center gap-1.5 px-3.5 py-2 min-h-[40px] rounded-lg border border-slate-300 text-slate-700 text-sm font-medium hover:bg-slate-50 ${btnFocus} focus-visible:ring-slate-300`}>
+                  <Home size={15} aria-hidden /> Request WFH
+                </button>
+              )}
+              {allRequests.length > 4 && (
+                <button onClick={() => setShowAllReq((v) => !v)} className={`text-sm text-slate-500 hover:text-slate-800 rounded ${btnFocus} focus-visible:ring-slate-300`}>{showAllReq ? 'Show less' : 'View all →'}</button>
+              )}
+            </div>
+          </div>
+
+          {allRequests.length === 0 ? (
+            <div className="py-6 text-center"><div className="text-sm font-medium text-slate-600">No requests yet</div><div className="text-xs text-slate-400 mt-0.5">Leave, WFH and correction requests will appear here.</div></div>
+          ) : (
+            <ul className="divide-y divide-slate-100 -mx-1">
+              {shownRequests.map((r) => {
+                const open = openReqId === r.id;
+                return (
+                  <li key={r.id}>
+                    <div role="button" tabIndex={0}
+                      onClick={() => setOpenReqId(open ? null : r.id)}
+                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOpenReqId(open ? null : r.id); } }}
+                      className={`px-1 py-3 cursor-pointer rounded-lg hover:bg-slate-50 ${btnFocus} focus-visible:ring-slate-300`}>
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                          <div className="text-sm font-medium text-slate-800">{r.title}</div>
+                          <div className="text-xs text-slate-500 mt-0.5">{fmtDate(r.when)}</div>
+                          {r.subtitle && <div className="text-xs text-slate-400 mt-0.5 line-clamp-2">{r.subtitle}</div>}
+                        </div>
+                        <StatusPill s={r.status} />
+                      </div>
+                      {open && (r.remarks || r.doc) && (
+                        <div className="mt-2 pl-0.5 text-xs text-slate-500 space-y-1">
+                          {r.remarks && <p className="italic">↳ {r.remarks}</p>}
+                          {r.doc && <button onClick={(e) => { e.stopPropagation(); openDocument(r.doc!); }} className={`text-blue-600 hover:underline rounded ${btnFocus} focus-visible:ring-blue-300`}>📎 View document</button>}
+                        </div>
+                      )}
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </section>
       </div>
 
-      {/* ── 5 · Personal & HR ── */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
-        <div className="flex items-center gap-2 mb-4 flex-wrap">
-          <UserRound size={16} className="text-slate-500" />
-          <h2 className="text-sm font-semibold text-slate-700">Personal & HR Information</h2>
+      {/* ── Band 4 · Personal & HR Information (full width) ── */}
+      <section className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6">
+        <div className="flex items-center justify-between gap-3 mb-4">
+          <h2 className="text-base font-semibold text-slate-800">Personal & HR Information</h2>
           {portalReady && (
             <button onClick={() => { setShowReqForm(showReqForm === 'HR update' ? null : 'HR update'); setShowLeaveForm(false); }}
-              className="ml-auto flex items-center gap-1 text-xs text-blue-600 hover:underline"><Pencil size={12} /> Request update</button>
+              className={`text-sm text-slate-500 hover:text-slate-800 rounded ${btnFocus} focus-visible:ring-slate-300`}>Request update →</button>
           )}
         </div>
         {!emp ? (
           <p className="text-sm text-slate-400">Your HR record isn't linked to this account yet. Ask the admin to link it in HR → Employees.</p>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-            <Info label="Name" value={emp.full_name} />
-            <Info label="Job title" value={emp.job_title} />
-            <Info label="Location" value={emp.location} />
-            <Info label="Civil ID" value={emp.civil_id} />
-            <Info label="Phone" value={emp.phone} />
-            <Info label="Joined" value={emp.joining_date} />
-            <Info label="Residency expiry" value={emp.residency_expiry} />
-            <Info label="Work permit expiry" value={emp.work_permit_expiry} />
-            <Info label="Status" value={emp.status} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-5">
+            <HrInfo label="Civil ID" value={emp.civil_id} />
+            <HrInfo label="Department / Location" value={emp.location} />
+            <HrInfo label="Phone" value={emp.phone} />
+            <HrInfo label="Work Permit Expiry" value={dayLabel(emp.work_permit_expiry)} />
+            <HrInfo label="Job Title" value={emp.job_title} />
+            <HrInfo label="Residency Expiry" value={dayLabel(emp.residency_expiry)} />
+            <HrInfo label="Email" value={user?.email} />
+            <HrInfo label="Joined" value={dayLabel(emp.joining_date)} />
           </div>
         )}
-      </div>
-        </div>
-      </div>
+      </section>
     </div>
   );
 }
