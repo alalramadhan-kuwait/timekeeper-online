@@ -29,6 +29,9 @@ function haversineMeters(lat1: number, lng1: number, lat2: number, lng2: number)
 }
 const fmtTime = (iso: string) => new Date(iso).toLocaleTimeString('en-KW', { hour: '2-digit', minute: '2-digit', hour12: true, timeZone: 'Asia/Kuwait' });
 const todayKuwait = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kuwait' });
+const kwDate = (iso: string) => new Date(iso).toLocaleDateString('en-CA', { timeZone: 'Asia/Kuwait' });
+const satOfWeek = (ymd: string) => { const d = new Date(`${ymd}T12:00:00Z`); d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 1) % 7)); return d.toISOString().slice(0, 10); }; // Kuwait week starts Saturday
+const hoursBetween = (a: string, b: string | null) => (b ? (new Date(b).getTime() - new Date(a).getTime()) / 3600000 : 0);
 const durationStr = (a: string, b: string | null) => {
   const mins = Math.floor(((b ? new Date(b) : new Date()).getTime() - new Date(a).getTime()) / 60000);
   return mins >= 60 ? `${Math.floor(mins / 60)}h ${mins % 60}m` : `${mins}m`;
@@ -53,6 +56,7 @@ export default function MyPortalPage() {
   const [leaves, setLeaves] = useState<LeaveRec[]>([]);
   const [requests, setRequests] = useState<EmpRequest[]>([]);
   const [todayRec, setTodayRec] = useState<AttRec | null>(null);
+  const [weekRecs, setWeekRecs] = useState<AttRec[]>([]);
   const [geofences, setGeofences] = useState<Geofence[]>([]);
   const [workStart, setWorkStart] = useState('09:00');
   const [loading, setLoading] = useState(true);
@@ -74,7 +78,8 @@ export default function MyPortalPage() {
   async function load() {
     if (!user) { setLoading(false); return; }
     const today = todayKuwait();
-    const [empQ, geoQ, setQ, attQ, reqQ] = await Promise.all([
+    const weekStart = satOfWeek(today);
+    const [empQ, geoQ, setQ, attQ, reqQ, weekQ] = await Promise.all([
       supabase.from('employees').select('*'),
       supabase.from('geofences').select('*').eq('active', true),
       supabase.from('settings').select('work_start_time').single(),
@@ -82,7 +87,10 @@ export default function MyPortalPage() {
         .eq('user_id', user.id).gte('clock_in', `${today}T00:00:00+03:00`).lte('clock_in', `${today}T23:59:59+03:00`)
         .order('clock_in', { ascending: false }).limit(1),
       supabase.from('employee_requests').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
+      supabase.from('attendance_records').select('clock_in, clock_out, is_late, justified')
+        .eq('user_id', user.id).gte('clock_in', `${weekStart}T00:00:00+03:00`),
     ]);
+    setWeekRecs((weekQ.data as AttRec[]) ?? []);
     // manual link only — the admin picks the account on the HR record (no name matching)
     const mine = ((empQ.data ?? []) as EmpRecord[]).find((e) => e.user_id === user.id) ?? null;
     setEmp(mine);
@@ -234,6 +242,16 @@ export default function MyPortalPage() {
   const lateClass = todayRec ? lateClassOf(todayRec.clock_in, workStart) : null;
   const portalReady = !!emp && emp.portal_enabled !== false;
 
+  // this week's attendance summary (Kuwait week, Sat→now)
+  const weekStats = useMemo(() => {
+    const byDay = new Map<string, number>();
+    for (const r of weekRecs) byDay.set(kwDate(r.clock_in), (byDay.get(kwDate(r.clock_in)) ?? 0) + hoursBetween(r.clock_in, r.clock_out));
+    const days = byDay.size;
+    const hours = [...byDay.values()].reduce((s, h) => s + h, 0);
+    const late = weekRecs.filter((r) => r.is_late && !r.justified).length;
+    return { days, hours, onTime: Math.max(0, days - late), late };
+  }, [weekRecs]);
+
   const Info = ({ label, value }: { label: string; value: React.ReactNode }) => (
     <div><div className="text-xs text-slate-400">{label}</div><div className="text-sm font-medium text-slate-700">{value ?? '—'}</div></div>
   );
@@ -264,6 +282,22 @@ export default function MyPortalPage() {
           )}
           {clockedIn && todayRec!.location && <span className="text-xs text-slate-400 flex items-center gap-1"><MapPin size={11} />{todayRec!.location}</span>}
           {!clockedIn && <Badge className="bg-slate-100 text-slate-500 border-slate-200">Not clocked in</Badge>}
+        </div>
+
+        {/* This week summary */}
+        <div className="grid grid-cols-3 gap-3 mb-5">
+          <div className="rounded-xl bg-blue-50 border border-blue-100 p-3">
+            <div className="text-[11px] font-medium text-blue-500 uppercase tracking-wide mb-0.5">This week</div>
+            <div className="text-2xl font-bold text-blue-700 leading-none">{weekStats.hours.toFixed(1)}<span className="text-sm font-medium text-blue-400 ml-1">hrs</span></div>
+          </div>
+          <div className="rounded-xl bg-slate-50 border border-slate-200 p-3">
+            <div className="text-[11px] font-medium text-slate-400 uppercase tracking-wide mb-0.5">Days present</div>
+            <div className="text-2xl font-bold text-slate-800 leading-none">{weekStats.days}</div>
+          </div>
+          <div className="rounded-xl bg-emerald-50 border border-emerald-100 p-3">
+            <div className="text-[11px] font-medium text-emerald-500 uppercase tracking-wide mb-0.5">On time</div>
+            <div className="text-2xl font-bold text-emerald-700 leading-none">{weekStats.onTime}<span className="text-sm font-medium text-emerald-400">/{weekStats.days}</span></div>
+          </div>
         </div>
 
         {clockedIn && (
@@ -337,11 +371,11 @@ export default function MyPortalPage() {
             </div>
           )}
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4 text-center">
-          <div className="bg-slate-50 rounded-xl p-3"><div className="text-xs text-slate-400 mb-1">Entitlement</div><div className="font-bold text-slate-800">{leaveSummary.entitlement}</div></div>
-          <div className="bg-slate-50 rounded-xl p-3"><div className="text-xs text-slate-400 mb-1">Annual taken</div><div className="font-bold text-slate-800">{leaveSummary.annualTaken}</div></div>
-          <div className="bg-slate-50 rounded-xl p-3"><div className="text-xs text-slate-400 mb-1">Remaining</div><div className={`font-bold ${leaveSummary.remaining <= 5 ? 'text-amber-600' : 'text-emerald-700'}`}>{leaveSummary.remaining}</div></div>
-          <div className="bg-slate-50 rounded-xl p-3"><div className="text-xs text-slate-400 mb-1">Sick taken</div><div className="font-bold text-slate-800">{leaveSummary.sickTaken}</div></div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+          <div className="bg-slate-50 rounded-xl p-4"><div className="text-xs text-slate-400 mb-1.5 uppercase tracking-wide font-medium">Entitlement</div><div className="text-3xl font-bold text-slate-800 leading-none">{leaveSummary.entitlement}<span className="text-sm font-medium text-slate-400 ml-1">days</span></div></div>
+          <div className="bg-slate-50 rounded-xl p-4"><div className="text-xs text-slate-400 mb-1.5 uppercase tracking-wide font-medium">Annual taken</div><div className="text-3xl font-bold text-slate-800 leading-none">{leaveSummary.annualTaken}</div></div>
+          <div className={`rounded-xl p-4 border ${leaveSummary.remaining <= 5 ? 'bg-amber-50 border-amber-100' : 'bg-emerald-50 border-emerald-100'}`}><div className={`text-xs mb-1.5 uppercase tracking-wide font-medium ${leaveSummary.remaining <= 5 ? 'text-amber-500' : 'text-emerald-500'}`}>Remaining</div><div className={`text-3xl font-bold leading-none ${leaveSummary.remaining <= 5 ? 'text-amber-600' : 'text-emerald-700'}`}>{leaveSummary.remaining}<span className={`text-sm font-medium ml-1 ${leaveSummary.remaining <= 5 ? 'text-amber-400' : 'text-emerald-400'}`}>days</span></div></div>
+          <div className="bg-slate-50 rounded-xl p-4"><div className="text-xs text-slate-400 mb-1.5 uppercase tracking-wide font-medium">Sick taken</div><div className="text-3xl font-bold text-slate-800 leading-none">{leaveSummary.sickTaken}</div></div>
         </div>
 
         {showLeaveForm && (
