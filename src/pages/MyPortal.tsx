@@ -99,7 +99,7 @@ export default function MyPortalPage() {
   const [leaves, setLeaves] = useState<LeaveRec[]>([]);
   const [requests, setRequests] = useState<EmpRequest[]>([]);
   const [todayRec, setTodayRec] = useState<AttRec | null>(null);
-  const [weekRecs, setWeekRecs] = useState<AttRec[]>([]);
+  const [monthRecs, setMonthRecs] = useState<AttRec[]>([]);
   const [geofences, setGeofences] = useState<Geofence[]>([]);
   const [workStart, setWorkStart] = useState('09:00');
   const [loading, setLoading] = useState(true);
@@ -152,8 +152,8 @@ export default function MyPortalPage() {
     setLoadError(false);
     try {
     const today = todayKuwait();
-    const weekStart = satOfWeek(today);
-    const [empQ, geoQ, setQ, attQ, reqQ, weekQ] = await Promise.all([
+    const monthStart = `${today.slice(0, 7)}-01`;
+    const [empQ, geoQ, setQ, attQ, reqQ, monthQ] = await Promise.all([
       supabase.from('employees').select('*'),
       supabase.from('geofences').select('*').eq('active', true),
       supabase.from('settings').select('work_start_time').single(),
@@ -162,9 +162,9 @@ export default function MyPortalPage() {
         .order('clock_in', { ascending: false }).limit(1),
       supabase.from('employee_requests').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
       supabase.from('attendance_records').select('clock_in, clock_out, is_late, justified')
-        .eq('user_id', user.id).gte('clock_in', `${weekStart}T00:00:00+03:00`),
+        .eq('user_id', user.id).gte('clock_in', `${monthStart}T00:00:00+03:00`),
     ]);
-    setWeekRecs((weekQ.data as AttRec[]) ?? []);
+    setMonthRecs((monthQ.data as AttRec[]) ?? []);
     // manual link only — the admin picks the account on the HR record (no name matching)
     const mine = ((empQ.data ?? []) as EmpRecord[]).find((e) => e.user_id === user.id) ?? null;
     setEmp(mine);
@@ -351,15 +351,15 @@ export default function MyPortalPage() {
     return leaves.find((l) => l.approval_status === 'Approved' && l.leave_start <= t && l.leave_end >= t) ?? null;
   }, [leaves]);
 
-  // this week's attendance summary (Kuwait week, Sat→now) — must stay above the early return (Rules of Hooks)
-  const weekStats = useMemo(() => {
+  // this month's attendance summary — must stay above the early return (Rules of Hooks)
+  const monthStats = useMemo(() => {
     const byDay = new Map<string, number>();
-    for (const r of weekRecs) byDay.set(kwDate(r.clock_in), (byDay.get(kwDate(r.clock_in)) ?? 0) + hoursBetween(r.clock_in, r.clock_out));
+    for (const r of monthRecs) byDay.set(kwDate(r.clock_in), (byDay.get(kwDate(r.clock_in)) ?? 0) + hoursBetween(r.clock_in, r.clock_out));
     const days = byDay.size;
     const hours = [...byDay.values()].reduce((s, h) => s + h, 0);
-    const late = weekRecs.filter((r) => r.is_late && !r.justified).length;
+    const late = monthRecs.filter((r) => r.is_late && !r.justified).length;
     return { days, hours, onTime: Math.max(0, days - late), late };
-  }, [weekRecs]);
+  }, [monthRecs]);
 
   // selected-month attendance summary for the history panel
   const histStats = useMemo(() => {
@@ -459,9 +459,9 @@ export default function MyPortalPage() {
 
         {/* Weekly summary — plain values, hours are hours and days are days */}
         <dl className="mt-5 grid grid-cols-3 gap-4 border-y border-slate-100 py-4">
-          <div><dt className="text-xs text-slate-400 uppercase tracking-wide">This week</dt><dd className="mt-1 text-xl font-bold text-slate-800">{hm(weekStats.hours)}</dd></div>
-          <div><dt className="text-xs text-slate-400 uppercase tracking-wide">Days present</dt><dd className="mt-1 text-xl font-bold text-slate-800">{weekStats.days} {weekStats.days === 1 ? 'day' : 'days'}</dd></div>
-          <div><dt className="text-xs text-slate-400 uppercase tracking-wide">On time</dt><dd className="mt-1 text-xl font-bold text-slate-800">{weekStats.onTime} {weekStats.onTime === 1 ? 'day' : 'days'}</dd></div>
+          <div><dt className="text-xs text-slate-400 uppercase tracking-wide">This month</dt><dd className="mt-1 text-xl font-bold text-slate-800">{hm(monthStats.hours)}</dd></div>
+          <div><dt className="text-xs text-slate-400 uppercase tracking-wide">Days present</dt><dd className="mt-1 text-xl font-bold text-slate-800">{monthStats.days} {monthStats.days === 1 ? 'day' : 'days'}</dd></div>
+          <div><dt className="text-xs text-slate-400 uppercase tracking-wide">On time</dt><dd className="mt-1 text-xl font-bold text-slate-800">{monthStats.onTime} {monthStats.onTime === 1 ? 'day' : 'days'}</dd></div>
         </dl>
 
         {/* Today's punch — one horizontal strip */}
