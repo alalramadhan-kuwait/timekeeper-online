@@ -232,7 +232,7 @@ export default function PerformancePage() {
         boardBusy || !board ? <div className="py-10"><Spinner /></div> : (
           <div>
             <p className="text-xs text-slate-400 mb-3">
-              Cumulative points = days present ×3 · on-time days ×2 · late −5 · full 8h days ×3 · overtime (8:10+) ×2 · short (&lt;6h) −3 · active days ×2 · created ×3 · updated ×1. Approved paid leave counts as a full present day; admin accounts are excluded.
+              Cumulative points = days present ×3 · on-time days ×2 · late −5 · full 8h days ×3 · overtime (8:10+) ×2 · short (&lt;6h) −3 · active days ×2 · created ×3 · updated ×1. Approved paid leave (annual/sick) counts as a full present day; WFH counts as a present day only (no full-8h bonus); admin accounts are excluded.
             </p>
             <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
               <table className="w-full text-sm">
