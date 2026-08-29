@@ -112,6 +112,7 @@ export default function MyPortalPage() {
   const [msg, setMsg] = useState<string | null>(null);
   const [nowMs, setNowMs] = useState(Date.now());
   const [showAllReq, setShowAllReq] = useState(false);
+  const [showAllLeaves, setShowAllLeaves] = useState(false);
   const [openReqId, setOpenReqId] = useState<string | null>(null);
   const [editLeaveId, setEditLeaveId] = useState<string | null>(null); // raw leave id being edited
   const [edStart, setEdStart] = useState('');
@@ -347,6 +348,10 @@ export default function MyPortalPage() {
       kind: 'request' as const, rawId: r.id, leaveType: '', startDate: '', endDate: '',
     })),
   ].sort((a, b) => (b.when ?? '').localeCompare(a.when ?? '')), [leaves, requests]);
+
+  // the employee's own leave records, newest first (for the Leave history list)
+  const leaveHistory = useMemo(() =>
+    [...leaves].sort((a, b) => (b.leave_start ?? '').localeCompare(a.leave_start ?? '')), [leaves]);
 
   // is today an approved leave / WFH day? (drives the attendance banner)
   const todayLeave = useMemo(() => {
@@ -614,6 +619,31 @@ export default function MyPortalPage() {
               <div className="mt-5 pt-4 border-t border-slate-100">
                 <div className="text-sm font-medium text-slate-500">Sick Leave</div>
                 <div className="mt-0.5 text-slate-800"><span className="text-lg font-semibold">{leaveSummary.sickTaken}</span> <span className="text-sm text-slate-500">{leaveSummary.sickTaken === 1 ? 'day' : 'days'} taken</span></div>
+              </div>
+
+              {/* leave history — the employee's previous leaves */}
+              <div className="mt-5 pt-4 border-t border-slate-100">
+                <div className="flex items-center justify-between gap-2 mb-1">
+                  <div className="text-sm font-medium text-slate-500">Leave history</div>
+                  {leaveHistory.length > 4 && (
+                    <button onClick={() => setShowAllLeaves((v) => !v)} className={`text-xs text-slate-500 hover:text-slate-800 rounded ${btnFocus} focus-visible:ring-slate-300`}>{showAllLeaves ? 'Show less' : `View all (${leaveHistory.length}) →`}</button>
+                  )}
+                </div>
+                {leaveHistory.length === 0 ? (
+                  <p className="text-xs text-slate-400 py-2">No leave taken yet.</p>
+                ) : (
+                  <ul className="divide-y divide-slate-100">
+                    {(showAllLeaves ? leaveHistory : leaveHistory.slice(0, 4)).map((l) => (
+                      <li key={l.id} className="py-2 flex items-center justify-between gap-3">
+                        <div className="min-w-0">
+                          <div className="text-sm text-slate-700">{l.leave_type === 'WFH' ? 'WFH' : `${l.leave_type} leave`}{l.days ? ` · ${l.days} ${Number(l.days) === 1 ? 'day' : 'days'}` : ''}</div>
+                          <div className="text-xs text-slate-400">{l.leave_start === l.leave_end ? dayLabel(l.leave_start) : `${dayLabel(l.leave_start)} → ${dayLabel(l.leave_end)}`}</div>
+                        </div>
+                        <StatusPill s={l.approval_status} />
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
 
               {showLeaveForm && (
