@@ -107,6 +107,9 @@ export default function MyPortalPage() {
   const [nowMs, setNowMs] = useState(Date.now());
   const [showAllReq, setShowAllReq] = useState(false);
   const [openReqId, setOpenReqId] = useState<string | null>(null);
+  const [editLeaveId, setEditLeaveId] = useState<string | null>(null); // raw leave id being edited
+  const [edStart, setEdStart] = useState('');
+  const [edEnd, setEdEnd] = useState('');
 
   // tick every 30s so the live shift duration updates while clocked in
   useEffect(() => { const t = setInterval(() => setNowMs(Date.now()), 30_000); return () => clearInterval(t); }, []);
@@ -262,6 +265,37 @@ export default function MyPortalPage() {
     load();
   }
 
+  // ── employee edits / cancels their own leave request ──
+  const edDays = useMemo(() => (edStart && edEnd && edEnd >= edStart ? workingDaysBetween(edStart, edEnd) : 0), [edStart, edEnd]);
+
+  function startEditLeave(rawId: string, start: string, end: string) {
+    setEditLeaveId(rawId); setEdStart(start); setEdEnd(end); setMsg(null);
+  }
+
+  async function saveEditedLeave(rawId: string, wasApproved: boolean) {
+    if (!edStart || !edEnd || edEnd < edStart) { setMsg('Pick a valid start and end date'); return; }
+    setBusy(true); setMsg(null);
+    // editing dates always lands the request back in Pending — HR (re-)approves the final dates
+    const { error } = await supabase.from('leave_records')
+      .update({ leave_start: edStart, leave_end: edEnd, days: edDays, approval_status: 'Pending' })
+      .eq('id', rawId);
+    setBusy(false);
+    if (error) { setMsg(`Could not update: ${error.message}`); return; }
+    setMsg(wasApproved ? 'Dates changed — sent back to HR for re-approval' : 'Leave dates updated');
+    setEditLeaveId(null);
+    load();
+  }
+
+  async function cancelLeave(rawId: string) {
+    if (!window.confirm('Cancel this leave request? This cannot be undone — you would need to apply again.')) return;
+    setBusy(true); setMsg(null);
+    const { error } = await supabase.from('leave_records').update({ approval_status: 'Cancelled' }).eq('id', rawId);
+    setBusy(false);
+    if (error) { setMsg(`Could not cancel: ${error.message}`); return; }
+    setMsg('Leave request cancelled');
+    load();
+  }
+
   // ── summaries ──
   const leaveSummary = useMemo(() => {
     const year = new Date().getFullYear();
@@ -279,11 +313,13 @@ export default function MyPortalPage() {
       title: `${l.leave_type === 'WFH' ? 'WFH' : `${l.leave_type} leave`}${l.days ? ` — ${l.days} day${Number(l.days) > 1 ? 's' : ''}` : ''}`,
       subtitle: l.leave_start === l.leave_end ? l.leave_start : `${l.leave_start} → ${l.leave_end}`,
       type: l.leave_type, status: l.approval_status, remarks: l.notes, doc: l.document_url,
+      kind: 'leave' as const, rawId: l.id, leaveType: l.leave_type, startDate: l.leave_start, endDate: l.leave_end,
     })),
     ...requests.map((r) => ({
       id: `rq-${r.id}`, when: r.created_at,
       title: r.request_type, subtitle: r.details,
       type: r.request_type, status: r.status, remarks: r.manager_remarks, doc: null as string | null,
+      kind: 'request' as const, rawId: r.id, leaveType: '', startDate: '', endDate: '',
     })),
   ].sort((a, b) => (b.when ?? '').localeCompare(a.when ?? '')), [leaves, requests]);
 
@@ -547,6 +583,8 @@ export default function MyPortalPage() {
             <ul className="divide-y divide-slate-100 -mx-1">
               {shownRequests.map((r) => {
                 const open = openReqId === r.id;
+                const editable = portalReady && r.kind === 'leave' && (r.status === 'Pending' || r.status === 'Approved');
+                const editing = editLeaveId === r.rawId;
                 return (
                   <li key={r.id}>
                     <div role="button" tabIndex={0}
@@ -561,10 +599,38 @@ export default function MyPortalPage() {
                         </div>
                         <StatusPill s={r.status} />
                       </div>
-                      {open && (r.remarks || r.doc) && (
-                        <div className="mt-2 pl-0.5 text-xs text-slate-500 space-y-1">
+                      {open && (r.remarks || r.doc || editable) && (
+                        <div className="mt-2 pl-0.5 text-xs text-slate-500 space-y-2" onClick={(e) => e.stopPropagation()}>
                           {r.remarks && <p className="italic">↳ {r.remarks}</p>}
-                          {r.doc && <button onClick={(e) => { e.stopPropagation(); openDocument(r.doc!); }} className={`text-blue-600 hover:underline rounded ${btnFocus} focus-visible:ring-blue-300`}>📎 View document</button>}
+                          {r.doc && <button onClick={() => openDocument(r.doc!)} className={`block text-blue-600 hover:underline rounded ${btnFocus} focus-visible:ring-blue-300`}>📎 View document</button>}
+                          {editable && !editing && (
+                            <div className="flex flex-wrap items-center gap-3 pt-1">
+                              <button onClick={() => startEditLeave(r.rawId, r.startDate, r.endDate)}
+                                className={`inline-flex items-center gap-1 text-slate-600 hover:text-slate-900 rounded ${btnFocus} focus-visible:ring-slate-300`}><Pencil size={12} aria-hidden /> Change dates</button>
+                              <button onClick={() => cancelLeave(r.rawId)} disabled={busy}
+                                className={`inline-flex items-center gap-1 text-rose-600 hover:text-rose-700 rounded disabled:opacity-50 ${btnFocus} focus-visible:ring-rose-300`}><X size={12} aria-hidden /> Cancel request</button>
+                              {r.status === 'Approved' && <span className="text-slate-400">Changing dates sends it back to HR.</span>}
+                            </div>
+                          )}
+                          {editable && editing && (
+                            <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 space-y-2">
+                              <div className="grid grid-cols-3 gap-2">
+                                <label className="text-xs"><span className="block text-slate-500 mb-1">Start</span>
+                                  <input type="date" value={edStart} onChange={(e) => setEdStart(e.target.value)} className={`${input} w-full`} /></label>
+                                <label className="text-xs"><span className="block text-slate-500 mb-1">End</span>
+                                  <input type="date" value={edEnd} onChange={(e) => setEdEnd(e.target.value)} className={`${input} w-full`} /></label>
+                                <div className="text-xs"><span className="block text-slate-500 mb-1">Working days</span>
+                                  <div className="px-3 py-2 rounded-lg bg-white border border-slate-200 text-sm font-semibold">{edDays || '—'}</div></div>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <button onClick={() => saveEditedLeave(r.rawId, r.status === 'Approved')} disabled={busy}
+                                  className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-slate-900 text-white text-xs font-medium disabled:opacity-60 ${btnFocus} focus-visible:ring-slate-400`}>
+                                  <Send size={12} aria-hidden /> {busy ? 'Saving…' : 'Save new dates'}
+                                </button>
+                                <button onClick={() => setEditLeaveId(null)} className={`px-2 py-1 text-slate-500 hover:text-slate-700 rounded ${btnFocus} focus-visible:ring-slate-300`}>Cancel</button>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
