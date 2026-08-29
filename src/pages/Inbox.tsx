@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Inbox as InboxIcon, CheckCircle, Clock, CalendarRange, FileText, Check, X, ChevronRight } from 'lucide-react';
+import { Inbox as InboxIcon, CheckCircle, Clock, CalendarRange, FileText, Check, X, ChevronRight, ClipboardList } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { Spinner, Badge } from '../components/ui';
@@ -43,12 +43,22 @@ export default function InboxPage() {
     await supabase.from('employee_requests').update({ status, manager_remarks: remarks[id]?.trim() || null }).eq('id', id);
     await reload(); setBusy(null);
   }
+  async function markTaskDone(id: string) {
+    setBusy(`tk-${id}`);
+    await supabase.from('assigned_tasks').update({ status: 'Done' }).eq('id', id);
+    await reload(); setBusy(null);
+  }
 
   if (loading) return <Spinner />;
   if (!data) return null;
 
   const today = todayKuwait();
-  const total = data.tasks.length + data.leaveApprovals.length + data.requestApprovals.length;
+  const PRIORITY: Record<string, string> = {
+    High: 'bg-rose-100 text-rose-700 border-rose-200',
+    Medium: 'bg-amber-100 text-amber-700 border-amber-200',
+    Low: 'bg-slate-100 text-slate-600 border-slate-200',
+  };
+  const total = data.myTasks.length + data.tasks.length + data.leaveApprovals.length + data.requestApprovals.length;
 
   return (
     <div className="max-w-5xl space-y-6">
@@ -69,7 +79,40 @@ export default function InboxPage() {
         </div>
       )}
 
-      {/* ── Assigned to me ── */}
+      {/* ── Tasks assigned to me by a manager ── */}
+      {data.myTasks.length > 0 && (
+        <section className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+          <div className="flex items-center gap-2 px-5 py-3 border-b border-slate-100">
+            <ClipboardList size={16} className="text-slate-500" />
+            <h2 className="text-sm font-semibold text-slate-700">My tasks</h2>
+            <Badge className="bg-slate-100 text-slate-600 border-slate-200">{data.myTasks.length}</Badge>
+          </div>
+          <ul className="divide-y divide-slate-100">
+            {data.myTasks.map((t) => {
+              const overdue = !!t.due_date && t.due_date < today;
+              return (
+                <li key={t.id} className="px-5 py-3 flex flex-wrap items-start gap-3">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-sm font-medium text-slate-800">{t.title}</span>
+                      <Badge className={PRIORITY[t.priority] ?? PRIORITY.Medium}>{t.priority}</Badge>
+                    </div>
+                    {t.details && <p className="text-sm text-slate-500 mt-0.5">{t.details}</p>}
+                    <div className="text-xs text-slate-400 mt-0.5">
+                      {t.assigned_by ? `From ${t.assigned_by}` : 'Assigned'}
+                      {t.due_date && <> · <span className={overdue ? 'text-rose-600 font-medium' : ''}>{overdue ? 'Overdue ' : 'Due '}{t.due_date}</span></>}
+                    </div>
+                  </div>
+                  <button disabled={busy === `tk-${t.id}`} onClick={() => markTaskDone(t.id)}
+                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-medium hover:bg-emerald-700 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-1"><Check size={13} /> Mark done</button>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
+
+      {/* ── Assigned to me (from modules) ── */}
       {data.tasks.length > 0 && (
         <section className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
           <div className="flex items-center gap-2 px-5 py-3 border-b border-slate-100">

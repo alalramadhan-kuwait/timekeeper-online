@@ -27,7 +27,13 @@ export interface RequestApproval {
   requester: string; created_at: string;
 }
 
+export interface MyTask {
+  id: string; title: string; details: string | null;
+  priority: string; due_date: string | null; assigned_by: string | null;
+}
+
 export interface InboxData {
+  myTasks: MyTask[];
   tasks: InboxTask[];
   leaveApprovals: LeaveApproval[];
   requestApprovals: RequestApproval[];
@@ -50,20 +56,20 @@ async function safe<T>(p: PromiseLike<{ data: unknown }>): Promise<T[]> {
   try { const { data } = await p; return ((data as T[]) ?? []); } catch { return []; }
 }
 
-/** All the names that identify this account (for matching assignment fields). */
-async function myNames(user: User, profile: Profile | null): Promise<Set<string>> {
+/** Names + employee-record ids that identify this account. */
+async function myIdentity(user: User, profile: Profile | null): Promise<{ names: Set<string>; empIds: string[] }> {
   const names = new Set<string>();
   if (profile?.full_name) names.add(norm(profile.full_name));
-  const emp = await safe<{ full_name: string }>(
-    supabase.from('employees').select('full_name').eq('user_id', user.id),
+  const emp = await safe<{ id: string; full_name: string }>(
+    supabase.from('employees').select('id, full_name').eq('user_id', user.id),
   );
   for (const e of emp) if (e.full_name) names.add(norm(e.full_name));
-  return names;
+  return { names, empIds: emp.map((e) => e.id) };
 }
 
 export async function loadInbox(user: User, profile: Profile | null, role: Role | null): Promise<InboxData> {
-  const [names, content, ads, repairs, collabs, cases, demand] = await Promise.all([
-    myNames(user, profile),
+  const [ident, content, ads, repairs, collabs, cases, demand] = await Promise.all([
+    myIdentity(user, profile),
     safe<any>(supabase.from('content_tasks').select('id, title, owner, status, planned_date')),
     safe<any>(supabase.from('paid_ads').select('id, ad_name, owner, status, end_date')),
     safe<any>(supabase.from('repair_watches').select('id, repair_id, customer_name, assigned_to, status, estimated_completion')),
@@ -71,6 +77,17 @@ export async function loadInbox(user: User, profile: Profile | null, role: Role 
     safe<any>(supabase.from('cases').select('id, case_id, customer_name, staff, status, promised_callback').eq('status', 'Open')),
     safe<any>(supabase.from('waiting_list').select('id, customer_name, staff_responsible, status, list_type, follow_up_date, expected_arrival')),
   ]);
+  const { names, empIds } = ident;
+
+  // tasks an admin/manager directly assigned to this person
+  let myTasks: MyTask[] = [];
+  if (empIds.length > 0) {
+    const rows = await safe<any>(
+      supabase.from('assigned_tasks').select('id, title, details, priority, due_date, assigned_by, status')
+        .in('assignee_employee_id', empIds).eq('status', 'Open').order('due_date', { ascending: true, nullsFirst: false }),
+    );
+    myTasks = rows.map((r) => ({ id: r.id, title: r.title, details: r.details, priority: r.priority, due_date: r.due_date, assigned_by: r.assigned_by }));
+  }
 
   const mine = (v: unknown) => names.has(norm(v)) && norm(v) !== '';
   const tasks: InboxTask[] = [];
@@ -129,9 +146,9 @@ export async function loadInbox(user: User, profile: Profile | null, role: Role 
     }));
   }
 
-  return { tasks, leaveApprovals, requestApprovals, isApprover };
+  return { myTasks, tasks, leaveApprovals, requestApprovals, isApprover };
 }
 
 export function inboxCount(d: InboxData): number {
-  return d.tasks.length + d.leaveApprovals.length + d.requestApprovals.length;
+  return d.myTasks.length + d.tasks.length + d.leaveApprovals.length + d.requestApprovals.length;
 }
