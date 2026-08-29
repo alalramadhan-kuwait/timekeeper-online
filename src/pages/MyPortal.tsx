@@ -43,6 +43,9 @@ const fmtDur = (aIso: string, bIso: string | null, now: number) => {
   return `${Math.floor(mins / 60)}h ${String(mins % 60).padStart(2, '0')}m`;
 };
 const fmtDate = (iso?: string | null) => (iso ? new Date(`${iso}`).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Asia/Kuwait' }) : '');
+// minutes-since-midnight of an instant in Kuwait time (for lateness maths)
+const kwMinutes = (iso: string) => { const [h, m] = new Date(iso).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Kuwait' }).split(':').map(Number); return h * 60 + m; };
+const STANDARD_DAY_HOURS = 8; // expected hours per working day
 const dayLabel = (ymd?: string | null) => (ymd ? new Date(`${ymd}T12:00:00Z`).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' }) : '');
 const weekdayLabel = (iso: string) => new Date(iso).toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', timeZone: 'Asia/Kuwait' });
 const monthLabel = (ym: string) => new Date(`${ym}-01T12:00:00Z`).toLocaleDateString('en-GB', { month: 'long', year: 'numeric', timeZone: 'UTC' });
@@ -353,13 +356,21 @@ export default function MyPortalPage() {
 
   // this month's attendance summary — must stay above the early return (Rules of Hooks)
   const monthStats = useMemo(() => {
+    const [wh, wm] = workStart.split(':').map(Number);
+    const graceMin = wh * 60 + wm + 60; // on time until start + 1h grace
     const byDay = new Map<string, number>();
-    for (const r of monthRecs) byDay.set(kwDate(r.clock_in), (byDay.get(kwDate(r.clock_in)) ?? 0) + hoursBetween(r.clock_in, r.clock_out));
+    let lateHours = 0;   // cumulative hours arrived past the grace window
+    let missingHours = 0; // cumulative shortfall below 8h on completed days
+    for (const r of monthRecs) {
+      byDay.set(kwDate(r.clock_in), (byDay.get(kwDate(r.clock_in)) ?? 0) + hoursBetween(r.clock_in, r.clock_out));
+      if (!r.justified) { const a = kwMinutes(r.clock_in); if (a > graceMin) lateHours += (a - graceMin) / 60; }
+      if (r.clock_out) { const w = hoursBetween(r.clock_in, r.clock_out); if (w < STANDARD_DAY_HOURS) missingHours += STANDARD_DAY_HOURS - w; }
+    }
     const days = byDay.size;
     const hours = [...byDay.values()].reduce((s, h) => s + h, 0);
     const late = monthRecs.filter((r) => r.is_late && !r.justified).length;
-    return { days, hours, onTime: Math.max(0, days - late), late };
-  }, [monthRecs]);
+    return { days, hours, onTime: Math.max(0, days - late), late, lateHours, missingHours };
+  }, [monthRecs, workStart]);
 
   // selected-month attendance summary for the history panel
   const histStats = useMemo(() => {
@@ -458,10 +469,11 @@ export default function MyPortalPage() {
         </div>
 
         {/* Weekly summary — plain values, hours are hours and days are days */}
-        <dl className="mt-5 grid grid-cols-3 gap-4 border-y border-slate-100 py-4">
-          <div><dt className="text-xs text-slate-400 uppercase tracking-wide">This month</dt><dd className="mt-1 text-xl font-bold text-slate-800">{hm(monthStats.hours)}</dd></div>
-          <div><dt className="text-xs text-slate-400 uppercase tracking-wide">Days present</dt><dd className="mt-1 text-xl font-bold text-slate-800">{monthStats.days} {monthStats.days === 1 ? 'day' : 'days'}</dd></div>
-          <div><dt className="text-xs text-slate-400 uppercase tracking-wide">On time</dt><dd className="mt-1 text-xl font-bold text-slate-800">{monthStats.onTime} {monthStats.onTime === 1 ? 'day' : 'days'}</dd></div>
+        <dl className="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-4 border-y border-slate-100 py-4">
+          <div><dt className="text-xs text-slate-400 uppercase tracking-wide">Days present</dt><dd className="mt-1 text-xl font-bold text-slate-800">{monthStats.days} {monthStats.days === 1 ? 'day' : 'days'}</dd><dd className="text-[11px] text-slate-400">this month</dd></div>
+          <div><dt className="text-xs text-slate-400 uppercase tracking-wide">On time</dt><dd className="mt-1 text-xl font-bold text-slate-800">{monthStats.onTime}<span className="text-sm font-medium text-slate-400">/{monthStats.days}</span></dd><dd className="text-[11px] text-slate-400">days</dd></div>
+          <div><dt className="text-xs text-slate-400 uppercase tracking-wide">Late hours</dt><dd className={`mt-1 text-xl font-bold ${monthStats.lateHours > 0 ? 'text-amber-600' : 'text-slate-800'}`}>{hm(monthStats.lateHours)}</dd><dd className="text-[11px] text-slate-400">past grace</dd></div>
+          <div><dt className="text-xs text-slate-400 uppercase tracking-wide">Missing hours</dt><dd className={`mt-1 text-xl font-bold ${monthStats.missingHours > 0 ? 'text-rose-600' : 'text-slate-800'}`}>{hm(monthStats.missingHours)}</dd><dd className="text-[11px] text-slate-400">under {STANDARD_DAY_HOURS}h/day</dd></div>
         </dl>
 
         {/* Today's punch — one horizontal strip */}
