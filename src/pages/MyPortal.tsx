@@ -44,6 +44,9 @@ const fmtDur = (aIso: string, bIso: string | null, now: number) => {
 };
 const fmtDate = (iso?: string | null) => (iso ? new Date(`${iso}`).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Asia/Kuwait' }) : '');
 const dayLabel = (ymd?: string | null) => (ymd ? new Date(`${ymd}T12:00:00Z`).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' }) : '');
+const weekdayLabel = (iso: string) => new Date(iso).toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', timeZone: 'Asia/Kuwait' });
+const monthLabel = (ym: string) => new Date(`${ym}-01T12:00:00Z`).toLocaleDateString('en-GB', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+const monthShift = (ym: string, n: number) => { const [y, m] = ym.split('-').map(Number); return new Date(Date.UTC(y, m - 1 + n, 1)).toISOString().slice(0, 7); };
 
 // one consistent status system — dot + text (never colour alone)
 const STATUS_STYLE: Record<string, { dot: string; cls: string }> = {
@@ -110,6 +113,25 @@ export default function MyPortalPage() {
   const [editLeaveId, setEditLeaveId] = useState<string | null>(null); // raw leave id being edited
   const [edStart, setEdStart] = useState('');
   const [edEnd, setEdEnd] = useState('');
+  const [showHistory, setShowHistory] = useState(false);
+  const [histMonth, setHistMonth] = useState(() => todayKuwait().slice(0, 7)); // yyyy-MM
+  const [histRecs, setHistRecs] = useState<AttRec[]>([]);
+  const [histLoading, setHistLoading] = useState(false);
+
+  // lazily load a month of the employee's own attendance when the history panel is open
+  useEffect(() => {
+    if (!showHistory || !user) return;
+    setHistLoading(true);
+    const [y, m] = histMonth.split('-').map(Number);
+    const nextMonth = new Date(Date.UTC(y, m, 1)).toISOString().slice(0, 10);
+    supabase.from('attendance_records')
+      .select('id, clock_in, clock_out, is_late, justified, location, correction_reason')
+      .eq('user_id', user.id)
+      .gte('clock_in', `${histMonth}-01T00:00:00+03:00`)
+      .lt('clock_in', `${nextMonth}T00:00:00+03:00`)
+      .order('clock_in', { ascending: false })
+      .then(({ data }) => { setHistRecs((data as AttRec[]) ?? []); setHistLoading(false); });
+  }, [showHistory, histMonth, user?.id]);
 
   // tick every 30s so the live shift duration updates while clocked in
   useEffect(() => { const t = setInterval(() => setNowMs(Date.now()), 30_000); return () => clearInterval(t); }, []);
@@ -339,6 +361,16 @@ export default function MyPortalPage() {
     return { days, hours, onTime: Math.max(0, days - late), late };
   }, [weekRecs]);
 
+  // selected-month attendance summary for the history panel
+  const histStats = useMemo(() => {
+    const byDay = new Map<string, number>();
+    for (const r of histRecs) byDay.set(kwDate(r.clock_in), (byDay.get(kwDate(r.clock_in)) ?? 0) + hoursBetween(r.clock_in, r.clock_out));
+    const days = byDay.size;
+    const hours = [...byDay.values()].reduce((s, h) => s + h, 0);
+    const late = histRecs.filter((r) => r.is_late && !r.justified).length;
+    return { days, hours, onTime: Math.max(0, days - late), late };
+  }, [histRecs]);
+
   if (loading) return <PortalSkeleton />;
   if (loadError) return (
     <div className="max-w-6xl">
@@ -477,6 +509,61 @@ export default function MyPortalPage() {
           </div>
         </section>
       )}
+
+      {/* ── Attendance history (collapsible) ── */}
+      <section className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6">
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="text-base font-semibold text-slate-800">Attendance History</h2>
+          <button onClick={() => setShowHistory((v) => !v)} aria-expanded={showHistory}
+            className={`text-sm text-slate-500 hover:text-slate-800 rounded ${btnFocus} focus-visible:ring-slate-300`}>{showHistory ? 'Hide' : 'View history →'}</button>
+        </div>
+
+        {showHistory && (
+          <div className="mt-4">
+            {/* month navigator */}
+            <div className="flex items-center gap-2 mb-4">
+              <button onClick={() => setHistMonth((m) => monthShift(m, -1))} aria-label="Previous month"
+                className={`h-9 w-9 inline-flex items-center justify-center rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50 ${btnFocus} focus-visible:ring-slate-300`}>←</button>
+              <span className="text-sm font-medium text-slate-700 min-w-[9rem] text-center">{monthLabel(histMonth)}</span>
+              <button onClick={() => setHistMonth((m) => monthShift(m, 1))} aria-label="Next month" disabled={histMonth >= todayKuwait().slice(0, 7)}
+                className={`h-9 w-9 inline-flex items-center justify-center rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50 disabled:opacity-40 ${btnFocus} focus-visible:ring-slate-300`}>→</button>
+              {histMonth !== todayKuwait().slice(0, 7) && (
+                <button onClick={() => setHistMonth(todayKuwait().slice(0, 7))} className={`text-xs text-slate-500 hover:text-slate-800 rounded ${btnFocus} focus-visible:ring-slate-300`}>This month</button>
+              )}
+            </div>
+
+            {/* month summary */}
+            <dl className="grid grid-cols-2 sm:grid-cols-4 gap-4 border-y border-slate-100 py-4 mb-4">
+              <div><dt className="text-xs text-slate-400 uppercase tracking-wide">Days present</dt><dd className="mt-1 text-lg font-bold text-slate-800">{histStats.days}</dd></div>
+              <div><dt className="text-xs text-slate-400 uppercase tracking-wide">Total hours</dt><dd className="mt-1 text-lg font-bold text-slate-800">{hm(histStats.hours)}</dd></div>
+              <div><dt className="text-xs text-slate-400 uppercase tracking-wide">On time</dt><dd className="mt-1 text-lg font-bold text-slate-800">{histStats.onTime}<span className="text-sm font-medium text-slate-400">/{histStats.days}</span></dd></div>
+              <div><dt className="text-xs text-slate-400 uppercase tracking-wide">Late days</dt><dd className={`mt-1 text-lg font-bold ${histStats.late ? 'text-amber-600' : 'text-slate-800'}`}>{histStats.late}</dd></div>
+            </dl>
+
+            {histLoading ? <Spinner /> : histRecs.length === 0 ? (
+              <p className="py-6 text-center text-sm text-slate-400">No attendance records in {monthLabel(histMonth)}.</p>
+            ) : (
+              <ul className="divide-y divide-slate-100">
+                {histRecs.map((r) => {
+                  const st = r.justified ? { t: 'Justified', dot: 'bg-emerald-500', c: 'text-emerald-600' }
+                    : r.is_late ? { t: lateClassOf(r.clock_in, workStart), dot: 'bg-amber-500', c: 'text-amber-600' }
+                    : { t: 'On time', dot: 'bg-emerald-500', c: 'text-emerald-600' };
+                  return (
+                    <li key={r.id} className="py-2.5 flex flex-wrap items-center gap-x-5 gap-y-1">
+                      <div className="w-32 shrink-0 text-sm font-medium text-slate-700">{weekdayLabel(r.clock_in)}</div>
+                      <div className="text-sm text-slate-700"><span className="text-[11px] text-slate-400 uppercase mr-1">In</span>{fmtTime(r.clock_in)}</div>
+                      <div className="text-sm text-slate-700"><span className="text-[11px] text-slate-400 uppercase mr-1">Out</span>{r.clock_out ? fmtTime(r.clock_out) : '—'}</div>
+                      <div className="text-sm text-slate-700"><span className="text-[11px] text-slate-400 uppercase mr-1">Dur</span>{r.clock_out ? fmtDur(r.clock_in, r.clock_out, nowMs) : '—'}</div>
+                      <span className={`inline-flex items-center gap-1.5 text-xs font-medium ${st.c}`}><span className={`h-1.5 w-1.5 rounded-full ${st.dot}`} aria-hidden />{st.t}</span>
+                      {r.correction_reason && <span className="text-[11px] text-blue-500" title={r.correction_reason}>corrected</span>}
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
+        )}
+      </section>
 
       {/* ── Band 3 · My Leave (3A) + My Requests (3B), 50/50 on desktop ── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
