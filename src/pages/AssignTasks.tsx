@@ -3,6 +3,7 @@ import { ClipboardList, Plus, Send, Trash2, Check, RotateCcw } from 'lucide-reac
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { Spinner, Badge } from '../components/ui';
+import { notify } from '../lib/push';
 
 interface Emp { id: string; full_name: string; job_title: string | null; user_id: string | null; status: string | null }
 interface Task {
@@ -58,13 +59,14 @@ export default function AssignTasksPage() {
     if (!title.trim()) { setMsg('Give the task a title'); return; }
     setBusy(true); setMsg(null);
     const emp = empById.get(assignee);
-    const { error } = await supabase.from('assigned_tasks').insert({
+    const { data: created, error } = await supabase.from('assigned_tasks').insert({
       title: title.trim(), details: details.trim() || null,
       assignee_employee_id: assignee, assignee_name: emp?.full_name ?? null,
       assigned_by: profile?.full_name ?? null, priority, due_date: due || null, status: 'Open',
-    });
+    }).select('id').single();
     setBusy(false);
     if (error) { setMsg(`Could not create task: ${error.message}`); return; }
+    if (created?.id) notify('task_assigned', { id: created.id });
     setMsg(`Task assigned to ${emp?.full_name ?? 'employee'}`);
     setTitle(''); setDetails(''); setDue(''); setPriority('Medium');
     load();

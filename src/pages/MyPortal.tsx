@@ -8,6 +8,8 @@ import { useAuth } from '../context/AuthContext';
 import { Spinner, Badge } from '../components/ui';
 import { workingDaysBetween } from './Leave';
 import { lateClassOf, isEarlyLeave, LATE_STYLE } from '../lib/lateness';
+import { Bell } from 'lucide-react';
+import { pushSupported, pushEnabled, enablePush, isIosNotInstalled, notify } from '../lib/push';
 
 interface EmpRecord {
   id: string; full_name: string; user_id: string | null; job_title: string | null; location: string | null;
@@ -116,6 +118,19 @@ export default function MyPortalPage() {
   const [editLeaveId, setEditLeaveId] = useState<string | null>(null); // raw leave id being edited
   const [edStart, setEdStart] = useState('');
   const [edEnd, setEdEnd] = useState('');
+  const [pushState, setPushState] = useState<'unknown' | 'on' | 'off' | 'unsupported' | 'ios'>('unknown');
+  useEffect(() => {
+    if (!pushSupported()) { setPushState('unsupported'); return; }
+    if (isIosNotInstalled()) { setPushState('ios'); return; }
+    pushEnabled().then((on) => setPushState(on ? 'on' : 'off'));
+  }, []);
+  async function handleEnablePush() {
+    setMsg(null);
+    const r = await enablePush();
+    if (r.ok) { setPushState('on'); setMsg('Notifications enabled on this device'); }
+    else setMsg(r.error ?? 'Could not enable notifications');
+  }
+
   const [showHistory, setShowHistory] = useState(false);
   const [histMonth, setHistMonth] = useState(() => todayKuwait().slice(0, 7)); // yyyy-MM
   const [histRecs, setHistRecs] = useState<AttRec[]>([]);
@@ -267,6 +282,7 @@ export default function MyPortalPage() {
     setBusy(false);
     if (error) { setMsg(`Could not submit: ${error.message}`); return; }
     setMsg(`${lvType} request submitted — awaiting approval`);
+    notify('approval_request', { label: lvType === 'WFH' ? 'a WFH request' : `a ${lvType.toLowerCase()} leave request` });
     setShowLeaveForm(false); setLvStart(''); setLvEnd(''); setLvNotes(''); setLvFile(null);
     load();
   }
@@ -286,6 +302,7 @@ export default function MyPortalPage() {
     setBusy(false);
     if (error) { setMsg(`Could not submit: ${error.message}`); return; }
     setMsg('Request submitted — HR/manager will review it');
+    notify('approval_request', { label: showReqForm === 'HR update' ? 'an HR update request' : 'an attendance correction request' });
     setShowReqForm(null); setReqDetails('');
     load();
   }
@@ -424,11 +441,25 @@ export default function MyPortalPage() {
   return (
     <div className="max-w-6xl space-y-5">
       {/* ── Band 1 · Header ── */}
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">My Portal</h1>
-        <p className="mt-1 text-sm text-slate-500 flex items-center gap-2">
-          <span className={`h-2 w-2 rounded-full ${headerDot}`} aria-hidden />{headerStatus}
-        </p>
+      <div className="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">My Portal</h1>
+          <p className="mt-1 text-sm text-slate-500 flex items-center gap-2">
+            <span className={`h-2 w-2 rounded-full ${headerDot}`} aria-hidden />{headerStatus}
+          </p>
+        </div>
+        {pushState === 'off' && (
+          <button onClick={handleEnablePush}
+            className={`inline-flex items-center gap-1.5 px-3.5 py-2 min-h-[40px] rounded-lg border border-indigo-300 text-indigo-700 bg-indigo-50 text-sm font-medium hover:bg-indigo-100 ${btnFocus} focus-visible:ring-indigo-300`}>
+            <Bell size={15} aria-hidden /> Enable notifications
+          </button>
+        )}
+        {pushState === 'on' && (
+          <span className="inline-flex items-center gap-1.5 text-xs text-emerald-600 font-medium"><Bell size={13} aria-hidden /> Notifications on</span>
+        )}
+        {pushState === 'ios' && (
+          <span className="text-xs text-slate-400 max-w-[16rem] text-right">To get notifications on iPhone: Share → <b>Add to Home Screen</b>, then open it from there.</span>
+        )}
       </div>
 
       {msg && (
