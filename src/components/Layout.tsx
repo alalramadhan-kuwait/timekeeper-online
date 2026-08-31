@@ -1,7 +1,7 @@
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, TrendingUp, Hourglass, Truck, Handshake,
-  Star, Users, CalendarRange, LogOut, Watch, Menu, Contact, Settings, Gem, ClipboardCheck, PhoneCall, Boxes, History, UserRound, Wrench, Instagram, Clapperboard, Megaphone, Sparkles, Activity, Gauge, Inbox, ClipboardList, type LucideIcon,
+  Star, Users, CalendarRange, LogOut, Watch, Menu, Contact, Settings, Gem, ClipboardCheck, PhoneCall, Boxes, History, UserRound, Wrench, Instagram, Clapperboard, Megaphone, Sparkles, Activity, Gauge, Inbox, ClipboardList, ChevronDown, type LucideIcon,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useAuth, Role } from '../context/AuthContext';
@@ -112,6 +112,25 @@ export default function Layout() {
   const groups = groupsFor(role, pageAccess);
   const location = useLocation();
 
+  // which section contains the current route (so it opens automatically)
+  const activeGroup = groups.find((g) => g.title && g.items.some((n) => n.to !== '/' && location.pathname.startsWith(n.to)))?.title ?? null;
+
+  // collapsible sections — collapsed by default, only the active one open, choice persisted
+  const NAV_KEY = 'nav-open-groups';
+  const [openGroups, setOpenGroups] = useState<Set<string>>(() => {
+    try { const s = localStorage.getItem(NAV_KEY); if (s) return new Set<string>(JSON.parse(s)); } catch { /* ignore */ }
+    return new Set();
+  });
+  useEffect(() => {
+    if (activeGroup && !openGroups.has(activeGroup)) setOpenGroups((p) => new Set(p).add(activeGroup));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeGroup]);
+  const toggleGroup = (title: string) => setOpenGroups((p) => {
+    const n = new Set(p); n.has(title) ? n.delete(title) : n.add(title);
+    try { localStorage.setItem(NAV_KEY, JSON.stringify([...n])); } catch { /* ignore */ }
+    return n;
+  });
+
   // record page visits for the admin User Activity page (throttled, fire-and-forget)
   useEffect(() => { logActivity(user?.id, location.pathname); }, [user?.id, location.pathname]);
 
@@ -132,30 +151,39 @@ export default function Layout() {
           </div>
         </div>
         <nav className="flex-1 overflow-y-auto py-3">
-          {groups.map((g, gi) => (
-            <div key={g.title ?? gi} className={gi > 0 ? 'mt-3' : ''}>
-              {g.title && (
-                <div className="px-5 pt-1 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
-                  {g.title}
+          {(() => {
+            const NavItem = (n: NavItem) => (
+              <NavLink
+                key={n.to}
+                to={n.to}
+                end={n.to === '/'}
+                onClick={() => setOpen(false)}
+                className={({ isActive }) =>
+                  `flex items-center gap-3 px-5 py-2 text-sm ${isActive ? 'bg-slate-800 text-white border-r-2 border-amber-400' : 'text-slate-300 hover:bg-slate-800/60'}`}
+              >
+                <n.icon size={16} /> <span className="flex-1">{n.label}</span>
+                {n.to === '/inbox' && inboxN > 0 && (
+                  <span className="min-w-[1.25rem] h-5 px-1.5 rounded-full bg-amber-400 text-slate-900 text-[11px] font-bold flex items-center justify-center">{inboxN}</span>
+                )}
+              </NavLink>
+            );
+            return groups.map((g, gi) => {
+              if (!g.title) return <div key={gi}>{g.items.map(NavItem)}</div>;
+              const isOpen = openGroups.has(g.title);
+              const count = g.items.reduce((s, n) => s + (n.to === '/inbox' ? inboxN : 0), 0);
+              return (
+                <div key={g.title} className="mt-3">
+                  <button onClick={() => toggleGroup(g.title!)}
+                    className="w-full flex items-center gap-2 px-5 pt-1 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 hover:text-slate-300">
+                    <span className="flex-1 text-left">{g.title}</span>
+                    {!isOpen && count > 0 && <span className="h-1.5 w-1.5 rounded-full bg-amber-400" aria-hidden />}
+                    <ChevronDown size={13} className={`transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                  </button>
+                  {isOpen && g.items.map(NavItem)}
                 </div>
-              )}
-              {g.items.map((n) => (
-                <NavLink
-                  key={n.to}
-                  to={n.to}
-                  end={n.to === '/'}
-                  onClick={() => setOpen(false)}
-                  className={({ isActive }) =>
-                    `flex items-center gap-3 px-5 py-2 text-sm ${isActive ? 'bg-slate-800 text-white border-r-2 border-amber-400' : 'text-slate-300 hover:bg-slate-800/60'}`}
-                >
-                  <n.icon size={16} /> <span className="flex-1">{n.label}</span>
-                  {n.to === '/inbox' && inboxN > 0 && (
-                    <span className="min-w-[1.25rem] h-5 px-1.5 rounded-full bg-amber-400 text-slate-900 text-[11px] font-bold flex items-center justify-center">{inboxN}</span>
-                  )}
-                </NavLink>
-              ))}
-            </div>
-          ))}
+              );
+            });
+          })()}
         </nav>
         <div className="px-5 py-4 border-t border-slate-800 text-sm">
           <div className="font-medium text-white">{profile?.full_name}</div>
