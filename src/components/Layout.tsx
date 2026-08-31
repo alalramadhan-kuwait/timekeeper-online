@@ -124,7 +124,7 @@ export default function Layout() {
   return (
     <div className="min-h-screen flex">
       <aside className={`${open ? 'flex' : 'hidden'} md:flex w-60 shrink-0 bg-slate-900 text-slate-200 flex-col fixed md:static inset-y-0 z-40`}>
-        <div className="px-5 py-4 flex items-center gap-2 border-b border-slate-800">
+        <div className="px-5 py-4 flex items-center gap-2 border-b border-slate-800" style={{ paddingTop: 'calc(1rem + env(safe-area-inset-top))' }}>
           <Watch size={22} className="text-amber-400" />
           <div>
             <div className="font-bold text-white leading-tight">Timekeeper Online</div>
@@ -167,7 +167,7 @@ export default function Layout() {
       </aside>
 
       <div className="flex-1 min-w-0">
-        <div className="md:hidden flex items-center gap-3 bg-slate-900 text-white px-4 py-3">
+        <div className="md:hidden flex items-center gap-3 bg-slate-900 text-white px-4 py-3 sticky top-0 z-30" style={{ paddingTop: 'calc(0.75rem + env(safe-area-inset-top))' }}>
           <button onClick={() => setOpen((o) => !o)} aria-label="Menu"><Menu size={20} /></button>
           <span className="font-semibold">Timekeeper Online</span>
         </div>
