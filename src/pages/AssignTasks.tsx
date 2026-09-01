@@ -3,7 +3,6 @@ import { ClipboardList, Plus, Send, Trash2, Check, RotateCcw } from 'lucide-reac
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { Spinner, Badge } from '../components/ui';
-import { notify } from '../lib/push';
 
 interface Emp { id: string; full_name: string; job_title: string | null; user_id: string | null; status: string | null }
 interface Task {
@@ -66,7 +65,7 @@ export default function AssignTasksPage() {
     }).select('id').single();
     setBusy(false);
     if (error) { setMsg(`Could not create task: ${error.message}`); return; }
-    if (created?.id) notify('task_assigned', { id: created.id });
+    void created;
     setMsg(`Task assigned to ${emp?.full_name ?? 'employee'}`);
     setTitle(''); setDetails(''); setDue(''); setPriority('Medium');
     load();

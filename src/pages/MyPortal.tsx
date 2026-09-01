@@ -9,7 +9,7 @@ import { Spinner, Badge } from '../components/ui';
 import { workingDaysBetween } from './Leave';
 import { lateClassOf, isEarlyLeave, LATE_STYLE } from '../lib/lateness';
 import { Bell } from 'lucide-react';
-import { pushSupported, pushEnabled, enablePush, isIosNotInstalled, notify } from '../lib/push';
+import { pushSupported, pushEnabled, enablePush, isIosNotInstalled } from '../lib/push';
 
 interface EmpRecord {
   id: string; full_name: string; user_id: string | null; job_title: string | null; location: string | null;
@@ -282,7 +282,6 @@ export default function MyPortalPage() {
     setBusy(false);
     if (error) { setMsg(`Could not submit: ${error.message}`); return; }
     setMsg(`${lvType} request submitted — awaiting approval`);
-    notify('approval_request', { label: lvType === 'WFH' ? 'a WFH request' : `a ${lvType.toLowerCase()} leave request` });
     setShowLeaveForm(false); setLvStart(''); setLvEnd(''); setLvNotes(''); setLvFile(null);
     load();
   }
@@ -302,7 +301,6 @@ export default function MyPortalPage() {
     setBusy(false);
     if (error) { setMsg(`Could not submit: ${error.message}`); return; }
     setMsg('Request submitted — HR/manager will review it');
-    notify('approval_request', { label: showReqForm === 'HR update' ? 'an HR update request' : 'an attendance correction request' });
     setShowReqForm(null); setReqDetails('');
     load();
   }
