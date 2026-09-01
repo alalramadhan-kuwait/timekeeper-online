@@ -448,6 +448,16 @@ const demandListBase: CrudConfig = {
     { key: 'deposit_paid', label: 'Deposit', render: (r) => r.deposit_paid != null ? kd(r.deposit_paid) : <span className="text-slate-400">—</span> },
     { key: 'staff_responsible', label: 'Staff' },
   ],
+  rowActions: (r, reload) => (
+    r.list_type === 'Pre-Order' && !DEMAND_CLOSED.includes(r.status) ? (
+      <button
+        onClick={async () => { await supabase.from('waiting_list').update({ status: 'Delivered' }).eq('id', r.id); reload(); }}
+        className="text-xs px-2 py-1 rounded-lg border border-emerald-300 text-emerald-700 hover:bg-emerald-50 whitespace-nowrap"
+      >
+        Mark delivered
+      </button>
+    ) : null
+  ),
 };
 
 type ListTypeFilter = 'All' | 'Waiting List' | 'Pre-Order';

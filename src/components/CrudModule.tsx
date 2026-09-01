@@ -78,6 +78,8 @@ export interface CrudConfig {
   allowDelete?: (row: Record<string, any>) => boolean;
   /** Extra content rendered inside the edit form, below the fields. */
   formExtra?: (row: Record<string, any> | null) => React.ReactNode;
+  /** Quick per-row action buttons shown in the actions column (writable users only). */
+  rowActions?: (row: Record<string, any>, reload: () => void) => React.ReactNode;
 }
 
 export function CrudModule({ config }: { config: CrudConfig }) {
@@ -343,7 +345,8 @@ export function CrudModule({ config }: { config: CrudConfig }) {
                   ))}
                   {writable && (
                     <td className="px-4 py-2.5" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex gap-2 justify-end">
+                      <div className="flex gap-2 justify-end items-center">
+                        {config.rowActions?.(row, load)}
                         <button onClick={() => { setEditing(row); setShowForm(true); }} className="text-slate-400 hover:text-blue-600" aria-label="Edit"><Pencil size={15} /></button>
                         {(config.allowDelete?.(row) ?? true) && (
                           <button onClick={() => remove(row)} className="text-slate-400 hover:text-red-600" aria-label="Delete"><Trash2 size={15} /></button>
