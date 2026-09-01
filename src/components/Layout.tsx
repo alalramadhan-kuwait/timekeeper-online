@@ -1,12 +1,14 @@
-import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import { NavLink, Outlet, useLocation, useSearchParams } from 'react-router-dom';
 import {
   LayoutDashboard, TrendingUp, Hourglass, Truck, Handshake,
   Star, Users, CalendarRange, LogOut, Watch, Menu, Contact, Settings, Gem, ClipboardCheck, PhoneCall, Boxes, History, UserRound, Wrench, Instagram, Clapperboard, Megaphone, Sparkles, Activity, Gauge, Inbox, ClipboardList, ChevronDown, type LucideIcon,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useAuth, Role } from '../context/AuthContext';
 import { logActivity } from '../lib/activity';
 import { loadInbox, inboxCount } from '../lib/inbox';
+import { supabase } from '../lib/supabase';
+import { X as CloseIcon } from 'lucide-react';
 
 interface NavItem {
   to: string;
@@ -140,6 +142,20 @@ export default function Layout() {
     loadInbox(user, profile, role).then((d) => setInboxN(inboxCount(d))).catch(() => {});
   }, [user?.id, role, location.pathname === '/inbox']);
 
+  // notification tap: ?n=<id> marks it opened + shows a context banner (also indicates the item when the exact record can't open)
+  const [params, setParams] = useSearchParams();
+  const nHandled = useRef<string | null>(null);
+  const [notifBanner, setNotifBanner] = useState<{ title: string; body: string } | null>(null);
+  useEffect(() => {
+    const nId = params.get('n');
+    if (!nId || nHandled.current === nId) return;
+    nHandled.current = nId;
+    supabase.rpc('mark_notification_opened', { p_id: nId });
+    supabase.from('notifications').select('title, body').eq('id', nId).single()
+      .then(({ data }) => { if (data) { setNotifBanner(data as any); setTimeout(() => setNotifBanner(null), 9000); } });
+    const next = new URLSearchParams(params); next.delete('n'); setParams(next, { replace: true });
+  }, [params, setParams]);
+
   return (
     <div className="min-h-screen flex">
       <aside className={`${open ? 'flex' : 'hidden'} md:flex w-60 shrink-0 bg-slate-900 text-slate-200 flex-col fixed md:static inset-y-0 z-40`}>
@@ -201,6 +217,15 @@ export default function Layout() {
         </div>
         {/* full available width — tables were leaving a large empty gutter on wide screens */}
         <main className="p-4 md:p-6 w-full">
+          {notifBanner && (
+            <div className="mb-4 flex items-start gap-3 px-4 py-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800">
+              <div className="min-w-0 flex-1">
+                <div className="text-sm font-semibold">{notifBanner.title}</div>
+                <div className="text-sm text-amber-700">{notifBanner.body}</div>
+              </div>
+              <button onClick={() => setNotifBanner(null)} aria-label="Dismiss" className="shrink-0 text-amber-500 hover:text-amber-700"><CloseIcon size={16} /></button>
+            </div>
+          )}
           <Outlet />
         </main>
       </div>

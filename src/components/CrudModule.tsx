@@ -122,16 +122,15 @@ export function CrudModule({ config }: { config: CrudConfig }) {
   useEffect(() => { load(); }, [config.table]);
 
   // deep-link: ?focus=<id> opens that record's editor once it's loaded (from a notification tap)
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const focusId = searchParams.get('focus');
   const [focusedId, setFocusedId] = useState<string | null>(null);
   useEffect(() => {
     if (!focusId || loading || focusedId === focusId) return;
     const row = rows.find((r) => String(r.id) === focusId);
-    if (!row) return; // not in this list/instance — another CrudModule may hold it
+    if (!row) return; // not in this list/instance — another CrudModule may hold it (the banner names the item)
     setEditing(row); setShowForm(true); setFocusedId(focusId);
-    const next = new URLSearchParams(searchParams); next.delete('focus'); setSearchParams(next, { replace: true });
-  }, [focusId, rows, loading, focusedId, searchParams, setSearchParams]);
+  }, [focusId, rows, loading, focusedId]);
 
   // Derive combobox options from loaded rows
   const comboboxOptions = useMemo(() => {
