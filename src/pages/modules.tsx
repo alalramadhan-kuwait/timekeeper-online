@@ -406,6 +406,7 @@ function ExpiryCell({ date }: { date: string | null }) {
 
 /* ---------------- Demand List (Waiting + Pre-Orders) ---------------- */
 const DEMAND_STATUSES = ['Open', 'Contacted', 'Confirmed', 'Deposit paid', 'Ordered', 'Arrived', 'Delivered', 'Converted', 'Cancelled'];
+const DEMAND_CLOSED = ['Delivered', 'Converted', 'Cancelled']; // terminal — dates never flagged overdue
 
 const demandListBase: CrudConfig = {
   rowClickToEdit: true,
@@ -441,8 +442,9 @@ const demandListBase: CrudConfig = {
     { key: 'product', label: 'Product' },
     { key: 'status', label: 'Status' },
     { key: 'priority', label: 'Priority' },
-    { key: 'follow_up_date', label: 'Follow-up', render: (r) => r.follow_up_date ? <ExpiryCell date={r.follow_up_date} /> : <span className="text-slate-400">—</span> },
-    { key: 'expected_arrival', label: 'Expected arrival', render: (r) => r.expected_arrival ? <ExpiryCell date={r.expected_arrival} /> : <span className="text-slate-400">—</span> },
+    // closed rows (Delivered/Converted/Cancelled) show dates muted — never flagged overdue
+    { key: 'follow_up_date', label: 'Follow-up', render: (r) => !r.follow_up_date ? <span className="text-slate-400">—</span> : DEMAND_CLOSED.includes(r.status) ? <span className="text-slate-400">{r.follow_up_date}</span> : <ExpiryCell date={r.follow_up_date} /> },
+    { key: 'expected_arrival', label: 'Expected arrival', render: (r) => !r.expected_arrival ? <span className="text-slate-400">—</span> : DEMAND_CLOSED.includes(r.status) ? <span className="text-emerald-600">✓ {r.expected_arrival}</span> : <ExpiryCell date={r.expected_arrival} /> },
     { key: 'deposit_paid', label: 'Deposit', render: (r) => r.deposit_paid != null ? kd(r.deposit_paid) : <span className="text-slate-400">—</span> },
     { key: 'staff_responsible', label: 'Staff' },
   ],
