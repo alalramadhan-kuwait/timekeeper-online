@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Inbox as InboxIcon, CheckCircle, Clock, CalendarRange, FileText, Check, X, ChevronRight, ClipboardList } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -25,6 +25,15 @@ export default function InboxPage() {
   const [busy, setBusy] = useState<string | null>(null);
   const [remarks, setRemarks] = useState<Record<string, string>>({});
   const navigate = useNavigate();
+  const [sp] = useSearchParams();
+  const focusId = sp.get('focus');
+  // scroll to and highlight the record a notification pointed at
+  useEffect(() => {
+    if (!focusId || loading) return;
+    const el = document.getElementById(`nid-${focusId}`);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, [focusId, loading, data]);
+  const hl = (id: string) => (id === focusId ? 'ring-2 ring-amber-400 rounded-lg' : '');
 
   async function reload() {
     if (!user) { setLoading(false); return; }
@@ -91,7 +100,7 @@ export default function InboxPage() {
             {data.myTasks.map((t) => {
               const overdue = !!t.due_date && t.due_date < today;
               return (
-                <li key={t.id} className="px-5 py-3 flex flex-wrap items-start gap-3">
+                <li key={t.id} id={`nid-${t.id}`} className={`px-5 py-3 flex flex-wrap items-start gap-3 ${hl(t.id)}`}>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-sm font-medium text-slate-800">{t.title}</span>
@@ -155,7 +164,7 @@ export default function InboxPage() {
           </div>
           <ul className="divide-y divide-slate-100">
             {data.leaveApprovals.map((l) => (
-              <li key={l.id} className="px-5 py-3 flex flex-wrap items-center gap-3">
+              <li key={l.id} id={`nid-${l.id}`} className={`px-5 py-3 flex flex-wrap items-center gap-3 ${hl(l.id)}`}>
                 <div className="min-w-0 flex-1">
                   <div className="text-sm font-medium text-slate-800">{l.employee_name} · <span className="text-slate-500">{l.leave_type}</span></div>
                   <div className="text-xs text-slate-400">{l.leave_start} → {l.leave_end} ({l.days}d){l.notes ? ` · ${l.notes}` : ''}</div>
@@ -183,7 +192,7 @@ export default function InboxPage() {
           </div>
           <ul className="divide-y divide-slate-100">
             {data.requestApprovals.map((r) => (
-              <li key={r.id} className="px-5 py-3 space-y-2">
+              <li key={r.id} id={`nid-${r.id}`} className={`px-5 py-3 space-y-2 ${hl(r.id)}`}>
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="text-sm font-medium text-slate-800">{r.requester}</span>
                   <Badge className="bg-slate-100 text-slate-600 border-slate-200">{r.request_type}</Badge>

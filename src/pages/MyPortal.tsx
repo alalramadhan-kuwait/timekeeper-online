@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   UserRound, CalendarDays, Clock, LogIn, LogOut, MapPin, AlertCircle, CheckCircle, Home,
   Plus, Send, X, Inbox, Pencil,
@@ -363,6 +364,18 @@ export default function MyPortalPage() {
     })),
   ].sort((a, b) => (b.when ?? '').localeCompare(a.when ?? '')), [leaves, requests]);
 
+  // deep-link: ?req=lv-<id> / rq-<id> opens that request row (from a decision notification)
+  const [sp] = useSearchParams();
+  const reqParam = sp.get('req');
+  useEffect(() => {
+    if (!reqParam || loading) return;
+    const idx = allRequests.findIndex((r) => r.id === reqParam);
+    if (idx === -1) return;
+    if (idx >= 4) setShowAllReq(true);
+    setOpenReqId(reqParam);
+    setTimeout(() => document.getElementById(`req-${reqParam}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 150);
+  }, [reqParam, loading, allRequests]);
+
   // is today an approved leave / WFH day? (drives the attendance banner)
   const todayLeave = useMemo(() => {
     const t = todayKuwait();
@@ -714,7 +727,7 @@ export default function MyPortalPage() {
                 const editable = portalReady && r.kind === 'leave' && (r.status === 'Pending' || r.status === 'Approved');
                 const editing = editLeaveId === r.rawId;
                 return (
-                  <li key={r.id}>
+                  <li key={r.id} id={`req-${r.id}`} className={reqParam === r.id ? 'ring-2 ring-amber-400 rounded-lg' : ''}>
                     <div role="button" tabIndex={0}
                       onClick={() => setOpenReqId(open ? null : r.id)}
                       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOpenReqId(open ? null : r.id); } }}

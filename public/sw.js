@@ -17,16 +17,21 @@ self.addEventListener('push', (event) => {
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  const path = (event.notification.data && event.notification.data.url) || '';
-  const scope = self.registration.scope; // e.g. https://host/timekeeper-online/
-  let target;
-  if (path.startsWith('/#')) target = scope + path.slice(1);
-  else if (path.startsWith('#')) target = scope + path;
-  else target = new URL(path || '.', scope).href;
-  event.waitUntil(
-    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((cls) => {
-      for (const c of cls) { if ('focus' in c) { if (c.navigate) c.navigate(target); return c.focus(); } }
-      return self.clients.openWindow(target);
-    })
-  );
+  const raw = (event.notification.data && event.notification.data.url) || '#/inbox';
+  // normalize to a hash string like "#/purchase-orders?focus=123"
+  let hash = raw.startsWith('/#') ? raw.slice(1) : raw;
+  if (!hash.startsWith('#')) hash = '#' + (hash.startsWith('/') ? hash : '/' + hash);
+  const scope = self.registration.scope; // https://host/timekeeper-online/
+  const target = scope + hash;
+  event.waitUntil((async () => {
+    const cls = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    for (const c of cls) {
+      try { await c.focus(); } catch (_e) { /* ignore */ }
+      // postMessage is what reliably re-routes an already-open PWA on iOS
+      try { c.postMessage({ type: 'nav', hash }); } catch (_e) { /* ignore */ }
+      try { if (c.navigate) await c.navigate(target); } catch (_e) { /* ignore */ }
+      return;
+    }
+    await self.clients.openWindow(target);
+  })());
 });
