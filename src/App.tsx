@@ -11,6 +11,7 @@ import HistoryLogPage from './pages/HistoryLog';
 import MyPortalPage from './pages/MyPortal';
 import InboxPage from './pages/Inbox';
 import AssignTasksPage from './pages/AssignTasks';
+import NotificationSettingsPage from './pages/NotificationSettings';
 import InstagramPage from './pages/Instagram';
 import UserActivityPage from './pages/UserActivity';
 import SettingsPage from './pages/Settings';
@@ -65,6 +66,7 @@ function Shell() {
         <Route path="/company-documents" element={g('/company-documents', <CompanyDocsPage />)} />
         <Route path="/history" element={g('/history', <HistoryLogPage />)} />
         <Route path="/settings" element={g('/settings', <SettingsPage />)} />
+        <Route path="/notification-settings" element={g('/notification-settings', <NotificationSettingsPage />)} />
         <Route path="*" element={<Navigate to="/" />} />
       </Route>
     </Routes>

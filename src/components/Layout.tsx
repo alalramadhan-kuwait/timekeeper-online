@@ -1,7 +1,7 @@
 import { NavLink, Outlet, useLocation, useSearchParams } from 'react-router-dom';
 import {
   LayoutDashboard, TrendingUp, Hourglass, Truck, Handshake,
-  Star, Users, CalendarRange, LogOut, Watch, Menu, Contact, Settings, Gem, ClipboardCheck, PhoneCall, Boxes, History, UserRound, Wrench, Instagram, Clapperboard, Megaphone, Sparkles, Activity, Gauge, Inbox, ClipboardList, ChevronDown, type LucideIcon,
+  Star, Users, CalendarRange, LogOut, Watch, Menu, Contact, Settings, Gem, ClipboardCheck, PhoneCall, Boxes, History, UserRound, Wrench, Instagram, Clapperboard, Megaphone, Sparkles, Activity, Gauge, Inbox, ClipboardList, ChevronDown, BellRing, type LucideIcon,
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useAuth, Role } from '../context/AuthContext';
@@ -77,6 +77,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/activity', label: 'User Activity', icon: Activity, roles: ['admin', 'manager'] },
       { to: '/performance', label: 'Employee Performance', icon: Gauge, roles: ['admin', 'manager'] },
       { to: '/history', label: 'History Log', icon: History, roles: ['admin', 'manager'] },
+      { to: '/notification-settings', label: 'Notifications', icon: BellRing, roles: ['admin'] },
       { to: '/settings', label: 'Settings', icon: Settings, roles: ['admin', 'manager'] },
     ],
   },
