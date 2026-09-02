@@ -12,6 +12,7 @@ import MyPortalPage from './pages/MyPortal';
 import InboxPage from './pages/Inbox';
 import AssignTasksPage from './pages/AssignTasks';
 import NotificationSettingsPage from './pages/NotificationSettings';
+import NotificationsPage from './pages/Notifications';
 import InstagramPage from './pages/Instagram';
 import UserActivityPage from './pages/UserActivity';
 import SettingsPage from './pages/Settings';
@@ -41,6 +42,7 @@ function Shell() {
         <Route path="/" element={<Dashboard />} />
         <Route path="/me" element={<MyPortalPage />} />
         <Route path="/inbox" element={<InboxPage />} />
+        <Route path="/notifications" element={<NotificationsPage />} />
         <Route path="/tasks" element={g('/tasks', <AssignTasksPage />)} />
         <Route path="/sales" element={g('/sales', <SalesPage />)} />
         <Route path="/crm" element={g('/crm', <CrmPage />)} />

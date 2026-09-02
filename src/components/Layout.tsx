@@ -1,12 +1,13 @@
 import { NavLink, Outlet, useLocation, useSearchParams } from 'react-router-dom';
 import {
   LayoutDashboard, TrendingUp, Hourglass, Truck, Handshake,
-  Star, Users, CalendarRange, LogOut, Watch, Menu, Contact, Settings, Gem, ClipboardCheck, PhoneCall, Boxes, History, UserRound, Wrench, Instagram, Clapperboard, Megaphone, Sparkles, Activity, Gauge, Inbox, ClipboardList, ChevronDown, BellRing, type LucideIcon,
+  Star, Users, CalendarRange, LogOut, Watch, Menu, Contact, Settings, Gem, ClipboardCheck, PhoneCall, Boxes, History, UserRound, Wrench, Instagram, Clapperboard, Megaphone, Sparkles, Activity, Gauge, Inbox, ClipboardList, ChevronDown, BellRing, Bell, type LucideIcon,
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useAuth, Role } from '../context/AuthContext';
 import { logActivity } from '../lib/activity';
 import { loadInbox, inboxCount } from '../lib/inbox';
+import { unreadNotificationCount, markNotificationsRead } from '../lib/notifications';
 import { supabase } from '../lib/supabase';
 import { X as CloseIcon } from 'lucide-react';
 
@@ -29,6 +30,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/', label: 'Dashboard', icon: LayoutDashboard, roles: ['admin', 'manager', 'staff', 'hr', 'viewer', 'sales', 'operations'] },
       { to: '/me', label: 'My Portal', icon: UserRound, roles: ['admin', 'manager', 'staff', 'hr', 'viewer', 'sales', 'operations'] },
       { to: '/inbox', label: 'Inbox', icon: Inbox, roles: ['admin', 'manager', 'staff', 'hr', 'viewer', 'sales', 'operations'] },
+      { to: '/notifications', label: 'Notifications', icon: Bell, roles: ['admin', 'manager', 'staff', 'hr', 'viewer', 'sales', 'operations', 'marketing'] },
     ],
   },
   {
@@ -77,7 +79,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/activity', label: 'User Activity', icon: Activity, roles: ['admin', 'manager'] },
       { to: '/performance', label: 'Employee Performance', icon: Gauge, roles: ['admin', 'manager'] },
       { to: '/history', label: 'History Log', icon: History, roles: ['admin', 'manager'] },
-      { to: '/notification-settings', label: 'Notifications', icon: BellRing, roles: ['admin'] },
+      { to: '/notification-settings', label: 'Notification Settings', icon: BellRing, roles: ['admin'] },
       { to: '/settings', label: 'Settings', icon: Settings, roles: ['admin', 'manager'] },
     ],
   },
@@ -86,12 +88,12 @@ const NAV_GROUPS: NavGroup[] = [
 /** Flat catalogue of every page, for the per-user access editor in Settings. */
 export interface PageDef { to: string; label: string; group: string }
 export const PAGES: PageDef[] = NAV_GROUPS.flatMap((g) =>
-  g.items.filter((i) => i.to !== '/settings' && i.to !== '/me' && i.to !== '/' && i.to !== '/inbox').map((i) => ({ to: i.to, label: i.label, group: g.title ?? 'Main' })),
+  g.items.filter((i) => i.to !== '/settings' && i.to !== '/me' && i.to !== '/' && i.to !== '/inbox' && i.to !== '/notifications').map((i) => ({ to: i.to, label: i.label, group: g.title ?? 'Main' })),
 );
 
 /** Whether a user may open a page, honouring per-user overrides then role defaults. */
 export function canAccessPath(to: string, role: Role | null, pageAccess: string[] | null): boolean {
-  if (to === '/' || to === '/me' || to === '/inbox') return true; // dashboard, personal portal and inbox are always available
+  if (to === '/' || to === '/me' || to === '/inbox' || to === '/notifications') return true; // always available to everyone
   // user management stays role-gated and cannot be granted via page_access
   if (to === '/settings') return role === 'admin' || role === 'manager';
   // hidden from the menu but still reachable by URL for HR (module kept per cleanup decision)
@@ -112,6 +114,7 @@ export default function Layout() {
   const { profile, role, pageAccess, signOut, user } = useAuth();
   const [open, setOpen] = useState(false);
   const [inboxN, setInboxN] = useState(0);
+  const [notifN, setNotifN] = useState(0);
   const groups = groupsFor(role, pageAccess);
   const location = useLocation();
 
@@ -143,6 +146,12 @@ export default function Layout() {
     loadInbox(user, profile, role).then((d) => setInboxN(inboxCount(d))).catch(() => {});
   }, [user?.id, role, location.pathname === '/inbox']);
 
+  // unread notification-centre badge (refresh on login and when the feed is opened)
+  useEffect(() => {
+    if (!user) { setNotifN(0); return; }
+    unreadNotificationCount(user, profile, role).then(setNotifN).catch(() => {});
+  }, [user?.id, role, location.pathname === '/notifications']);
+
   // notification tap: ?n=<id> marks it opened + shows a context banner (also indicates the item when the exact record can't open)
   const [params, setParams] = useSearchParams();
   const nHandled = useRef<string | null>(null);
@@ -152,6 +161,7 @@ export default function Layout() {
     if (!nId || nHandled.current === nId) return;
     nHandled.current = nId;
     supabase.rpc('mark_notification_opened', { p_id: nId });
+    if (user) markNotificationsRead(user.id, [nId]); // also clear it from the notification centre
     supabase.from('notifications').select('title, body').eq('id', nId).single()
       .then(({ data }) => { if (data) { setNotifBanner(data as any); setTimeout(() => setNotifBanner(null), 9000); } });
     const next = new URLSearchParams(params); next.delete('n'); setParams(next, { replace: true });
@@ -181,6 +191,9 @@ export default function Layout() {
                 <n.icon size={16} /> <span className="flex-1">{n.label}</span>
                 {n.to === '/inbox' && inboxN > 0 && (
                   <span className="min-w-[1.25rem] h-5 px-1.5 rounded-full bg-amber-400 text-slate-900 text-[11px] font-bold flex items-center justify-center">{inboxN}</span>
+                )}
+                {n.to === '/notifications' && notifN > 0 && (
+                  <span className="min-w-[1.25rem] h-5 px-1.5 rounded-full bg-amber-400 text-slate-900 text-[11px] font-bold flex items-center justify-center">{notifN}</span>
                 )}
               </NavLink>
             );
@@ -215,6 +228,10 @@ export default function Layout() {
         <div className="md:hidden flex items-center gap-3 bg-slate-900 text-white px-4 py-3 sticky top-0 z-30" style={{ paddingTop: 'calc(0.75rem + env(safe-area-inset-top))' }}>
           <button onClick={() => setOpen((o) => !o)} aria-label="Menu"><Menu size={20} /></button>
           <span className="font-semibold">Timekeeper Online</span>
+          <NavLink to="/notifications" aria-label="Notifications" className="ml-auto relative p-1">
+            <Bell size={20} />
+            {notifN > 0 && <span className="absolute top-0 right-0 h-4 min-w-4 px-1 rounded-full bg-amber-400 text-slate-900 text-[10px] font-bold flex items-center justify-center">{notifN}</span>}
+          </NavLink>
         </div>
         {/* full available width — tables were leaving a large empty gutter on wide screens */}
         <main className="p-4 md:p-6 w-full">
