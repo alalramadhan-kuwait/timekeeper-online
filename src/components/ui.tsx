@@ -73,15 +73,17 @@ export function StatusBadge({ value }: { value: string }) {
 
 export function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
   return (
-    // full-screen page on mobile; centered dialog on desktop
-    <div className="fixed inset-0 z-50 bg-white sm:flex sm:items-start sm:justify-center sm:bg-black/40 sm:p-4 sm:overflow-y-auto" onClick={onClose}>
-      <div className="bg-white w-full h-full flex flex-col sm:h-auto sm:max-w-2xl sm:mt-8 sm:mb-8 sm:rounded-xl sm:shadow-xl" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center gap-2 px-5 py-3 border-b border-slate-200 sticky top-0 bg-white z-10" style={{ paddingTop: 'calc(0.75rem + env(safe-area-inset-top))' }}>
-          <button onClick={onClose} className="sm:hidden -ml-1 p-1 text-slate-500 hover:text-slate-800" aria-label="Back"><ChevronLeft size={22} /></button>
-          <h2 className="font-semibold text-slate-800 flex-1 truncate">{title}</h2>
-          <button onClick={onClose} className="hidden sm:block text-slate-400 hover:text-slate-600" aria-label="Close"><X size={18} /></button>
-        </div>
-        <div className="p-5 overflow-y-auto flex-1">{children}</div>
+    // full-screen page on every screen; content is centered in a readable column
+    <div className="fixed inset-0 z-50 bg-white flex flex-col">
+      <div className="flex items-center gap-2 px-4 sm:px-6 py-3 border-b border-slate-200 bg-white shrink-0" style={{ paddingTop: 'calc(0.75rem + env(safe-area-inset-top))' }}>
+        <button onClick={onClose} className="-ml-1 p-1 text-slate-500 hover:text-slate-800 flex items-center gap-1" aria-label="Back">
+          <ChevronLeft size={22} /><span className="hidden sm:inline text-sm">Back</span>
+        </button>
+        <h2 className="font-semibold text-slate-800 flex-1 truncate text-center sm:text-left">{title}</h2>
+        <button onClick={onClose} className="p-1 text-slate-400 hover:text-slate-600" aria-label="Close"><X size={18} /></button>
+      </div>
+      <div className="flex-1 overflow-y-auto">
+        <div className="max-w-3xl mx-auto p-5 sm:p-6">{children}</div>
       </div>
     </div>
   );
