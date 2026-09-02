@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { RefreshCw, Link2, X, Wallet, Truck, FileText, Flag } from 'lucide-react';
+import { RefreshCw, Link2, X, Wallet, Truck, FileText, Flag, ChevronDown } from 'lucide-react';
 import { CrudModule, CrudConfig } from '../components/CrudModule';
-import { Badge, Spinner } from '../components/ui';
+import { Badge, Spinner, Modal } from '../components/ui';
 import { formatKD } from '../lib/format';
 import { expiryTier, tierClass, tierLabel } from '../lib/expiry';
 import { supabase } from '../lib/supabase';
@@ -336,6 +336,145 @@ const baseConfig: CrudConfig = {
   ],
 };
 
+// ── Redesigned PO view: summary on top, reference as compact text, editable bits in collapsible sections ──
+const fmtDay = (d?: string | null) => (d ? new Date(`${d}T12:00:00Z`).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' }) : '—');
+const PO_STATUS_CHIP: Record<string, string> = {
+  'Fully Received': 'bg-emerald-100 text-emerald-700 border-emerald-200',
+  'Partially Received': 'bg-amber-100 text-amber-700 border-amber-200',
+  Ordered: 'bg-blue-100 text-blue-700 border-blue-200',
+  'Pending Approval': 'bg-slate-100 text-slate-600 border-slate-200',
+  Cancelled: 'bg-slate-100 text-slate-500 border-slate-200',
+};
+const poInput = 'w-full px-3 py-2 rounded-lg border border-slate-300 text-sm bg-white';
+
+function POSection({ title, subtitle, defaultOpen, children }: { title: string; subtitle?: React.ReactNode; defaultOpen?: boolean; children: React.ReactNode }) {
+  const [open, setOpen] = useState(!!defaultOpen);
+  return (
+    <div className="border border-slate-200 rounded-xl overflow-hidden">
+      <button type="button" onClick={() => setOpen((o) => !o)} className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50">
+        <span className="font-medium text-slate-800 flex-1 text-left">{title}</span>
+        {subtitle}
+        <ChevronDown size={16} className={`text-slate-400 transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open && <div className="px-4 pb-4 pt-1 space-y-3">{children}</div>}
+    </div>
+  );
+}
+const RefRow = ({ label, value }: { label: string; value: React.ReactNode }) => (
+  <div className="flex justify-between gap-4 text-sm py-1"><span className="text-slate-500">{label}</span><span className="text-slate-800 font-medium text-right">{value == null || value === '' ? '—' : value}</span></div>
+);
+const POField = ({ label, children }: { label: string; children: React.ReactNode }) => (
+  <label className="block text-sm"><span className="block text-slate-500 mb-1">{label}</span>{children}</label>
+);
+
+function PODetail({ row, onClose, reload, projectNames }: { row: Record<string, any>; onClose: () => void; reload: () => void; projectNames: string[] }) {
+  const [pf, setPf] = useState<Record<string, any>>({
+    payment_status: row.payment_status ?? 'Unpaid', amount_paid: row.amount_paid ?? 0, payment_date: row.payment_date ?? '',
+    payment_method: row.payment_method ?? '', brand: row.brand ?? '', shipment_status: row.shipment_status ?? '',
+    invoice_received: !!row.invoice_received, team_notified: !!row.team_notified, closed_override: !!row.closed_override,
+    linked_project: row.linked_project ?? '', notes: row.notes ?? '',
+  });
+  const [saving, setSaving] = useState(false);
+  const set = (k: string, v: any) => setPf((p) => ({ ...p, [k]: v }));
+
+  const total = Number(row.total_cost ?? 0);
+  const balance = total - Number(pf.amount_paid || 0);
+  const ordered = Number(row.ordered_qty ?? 0);
+  const received = Number(row.received_qty ?? 0);
+  const remaining = ordered - received;
+
+  async function save() {
+    setSaving(true);
+    const payload: any = {
+      payment_status: pf.payment_status, amount_paid: pf.amount_paid === '' ? null : Number(pf.amount_paid),
+      payment_date: pf.payment_date || null, payment_method: pf.payment_method || null, brand: pf.brand || null,
+      shipment_status: pf.shipment_status || null, invoice_received: pf.invoice_received, team_notified: pf.team_notified,
+      closed_override: pf.closed_override, linked_project: pf.linked_project || null, notes: pf.notes || null,
+    };
+    if (pf.closed_override) payload.status = 'Fully Received';
+    await supabase.from('purchase_orders').update(payload).eq('id', row.id);
+    setSaving(false); reload(); onClose();
+  }
+
+  return (
+    <Modal title={row.po_number ?? 'Purchase order'} onClose={onClose}>
+      {/* summary — which PO / supplier / status / anything to act on */}
+      <div className="mb-5">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <div className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+              {row.linked_project && <Flag size={16} className="text-violet-600 fill-violet-500" />}{row.po_number}
+            </div>
+            <div className="text-sm text-slate-500 mt-0.5">{[row.supplier, row.outlet].filter(Boolean).join(' · ') || '—'}</div>
+          </div>
+          <Badge className={PO_STATUS_CHIP[row.status] ?? 'bg-slate-100 text-slate-600 border-slate-200'}>{row.status ?? '—'}</Badge>
+        </div>
+        <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-slate-600">
+          <span>{ordered} pcs · {row.item_count ?? 0} items</span>
+          <span className="text-slate-300">·</span>
+          <span className="text-slate-400">Created {fmtDay(row.created_date)}</span>
+        </div>
+        {(balance > 0 || (remaining > 0 && ['Ordered', 'Partially Received'].includes(row.status))) && (
+          <div className="mt-3 flex flex-wrap gap-2">
+            {balance > 0 && <Badge className="bg-rose-100 text-rose-700 border-rose-200">Balance {kd(balance)} due</Badge>}
+            {remaining > 0 && ['Ordered', 'Partially Received'].includes(row.status) && <Badge className="bg-amber-100 text-amber-700 border-amber-200">{remaining} pcs awaiting receipt</Badge>}
+          </div>
+        )}
+      </div>
+
+      <div className="space-y-3">
+        <POSection title="Order details">
+          <RefRow label="Supplier invoice #" value={row.supplier_invoice_no} />
+          <RefRow label="Expected arrival" value={fmtDay(row.expected_arrival)} />
+          <RefRow label="Created date" value={fmtDay(row.created_date)} />
+          <RefRow label="Type" value={row.po_type} />
+          <POField label="Brand"><input value={pf.brand} onChange={(e) => set('brand', e.target.value)} className={poInput} placeholder="e.g. Rolex" /></POField>
+          <POField label="Limited project">
+            <select value={pf.linked_project} onChange={(e) => set('linked_project', e.target.value)} className={poInput}>
+              <option value="">— none —</option>
+              {projectNames.map((p) => <option key={p} value={p}>{p}</option>)}
+            </select>
+          </POField>
+        </POSection>
+
+        <POSection title="Quantities" subtitle={<span className="text-xs text-slate-400">{received}/{ordered}</span>}>
+          <RefRow label="Ordered" value={`${ordered} pcs`} />
+          <RefRow label="Received" value={`${received} pcs`} />
+          <RefRow label="Remaining" value={<span className={remaining > 0 ? 'text-amber-600' : ''}>{remaining} pcs</span>} />
+        </POSection>
+
+        <POSection title="Payment" defaultOpen subtitle={balance > 0 ? <Badge className="bg-rose-100 text-rose-700 border-rose-200">{kd(balance)}</Badge> : <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">Settled</Badge>}>
+          <RefRow label="Total cost" value={kd(total)} />
+          <RefRow label="Balance" value={<span className={balance > 0 ? 'text-rose-600 font-semibold' : 'text-slate-400'}>{kd(balance)}</span>} />
+          <POField label="Amount paid (KD)"><input type="number" step="any" value={pf.amount_paid} onChange={(e) => set('amount_paid', e.target.value)} className={poInput} /></POField>
+          <div className="grid grid-cols-2 gap-3">
+            <POField label="Payment status"><select value={pf.payment_status} onChange={(e) => set('payment_status', e.target.value)} className={poInput}>{PAYMENT_STATUSES.map((s) => <option key={s}>{s}</option>)}</select></POField>
+            <POField label="Payment date"><input type="date" value={pf.payment_date} onChange={(e) => set('payment_date', e.target.value)} className={poInput} /></POField>
+          </div>
+          <POField label="Payment method"><select value={pf.payment_method} onChange={(e) => set('payment_method', e.target.value)} className={poInput}><option value="">—</option>{PAYMENT_METHODS.map((s) => <option key={s}>{s}</option>)}</select></POField>
+          <label className="flex items-center gap-2 text-sm text-slate-700"><input type="checkbox" checked={pf.invoice_received} onChange={(e) => set('invoice_received', e.target.checked)} className="h-4 w-4" /> Invoice received</label>
+        </POSection>
+
+        <POSection title="Shipment & receiving">
+          <POField label="Shipment status"><input value={pf.shipment_status} onChange={(e) => set('shipment_status', e.target.value)} className={poInput} placeholder="e.g. At customs / DHL in transit" /></POField>
+          <label className="flex items-center gap-2 text-sm text-slate-700"><input type="checkbox" checked={pf.team_notified} onChange={(e) => set('team_notified', e.target.checked)} className="h-4 w-4" /> Team notified</label>
+          <label className="flex items-center gap-2 text-sm text-slate-700"><input type="checkbox" checked={pf.closed_override} onChange={(e) => set('closed_override', e.target.checked)} className="h-4 w-4" /> Close order (short receipt)</label>
+          <p className="text-xs text-slate-400">Marks a short-received order as done — shows Fully Received and the sync won’t reopen it.</p>
+        </POSection>
+
+        <POSection title="Notes"><textarea value={pf.notes} onChange={(e) => set('notes', e.target.value)} rows={3} className={`${poInput} resize-none`} /></POSection>
+
+        {isSynced(row) && <POSection title="Line items"><LineItems poId={row.id} /></POSection>}
+      </div>
+
+      <div className="mt-5 flex justify-end gap-2">
+        <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg border border-slate-300 text-sm">Cancel</button>
+        <button type="button" onClick={save} disabled={saving} className="px-4 py-2 rounded-lg bg-slate-900 text-white text-sm font-medium hover:bg-slate-700 disabled:opacity-60">{saving ? 'Saving…' : 'Save'}</button>
+      </div>
+    </Modal>
+  );
+}
+
 export function PurchaseOrdersPage() {
   const { role } = useAuth();
   const [projectNames, setProjectNames] = useState<string[]>([]);
@@ -392,6 +531,7 @@ export function PurchaseOrdersPage() {
     fields: baseConfig.fields.map((f) =>
       f.key === 'linked_project' ? { ...f, options: projectNames } : f),
     formExtra: (row) => (row?.id && isSynced(row) ? <LineItems poId={row.id} /> : null),
+    detailView: (row, ctx) => <PODetail row={row} onClose={ctx.onClose} reload={ctx.reload} projectNames={projectNames} />,
     onChanged: loadSummary, // recording a payment should move the cards
   }), [projectNames, loadSummary]);
 

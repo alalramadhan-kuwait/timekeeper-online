@@ -80,6 +80,8 @@ export interface CrudConfig {
   formExtra?: (row: Record<string, any> | null) => React.ReactNode;
   /** Quick per-row action buttons shown in the actions column (writable users only). */
   rowActions?: (row: Record<string, any>, reload: () => void) => React.ReactNode;
+  /** Custom full record view rendered instead of the generic form when editing an existing row. */
+  detailView?: (row: Record<string, any>, ctx: { onClose: () => void; reload: () => void }) => React.ReactNode;
 }
 
 export function CrudModule({ config }: { config: CrudConfig }) {
@@ -363,13 +365,20 @@ export function CrudModule({ config }: { config: CrudConfig }) {
       )}
 
       {showForm && (
-        <RecordForm
-          config={config}
-          initial={editing}
-          comboboxOptions={comboboxOptions}
-          onCancel={() => { setShowForm(false); setEditing(null); }}
-          onSave={save}
-        />
+        config.detailView && editing
+          ? config.detailView(editing, {
+              onClose: () => { setShowForm(false); setEditing(null); },
+              reload: () => { load(); config.onChanged?.(); },
+            })
+          : (
+            <RecordForm
+              config={config}
+              initial={editing}
+              comboboxOptions={comboboxOptions}
+              onCancel={() => { setShowForm(false); setEditing(null); }}
+              onSave={save}
+            />
+          )
       )}
     </div>
   );
