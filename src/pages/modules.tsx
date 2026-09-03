@@ -19,7 +19,7 @@ export const cleanHandle = (h: unknown): string | null => {
 
 const salesRoles = (r: string | null) => ['admin', 'manager', 'staff', 'sales'].includes(r ?? '');
 const purchasingRoles = (r: string | null) => ['admin', 'manager', 'operations'].includes(r ?? '');
-const hrRoles = (r: string | null) => ['admin', 'hr'].includes(r ?? '');
+const hrRoles = (r: string | null) => ['admin', 'manager', 'hr'].includes(r ?? ''); // no separate HR — managers act as HR
 const marketingRoles = (r: string | null) => ['admin', 'manager', 'marketing'].includes(r ?? '');
 
 /* ---------------- Content Planner (Marketing) ---------------- */

@@ -192,7 +192,7 @@ export default function LeavePage() {
     table: 'leave_records',
     title: 'Leave Requests',
     description: 'Days auto-calculate as working days (Fridays excluded) if left blank — override manually for public holidays.',
-    canWrite: (r) => ['admin', 'hr'].includes(r ?? ''),
+    canWrite: (r) => ['admin', 'manager', 'hr'].includes(r ?? ''),
     stampCreatedBy: false,
     orderBy: { column: 'leave_start', ascending: false },
     onChanged: () => setReload((x) => x + 1),
