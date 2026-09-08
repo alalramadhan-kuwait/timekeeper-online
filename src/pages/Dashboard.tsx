@@ -221,6 +221,48 @@ function IgTopPosts({ posts }: { posts: IgPostRow[] }) {
   );
 }
 
+// ── Who's at work now — live list of clocked-in staff (managers/HR) ──
+interface AtWork { id: string; employee_name: string | null; clock_in: string; is_late: boolean; justified: boolean; location: string | null }
+function WhoAtWork() {
+  const [recs, setRecs] = useState<AtWork[]>([]);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kuwait' });
+    supabase.from('attendance_records')
+      .select('id, employee_name, clock_in, is_late, justified, location')
+      .is('clock_out', null)
+      .gte('clock_in', `${today}T00:00:00+03:00`).lte('clock_in', `${today}T23:59:59+03:00`)
+      .order('clock_in')
+      .then(({ data }) => { setRecs((data as AtWork[]) ?? []); setLoading(false); });
+  }, []);
+  const t = (iso: string) => new Date(iso).toLocaleTimeString('en-KW', { hour: '2-digit', minute: '2-digit', hour12: true, timeZone: 'Asia/Kuwait' });
+
+  return (
+    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 sm:p-5">
+      <div className="flex items-center gap-2 mb-3">
+        <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" aria-hidden />
+        <h2 className="text-sm font-semibold text-slate-700">Who's at work now</h2>
+        <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">{recs.length}</Badge>
+        <Link to="/attendance" className="ml-auto text-xs text-blue-600 hover:underline">Attendance →</Link>
+      </div>
+      {loading ? <Spinner /> : recs.length === 0 ? (
+        <p className="text-sm text-slate-400 py-2">No one is clocked in right now.</p>
+      ) : (
+        <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
+          {recs.map((r) => (
+            <li key={r.id} className="flex items-center gap-2 text-sm py-1">
+              <span className="font-medium text-slate-700 truncate">{r.employee_name ?? 'Unknown'}</span>
+              {r.is_late && !r.justified && <span className="text-[11px] text-amber-600">late</span>}
+              <span className="ml-auto text-xs text-slate-400 whitespace-nowrap">since {t(r.clock_in)}</span>
+              {r.location && <span className="text-[11px] text-slate-400 hidden sm:inline">· {r.location}</span>}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
 // ── Dashboard ─────────────────────────────────────────────────────────────────
 export default function Dashboard() {
   const { role, profile, pageAccess } = useAuth();
@@ -553,6 +595,7 @@ export default function Dashboard() {
           </ChartCard>}
         </>
       } />}
+      {can('/attendance') && <WhoAtWork />}
       {(can('/hr') || can('/attendance')) && <Section title="HR & Attendance" detailLink={can('/attendance') ? '/attendance' : '/hr'} cards={hrCards} />}
       {can('/repairs') && <Section title="Repair Watches" detailLink="/repairs" cards={repairCards} charts={
         <ChartCard title="Repairs by status" hint="open cases" link="/repairs">
