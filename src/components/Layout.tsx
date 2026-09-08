@@ -1,13 +1,14 @@
 import { NavLink, Outlet, useLocation, useSearchParams } from 'react-router-dom';
 import {
   LayoutDashboard, TrendingUp, Hourglass, Truck, Handshake,
-  Star, Users, CalendarRange, LogOut, Watch, Menu, Contact, Settings, Gem, ClipboardCheck, PhoneCall, Boxes, History, UserRound, Wrench, Instagram, Clapperboard, Megaphone, Sparkles, Activity, Gauge, Inbox, ClipboardList, ChevronDown, BellRing, Bell, type LucideIcon,
+  Star, Users, CalendarRange, LogOut, Watch, Menu, Contact, Settings, Gem, ClipboardCheck, PhoneCall, Boxes, History, UserRound, Wrench, Instagram, Clapperboard, Megaphone, Sparkles, Activity, Gauge, Inbox, ClipboardList, ChevronDown, BellRing, Bell, Download, Share, type LucideIcon,
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useAuth, Role } from '../context/AuthContext';
 import { logActivity } from '../lib/activity';
 import { loadInbox, inboxCount } from '../lib/inbox';
 import { unreadNotificationCount, markNotificationsRead } from '../lib/notifications';
+import { getInstallPrompt, promptInstall, isStandalone, isIos } from '../lib/pwaInstall';
 import { supabase } from '../lib/supabase';
 import { X as CloseIcon } from 'lucide-react';
 
@@ -115,6 +116,22 @@ export default function Layout() {
   const [open, setOpen] = useState(false);
   const [inboxN, setInboxN] = useState(0);
   const [notifN, setNotifN] = useState(0);
+
+  // install-as-app button
+  const [canInstall, setCanInstall] = useState(!!getInstallPrompt());
+  const [showIosHelp, setShowIosHelp] = useState(false);
+  useEffect(() => {
+    const on = () => setCanInstall(true);
+    const off = () => setCanInstall(false);
+    window.addEventListener('pwa-installable', on);
+    window.addEventListener('pwa-installed', off);
+    return () => { window.removeEventListener('pwa-installable', on); window.removeEventListener('pwa-installed', off); };
+  }, []);
+  const showInstall = !isStandalone() && (canInstall || isIos());
+  async function handleInstall() {
+    if (getInstallPrompt()) { await promptInstall(); setCanInstall(!!getInstallPrompt()); }
+    else if (isIos()) setShowIosHelp(true);
+  }
   const groups = groupsFor(role, pageAccess);
   const location = useLocation();
 
@@ -228,10 +245,15 @@ export default function Layout() {
         <div className="md:hidden flex items-center gap-3 bg-slate-900 text-white px-4 py-3 sticky top-0 z-30" style={{ paddingTop: 'calc(0.75rem + env(safe-area-inset-top))' }}>
           <button onClick={() => setOpen((o) => !o)} aria-label="Menu"><Menu size={20} /></button>
           <span className="font-semibold">Timekeeper Online</span>
-          <NavLink to="/notifications" aria-label="Notifications" className="ml-auto relative p-1">
-            <Bell size={20} />
-            {notifN > 0 && <span className="absolute top-0 right-0 h-4 min-w-4 px-1 rounded-full bg-amber-400 text-slate-900 text-[10px] font-bold flex items-center justify-center">{notifN}</span>}
-          </NavLink>
+          <div className="ml-auto flex items-center gap-1">
+            {showInstall && (
+              <button onClick={handleInstall} aria-label="Install app" className="p-1"><Download size={20} /></button>
+            )}
+            <NavLink to="/notifications" aria-label="Notifications" className="relative p-1">
+              <Bell size={20} />
+              {notifN > 0 && <span className="absolute top-0 right-0 h-4 min-w-4 px-1 rounded-full bg-amber-400 text-slate-900 text-[10px] font-bold flex items-center justify-center">{notifN}</span>}
+            </NavLink>
+          </div>
         </div>
         {/* full available width — tables were leaving a large empty gutter on wide screens */}
         <main className="p-4 md:p-6 w-full">
@@ -247,6 +269,21 @@ export default function Layout() {
           <Outlet />
         </main>
       </div>
+
+      {showIosHelp && (
+        <div className="fixed inset-0 z-[60] bg-black/40 flex items-end sm:items-center justify-center p-4" onClick={() => setShowIosHelp(false)}>
+          <div className="bg-white rounded-2xl p-5 max-w-sm w-full" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center gap-2 mb-2"><Download size={18} className="text-slate-700" /><h3 className="font-semibold text-slate-800">Install Timekeeper</h3></div>
+            <p className="text-sm text-slate-600">Add it to your home screen so it opens like an app (and can send you notifications):</p>
+            <ol className="mt-3 space-y-2 text-sm text-slate-700">
+              <li className="flex items-center gap-2">1. Tap the <span className="inline-flex items-center gap-1 font-medium">Share <Share size={15} /></span> button in Safari's toolbar.</li>
+              <li>2. Scroll down and choose <span className="font-medium">“Add to Home Screen”</span>.</li>
+              <li>3. Open <span className="font-medium">Timekeeper</span> from your home screen.</li>
+            </ol>
+            <button onClick={() => setShowIosHelp(false)} className="mt-4 w-full px-4 py-2 rounded-lg bg-slate-900 text-white text-sm font-medium">Got it</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
