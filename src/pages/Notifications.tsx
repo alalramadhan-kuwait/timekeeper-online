@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Bell, Truck, Gem, CalendarRange, FileText, ClipboardList, Wrench, Hourglass,
-  Handshake, Users, Settings as SettingsIcon, CheckCheck, ChevronRight,
+  Handshake, Users, Settings as SettingsIcon, CheckCheck, ChevronRight, Clock,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Spinner } from '../components/ui';
@@ -14,6 +14,7 @@ const iconFor = (ev: string) => {
   if (ev.startsWith('leave')) return CalendarRange;
   if (ev.startsWith('req_') || ev === 'acct_new' || ev === 'acct_role' || ev === 'acct_del') return FileText;
   if (ev.startsWith('task')) return ClipboardList;
+  if (ev.startsWith('att')) return Clock;
   if (ev.startsWith('repair')) return Wrench;
   if (ev.startsWith('preorder')) return Hourglass;
   if (ev.startsWith('consign')) return Handshake;
