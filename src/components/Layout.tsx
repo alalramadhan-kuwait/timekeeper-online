@@ -242,7 +242,7 @@ export default function Layout() {
       </aside>
 
       <div className="flex-1 min-w-0">
-        <div className="md:hidden flex items-center gap-3 bg-slate-900 text-white px-4 py-3 sticky top-0 z-30" style={{ paddingTop: 'calc(0.75rem + env(safe-area-inset-top))' }}>
+        <div className="md:hidden flex items-center gap-3 text-white px-4 py-3 sticky top-0 z-30 tk-glass bg-slate-900/75 backdrop-blur-lg backdrop-saturate-150" style={{ paddingTop: 'calc(0.75rem + env(safe-area-inset-top))' }}>
           <button onClick={() => setOpen((o) => !o)} aria-label="Menu"><Menu size={20} /></button>
           <span className="font-semibold">Timekeeper Online</span>
           <div className="ml-auto flex items-center gap-1">
@@ -266,7 +266,9 @@ export default function Layout() {
               <button onClick={() => setNotifBanner(null)} aria-label="Dismiss" className="shrink-0 text-amber-500 hover:text-amber-700"><CloseIcon size={16} /></button>
             </div>
           )}
-          <Outlet />
+          <div key={location.pathname} className="tk-route">
+            <Outlet />
+          </div>
         </main>
       </div>
 
