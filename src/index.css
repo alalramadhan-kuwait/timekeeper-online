@@ -5,3 +5,52 @@
 body {
   @apply bg-slate-100 text-slate-900 antialiased;
 }
+
+/* ── apple-design pass ─────────────────────────────────────────── */
+
+/* Response §1: instant tactile feedback on press (respond on pointer-down, ease-out) */
+@media (prefers-reduced-motion: no-preference) {
+  button:not(:disabled),
+  [role='button'] {
+    transition: transform 120ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  button:not(:disabled):active,
+  [role='button']:active {
+    transform: scale(0.97);
+  }
+}
+
+/* Typography §15: tighten large display text; body stays near 0 */
+h1 { letter-spacing: -0.02em; }
+h2 { letter-spacing: -0.01em; }
+
+/* Record-editor sheet §7 (spatial consistency: enters from bottom) + §3 grabbable */
+.tk-sheet { will-change: transform; }
+.tk-grab { touch-action: none; } /* header handle: claim vertical drags, body still scrolls */
+@media (prefers-reduced-motion: no-preference) {
+  .tk-sheet-enter { animation: tk-sheet-up 340ms cubic-bezier(0.22, 1, 0.36, 1); }
+}
+@keyframes tk-sheet-up {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+/* Desktop §5 Flexibility: a quick pop instead of a full slide */
+@media (min-width: 640px) and (prefers-reduced-motion: no-preference) {
+  .tk-sheet-enter { animation: tk-pop 200ms ease both; }
+}
+@keyframes tk-pop {
+  from { opacity: 0; transform: translateY(8px) scale(0.99); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* §14 reduced motion — cross-fade, no slide/scale/spring */
+@media (prefers-reduced-motion: reduce) {
+  .tk-sheet-enter { animation: tk-fade 160ms ease both; }
+  .tk-sheet { transition: opacity 160ms ease !important; transform: none !important; }
+}
+@keyframes tk-fade { from { opacity: 0; } to { opacity: 1; } }
+
+/* §14 reduced transparency — solidify translucent chrome */
+@media (prefers-reduced-transparency: reduce) {
+  .tk-glass { background: #0f172a !important; backdrop-filter: none !important; }
+}

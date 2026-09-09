@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { X, ChevronLeft } from 'lucide-react';
 
 export function Card({ title, value, sub, accent }: { title: string; value: string | number; sub?: string; accent?: string }) {
@@ -71,16 +72,62 @@ export function StatusBadge({ value }: { value: string }) {
   return <Badge className={statusColors[value]}>{value}</Badge>;
 }
 
+// Apple-design sheet: full-screen page that enters from the bottom and, on mobile,
+// can be grabbed by the header and thrown down to dismiss (1:1 tracking, velocity
+// projection, rubber-band, interruptible). Desktop stays a plain full-screen page.
 export function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
+  const sheet = useRef<HTMLDivElement>(null);
+  const drag = useRef<{ active: boolean; startY: number; dy: number; hist: { y: number; t: number }[] }>({ active: false, startY: 0, dy: 0, hist: [] });
+
+  const reduce = () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const mobile = () => window.matchMedia('(max-width: 639px)').matches;
+  const setY = (y: number, animate: boolean) => {
+    const el = sheet.current; if (!el) return;
+    el.style.transition = animate ? 'transform 320ms cubic-bezier(0.22,1,0.36,1)' : 'none';
+    el.style.transform = `translateY(${y}px)`;
+  };
+  const rubber = (over: number) => (over * 400 * 0.55) / (400 + 0.55 * over); // §9 progressive resistance
+  const project = (v: number) => (v / 1000) * 0.998 / (1 - 0.998);            // §6 momentum projection
+
+  function close() {
+    if (reduce() || !mobile()) { onClose(); return; }
+    const h = sheet.current?.getBoundingClientRect().height ?? window.innerHeight;
+    setY(h, true); setTimeout(onClose, 300); // §7 exits the way it entered (downward)
+  }
+  function down(e: React.PointerEvent) {
+    if (reduce() || !mobile() || (e.target as HTMLElement).closest('button')) return;
+    if (sheet.current) sheet.current.style.animation = 'none'; // §3 start from the live value
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    drag.current = { active: true, startY: e.clientY, dy: 0, hist: [{ y: e.clientY, t: performance.now() }] };
+  }
+  function move(e: React.PointerEvent) {
+    const d = drag.current; if (!d.active) return;
+    let dy = e.clientY - d.startY;
+    if (dy < 0) dy = -rubber(-dy); // resist dragging up past the top
+    d.dy = dy; setY(dy, false);
+    d.hist.push({ y: e.clientY, t: performance.now() }); if (d.hist.length > 5) d.hist.shift();
+  }
+  function up() {
+    const d = drag.current; if (!d.active) return; d.active = false;
+    const a = d.hist[0], b = d.hist[d.hist.length - 1];
+    const v = (b.y - a.y) / Math.max(1, b.t - a.t) * 1000; // release velocity px/s §5
+    const h = sheet.current?.getBoundingClientRect().height ?? window.innerHeight;
+    if (d.dy > 0 && (d.dy + project(v) > h * 0.35 || v > 600)) { setY(h, true); setTimeout(onClose, 300); }
+    else setY(0, true); // snap home
+  }
+
   return (
-    // full-screen page on every screen; content is centered in a readable column
-    <div className="fixed inset-0 z-50 bg-white flex flex-col">
-      <div className="flex items-center gap-2 px-4 sm:px-6 py-3 border-b border-slate-200 bg-white shrink-0" style={{ paddingTop: 'calc(0.75rem + env(safe-area-inset-top))' }}>
-        <button onClick={onClose} className="-ml-1 p-1 text-slate-500 hover:text-slate-800 flex items-center gap-1" aria-label="Back">
-          <ChevronLeft size={22} /><span className="hidden sm:inline text-sm">Back</span>
-        </button>
-        <h2 className="font-semibold text-slate-800 flex-1 truncate text-center sm:text-left">{title}</h2>
-        <button onClick={onClose} className="p-1 text-slate-400 hover:text-slate-600" aria-label="Close"><X size={18} /></button>
+    <div className="fixed inset-0 z-50 bg-white flex flex-col tk-sheet tk-sheet-enter" ref={sheet}>
+      <div onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}
+        className="tk-grab shrink-0 border-b border-slate-200 bg-white cursor-grab active:cursor-grabbing" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+        <div className="sm:hidden flex justify-center pt-2"><span className="h-1.5 w-10 rounded-full bg-slate-300" /></div>
+        <div className="flex items-center gap-2 px-4 sm:px-6 py-3">
+          <button onClick={close} className="-ml-1 p-1 text-slate-500 hover:text-slate-800 flex items-center gap-1" aria-label="Back">
+            <ChevronLeft size={22} /><span className="hidden sm:inline text-sm">Back</span>
+          </button>
+          <h2 className="font-semibold text-slate-800 flex-1 truncate text-center sm:text-left">{title}</h2>
+          <button onClick={close} className="p-1 text-slate-400 hover:text-slate-600" aria-label="Close"><X size={18} /></button>
+        </div>
       </div>
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-3xl mx-auto p-5 sm:p-6">{children}</div>
