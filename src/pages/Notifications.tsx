@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion, useReducedMotion } from 'motion/react';
 import {
   Bell, Truck, Gem, CalendarRange, FileText, ClipboardList, Wrench, Hourglass,
   Handshake, Users, Settings as SettingsIcon, CheckCheck, ChevronRight, Clock,
@@ -37,6 +38,7 @@ export default function NotificationsPage() {
   const [items, setItems] = useState<FeedNotif[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const reduce = useReducedMotion();
 
   async function load() {
     if (!user) { setLoading(false); return; }
@@ -89,10 +91,13 @@ export default function NotificationsPage() {
         </div>
       ) : (
         <ul className="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100 overflow-hidden">
-          {items.map((n) => {
+          {items.map((n, i) => {
             const Icon = iconFor(n.event_type);
             return (
-              <li key={n.id}>
+              <motion.li key={n.id}
+                initial={reduce ? false : { opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ type: 'spring', bounce: 0, duration: 0.35, delay: Math.min(i * 0.03, 0.25) }}>
                 <button onClick={() => open(n)} className={`w-full flex items-start gap-3 px-4 py-3.5 text-left hover:bg-slate-50 transition-colors ${n.read ? '' : 'bg-blue-50/40'}`}>
                   <span className="mt-0.5 shrink-0">{!n.read ? <span className="block h-2.5 w-2.5 rounded-full bg-blue-500 mt-1.5" /> : <span className="block h-2.5 w-2.5" />}</span>
                   <span className={`mt-0.5 h-8 w-8 shrink-0 rounded-lg flex items-center justify-center ${n.read ? 'bg-slate-100 text-slate-400' : 'bg-blue-100 text-blue-600'}`}><Icon size={16} /></span>
@@ -105,7 +110,7 @@ export default function NotificationsPage() {
                   </span>
                   {n.url && <ChevronRight size={16} className="text-slate-300 shrink-0 mt-2" />}
                 </button>
-              </li>
+              </motion.li>
             );
           })}
         </ul>

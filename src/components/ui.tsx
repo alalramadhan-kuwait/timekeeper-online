@@ -1,4 +1,5 @@
-import { useRef } from 'react';
+import { useEffect } from 'react';
+import { motion, useAnimationControls, useDragControls, useReducedMotion, type PanInfo } from 'motion/react';
 import { X, ChevronLeft } from 'lucide-react';
 
 export function Card({ title, value, sub, accent }: { title: string; value: string | number; sub?: string; accent?: string }) {
@@ -72,53 +73,52 @@ export function StatusBadge({ value }: { value: string }) {
   return <Badge className={statusColors[value]}>{value}</Badge>;
 }
 
-// Apple-design sheet: full-screen page that enters from the bottom and, on mobile,
-// can be grabbed by the header and thrown down to dismiss (1:1 tracking, velocity
-// projection, rubber-band, interruptible). Desktop stays a plain full-screen page.
+// Apple-design sheet on real springs (Motion): enters from the bottom, and on mobile
+// the header can be grabbed and thrown down to dismiss — the drag hands its velocity
+// to the spring (§5), momentum is projected to decide dismiss vs snap (§6), the motion
+// is interruptible (§3) and rubber-bands upward (§9). Desktop = a quick pop.
+const SHEET_SPRING = { type: 'spring', bounce: 0.15, duration: 0.42 } as const;
+const POP_SPRING = { type: 'spring', bounce: 0, duration: 0.24 } as const;
+const projectY = (v: number) => (v / 1000) * 0.998 / (1 - 0.998); // §6
+const isMobileSheet = () => typeof window !== 'undefined' && window.matchMedia('(max-width: 639px)').matches;
+
 export function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
-  const sheet = useRef<HTMLDivElement>(null);
-  const drag = useRef<{ active: boolean; startY: number; dy: number; hist: { y: number; t: number }[] }>({ active: false, startY: 0, dy: 0, hist: [] });
+  const controls = useAnimationControls();
+  const dragCtl = useDragControls();
+  const reduce = useReducedMotion();
+  const mobile = isMobileSheet();
 
-  const reduce = () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const mobile = () => window.matchMedia('(max-width: 639px)').matches;
-  const setY = (y: number, animate: boolean) => {
-    const el = sheet.current; if (!el) return;
-    el.style.transition = animate ? 'transform 320ms cubic-bezier(0.22,1,0.36,1)' : 'none';
-    el.style.transform = `translateY(${y}px)`;
-  };
-  const rubber = (over: number) => (over * 400 * 0.55) / (400 + 0.55 * over); // §9 progressive resistance
-  const project = (v: number) => (v / 1000) * 0.998 / (1 - 0.998);            // §6 momentum projection
+  useEffect(() => {
+    if (reduce) { controls.set({ y: 0, opacity: 1, scale: 1 }); return; }
+    if (mobile) { controls.set({ y: '100%' }); controls.start({ y: 0, transition: SHEET_SPRING }); }
+    else { controls.set({ opacity: 0, y: 8, scale: 0.99 }); controls.start({ opacity: 1, y: 0, scale: 1, transition: POP_SPRING }); }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  function close() {
-    if (reduce() || !mobile()) { onClose(); return; }
-    const h = sheet.current?.getBoundingClientRect().height ?? window.innerHeight;
-    setY(h, true); setTimeout(onClose, 300); // §7 exits the way it entered (downward)
+  async function close() {
+    if (reduce) { await controls.start({ opacity: 0, transition: { duration: 0.12 } }); onClose(); return; }
+    if (mobile) { await controls.start({ y: '100%', transition: { type: 'spring', bounce: 0, duration: 0.32 } }); onClose(); }
+    else { await controls.start({ opacity: 0, y: 8, scale: 0.99, transition: { duration: 0.16 } }); onClose(); }
   }
-  function down(e: React.PointerEvent) {
-    if (reduce() || !mobile() || (e.target as HTMLElement).closest('button')) return;
-    if (sheet.current) sheet.current.style.animation = 'none'; // §3 start from the live value
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-    drag.current = { active: true, startY: e.clientY, dy: 0, hist: [{ y: e.clientY, t: performance.now() }] };
+
+  function onDragEnd(_e: PointerEvent | MouseEvent | TouchEvent, info: PanInfo) {
+    const h = window.innerHeight;
+    const projected = info.offset.y + projectY(info.velocity.y);
+    if (info.offset.y > 0 && (projected > h * 0.35 || info.velocity.y > 600)) {
+      controls.start({ y: '100%', transition: { type: 'spring', bounce: 0, duration: 0.3, velocity: info.velocity.y } }).then(onClose);
+    } else {
+      controls.start({ y: 0, transition: { type: 'spring', bounce: 0.12, duration: 0.4, velocity: info.velocity.y } });
+    }
   }
-  function move(e: React.PointerEvent) {
-    const d = drag.current; if (!d.active) return;
-    let dy = e.clientY - d.startY;
-    if (dy < 0) dy = -rubber(-dy); // resist dragging up past the top
-    d.dy = dy; setY(dy, false);
-    d.hist.push({ y: e.clientY, t: performance.now() }); if (d.hist.length > 5) d.hist.shift();
-  }
-  function up() {
-    const d = drag.current; if (!d.active) return; d.active = false;
-    const a = d.hist[0], b = d.hist[d.hist.length - 1];
-    const v = (b.y - a.y) / Math.max(1, b.t - a.t) * 1000; // release velocity px/s §5
-    const h = sheet.current?.getBoundingClientRect().height ?? window.innerHeight;
-    if (d.dy > 0 && (d.dy + project(v) > h * 0.35 || v > 600)) { setY(h, true); setTimeout(onClose, 300); }
-    else setY(0, true); // snap home
-  }
+
+  const dragProps = mobile && !reduce
+    ? { drag: 'y' as const, dragControls: dragCtl, dragListener: false, dragConstraints: { top: 0, bottom: 0 }, dragElastic: { top: 0.12, bottom: 1 }, onDragEnd }
+    : {};
 
   return (
-    <div className="fixed inset-0 z-50 bg-white flex flex-col tk-sheet tk-sheet-enter" ref={sheet}>
-      <div onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}
+    <motion.div className="fixed inset-0 z-50 bg-white flex flex-col" style={{ willChange: 'transform' }} animate={controls} {...dragProps}>
+      <div
+        onPointerDown={(e) => { if (mobile && !reduce && !(e.target as HTMLElement).closest('button')) dragCtl.start(e); }}
         className="tk-grab shrink-0 border-b border-slate-200 bg-white cursor-grab active:cursor-grabbing" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         <div className="sm:hidden flex justify-center pt-2"><span className="h-1.5 w-10 rounded-full bg-slate-300" /></div>
         <div className="flex items-center gap-2 px-4 sm:px-6 py-3">
@@ -132,7 +132,7 @@ export function Modal({ title, onClose, children }: { title: string; onClose: ()
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-3xl mx-auto p-5 sm:p-6">{children}</div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
