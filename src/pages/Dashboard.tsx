@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  ExternalLink, ChevronDown, StickyNote, BellOff, UserRound, CheckCheck, ArrowRight, RotateCcw, Bell,
+  ExternalLink, ChevronDown, StickyNote, BellOff, UserRound, CheckCheck, ArrowRight, RotateCcw, Bell, ClipboardList,
 } from 'lucide-react';
 import { format, startOfWeek, startOfMonth } from 'date-fns';
 import { supabase } from '../lib/supabase';
@@ -260,6 +260,34 @@ function WhoAtWork() {
         </ul>
       )}
     </div>
+  );
+}
+
+// ── Pending workflow tasks — measurability for the owner (managers/admin) ──
+function WorkflowTasksCard() {
+  const [n, setN] = useState<{ open: number; overdue: number } | null>(null);
+  useEffect(() => {
+    const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kuwait' });
+    supabase.from('assigned_tasks').select('due_date').eq('status', 'Open')
+      .then(({ data }) => {
+        const rows = data ?? [];
+        setN({ open: rows.length, overdue: rows.filter((r: any) => r.due_date && r.due_date < today).length });
+      });
+  }, []);
+  return (
+    <Link to="/tasks" className="block bg-white rounded-xl border border-slate-200 shadow-sm p-4 hover:border-slate-300 transition-colors mb-6">
+      <div className="flex items-center gap-2 mb-1">
+        <ClipboardList size={16} className="text-slate-500" />
+        <span className="text-sm font-semibold text-slate-700">Pending tasks</span>
+        <span className="ml-auto text-xs text-blue-600">Manage →</span>
+      </div>
+      {n == null ? <div className="h-6" /> : (
+        <div className="flex items-baseline gap-4">
+          <span className="text-2xl font-bold text-slate-900">{n.open}<span className="text-sm font-medium text-slate-400 ml-1">open</span></span>
+          <span className={`text-lg font-semibold ${n.overdue ? 'text-rose-600' : 'text-emerald-600'}`}>{n.overdue}<span className="text-sm font-medium text-slate-400 ml-1">overdue</span></span>
+        </div>
+      )}
+    </Link>
   );
 }
 
@@ -573,6 +601,8 @@ export default function Dashboard() {
           </div>
         </div>
       )}
+
+      {isManager && <WorkflowTasksCard />}
 
       {can('/sales') && <Section title="Sales & Customers" detailLink="/sales" cards={salesCards} charts={
         <>

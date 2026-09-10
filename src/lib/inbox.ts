@@ -30,6 +30,7 @@ export interface RequestApproval {
 export interface MyTask {
   id: string; title: string; details: string | null;
   priority: string; due_date: string | null; assigned_by: string | null;
+  url?: string; // deep-link to the source record when the task came from a workflow
 }
 
 export interface InboxData {
@@ -79,14 +80,20 @@ export async function loadInbox(user: User, profile: Profile | null, role: Role 
   ]);
   const { names, empIds } = ident;
 
-  // tasks an admin/manager directly assigned to this person
+  // tasks assigned to this person directly, or to their team (role)
   let myTasks: MyTask[] = [];
-  if (empIds.length > 0) {
+  const orParts: string[] = [];
+  if (empIds.length > 0) orParts.push(`assignee_employee_id.in.(${empIds.join(',')})`);
+  if (role) orParts.push(`assignee_role.eq.${role}`);
+  if (orParts.length) {
     const rows = await safe<any>(
-      supabase.from('assigned_tasks').select('id, title, details, priority, due_date, assigned_by, status')
-        .in('assignee_employee_id', empIds).eq('status', 'Open').order('due_date', { ascending: true, nullsFirst: false }),
+      supabase.from('assigned_tasks').select('id, title, details, priority, due_date, assigned_by, status, source_table, source_id')
+        .or(orParts.join(',')).eq('status', 'Open').order('due_date', { ascending: true, nullsFirst: false }),
     );
-    myTasks = rows.map((r) => ({ id: r.id, title: r.title, details: r.details, priority: r.priority, due_date: r.due_date, assigned_by: r.assigned_by }));
+    myTasks = rows.map((r) => ({
+      id: r.id, title: r.title, details: r.details, priority: r.priority, due_date: r.due_date, assigned_by: r.assigned_by,
+      url: r.source_table === 'limited_projects' && r.source_id ? `#/limited-projects?focus=${r.source_id}` : undefined,
+    }));
   }
 
   const mine = (v: unknown) => names.has(norm(v)) && norm(v) !== '';

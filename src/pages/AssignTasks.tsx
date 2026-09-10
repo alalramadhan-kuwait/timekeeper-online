@@ -8,8 +8,9 @@ interface Emp { id: string; full_name: string; job_title: string | null; user_id
 interface Task {
   id: string; title: string; details: string | null; assignee_employee_id: string | null;
   assignee_name: string | null; assigned_by: string | null; priority: string; due_date: string | null;
-  status: string; created_at: string;
+  status: string; created_at: string; assignee_role: string | null; source_table: string | null; source_id: string | null;
 }
+const daysOpen = (iso: string) => Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
 
 const PRIORITIES = ['Low', 'Medium', 'High'];
 const PRIORITY_BADGE: Record<string, string> = {
@@ -159,8 +160,10 @@ export default function AssignTasksPage() {
                     </div>
                     {t.details && <p className="text-sm text-slate-500 mt-0.5">{t.details}</p>}
                     <div className="text-xs text-slate-400 mt-0.5">
-                      {t.assignee_name ?? 'Unassigned'}{t.assigned_by ? ` · by ${t.assigned_by}` : ''}
+                      {t.assignee_role ? `Team: ${t.assignee_role}` : (t.assignee_name ?? 'Unassigned')}{t.assigned_by ? ` · by ${t.assigned_by}` : ''}
                       {t.due_date && <> · <span className={overdue ? 'text-rose-600 font-medium' : ''}>{overdue ? 'Overdue ' : 'Due '}{t.due_date}</span></>}
+                      {t.status === 'Open' && <> · open {daysOpen(t.created_at)}d</>}
+                      {t.source_table === 'limited_projects' && t.source_id && <> · <a href={`#/limited-projects?focus=${t.source_id}`} className="text-blue-600 hover:underline">open project →</a></>}
                     </div>
                   </div>
                   <div className="flex items-center gap-1.5">

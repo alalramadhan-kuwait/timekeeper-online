@@ -101,10 +101,11 @@ export default function InboxPage() {
               const overdue = !!t.due_date && t.due_date < today;
               return (
                 <li key={t.id} id={`nid-${t.id}`} className={`px-5 py-3 flex flex-wrap items-start gap-3 ${hl(t.id)}`}>
-                  <div className="min-w-0 flex-1">
+                  <div className={`min-w-0 flex-1 ${t.url ? 'cursor-pointer' : ''}`} onClick={() => t.url && navigate(t.url.replace(/^#/, ''))}>
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-sm font-medium text-slate-800">{t.title}</span>
                       <Badge className={PRIORITY[t.priority] ?? PRIORITY.Medium}>{t.priority}</Badge>
+                      {t.url && <span className="text-xs text-blue-600">Open →</span>}
                     </div>
                     {t.details && <p className="text-sm text-slate-500 mt-0.5">{t.details}</p>}
                     <div className="text-xs text-slate-400 mt-0.5">
