@@ -1,0 +1,8 @@
+# Supabase CLI config. Link with:  supabase link --project-ref ttshgrujnycapugrmyxs
+project_id = "ttshgrujnycapugrmyxs"
+
+[functions.notify-flush]
+verify_jwt = false
+
+[functions.notify-test]
+verify_jwt = true
