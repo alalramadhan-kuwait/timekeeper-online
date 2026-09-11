@@ -98,6 +98,10 @@ button{cursor:pointer}
 }
 .props{border-left:1px solid var(--rule)}
 .sec{padding:10px 12px 4px;font-size:11px;letter-spacing:.08em;color:var(--muted)}
+/* Quiet by default — it is reassurance, not an announcement. It only takes
+   colour when the browser is refusing to store anything. */
+.autoNote{font-size:11.5px;line-height:1.4;color:var(--muted);padding:2px 2px 6px}
+.autoNote.warn{color:var(--danger);font-weight:600}
 
 /* layers */
 .lgrp{margin-bottom:1px}
@@ -680,6 +684,7 @@ input[type=range]:active::-webkit-slider-thumb{ transform:scale(1.18) }
     <div class="sec">Saved versions</div>
     <div id="versions"></div>
     <div style="padding:8px 12px 20px;display:flex;flex-direction:column;gap:6px">
+      <div id="autoNote" class="autoNote">Every change is kept automatically.</div>
       <button class="btn" id="dup">Duplicate current</button>
       <button class="btn" id="setDefault">Open with this design</button>
       <button class="btn" id="clrDefault" style="display:none">Forget my default</button>
@@ -1115,12 +1120,15 @@ const isTouch = matchMedia("(pointer:coarse)").matches;
 const tf = () => `translate(${panX}px,${panY}px) scale(${zoom})`;
 let hist = [clone(S)], hi = 0, versions = [];
 
+/* Every route that replaces S passes through one of these three, which is
+   why autosave hangs here rather than on each of the eighteen callers. */
 function commit(){
   hist = hist.slice(0, hi+1); hist.push(clone(S));
   if(hist.length>120) hist.shift(); hi = hist.length-1; syncUndo();
+  queueSave();
 }
-function undo(){ if(hi>0){hi--; S=clone(hist[hi]); paintAll();} }
-function redo(){ if(hi<hist.length-1){hi++; S=clone(hist[hi]); paintAll();} }
+function undo(){ if(hi>0){hi--; S=clone(hist[hi]); paintAll(); queueSave();} }
+function redo(){ if(hi<hist.length-1){hi++; S=clone(hist[hi]); paintAll(); queueSave();} }
 function syncUndo(){ q("#undo").disabled = hi<=0; q("#redo").disabled = hi>=hist.length-1; }
 
 /* Persistence, in order of preference: the host's storage API, then the
@@ -1163,6 +1171,62 @@ const store = {
   async read(){ try{ const r = await KV.get("wds:versions"); return r?JSON.parse(r.value):[] }catch(e){ return [] } },
   async write(v){ try{ await KV.set("wds:versions", JSON.stringify(v)); return true; }catch(e){ return false; } }
 };
+
+/* ---------------------------------------------------------------
+   Autosave.
+
+   Saving used to be entirely manual: nothing was written until you
+   named a version or set a default, so closing the tab threw away
+   everything since. The working design is now written back on every
+   change, and it is what the app reopens on — so the watch you come
+   back to is the one you left.
+
+   Named versions are untouched and still do their own job: they are
+   the points you choose to return to. This only stops work vanishing
+   between them.
+   --------------------------------------------------------------- */
+const AUTOKEY = "wds:autosave";
+let autoTimer = null, autoLast = "", autoWarned = false, autoAt = 0;
+
+/* A slider drag commits many times a second and a storage write is
+   synchronous, so the write trails the edits rather than joining them. */
+function queueSave(){ clearTimeout(autoTimer); autoTimer = setTimeout(saveNow, 600); }
+
+function saveNow(){
+  clearTimeout(autoTimer); autoTimer = null;
+  let json;
+  try{ json = JSON.stringify(S); }catch(e){ return; }
+  if(json === autoLast) return;
+  /* KV.set is async for the host API, but the localStorage path it falls
+     back to runs before the first await — which is what makes this safe
+     to call while the page is being hidden. */
+  Promise.resolve(KV.set(AUTOKEY, json)).then(r=>{
+    autoLast = json; autoAt = Date.now();
+    noteAutosave(r && r.persisted);
+  }).catch(()=> noteAutosave(false));
+}
+
+/* Silent while it is working. It speaks up only when it cannot keep a
+   promise, because then edits really will be lost and saying nothing
+   would be the worst outcome. */
+function noteAutosave(persisted){
+  const el = document.getElementById("autoNote");
+  if(persisted){
+    if(el){ el.textContent = "Every change is kept — saved " + clockOf(autoAt) + "."; el.classList.remove("warn"); }
+    return;
+  }
+  if(el){ el.textContent = "This browser is not storing anything. Export to keep your work."; el.classList.add("warn"); }
+  if(!autoWarned){
+    autoWarned = true;
+    toast("This browser will not store your work — use Export to keep it");
+  }
+}
+const clockOf = t => new Date(t).toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
+
+/* iOS in particular may never fire another timer once the tab goes
+   away, so the pending write is forced out at the last moment. */
+document.addEventListener("visibilitychange", ()=>{ if(document.visibilityState === "hidden" && autoTimer) saveNow(); });
+addEventListener("pagehide", ()=>{ if(autoTimer) saveNow(); });
 
 /* =====================================================================
    3. GEOMETRY
@@ -5091,7 +5155,10 @@ q("#setDefault").onclick = async ()=>{
 q("#clrDefault").onclick = async ()=>{
   try{
     await KV.delete("wds:default");
-    toast("Back to the built-in starting design");
+    /* Deliberately does not touch the autosaved working copy: the design on
+       screen is your work, not the default, and clearing a preference should
+       not throw it away. Pick a preset to start somewhere clean. */
+    toast("Default cleared — the watch you are working on is still kept");
     refreshDefaultButtons();
   }catch(e){ toast("Could not clear the default"); }
 };
@@ -5554,11 +5621,29 @@ addEventListener("resize", ()=>{ paintView(); });
     if(t){ const o = JSON.parse(t.value); tplImage = o.d; tplW = o.w; tplH = o.h; }
   }catch(e){}
   try{ versions = await store.read(); paintVersions(); }catch(e){}
+  /* Where the watch on screen comes from, in order: work in progress from
+     last time, then a chosen default, then the built-in. Unfinished work
+     outranks the default — it is the thing you would be sorry to lose. */
+  let opened = null;
   try{
-    const d = await KV.get("wds:default");
-    if(d){ S = migrateHands(deep(BASE, JSON.parse(d.value))); commit(); paintAll(); }
+    const a = await KV.get(AUTOKEY);
+    if(a){ opened = JSON.parse(a.value); autoLast = a.value; }
   }catch(e){}
+  if(!opened){
+    try{
+      const d = await KV.get("wds:default");
+      if(d) opened = JSON.parse(d.value);
+    }catch(e){}
+  }
+  if(opened){
+    S = migrateHands(deep(BASE, opened));
+    /* Start the session on a clean history, so the first Undo steps back
+       through this session's edits rather than off the design entirely. */
+    hist = [clone(S)]; hi = 0; syncUndo();
+    paintAll();
+  }
   refreshDefaultButtons();
+  if(KV.kind === "memory") noteAutosave(false);
   await loadFonts();
   await loadSlabLibrary();            // seeds the built-ins if nothing is stored
 })();
@@ -5659,7 +5744,7 @@ paintAll();
             <path d="M5 13.5v6a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-6"/>`,
            ()=>{ closeMore(); exportBtn.click(); }), moreB);
 
-  ["dup","setDefault","clrDefault"].forEach(id=>{ const b=byId(id); if(b) slots.appendChild(b); });
+  ["autoNote","dup","setDefault","clrDefault"].forEach(id=>{ const b=byId(id); if(b) slots.appendChild(b); });
   const versHost = more.querySelector("#mMoreVers");
   const versions = byId("versions");
   if(versions){ const h=document.createElement("div"); h.className="sec"; h.textContent="Saved versions";
