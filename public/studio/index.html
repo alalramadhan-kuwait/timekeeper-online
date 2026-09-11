@@ -507,11 +507,17 @@ input[type=range]:active::-webkit-slider-thumb{ transform:scale(1.18) }
    untouched — all of this lives behind the width query.
    ============================================================ */
 @media (max-width:900px){
-  /* the permanent toolbar keeps five things: back, name, undo, redo, more */
+  /* the permanent toolbar: back, name, undo, redo, save, export, more */
   .bar > .grp, .bar > .sp, .bar .mark{ display:none }
+  /* min-width:0 because .bar is a grid item of body, whose automatic minimum
+     size is min-content — without it the row simply grows past the screen
+     instead of making the name give up space. */
   .bar{ display:flex; align-items:center; gap:var(--ds-2);
-        padding:var(--ds-2) var(--ds-3); overflow:visible }
-  #mTop{ display:flex; align-items:center; gap:var(--ds-2); width:100% }
+        padding:var(--ds-2) var(--ds-3); overflow:visible; min-width:0 }
+  /* flex:1 1 0 + min-width:0 rather than width:100%: as a flex item of .bar a
+     percentage width does not stop the row growing past it, so the icons ran
+     off the right edge and the name never gave up any space. */
+  #mTop{ display:flex; align-items:center; gap:var(--ds-2); flex:1 1 0; min-width:0 }
   #mTop .ttl{ flex:1; min-width:0; text-align:center;
     font-size:var(--ds-t-md); letter-spacing:var(--ds-tk-md); font-weight:600;
     color:var(--ds-text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
@@ -521,6 +527,23 @@ input[type=range]:active::-webkit-slider-thumb{ transform:scale(1.18) }
     transition:background var(--ds-fast) ease-out, transform var(--ds-fast) ease-out }
   #mTop .ico:active{ transform:var(--ds-press) }
   #mTop .ico:disabled{ opacity:.35 }
+  /* .mact had no rule at all, so each action rendered as one run-on string —
+     "Save designKeeps the editable project so you can carry on later".
+     The label and its hint are two stacked lines. */
+  .mact{ display:flex; flex-direction:column; align-items:flex-start; gap:2px;
+    text-align:left; padding:var(--ds-3) var(--ds-4); line-height:1.3 }
+  .mact .l{ font-size:var(--ds-t-md); letter-spacing:var(--ds-tk-md); font-weight:600 }
+  .mact .h{ font-size:var(--ds-t-sm); letter-spacing:var(--ds-tk-sm);
+    color:var(--ds-text-2); white-space:normal }
+  /* drawn icons sit beside the glyph ones; both are monochrome on the same pill */
+  #mTop .ico svg{ display:block; width:18px; height:18px }
+  /* seven controls is a lot for a narrow phone — tighten rather than wrap,
+     so the name keeps a readable share of the row */
+  @media (max-width:380px){
+    #mTop{ gap:var(--ds-1) }
+    #mTop .ico{ width:32px; height:32px }
+    #mTop .ico svg{ width:17px; height:17px }
+  }
 
   /* view modes sit over the canvas, not in the toolbar */
   #mModes{ position:absolute; top:var(--ds-2); left:50%; transform:translateX(-50%);
@@ -5564,6 +5587,16 @@ paintAll();
     b.className = "ico"; b.type = "button"; b.setAttribute("aria-label", label);
     b.textContent = txt; if(cb) b.onclick = cb; return b;
   };
+  /* Save and Export have no glyph that reads clearly at this size, so they are
+     drawn. A bookmark for keeping a version, and the tray-and-arrow the phone
+     already uses for sending something out. */
+  const icoSvg = (label, path, cb) => {
+    const b = ico(label, "", cb);
+    b.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"
+      aria-hidden="true" focusable="false">${path}</svg>`;
+    return b;
+  };
   /* Back returns to the saved designs, which is the screen above this one.
      Browser history is unreliable here — the app is often opened directly. */
   const back = ico("Back", "‹", ()=>{
@@ -5615,6 +5648,17 @@ paintAll();
     act("Technical PDF", "Dimensions, components, materials and colours for the maker",
         ()=>{ closeMore(); fire("sheet"); })
   );
+  /* The same two buttons again on the toolbar, where they are one tap away.
+     More keeps its entries: those go straight to a PNG or the technical PDF,
+     which the toolbar icon cannot do — it opens the sheet to let you choose. */
+  if(saveBtn) top.insertBefore(
+    icoSvg("Save version", `<path d="M6.5 3.5h11a1 1 0 0 1 1 1v16l-6.5-4.6L5.5 20.5v-16a1 1 0 0 1 1-1Z"/>`,
+           ()=>{ closeMore(); saveBtn.click(); }), moreB);
+  if(exportBtn) top.insertBefore(
+    icoSvg("Export", `<path d="M12 15.5V3.5"/><path d="M8.5 7 12 3.5 15.5 7"/>
+            <path d="M5 13.5v6a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-6"/>`,
+           ()=>{ closeMore(); exportBtn.click(); }), moreB);
+
   ["dup","setDefault","clrDefault"].forEach(id=>{ const b=byId(id); if(b) slots.appendChild(b); });
   const versHost = more.querySelector("#mMoreVers");
   const versions = byId("versions");
