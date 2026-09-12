@@ -40,11 +40,14 @@ pre-order arrivals, PO delays and missing invoices, employee residency/work
 permits, company document expiry, VIP birthdays/occasions (next 30 days), and
 pending leave requests.
 
-## Also hosted here
-`public/studio/` is the Watch Design Studio — a separate, self-contained page
-that shares this repo only because this repo owns the Pages site. It ships with
-`npm run deploy` and serves at `/timekeeper-online/studio/`.
-See [docs/watch-design-studio.md](docs/watch-design-studio.md).
+## Moved out
+The Watch Design Studio used to live in `public/studio/`. It now has its own
+repository and its own Pages site:
+[watch-design-studio](https://github.com/alalramadhan-kuwait/watch-design-studio)
+→ https://alalramadhan-kuwait.github.io/watch-design-studio/
+
+All that remains here is a redirect at `/timekeeper-online/studio/`, so links
+shared before the move still work. Nothing else in this repo depends on it.
 
 ## Adding users
 Create the user in Supabase Auth (Dashboard → Authentication → Add user), then
