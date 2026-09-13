@@ -61,6 +61,7 @@ async function safe<T>(p: PromiseLike<{ data: unknown }>): Promise<T[]> {
 async function myIdentity(user: User, profile: Profile | null): Promise<{ names: Set<string>; empIds: string[] }> {
   const names = new Set<string>();
   if (profile?.full_name) names.add(norm(profile.full_name));
+  if (profile?.sales_name) names.add(norm(profile.sales_name)); // cases.staff uses the DSR roster name
   const emp = await safe<{ id: string; full_name: string }>(
     supabase.from('employees').select('id, full_name').eq('user_id', user.id),
   );

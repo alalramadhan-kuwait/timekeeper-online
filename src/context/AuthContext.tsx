@@ -9,6 +9,7 @@ export interface Profile {
   full_name: string;
   role: Role;
   page_access: string[] | null; // per-user page allow-list; null = role defaults
+  sales_name?: string | null;   // DSR roster name their sales are logged under; null = not a salesperson
 }
 
 interface AuthContextType {
@@ -39,7 +40,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   async function loadProfile(userId: string) {
     const { data } = await supabase
       .from('profiles')
-      .select('id, full_name, role, page_access')
+      .select('id, full_name, role, page_access, sales_name')
       .eq('id', userId)
       .single();
     if (data) setProfile(data as Profile);

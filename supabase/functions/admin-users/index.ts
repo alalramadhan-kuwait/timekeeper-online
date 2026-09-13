@@ -26,20 +26,21 @@ Deno.serve(async (req: Request) => {
   if (!["admin", "manager"].includes(callerRole)) return json({ error: "Admins and managers only" }, 403);
   const isManager = callerRole === "manager";
 
-  let body: { action?: string; email?: string; password?: string; full_name?: string; role?: string; user_id?: string; page_access?: string[] | null };
+  let body: { action?: string; email?: string; password?: string; full_name?: string; role?: string; user_id?: string; page_access?: string[] | null; sales_name?: string | null };
   try { body = await req.json(); } catch { return json({ error: "Invalid JSON body" }, 400); }
 
   if (body.action === "list") {
     const { data: usersData, error } = await admin.auth.admin.listUsers({ page: 1, perPage: 200 });
     if (error) return json({ error: error.message }, 400);
-    const { data: profiles } = await admin.from("profiles").select("id, full_name, role, page_access");
-    const profById = new Map((profiles ?? []).map((p: { id: string; full_name: string; role: string; page_access: string[] | null }) => [p.id, p]));
+    const { data: profiles } = await admin.from("profiles").select("id, full_name, role, page_access, sales_name");
+    const profById = new Map((profiles ?? []).map((p: { id: string; full_name: string; role: string; page_access: string[] | null; sales_name: string | null }) => [p.id, p]));
     const team = usersData.users.map((u) => ({
       id: u.id,
       email: u.email ?? "",
       full_name: profById.get(u.id)?.full_name ?? u.email ?? "Unknown",
       role: profById.get(u.id)?.role ?? "viewer",
       page_access: profById.get(u.id)?.page_access ?? null,
+      sales_name: profById.get(u.id)?.sales_name ?? null,
       last_sign_in_at: u.last_sign_in_at ?? null,
     }));
     return json({ ok: true, team });
@@ -103,6 +104,18 @@ Deno.serve(async (req: Request) => {
     if (body.full_name != null) {
       const { error } = await admin.from("profiles").update({ full_name: body.full_name }).eq("id", body.user_id);
       if (error) return json({ error: error.message }, 400);
+    }
+    // DSR name: the staff-roster name this login logs sales under. Must be a
+    // roster entry (analytics key on that exact string) and unique per login.
+    if (body.sales_name !== undefined) {
+      const v = body.sales_name == null || body.sales_name.trim() === "" ? null : body.sales_name.trim();
+      if (v) {
+        const { data: s } = await admin.from("settings").select("staff_roster").limit(1).single();
+        const roster = (s?.staff_roster as string[] | null) ?? [];
+        if (!roster.includes(v)) return json({ error: `"${v}" is not in the staff roster — add it under Settings → Staff roster first` }, 400);
+      }
+      const { error } = await admin.from("profiles").update({ sales_name: v }).eq("id", body.user_id);
+      if (error) return json({ error: error.message.includes("profiles_sales_name_key") ? `"${v}" is already assigned to another account` : error.message }, 400);
     }
     return json({ ok: true });
   }
