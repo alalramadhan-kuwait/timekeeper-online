@@ -20,6 +20,10 @@ export interface InboxTask {
 export interface LeaveApproval {
   id: string; employee_name: string; leave_type: string;
   leave_start: string; leave_end: string; days: number; notes: string | null;
+  /** Which half of the chain this viewer is being asked for. */
+  stage: 'manager' | 'final';
+  /** The store manager's step, so an owner can see whether it has happened. */
+  managerStatus: string;
 }
 
 export interface RequestApproval {
@@ -39,6 +43,8 @@ export interface InboxData {
   leaveApprovals: LeaveApproval[];
   requestApprovals: RequestApproval[];
   isApprover: boolean;
+  /** True when this viewer is the store manager giving the first approval. */
+  isStoreManager: boolean;
 }
 
 const norm = (s: unknown) => String(s ?? '').trim().toLowerCase();
@@ -129,12 +135,21 @@ export async function loadInbox(user: User, profile: Profile | null, role: Role 
 
   // ── Approvals waiting on me (admin / manager / hr) ──
   const isApprover = isApproverRole(role);
+  // The database owns the definition of "store manager" (a manager based at a
+  // shop); asking it keeps one source of truth for the routing.
+  let isStoreManager = false;
+  if (role === 'manager') {
+    try {
+      const { data } = await supabase.rpc('is_store_manager');
+      isStoreManager = data === true;
+    } catch { isStoreManager = false; }
+  }
   let leaveApprovals: LeaveApproval[] = [];
   let requestApprovals: RequestApproval[] = [];
 
   if (isApprover) {
     const [lv, empRows, req, profRows] = await Promise.all([
-      safe<any>(supabase.from('leave_records').select('id, employee_id, leave_type, leave_start, leave_end, days, notes, approval_status').eq('approval_status', 'Pending')),
+      safe<any>(supabase.from('leave_records').select('id, employee_id, leave_type, leave_start, leave_end, days, notes, approval_status, manager_status').eq('approval_status', 'Pending')),
       safe<any>(supabase.from('employees').select('id, full_name, user_id')),
       safe<any>(supabase.from('employee_requests').select('id, request_type, details, created_at, user_id, employee_id, status').or('status.eq.Pending,status.is.null')),
       safe<any>(supabase.from('profiles').select('id, full_name')),
@@ -143,18 +158,25 @@ export async function loadInbox(user: User, profile: Profile | null, role: Role 
     const empByUser = new Map(empRows.filter((e) => e.user_id).map((e) => [e.user_id, e.full_name]));
     const profById = new Map(profRows.map((p) => [p.id, p.full_name]));
 
-    leaveApprovals = lv.map((l) => ({
-      id: l.id, employee_name: empById.get(l.employee_id) ?? 'Unknown',
-      leave_type: l.leave_type ?? 'Annual', leave_start: l.leave_start, leave_end: l.leave_end,
-      days: Number(l.days), notes: l.notes,
-    }));
+    // The store manager is asked only for the first approval, and only on the
+    // requests routed to him — which manager_status already encodes, since the
+    // database decides routing when the request is made.
+    leaveApprovals = lv
+      .filter((l) => (isStoreManager ? l.manager_status === 'Pending' : role === 'admin'))
+      .map((l) => ({
+        id: l.id, employee_name: empById.get(l.employee_id) ?? 'Unknown',
+        leave_type: l.leave_type ?? 'Annual', leave_start: l.leave_start, leave_end: l.leave_end,
+        days: Number(l.days), notes: l.notes,
+        stage: (isStoreManager ? 'manager' : 'final') as 'manager' | 'final',
+        managerStatus: l.manager_status ?? 'Not required',
+      }));
     requestApprovals = req.map((r) => ({
       id: r.id, request_type: r.request_type, details: r.details, created_at: r.created_at,
       requester: (r.employee_id && empById.get(r.employee_id)) || empByUser.get(r.user_id) || profById.get(r.user_id) || 'Someone',
     }));
   }
 
-  return { myTasks, tasks, leaveApprovals, requestApprovals, isApprover };
+  return { myTasks, tasks, leaveApprovals, requestApprovals, isApprover, isStoreManager };
 }
 
 export function inboxCount(d: InboxData): number {
