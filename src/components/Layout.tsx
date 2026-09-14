@@ -100,7 +100,9 @@ export function canAccessPath(to: string, role: Role | null, pageAccess: string[
   // hidden from the menu but still reachable by URL for HR (module kept per cleanup decision)
   if (to === '/company-documents') return ['admin', 'manager', 'hr'].includes(role ?? '');
   if (role === 'admin') return true;
-  if (pageAccess && pageAccess.length > 0) return pageAccess.includes(to);
+  // an explicit list — even an empty one — replaces the role defaults, so a
+  // salesperson can be limited to Dashboard, My Portal, Inbox and Notifications
+  if (Array.isArray(pageAccess)) return pageAccess.includes(to);
   const item = NAV_GROUPS.flatMap((g) => g.items).find((n) => n.to === to);
   return !!(item && role && item.roles.includes(role));
 }

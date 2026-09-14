@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { PAGES } from '../components/Layout';
 
 interface Brand { id: string; name: string; is_active: boolean }
-interface TeamProfile { id: string; full_name: string; role: string; email?: string; page_access?: string[] | null }
+interface TeamProfile { id: string; full_name: string; role: string; email?: string; page_access?: string[] | null; sales_name?: string | null }
 
 /** Show "ahmad" for ahmad@time-keeper.com, otherwise the full email. */
 const usernameOf = (email?: string) =>
@@ -25,7 +25,7 @@ const ROLE_HINTS: Record<string, string> = {
 };
 
 /** Admin & manager: team members and role-based access (managers cannot touch admin accounts) */
-function TeamAccess() {
+function TeamAccess({ staffRoster }: { staffRoster: string[] }) {
   const { user, role } = useAuth();
   const isManager = role === 'manager';
   const assignableRoles = isManager ? ROLES.filter((r) => r !== 'admin') : ROLES;
@@ -42,6 +42,8 @@ function TeamAccess() {
   const [editFor, setEditFor] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
   const [editUsername, setEditUsername] = useState('');
+  // DSR name: the staff-roster name this login's sales are logged under
+  const [editSales, setEditSales] = useState('');
   const [accessFor, setAccessFor] = useState<string | null>(null);
   const [accessSel, setAccessSel] = useState<Set<string>>(new Set());
   const [accessCustom, setAccessCustom] = useState(false);
@@ -57,7 +59,7 @@ function TeamAccess() {
     if (!error && data?.team) {
       setTeam((data.team as TeamProfile[]).sort((a, b) => a.full_name.localeCompare(b.full_name)));
     } else {
-      const { data: profs } = await supabase.from('profiles').select('id, full_name, role').order('full_name');
+      const { data: profs } = await supabase.from('profiles').select('id, full_name, role, page_access, sales_name').order('full_name');
       setTeam((profs ?? []) as TeamProfile[]);
     }
   }
@@ -89,6 +91,7 @@ function TeamAccess() {
     setPwFor(null);
     setEditName(t.full_name);
     setEditUsername(usernameOf(t.email));
+    setEditSales(t.sales_name ?? '');
   }
 
   async function saveEdit(t: TeamProfile) {
@@ -98,6 +101,7 @@ function TeamAccess() {
     if (typed && typed !== current) {
       body.email = typed.includes('@') ? typed : `${typed.toLowerCase()}@time-keeper.com`;
     }
+    if ((editSales || null) !== (t.sales_name ?? null)) body.sales_name = editSales || null;
     if (await call(body)) {
       setMsg('Account updated');
       setEditFor(null);
@@ -110,7 +114,7 @@ function TeamAccess() {
     setAccessFor(open);
     setPwFor(null); setEditFor(null);
     if (open) {
-      const custom = Array.isArray(t.page_access) && t.page_access.length > 0;
+      const custom = Array.isArray(t.page_access);
       setAccessCustom(custom);
       setAccessSel(new Set(custom ? t.page_access! : PAGES.map((p) => p.to)));
     }
@@ -189,6 +193,7 @@ function TeamAccess() {
               <th className="px-2 py-2">Name</th>
               <th className="px-2 py-2">Username</th>
               <th className="px-2 py-2">Role</th>
+              <th className="px-2 py-2 hidden lg:table-cell">DSR name</th>
               <th className="px-2 py-2 hidden lg:table-cell">Access</th>
               <th className="px-2 py-2 w-px whitespace-nowrap text-right">Actions</th>
             </tr>
@@ -212,9 +217,17 @@ function TeamAccess() {
                     {(t.role === 'admin' ? ROLES : assignableRoles).map((r) => <option key={r} value={r}>{r}</option>)}
                   </select>
                 </td>
+                <td className="px-2 py-2 text-xs hidden lg:table-cell whitespace-nowrap">
+                  {t.sales_name
+                    ? <span className={t.role === 'staff' ? 'text-slate-600' : 'text-amber-600'}
+                        title={t.role !== 'staff' ? 'The DSR only lets the staff role log sales' : 'Their DSR entries are logged under this name'}>
+                        {t.sales_name}{t.role !== 'staff' && ' ⚠'}
+                      </span>
+                    : <span className="text-slate-300">—</span>}
+                </td>
                 <td className="px-2 py-2 text-xs hidden lg:table-cell">
-                  {Array.isArray(t.page_access) && t.page_access.length > 0
-                    ? <span className="text-violet-600 font-medium">Custom · {t.page_access.length} pages</span>
+                  {Array.isArray(t.page_access)
+                    ? <span className="text-violet-600 font-medium">{t.page_access.length ? `Custom · ${t.page_access.length} pages` : 'Portal only'}</span>
                     : <span className="text-slate-400">{ROLE_HINTS[t.role] ?? ''}</span>}
                 </td>
                 <td className="px-2 py-2 text-right whitespace-nowrap">
@@ -241,13 +254,20 @@ function TeamAccess() {
               </tr>
               {editFor === t.id && (
                 <tr className="border-b border-slate-100 bg-slate-50">
-                  <td colSpan={5} className="px-2 py-2">
+                  <td colSpan={6} className="px-2 py-2">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="text-xs text-slate-500">Edit:</span>
                       <input value={editName} onChange={(e) => setEditName(e.target.value)} placeholder="Full name"
                         className="px-3 py-1.5 rounded-lg border border-slate-300 text-sm w-40" />
                       <input value={editUsername} onChange={(e) => setEditUsername(e.target.value)} placeholder="Username"
                         className="px-3 py-1.5 rounded-lg border border-slate-300 text-sm w-40" />
+                      <select value={editSales} onChange={(e) => setEditSales(e.target.value)}
+                        title="DSR name — the staff-roster name their sales are logged under (staff role only)"
+                        className="px-3 py-1.5 rounded-lg border border-slate-300 text-sm bg-white w-52">
+                        <option value="">DSR name: none (uses dropdown)</option>
+                        {staffRoster.map((s) => <option key={s} value={s}>{s}</option>)}
+                        {editSales && !staffRoster.includes(editSales) && <option value={editSales}>{editSales} (not in roster)</option>}
+                      </select>
                       <button onClick={() => saveEdit(t)} disabled={busy}
                         className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-slate-900 text-white text-xs font-medium disabled:opacity-60">
                         <Check size={12} /> {busy ? 'Saving…' : 'Save'}
@@ -259,7 +279,7 @@ function TeamAccess() {
               )}
               {accessFor === t.id && (
                 <tr className="border-b border-slate-100 bg-violet-50/40">
-                  <td colSpan={5} className="px-3 py-3">
+                  <td colSpan={6} className="px-3 py-3">
                     <label className="flex items-center gap-2 text-sm mb-2 cursor-pointer">
                       <input type="checkbox" checked={accessCustom} onChange={(e) => setAccessCustom(e.target.checked)} className="h-4 w-4" />
                       <span className="font-medium text-slate-700">Custom page access for {t.full_name}</span>
@@ -288,7 +308,7 @@ function TeamAccess() {
               )}
               {pwFor === t.id && (
                 <tr className="border-b border-slate-100 bg-slate-50">
-                  <td colSpan={5} className="px-2 py-2">
+                  <td colSpan={6} className="px-2 py-2">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="text-xs text-slate-500">New password for <b>{t.full_name}</b>:</span>
                       <input
@@ -772,7 +792,7 @@ export default function SettingsPage() {
           onChange={(v) => { setStaffRoster(v); saveSettings({ staff_roster: v }); }}
         />
 
-        {['admin', 'manager'].includes(role ?? '') && <TeamAccess />}
+        {['admin', 'manager'].includes(role ?? '') && <TeamAccess staffRoster={staffRoster} />}
         {/* Daily Briefing parked (cleanup item 14) — <DailyBriefing /> and the edge function are kept for when it's wanted */}
 
         {isAdmin && <SalesTarget />}

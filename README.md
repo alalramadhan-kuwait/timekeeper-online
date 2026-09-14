@@ -50,7 +50,23 @@ All that remains here is a redirect at `/timekeeper-online/studio/`, so links
 shared before the move still work. Nothing else in this repo depends on it.
 
 ## Adding users
-Create the user in Supabase Auth (Dashboard → Authentication → Add user), then
-set their role in `public.profiles`. The `handle_new_user` trigger creates the
-profile automatically; pass `full_name` and `role` in user metadata or update
-the row afterwards.
+Everything is done in the app by an admin or manager — Settings → **Team & Access**.
+Create the account (username becomes `name@time-keeper.com`), pick a role, set a
+temporary password. Roles decide the default pages; the sliders set a per-person
+allow-list instead (Custom with nothing ticked = portal only).
+
+### A salesperson with their own login
+1. Settings → Team & Access → **Add employee account** — role **staff** (the DSR
+   only lets `staff` and `admin` log sales).
+2. Edit the row → **DSR name** = their name in the staff roster. Their sales are
+   recorded under that exact name, so history stays continuous even when the
+   login name is fuller (login "Fadi Hussain" logs as "Fadi").
+3. Access sliders → Custom, tick nothing → portal only (Dashboard, My Portal,
+   Inbox, Notifications).
+4. HR → Employees → their record → **Linked user account** = the new login;
+   Location = their outlet. My Portal, leave, attendance and the DSR's default
+   outlet all hang off this link.
+5. Settings → Attendance Locations: a geofence named exactly like the HR
+   location (`Time Gallery`, `Avenues`) — clock-in needs one.
+
+The shared `staff` login keeps working unchanged for anyone not yet migrated.
