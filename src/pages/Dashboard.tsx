@@ -128,19 +128,47 @@ function AlertRow({ alert, action, expanded, onToggle, onSave }: {
 }
 
 // ── KPI primitives ────────────────────────────────────────────────────────────
-interface Kpi { label: string; value: string | number; sub?: string; accent?: string; link?: string; onClick?: () => void }
+interface KpiPart { label: string; value: string; pct?: number | null }
+interface Kpi {
+  label: string; value: string | number; sub?: string; accent?: string; link?: string;
+  onClick?: () => void;
+  /** Where the headline figure came from, shop by shop. */
+  parts?: KpiPart[];
+}
 
 function KpiCard({ k }: { k: Kpi }) {
+  /* A tile carrying a breakdown needs room to spell out a shop's name: in the
+     two-column phone grid the labels truncated to "Ti…", which tells nobody
+     anything. It takes the whole row there, and behaves like every other tile
+     from the tablet up. */
+  const span = k.parts && k.parts.length ? 'col-span-2 md:col-span-1' : '';
   const inner = (
     <div className="h-full bg-white rounded-xl border border-slate-200 shadow-sm px-4 py-3 hover:border-slate-400 hover:shadow-md transition-all">
       <p className="text-xs text-slate-500 mb-0.5">{k.label}</p>
       <p className={`text-xl font-bold ${k.accent ?? 'text-slate-800'}`}>{k.value}</p>
       {k.sub && <p className="text-xs text-slate-400 mt-0.5">{k.sub}</p>}
+      {/* The total is what the company is measured on; this is where it came
+          from. Each shop carries its own target, so the percentage is against
+          that one rather than a share of the total, which would say nothing
+          about whether a shop is doing well. */}
+      {k.parts && k.parts.length > 0 && (
+        <div className="mt-2 pt-2 border-t border-slate-100 space-y-1">
+          {k.parts.map((b) => (
+            <div key={b.label} className="flex items-baseline gap-2 text-xs">
+              <span className="flex-1 truncate text-slate-500">{b.label}</span>
+              <span className="font-semibold text-slate-700 tabular-nums">{b.value}</span>
+              <span className="w-10 text-right tabular-nums text-slate-400">
+                {b.pct == null ? '' : `${b.pct}%`}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
-  if (k.onClick) return <button onClick={k.onClick} className="text-left">{inner}</button>;
-  if (k.link) return <Link to={k.link}>{inner}</Link>;
-  return inner;
+  if (k.onClick) return <button onClick={k.onClick} className={`text-left ${span}`}>{inner}</button>;
+  if (k.link) return <Link to={k.link} className={span}>{inner}</Link>;
+  return span ? <div className={span}>{inner}</div> : inner;
 }
 
 function Section({ title, detailLink, cards, charts }: { title: string; detailLink?: string; cards: Kpi[]; charts?: React.ReactNode }) {
@@ -555,6 +583,16 @@ export default function Dashboard() {
   const targetPct = d.salesTarget ? Math.round((Number(d.salesMonth) / Number(d.salesTarget)) * 100) : null;
   /* Till revenue lands once a morning, so say when — otherwise a figure that
      stopped counting hours ago looks like it is still going. */
+  /* The month's takings, shop by shop, straight off the tills. Ordered as the
+     bar chart below orders them so the two agree at a glance, and a shop with
+     no target simply shows its figure. */
+  const pctOf = (v: number | null | undefined, t: number | null | undefined) =>
+    t == null || !t ? null : Math.round((Number(v ?? 0) / Number(t)) * 100);
+  const outletParts: KpiPart[] = [
+    { label: 'Time Keeper', value: kd(d.timeKeeperSales), pct: pctOf(d.timeKeeperSales, d.timeKeeperTarget) },
+    { label: 'Avenues', value: kd(d.avenuesSales), pct: pctOf(d.avenuesSales, d.avenuesTarget) },
+    { label: 'Time Gallery', value: kd(d.timeGallerySales), pct: pctOf(d.timeGallerySales, d.timeGalleryTarget) },
+  ];
   const tillAsOf = tillSyncedAt
     ? `from the tills, as of ${format(new Date(tillSyncedAt), 'HH:mm')}`
     : 'waiting for the first Lightspeed sync';
@@ -563,7 +601,7 @@ export default function Dashboard() {
   const topRow: Kpi[] = [
     ...(can('/sales') ? [{ label: 'Sales this month', value: kd(d.salesMonth),
       sub: d.salesTarget != null ? `${targetPct}% of ${kd(d.salesTarget)} target` : 'set a target in Settings',
-      accent: 'text-emerald-600', link: '/sales' } as Kpi] : []),
+      accent: 'text-emerald-600', link: '/sales', parts: outletParts } as Kpi] : []),
     ...(can('/purchase-orders') ? [{ label: 'Supplier balance', value: kd(d.supplierBalance), accent: Number(d.supplierBalance) > 0 ? 'text-rose-600' : 'text-emerald-600', link: '/purchase-orders' } as Kpi] : []),
     ...(can('/stock') && d.stockValue != null ? [{ label: 'Stock value', value: kd(d.stockValue), link: '/stock' } as Kpi] : []),
     ...(isManager ? [{ label: 'Action alerts', value: activeAlerts.length, accent: activeAlerts.length ? 'text-rose-600' : 'text-emerald-600', onClick: () => alertsRef.current?.scrollIntoView({ behavior: 'smooth' }) } as Kpi] : []),
