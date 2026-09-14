@@ -4,6 +4,7 @@ import { Plus, Pencil, Trash2, Search, ImageOff, ChevronUp, ChevronDown, Chevron
 import { supabase } from '../lib/supabase';
 import { Modal, Spinner, StatusBadge } from './ui';
 import { useAuth } from '../context/AuthContext';
+import { readDraft, writeDraft, clearDraft } from '../lib/drafts';
 
 export type FieldType = 'text' | 'number' | 'date' | 'select' | 'combobox' | 'textarea' | 'checkbox' | 'image';
 
@@ -391,7 +392,8 @@ function RecordForm({ config, initial, comboboxOptions, onCancel, onSave }: {
   onCancel: () => void;
   onSave: (form: Record<string, any>) => void;
 }) {
-  const [form, setForm] = useState<Record<string, any>>(() => {
+  const { user } = useAuth();
+  const blank = () => {
     const f: Record<string, any> = {};
     for (const fd of config.fields) {
       let v = initial?.[fd.key];
@@ -399,7 +401,27 @@ function RecordForm({ config, initial, comboboxOptions, onCancel, onSave }: {
       f[fd.key] = v ?? fd.defaultValue ?? (fd.type === 'checkbox' ? false : '');
     }
     return f;
-  });
+  };
+  /* What was typed last time this record was open, if the app went away before
+     it could be saved. Decided once, on mount — never again, or a draft would
+     fight the form it came from. */
+  const uid = user?.id, rowId = initial?.id;
+  const start = useMemo(() => {
+    const base = blank();
+    const draft = readDraft<Record<string, any>>(uid, config.table, rowId);
+    const use = !!draft && JSON.stringify(draft) !== JSON.stringify(base);
+    return { form: use ? { ...base, ...draft } : base, baseJson: JSON.stringify(base), restored: use };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  const [form, setForm] = useState<Record<string, any>>(start.form);
+  const [restored, setRestored] = useState(start.restored);
+  /* Kept as you type, so closing the app mid-form costs nothing. A form that
+     matches the record again has nothing left worth keeping. */
+  useEffect(() => {
+    if (JSON.stringify(form) === start.baseJson) clearDraft(uid, config.table, rowId);
+    else writeDraft(uid, config.table, rowId, form);
+  }, [form, start.baseJson, uid, config.table, rowId]);
+  const discardDraft = () => { clearDraft(uid, config.table, rowId); setForm(blank()); setRestored(false); };
   const [uploading, setUploading] = useState<string | null>(null);
 
   function set(key: string, value: unknown) {
@@ -424,11 +446,18 @@ function RecordForm({ config, initial, comboboxOptions, onCancel, onSave }: {
     // refreshed the row while this form was open.
     const payload = { ...form };
     for (const fd of config.fields) if (fd.readOnly) delete payload[fd.key];
+    clearDraft(user?.id, config.table, initial?.id);
     onSave(payload);
   }
 
   return (
     <Modal title={initial ? `Edit — ${config.title}` : `New — ${config.title}`} onClose={onCancel}>
+      {restored && (
+        <div className="mb-4 flex items-center gap-3 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-sm sm:col-span-2">
+          <span className="flex-1">Unsaved changes from last time have been put back.</span>
+          <button type="button" onClick={discardDraft} className="shrink-0 font-semibold underline">Discard</button>
+        </div>
+      )}
       <form onSubmit={submit} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {config.fields.map((f) => (
           <label

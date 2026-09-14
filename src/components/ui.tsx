@@ -119,7 +119,7 @@ export function Modal({ title, onClose, children }: { title: string; onClose: ()
     <motion.div className="fixed inset-0 z-50 bg-white flex flex-col" style={{ willChange: 'transform' }} animate={controls} {...dragProps}>
       <div
         onPointerDown={(e) => { if (mobile && !reduce && !(e.target as HTMLElement).closest('button')) dragCtl.start(e); }}
-        className="tk-grab shrink-0 border-b border-slate-200 bg-white cursor-grab active:cursor-grabbing" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+        className="tk-grab shrink-0 border-b border-slate-200 bg-white cursor-grab active:cursor-grabbing" style={{ paddingTop: 'var(--sa-t)' }}>
         <div className="sm:hidden flex justify-center pt-2"><span className="h-1.5 w-10 rounded-full bg-slate-300" /></div>
         <div className="flex items-center gap-2 px-4 sm:px-6 py-3">
           <button onClick={close} className="-ml-1 p-1 text-slate-500 hover:text-slate-800 flex items-center gap-1" aria-label="Back">
@@ -129,8 +129,13 @@ export function Modal({ title, onClose, children }: { title: string; onClose: ()
           <button onClick={close} className="p-1 text-slate-400 hover:text-slate-600" aria-label="Close"><X size={18} /></button>
         </div>
       </div>
-      <div className="flex-1 overflow-y-auto">
-        <div className="max-w-3xl mx-auto p-5 sm:p-6">{children}</div>
+      {/* The sheet is the full screen, so its body is what has to end above the
+          home indicator — and its own scroll must not drag the page behind it. */}
+      <div className="flex-1 overflow-y-auto overscroll-contain">
+        <div className="max-w-3xl mx-auto p-5 sm:p-6"
+             style={{ paddingBottom: 'calc(1.5rem + var(--sa-b))',
+                      paddingLeft: 'calc(1.25rem + var(--sa-l))',
+                      paddingRight: 'calc(1.25rem + var(--sa-r))' }}>{children}</div>
       </div>
     </motion.div>
   );

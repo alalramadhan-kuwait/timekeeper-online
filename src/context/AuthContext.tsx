@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import type { User } from '@supabase/supabase-js';
+import { clearAllDrafts } from '../lib/drafts';
 import { supabase } from '../lib/supabase';
 
 export type Role = 'admin' | 'manager' | 'staff' | 'hr' | 'viewer' | 'sales' | 'operations' | 'marketing';
@@ -66,6 +67,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   async function signOut() {
+    // a phone on a shop counter is not one person's, so the drafts go too
+    clearAllDrafts(user?.id);
     await supabase.auth.signOut();
   }
 

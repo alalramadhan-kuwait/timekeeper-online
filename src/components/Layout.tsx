@@ -188,8 +188,9 @@ export default function Layout() {
 
   return (
     <div className="min-h-screen flex">
-      <aside className={`${open ? 'flex' : 'hidden'} md:flex w-60 shrink-0 bg-slate-900 text-slate-200 flex-col fixed md:static inset-y-0 z-40`}>
-        <div className="px-5 py-4 flex items-center gap-2 border-b border-slate-800" style={{ paddingTop: 'calc(1rem + env(safe-area-inset-top))' }}>
+      <aside className={`${open ? 'flex' : 'hidden'} md:flex w-60 shrink-0 bg-slate-900 text-slate-200 flex-col fixed md:static inset-y-0 z-40`}
+        style={{ paddingLeft: 'var(--sa-l)' }}>
+        <div className="px-5 py-4 flex items-center gap-2 border-b border-slate-800" style={{ paddingTop: 'calc(1rem + var(--sa-t))' }}>
           <Watch size={22} className="text-amber-400" />
           <div>
             <div className="font-bold text-white leading-tight">Timekeeper Online</div>
@@ -234,7 +235,8 @@ export default function Layout() {
             });
           })()}
         </nav>
-        <div className="px-5 py-4 border-t border-slate-800 text-sm">
+        <div className="px-5 py-4 border-t border-slate-800 text-sm"
+             style={{ paddingBottom: 'calc(1rem + var(--sa-b))' }}>
           <div className="font-medium text-white">{profile?.full_name}</div>
           <div className="text-xs text-slate-400 capitalize mb-2">{role}</div>
           <button onClick={signOut} className="flex items-center gap-2 text-slate-300 hover:text-white text-xs">
@@ -244,7 +246,10 @@ export default function Layout() {
       </aside>
 
       <div className="flex-1 min-w-0">
-        <div className="md:hidden flex items-center gap-3 text-white px-4 py-3 sticky top-0 z-30 tk-glass bg-slate-900/75 backdrop-blur-lg backdrop-saturate-150" style={{ paddingTop: 'calc(0.75rem + env(safe-area-inset-top))' }}>
+        <div className="md:hidden flex items-center gap-3 text-white px-4 py-3 sticky top-0 z-30 tk-glass bg-slate-900/75 backdrop-blur-lg backdrop-saturate-150"
+          style={{ paddingTop: 'calc(0.75rem + var(--sa-t))',
+                   paddingLeft: 'calc(1rem + var(--sa-l))',
+                   paddingRight: 'calc(1rem + var(--sa-r))' }}>
           <button onClick={() => setOpen((o) => !o)} aria-label="Menu"><Menu size={20} /></button>
           <span className="font-semibold">Timekeeper Online</span>
           <div className="ml-auto flex items-center gap-1">
@@ -258,7 +263,10 @@ export default function Layout() {
           </div>
         </div>
         {/* full available width — tables were leaving a large empty gutter on wide screens */}
-        <main className="p-4 md:p-6 w-full">
+        <main className="p-4 md:p-6 w-full"
+              style={{ paddingBottom: 'calc(1.5rem + var(--sa-b))',
+                       paddingLeft: 'calc(1rem + var(--sa-l))',
+                       paddingRight: 'calc(1rem + var(--sa-r))' }}>
           {notifBanner && (
             <div className="mb-4 flex items-start gap-3 px-4 py-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800">
               <div className="min-w-0 flex-1">

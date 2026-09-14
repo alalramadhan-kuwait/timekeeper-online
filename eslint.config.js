@@ -9,6 +9,19 @@ export default ts.config(
   js.configs.recommended,
   ...ts.configs.recommended,
   {
+    // The service worker is not page code: it has its own globals and its own
+    // lifecycle, and linting it as a browser script reported every one of them
+    // as undefined.
+    files: ['public/sw.js'],
+    languageOptions: { ecmaVersion: 2022, sourceType: 'script', globals: { ...globals.serviceworker } },
+    rules: {
+      // a catch that deliberately ignores the error is how a worker survives
+      // a file it cannot fetch
+      '@typescript-eslint/no-unused-vars': ['warn', { caughtErrorsIgnorePattern: '^_' }],
+      'no-useless-assignment': 'off',
+    },
+  },
+  {
     files: ['**/*.{ts,tsx}'],
     languageOptions: { ecmaVersion: 2022, sourceType: 'module', globals: { ...globals.browser } },
     plugins: { 'react-hooks': reactHooks, 'react-refresh': reactRefresh },
