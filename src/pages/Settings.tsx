@@ -606,15 +606,17 @@ function SalesTarget() {
   const [target, setTarget] = useState('');
   const [avenues, setAvenues] = useState('');
   const [timeGallery, setTimeGallery] = useState('');
+  const [timeKeeper, setTimeKeeper] = useState('');
   const [id, setId] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
   useEffect(() => {
-    supabase.from('settings').select('id, sales_target_month, sales_target_avenues, sales_target_timegallery').single().then(({ data }) => {
+    supabase.from('settings').select('id, sales_target_month, sales_target_avenues, sales_target_timegallery, sales_target_timekeeper').single().then(({ data }) => {
       if (data) {
         setId(data.id);
         setTarget(data.sales_target_month != null ? String(data.sales_target_month) : '');
         setAvenues(data.sales_target_avenues != null ? String(data.sales_target_avenues) : '');
         setTimeGallery(data.sales_target_timegallery != null ? String(data.sales_target_timegallery) : '');
+        setTimeKeeper(data.sales_target_timekeeper != null ? String(data.sales_target_timekeeper) : '');
       }
     });
   }, []);
@@ -625,17 +627,23 @@ function SalesTarget() {
       sales_target_month: num(target),
       sales_target_avenues: num(avenues),
       sales_target_timegallery: num(timeGallery),
+      sales_target_timekeeper: num(timeKeeper),
     }).eq('id', id);
     setMsg(error ? `Failed: ${error.message}` : 'Targets saved');
   }
   return (
     <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 lg:col-span-2">
       <h2 className="text-sm font-semibold text-slate-700 mb-1">Monthly sales targets</h2>
-      <p className="text-xs text-slate-400 mb-3">Shown on the dashboard as “Sales vs target”. Set an overall target and, if you like, one per outlet. Leave a field blank to hide that card.</p>
+      <p className="text-xs text-slate-400 mb-3">Shown on the dashboard as “Sales vs target”, measured against till revenue from Lightspeed. Set an overall target and, if you like, one per outlet. Leave a field blank to hide that card.</p>
       <div className="flex flex-wrap items-end gap-2">
         <label className="text-xs">
           <span className="block text-slate-500 mb-1">Overall (KD / month)</span>
           <input type="number" value={target} onChange={(e) => setTarget(e.target.value)} placeholder="e.g. 50000"
+            className="px-3 py-1.5 rounded-lg border border-slate-300 text-sm w-36" />
+        </label>
+        <label className="text-xs">
+          <span className="block text-slate-500 mb-1">Time Keeper (KD / month)</span>
+          <input type="number" value={timeKeeper} onChange={(e) => setTimeKeeper(e.target.value)} placeholder="e.g. 35000"
             className="px-3 py-1.5 rounded-lg border border-slate-300 text-sm w-36" />
         </label>
         <label className="text-xs">

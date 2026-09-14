@@ -35,10 +35,25 @@ interface LsInventory {
 interface LsSale {
   id: string;
   status?: string;
+  outlet_id?: string;
   sale_date?: string;
   created_at?: string;
   line_items?: { product_id?: string; quantity?: number; price_total?: number; price?: number }[];
 }
+
+/* A sale is money only once it is finished with. VOID is not a sale at all,
+   and SAVED / PARKED / AWAITING are baskets nobody has paid for yet. LAYBY
+   and ONACCOUNT are counted — the customer has committed and the goods are
+   allocated — which is how the shop has always read them. */
+const REVENUE_SALE = (status?: string) => {
+  const s = (status ?? "").toUpperCase();
+  if (!s) return true;
+  return !/VOID|SAVED|PARKED|AWAITING/.test(s);
+};
+/* The shop's day, not Greenwich's: a sale at 10pm in Kuwait belongs to that
+   day and not to tomorrow, which is what a plain ISO slice would call it. */
+const kuwaitDay = (iso: string) =>
+  new Date(new Date(iso).getTime() + 3 * 3600_000).toISOString().slice(0, 10);
 
 async function lsPageAll<T>(base: string, path: string, token: string): Promise<T[]> {
   const out: T[] = [];
@@ -184,6 +199,10 @@ Deno.serve(async (req: Request) => {
     // ── sales movement: aggregate last 90 days per product ──
     let salesRows = 0;
     let salesWarning: string | null = null;
+    let dailyCount = 0;
+    let salesNote: string | null = null;
+    let outletBreakdown: Record<string, number> = {};
+    let statusCounts: Record<string, number> = {};
     try {
       const now = Date.now();
       const from90 = new Date(now - 90 * 86400_000).toISOString().replace(/\.\d{3}Z$/, "Z");
@@ -204,10 +223,37 @@ Deno.serve(async (req: Request) => {
       }
 
       const agg = new Map<string, { u30: number; u90: number; rev: number; last: string }>();
+      /* Revenue per outlet per day — what the dashboard reads for "Sales this
+         month". Built from the pages already fetched above, so it costs no
+         extra calls to Lightspeed. */
+      const daily = new Map<string, { revenue: number; units: number; sales: number }>();
+      const statusSeen = new Map<string, number>();
+      let noOutlet = 0;
       for (const s of sales) {
+        const st = (s.status ?? "").toUpperCase() || "(none)";
+        statusSeen.set(st, (statusSeen.get(st) ?? 0) + 1);
         if ((s.status ?? "").toUpperCase().includes("VOID")) continue;
         const saleDate = s.sale_date ?? s.created_at ?? "";
         if (!saleDate) continue;
+
+        if (REVENUE_SALE(s.status)) {
+          const oName = s.outlet_id ? outletName.get(s.outlet_id) : undefined;
+          if (!oName) noOutlet++;
+          else {
+            const key = `${oName}\u0000${kuwaitDay(saleDate)}`;
+            const e = daily.get(key) ?? { revenue: 0, units: 0, sales: 0 };
+            for (const li of s.line_items ?? []) {
+              const q = Number(li.quantity ?? 0);
+              /* Returns come back as negative lines, so the day nets out on
+                 its own — no separate refund pass to keep in step. */
+              e.revenue += li.price_total != null ? Number(li.price_total) : Number(li.price ?? 0) * q;
+              e.units += q;
+            }
+            e.sales += 1;
+            daily.set(key, e);
+          }
+        }
+
         const in30 = saleDate >= cutoff30;
         for (const li of s.line_items ?? []) {
           if (!li.product_id) continue;
@@ -238,6 +284,34 @@ Deno.serve(async (req: Request) => {
       await admin.from("lightspeed_product_sales").delete().lt("synced_at", salesSyncedAt);
       salesRows = salesInsert.length;
 
+      /* The daily ledger. Every day in the window is rewritten, then any row
+         left behind inside that window is dropped — a day whose only sale was
+         later voided has to fall back to nothing rather than keep yesterday's
+         figure. Days older than the window are history and are left alone. */
+      const dailyRows = [...daily.entries()].map(([key, e]) => {
+        const [outlet, sale_date] = key.split("\u0000");
+        return {
+          outlet, sale_date,
+          revenue: Math.round(e.revenue * 1000) / 1000,
+          units: e.units,
+          sale_count: e.sales,
+          synced_at: salesSyncedAt,
+        };
+      });
+      for (let i = 0; i < dailyRows.length; i += 500) {
+        const { error } = await admin.from("lightspeed_sales_daily").upsert(dailyRows.slice(i, i + 500));
+        if (error) throw new Error(`Daily sales upsert failed: ${error.message}`);
+      }
+      await admin.from("lightspeed_sales_daily")
+        .delete()
+        .gte("sale_date", kuwaitDay(from90))
+        .lt("synced_at", salesSyncedAt);
+      dailyCount = dailyRows.length;
+      outletBreakdown = {};
+      for (const r of dailyRows) outletBreakdown[r.outlet] = Math.round(((outletBreakdown[r.outlet] ?? 0) + r.revenue) * 1000) / 1000;
+      if (noOutlet) salesNote = `${noOutlet} sale(s) carried no outlet and were left out of the daily figures`;
+      statusCounts = Object.fromEntries(statusSeen);
+
       // append a daily stock-value snapshot for the trend graph
       const soldSet = new Set(salesInsert.filter((s) => Number(s.units_90d) > 0).map((s) => s.product_id));
       const retailByProduct = new Map<string, number>();
@@ -267,11 +341,17 @@ Deno.serve(async (req: Request) => {
     await admin.from("lightspeed_sync_log").update({
       status: "ok",
       products_synced: productById.size,
-      error: salesWarning ? `sales: ${salesWarning.slice(0, 400)}` : null,
+      error: salesWarning ? `sales: ${salesWarning.slice(0, 400)}`
+           : salesNote ? salesNote.slice(0, 400) : null,
       finished_at: new Date().toISOString(),
     }).eq("id", logRow!.id);
 
-    return json({ ok: true, products: productById.size, stock_rows: rows.length, sales_rows: salesRows, sales_warning: salesWarning });
+    return json({
+      ok: true, products: productById.size, stock_rows: rows.length,
+      sales_rows: salesRows, sales_warning: salesWarning,
+      daily_rows: dailyCount, revenue_90d_by_outlet: outletBreakdown,
+      sale_statuses: statusCounts, sales_note: salesNote,
+    });
   } catch (e) {
     return await fail(e instanceof Error ? e.message : String(e));
   }

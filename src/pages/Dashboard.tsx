@@ -29,11 +29,14 @@ const EMPTY_CHARTS: Charts = { salesTrend: [], outletSales: [], stockHistory: []
 const IG_MAIN = 'timekeeperkw';
 const IG_COLOR: Record<string, string> = { timekeeperkw: '#db2777', timegallerykw: '#0ea5e9', timekeeperkwshop: '#8b5cf6' };
 
-function caseTotal(c: any): number {
-  // sale_items.amount_kd is already the line total (quantity included) — do not multiply
-  if (c.sale_items?.length) return c.sale_items.reduce((s: number, i: any) => s + Number(i.amount_kd), 0);
-  return Number(c.amount_kd ?? 0);
-}
+/* What Lightspeed calls each shop. The dashboard's labels and the POS's own
+   names have never matched, so the mapping is written down once here rather
+   than guessed at each call site. */
+const LS_OUTLET = {
+  timekeeper: 'Time Keeper',
+  avenues: 'Time Keeper - Avenues',
+  gallery: 'Time Gallery',
+} as const;
 
 // ── Alert Action Panel ────────────────────────────────────────────────────────
 function AlertActionPanel({ alert, existing, onSave, onClose, onReopen }: {
@@ -295,6 +298,7 @@ function WorkflowTasksCard() {
 export default function Dashboard() {
   const { role, profile, pageAccess } = useAuth();
   const [d, setD] = useState<Record<string, number | null>>({});
+  const [tillSyncedAt, setTillSyncedAt] = useState<string | null>(null);
   const [charts, setCharts] = useState<Charts>(EMPTY_CHARTS);
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [actionMap, setActionMap] = useState<Map<string, AlertAction>>(new Map());
@@ -323,11 +327,16 @@ export default function Dashboard() {
 
     async function load() {
       const [
-        salesQ, lostQ, overdueFuQ, newCustQ, vipQ, wlQ, preQ, projQ,
+        posQ, lostQ, overdueFuQ, newCustQ, vipQ, wlQ, preQ, projQ,
         stockSumQ, lowQ, stockCntQ, poQ, attTodayQ, attLateQ, leaveQ, empQ,
-        repairsQ, contentQ, igQ, setQ, alertList, actMap, stockHistQ,
+        repairsQ, contentQ, igQ, setQ, alertList, actMap, stockHistQ, syncQ,
       ] = await Promise.all([
-        supabase.from('cases').select('amount_kd, date_logged, outlet, sale_items(amount_kd)').eq('case_type', 'Sale').eq('deleted', false).gte('date_logged', monthStart),
+        /* Till revenue from Lightspeed, refreshed by the 05:00 UTC sync every
+           morning. This used to read logged Sale cases — which is a pipeline,
+           not money: measured on the same month they came to barely half of
+           what actually rang through. The cases still drive lost sales and
+           follow-ups below, where they belong. */
+        supabase.from('lightspeed_sales_daily').select('outlet, sale_date, revenue').gte('sale_date', monthStart),
         supabase.from('cases').select('amount_kd').eq('case_type', 'Lost Sale').eq('deleted', false).gte('date_logged', monthStart),
         supabase.from('cases').select('id', { count: 'exact', head: true }).eq('case_type', 'Follow-up').eq('status', 'Open').eq('deleted', false).lt('promised_callback', today),
         supabase.from('customers').select('id', { count: 'exact', head: true }).gte('created_at', monthStart),
@@ -346,23 +355,32 @@ export default function Dashboard() {
         supabase.from('repair_watches').select('status, estimated_completion, date_returned'),
         supabase.from('content_tasks').select('status, planned_date, posted_date'),
         supabase.from('instagram_daily').select('snapshot_date, followers, username, last_post_date').order('snapshot_date', { ascending: true }).limit(400),
-        supabase.from('settings').select('sales_target_month, sales_target_avenues, sales_target_timegallery').single(),
+        supabase.from('settings').select('sales_target_month, sales_target_avenues, sales_target_timegallery, sales_target_timekeeper').single(),
         buildAlerts(role),
         loadAlertActions(),
         supabase.from('lightspeed_stock_value_history').select('snapshot_date, retail_value, cost_value').order('snapshot_date', { ascending: true }).limit(90),
+        supabase.from('lightspeed_sync_log').select('finished_at').eq('status', 'ok').not('finished_at', 'is', null).order('finished_at', { ascending: false }).limit(1),
       ]);
 
-      // sales
-      const monthCases = (salesQ.data ?? []) as any[];
-      const salesMonth = monthCases.reduce((s, c) => s + caseTotal(c), 0);
-      const salesToday = monthCases.filter((c) => c.date_logged === today).reduce((s, c) => s + caseTotal(c), 0);
+      // sales — what rang through the tills, per outlet, as of this morning's sync
+      const posDays = (posQ.data ?? []) as any[];
+      const sumRev = (rows: any[]) => rows.reduce((s, r) => s + Number(r.revenue ?? 0), 0);
+      const salesMonth = sumRev(posDays);
+      const salesToday = sumRev(posDays.filter((r) => r.sale_date === today));
       const salesTarget = setQ.data?.sales_target_month != null ? Number(setQ.data.sales_target_month) : null;
-      // per-outlet month sales vs their own targets (cases.outlet = 'Avenues' | 'TimeGallery')
-      const outletSales = (name: string) => monthCases.filter((c) => c.outlet === name).reduce((s, c) => s + caseTotal(c), 0);
-      const avenuesSales = outletSales('Avenues');
-      const timeGallerySales = outletSales('TimeGallery');
+      /* These figures are only as fresh as the last sync, so the dashboard says
+         so. Logged cases arrived through the day; till revenue arrives once in
+         the morning, and a "today" that quietly stopped counting at 8am would
+         read as live when it is not. */
+      setTillSyncedAt(((syncQ.data?.[0] as any)?.finished_at as string | undefined) ?? null);
+      // per-outlet month sales vs their own targets
+      const outletSales = (lsName: string) => sumRev(posDays.filter((r) => r.outlet === lsName));
+      const avenuesSales = outletSales(LS_OUTLET.avenues);
+      const timeGallerySales = outletSales(LS_OUTLET.gallery);
+      const timeKeeperSales = outletSales(LS_OUTLET.timekeeper);
       const avenuesTarget = setQ.data?.sales_target_avenues != null ? Number(setQ.data.sales_target_avenues) : null;
       const timeGalleryTarget = setQ.data?.sales_target_timegallery != null ? Number(setQ.data.sales_target_timegallery) : null;
+      const timeKeeperTarget = setQ.data?.sales_target_timekeeper != null ? Number(setQ.data.sales_target_timekeeper) : null;
       const lostMonth = ((lostQ.data ?? []) as any[]).reduce((s, c) => s + Number(c.amount_kd ?? 0), 0);
 
       // vip occasions this month
@@ -425,7 +443,7 @@ export default function Dashboard() {
       const dayNum = (iso: string) => iso.slice(8, 10);
       // cumulative sales per day this month → shows the shape of the month
       const byDay = new Map<string, number>();
-      for (const c of monthCases) byDay.set(c.date_logged, (byDay.get(c.date_logged) ?? 0) + caseTotal(c));
+      for (const r of posDays) byDay.set(r.sale_date, (byDay.get(r.sale_date) ?? 0) + Number(r.revenue ?? 0));
       const todayDay = Number(today.slice(8, 10));
       let running = 0;
       const salesTrend: Point[] = [];
@@ -435,7 +453,11 @@ export default function Dashboard() {
         salesTrend.push({ label: String(day), value: running });
       }
 
+      /* Three shops, not two: Lightspeed has always had a Time Keeper outlet
+         of its own and it is the busiest of them, so it gets its own bar and
+         its own target rather than disappearing into the total. */
       const outletBars: Bar[] = [
+        { label: 'Time Keeper', value: timeKeeperSales, target: timeKeeperTarget, color: '#059669' },
         { label: 'Avenues', value: avenuesSales, target: avenuesTarget, color: '#0ea5e9' },
         { label: 'Time Gallery', value: timeGallerySales, target: timeGalleryTarget, color: '#8b5cf6' },
       ];
@@ -506,7 +528,8 @@ export default function Dashboard() {
 
       setD({
         salesToday, salesMonth, salesTarget,
-        avenuesSales, timeGallerySales, avenuesTarget, timeGalleryTarget,
+        avenuesSales, timeGallerySales, timeKeeperSales,
+        avenuesTarget, timeGalleryTarget, timeKeeperTarget,
         lostMonth, overdueFu: overdueFuQ.count ?? 0,
         newCust: newCustQ.count ?? 0, vipOcc, openWaiting: wlQ.count ?? 0, openPre: preQ.count ?? 0,
         activeProjects, delayedProjects, stockValue, deadValue, lowStock, openPOs, shipments, supplierBalance,
@@ -530,6 +553,11 @@ export default function Dashboard() {
 
   // ── Top row: business health ──
   const targetPct = d.salesTarget ? Math.round((Number(d.salesMonth) / Number(d.salesTarget)) * 100) : null;
+  /* Till revenue lands once a morning, so say when — otherwise a figure that
+     stopped counting hours ago looks like it is still going. */
+  const tillAsOf = tillSyncedAt
+    ? `from the tills, as of ${format(new Date(tillSyncedAt), 'HH:mm')}`
+    : 'waiting for the first Lightspeed sync';
   // Headline strip — only the company-wide numbers this role is allowed to see. A
   // non-financial role (e.g. marketing) sees none of these and gets its own sections below.
   const topRow: Kpi[] = [
@@ -543,7 +571,7 @@ export default function Dashboard() {
 
   // Each section = its few must-follow KPIs; the fuller breakdown lives on the section's page.
   const salesCards: Kpi[] = [
-    { label: 'Sales today', value: kd(d.salesToday), accent: 'text-emerald-600', link: '/sales' },
+    { label: 'Sales today', value: kd(d.salesToday), sub: tillAsOf, accent: 'text-emerald-600', link: '/sales' },
     { label: 'Lost sales (month)', value: kd(d.lostMonth), accent: Number(d.lostMonth) ? 'text-rose-600' : undefined, link: '/sales' },
     { label: 'Overdue follow-ups', value: d.overdueFu ?? 0, accent: Number(d.overdueFu) ? 'text-red-600' : undefined, link: '/follow-ups' },
   ];
