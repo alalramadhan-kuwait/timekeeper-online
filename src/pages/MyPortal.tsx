@@ -18,7 +18,7 @@ interface EmpRecord {
   work_permit_expiry: string | null; joining_date: string | null; annual_leave_entitlement: number | null;
   status: string | null; portal_enabled: boolean | null; phone: string | null;
 }
-interface LeaveRec { id: string; employee_id: string; leave_type: string; leave_start: string; leave_end: string; days: number; approval_status: string; notes: string | null; created_at: string; document_url: string | null }
+interface LeaveRec { id: string; employee_id: string; leave_type: string; leave_start: string; leave_end: string; days: number; approval_status: string; manager_status?: string; notes: string | null; created_at: string; document_url: string | null }
 interface AttRec { id: string; clock_in: string; clock_out: string | null; is_late: boolean; justified: boolean; location: string | null; correction_reason: string | null }
 interface EmpRequest { id: string; request_type: string; details: string; status: string; manager_remarks: string | null; created_at: string }
 interface Geofence { id: string; name: string; lat: number; lng: number; radius_m: number; active: boolean }
@@ -355,11 +355,16 @@ export default function MyPortalPage() {
       subtitle: l.leave_start === l.leave_end ? l.leave_start : `${l.leave_start} → ${l.leave_end}`,
       type: l.leave_type, status: l.approval_status, remarks: l.notes, doc: l.document_url,
       kind: 'leave' as const, rawId: l.id, leaveType: l.leave_type, startDate: l.leave_start, endDate: l.leave_end,
+      // Leave is signed off twice — the store manager first, then the owners.
+      // While it is pending, say which desk it is sitting on.
+      stage: l.approval_status !== 'Pending' ? ''
+        : l.manager_status === 'Pending' ? 'With the store manager'
+        : 'With the owners for final approval',
     })),
     ...requests.map((r) => ({
       id: `rq-${r.id}`, when: r.created_at,
       title: r.request_type, subtitle: r.details,
-      type: r.request_type, status: r.status, remarks: r.manager_remarks, doc: null as string | null,
+      type: r.request_type, status: r.status, remarks: r.manager_remarks, doc: null as string | null, stage: '',
       kind: 'request' as const, rawId: r.id, leaveType: '', startDate: '', endDate: '',
     })),
   ].sort((a, b) => (b.when ?? '').localeCompare(a.when ?? '')), [leaves, requests]);
@@ -737,6 +742,7 @@ export default function MyPortalPage() {
                           <div className="text-sm font-medium text-slate-800">{r.title}</div>
                           <div className="text-xs text-slate-500 mt-0.5">{fmtDate(r.when)}</div>
                           {r.subtitle && <div className="text-xs text-slate-400 mt-0.5 line-clamp-2">{r.subtitle}</div>}
+                          {r.stage && <div className="text-[11px] text-amber-600 mt-0.5">{r.stage}</div>}
                         </div>
                         <StatusPill s={r.status} />
                       </div>

@@ -26,7 +26,7 @@ export function workingDaysBetween(startStr: string, endStr: string): number {
 }
 
 interface Employee { id: string; full_name: string; annual_leave_entitlement: number; status: string; location: string | null; job_title: string | null }
-interface LeaveRow { id: string; employee_id: string; leave_type?: string; leave_start: string; leave_end: string; days: number; approval_status: string; notes: string | null; document_url?: string | null }
+interface LeaveRow { id: string; employee_id: string; leave_type?: string; leave_start: string; leave_end: string; days: number; approval_status: string; manager_status?: string; notes: string | null; document_url?: string | null }
 
 /** Open a sick-note stored in the private leave-docs bucket via a short-lived signed URL. */
 async function openLeaveDocument(path: string) {
@@ -76,7 +76,7 @@ export default function LeavePage() {
   useEffect(() => {
     supabase.from('employees').select('id, full_name, annual_leave_entitlement, status, location, job_title')
       .order('full_name').then(({ data }) => setEmployees((data as Employee[]) ?? []));
-    supabase.from('leave_records').select('id, employee_id, leave_type, leave_start, leave_end, days, approval_status, notes')
+    supabase.from('leave_records').select('id, employee_id, leave_type, leave_start, leave_end, days, approval_status, manager_status, notes')
       .then(({ data }) => setLeaves((data as LeaveRow[]) ?? []));
   }, [reload]);
 
@@ -227,6 +227,16 @@ export default function LeavePage() {
       { key: 'phase', label: 'Status', sortable: true, sortValue: (r) => phaseOf(r as LeaveRow, today), render: (r) => {
         const p = phaseOf(r as LeaveRow, today);
         return <Badge className={PHASE_STYLE[p]}>{p}</Badge>;
+      } },
+      // Where a request sits in the chain: the store manager signs first, the
+      // owners second. Only meaningful while it is still pending.
+      { key: 'manager_status', label: '1st approval', sortable: true, render: (r) => {
+        const ms = (r as LeaveRow).manager_status ?? 'Not required';
+        if (ms === 'Not required') return <span className="text-slate-300 text-xs">—</span>;
+        if (ms === 'Approved') return <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">Manager ✓</Badge>;
+        if (ms === 'Rejected') return <Badge className="bg-rose-100 text-rose-600 border-rose-200">Manager ✗</Badge>;
+        if (ms === 'Skipped') return <Badge className="bg-slate-100 text-slate-500 border-slate-200">Owner decided</Badge>;
+        return <Badge className="bg-amber-100 text-amber-700 border-amber-200">With manager</Badge>;
       } },
       { key: 'notes', label: 'Notes' },
       { key: 'document_url', label: 'Doc', render: (r) => r.document_url

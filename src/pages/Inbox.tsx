@@ -26,6 +26,9 @@ export default function InboxPage() {
   const [remarks, setRemarks] = useState<Record<string, string>>({});
   const navigate = useNavigate();
   const [sp] = useSearchParams();
+  // A refused approval must say so: the database, not this page, decides who
+  // may sign off which half of a leave request.
+  const [err, setErr] = useState<string | null>(null);
   const focusId = sp.get('focus');
   // scroll to and highlight the record a notification pointed at
   useEffect(() => {
@@ -42,9 +45,16 @@ export default function InboxPage() {
   }
   useEffect(() => { reload(); /* eslint-disable-next-line */ }, [user?.id, role]);
 
-  async function decideLeave(id: string, status: 'Approved' | 'Rejected') {
+  /**
+   * The store manager writes the first approval, the owners the final one.
+   * Writing the wrong column is refused by the database, so the error is
+   * shown rather than swallowed.
+   */
+  async function decideLeave(id: string, status: 'Approved' | 'Rejected', stage: 'manager' | 'final') {
     setBusy(`lv-${id}`);
-    await supabase.from('leave_records').update({ approval_status: status }).eq('id', id);
+    const patch = stage === 'manager' ? { manager_status: status } : { approval_status: status };
+    const { error } = await supabase.from('leave_records').update(patch).eq('id', id);
+    setErr(error ? error.message : null);
     await reload(); setBusy(null);
   }
   async function decideRequest(id: string, status: 'Approved' | 'Rejected') {
@@ -79,6 +89,13 @@ export default function InboxPage() {
         </div>
         {total > 0 && <Badge className="ml-auto bg-slate-900 text-white border-slate-900">{total} open</Badge>}
       </div>
+
+      {err && (
+        <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 flex items-start gap-2">
+          <span className="flex-1">{err}</span>
+          <button onClick={() => setErr(null)} className="text-rose-500 hover:text-rose-700 shrink-0">Dismiss</button>
+        </div>
+      )}
 
       {total === 0 && (
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-10 text-center">
@@ -160,7 +177,9 @@ export default function InboxPage() {
         <section className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
           <div className="flex items-center gap-2 px-5 py-3 border-b border-slate-100">
             <CalendarRange size={16} className="text-slate-500" />
-            <h2 className="text-sm font-semibold text-slate-700">Leave requests awaiting approval</h2>
+            <h2 className="text-sm font-semibold text-slate-700">
+              {data.isStoreManager ? 'Leave requests — your approval (1st of 2)' : 'Leave requests awaiting approval'}
+            </h2>
             <Badge className="bg-amber-100 text-amber-700 border-amber-200">{data.leaveApprovals.length}</Badge>
           </div>
           <ul className="divide-y divide-slate-100">
@@ -169,11 +188,19 @@ export default function InboxPage() {
                 <div className="min-w-0 flex-1">
                   <div className="text-sm font-medium text-slate-800">{l.employee_name} · <span className="text-slate-500">{l.leave_type}</span></div>
                   <div className="text-xs text-slate-400">{l.leave_start} → {l.leave_end} ({l.days}d){l.notes ? ` · ${l.notes}` : ''}</div>
+                  {/* An owner needs to know whether the store manager has seen it yet. */}
+                  {l.stage === 'final' && l.managerStatus !== 'Not required' && (
+                    <div className="text-[11px] mt-0.5">
+                      {l.managerStatus === 'Approved'
+                        ? <span className="text-emerald-600">✓ Store manager approved</span>
+                        : <span className="text-amber-600">Waiting on the store manager</span>}
+                    </div>
+                  )}
                 </div>
                 <div className="flex items-center gap-2">
-                  <button disabled={busy === `lv-${l.id}`} onClick={() => decideLeave(l.id, 'Approved')}
-                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-medium hover:bg-emerald-700 disabled:opacity-50"><Check size={13} /> Approve</button>
-                  <button disabled={busy === `lv-${l.id}`} onClick={() => decideLeave(l.id, 'Rejected')}
+                  <button disabled={busy === `lv-${l.id}`} onClick={() => decideLeave(l.id, 'Approved', l.stage)}
+                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-medium hover:bg-emerald-700 disabled:opacity-50"><Check size={13} /> {l.stage === 'manager' ? 'Approve (1st)' : 'Approve'}</button>
+                  <button disabled={busy === `lv-${l.id}`} onClick={() => decideLeave(l.id, 'Rejected', l.stage)}
                     className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-rose-300 text-rose-600 text-xs font-medium hover:bg-rose-50 disabled:opacity-50"><X size={13} /> Reject</button>
                   <button onClick={() => navigate('/leave')} className="text-xs text-blue-600 hover:underline">Open</button>
                 </div>
