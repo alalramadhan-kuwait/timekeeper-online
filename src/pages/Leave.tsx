@@ -228,8 +228,8 @@ export default function LeavePage() {
         const p = phaseOf(r as LeaveRow, today);
         return <Badge className={PHASE_STYLE[p]}>{p}</Badge>;
       } },
-      // Where a request sits in the chain: the store manager signs first, the
-      // owners second. Only meaningful while it is still pending.
+      // Where a request sits in the chain: the employee's own manager signs
+      // first, the owners second. Only meaningful while it is still pending.
       { key: 'manager_status', label: '1st approval', sortable: true, render: (r) => {
         const ms = (r as LeaveRow).manager_status ?? 'Not required';
         if (ms === 'Not required') return <span className="text-slate-300 text-xs">—</span>;

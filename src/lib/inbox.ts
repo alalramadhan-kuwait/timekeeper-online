@@ -135,34 +135,40 @@ export async function loadInbox(user: User, profile: Profile | null, role: Role 
 
   // ── Approvals waiting on me (admin / manager / hr) ──
   const isApprover = isApproverRole(role);
-  // The database owns the definition of "store manager" (a manager based at a
-  // shop); asking it keeps one source of truth for the routing.
-  let isStoreManager = false;
+  // The database owns the routing: it knows which workplaces this manager
+  // approves for. Asking it keeps one source of truth, and a manager who
+  // covers nothing is simply not a first approver.
+  let myLocations: string[] = [];
   if (role === 'manager') {
     try {
-      const { data } = await supabase.rpc('is_store_manager');
-      isStoreManager = data === true;
-    } catch { isStoreManager = false; }
+      const { data } = await supabase.rpc('my_approval_locations');
+      myLocations = Array.isArray(data) ? data.filter(Boolean) : [];
+    } catch { myLocations = []; }
   }
+  const isStoreManager = myLocations.length > 0;
   let leaveApprovals: LeaveApproval[] = [];
   let requestApprovals: RequestApproval[] = [];
 
   if (isApprover) {
     const [lv, empRows, req, profRows] = await Promise.all([
       safe<any>(supabase.from('leave_records').select('id, employee_id, leave_type, leave_start, leave_end, days, notes, approval_status, manager_status').eq('approval_status', 'Pending')),
-      safe<any>(supabase.from('employees').select('id, full_name, user_id')),
+      safe<any>(supabase.from('employees').select('id, full_name, user_id, location')),
       safe<any>(supabase.from('employee_requests').select('id, request_type, details, created_at, user_id, employee_id, status').or('status.eq.Pending,status.is.null')),
       safe<any>(supabase.from('profiles').select('id, full_name')),
     ]);
     const empById = new Map(empRows.map((e) => [e.id, e.full_name]));
+    const empLocation = new Map(empRows.map((e) => [e.id, e.location as string | null]));
     const empByUser = new Map(empRows.filter((e) => e.user_id).map((e) => [e.user_id, e.full_name]));
     const profById = new Map(profRows.map((p) => [p.id, p.full_name]));
 
-    // The store manager is asked only for the first approval, and only on the
-    // requests routed to him — which manager_status already encodes, since the
-    // database decides routing when the request is made.
+    // A manager is asked only for the first approval, and only for the people
+    // they cover. Filtering on manager_status alone was enough while there was
+    // one manager; with a manager per workplace it would have put head office's
+    // requests in front of the shops manager and the other way round.
     leaveApprovals = lv
-      .filter((l) => (isStoreManager ? l.manager_status === 'Pending' : role === 'admin'))
+      .filter((l) => (isStoreManager
+        ? l.manager_status === 'Pending' && myLocations.includes(empLocation.get(l.employee_id) ?? '')
+        : role === 'admin'))
       .map((l) => ({
         id: l.id, employee_name: empById.get(l.employee_id) ?? 'Unknown',
         leave_type: l.leave_type ?? 'Annual', leave_start: l.leave_start, leave_end: l.leave_end,

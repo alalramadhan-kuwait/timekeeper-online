@@ -365,10 +365,10 @@ export default function MyPortalPage() {
       subtitle: l.leave_start === l.leave_end ? l.leave_start : `${l.leave_start} → ${l.leave_end}`,
       type: l.leave_type, status: l.approval_status, remarks: l.notes, doc: l.document_url,
       kind: 'leave' as const, rawId: l.id, leaveType: l.leave_type, startDate: l.leave_start, endDate: l.leave_end,
-      // Leave is signed off twice — the store manager first, then the owners.
+      // Leave is signed off twice — your manager first, then the owners.
       // While it is pending, say which desk it is sitting on.
       stage: l.approval_status !== 'Pending' ? ''
-        : l.manager_status === 'Pending' ? 'With the store manager'
+        : l.manager_status === 'Pending' ? 'With your manager'
         : 'With the owners for final approval',
     })),
     ...requests.map((r) => ({
