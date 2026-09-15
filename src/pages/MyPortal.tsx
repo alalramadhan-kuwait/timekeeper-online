@@ -105,7 +105,7 @@ const TYPE_BADGE: Record<string, string> = {
 };
 
 export default function MyPortalPage() {
-  const { user, profile } = useAuth();
+  const { user, profile, role } = useAuth();
   const [emp, setEmp] = useState<EmpRecord | null>(null);
   const [leaves, setLeaves] = useState<LeaveRec[]>([]);
   const [requests, setRequests] = useState<EmpRequest[]>([]);
@@ -165,6 +165,11 @@ export default function MyPortalPage() {
   // forms
   const [showLeaveForm, setShowLeaveForm] = useState(false);
   const [lvType, setLvType] = useState<'Annual' | 'Sick' | 'WFH'>('Annual');
+  /* Working from home is not a thing a shop floor can do: the job is being in
+     the shop with the customers. Offering it to a salesperson invites a request
+     that can only ever be refused. Head office keeps it. Same rule as the DSR
+     portal — the same people use both. */
+  const canWorkFromHome = !(role === 'sales' || role === 'staff');
   const [lvStart, setLvStart] = useState('');
   const [lvEnd, setLvEnd] = useState('');
   const [lvNotes, setLvNotes] = useState('');
@@ -716,7 +721,7 @@ export default function MyPortalPage() {
                       <select value={lvType} onChange={(e) => setLvType(e.target.value as typeof lvType)} className={`${input} w-full`}>
                         <option value="Annual">Annual leave</option>
                         <option value="Sick">Sick leave</option>
-                        <option value="WFH">Work from home</option>
+                        {canWorkFromHome && <option value="WFH">Work from home</option>}
                       </select>
                     </label>
                     <label className="text-xs"><span className="block text-slate-500 mb-1">Start</span>
