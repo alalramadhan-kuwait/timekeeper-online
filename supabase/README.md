@@ -32,6 +32,7 @@ supabase db push                  # applies to the linked project
 Committed here (active):
 - **notify-flush** — cron dispatcher for notifications (every 30s). Secret read from `app_config`.
 - **notify-test** — "Send test" from Notification Settings (JWT-auth).
+- **watch-news-sync** — the Watch News engine: reads the RSS feeds in `news_sources`, scores each story, mirrors the lead photo into the `news-images` bucket, and writes the Arabic slide lines. `POST {}` runs the feeds; `POST { url }` ingests a single pasted article. Cron (`x-sync-key`) or an admin/manager/marketing JWT.
 
 Other active functions still to be pulled with `supabase functions download <slug>`:
 `admin-users`, `lightspeed-sync`, `lightspeed-po-sync`, `lightspeed-oauth-callback`,
@@ -50,5 +51,7 @@ supabase functions deploy notify-flush
 ## Secrets
 - The notification dispatch secret lives in the **`app_config`** table (`id = 'notify_key'`,
   service-role only) — not in source. Rotate it by updating that row; the flush cron reads it live.
+- **`ANTHROPIC_API_KEY`** (Edge Function secret) — optional; lets `watch-news-sync` write the Arabic
+  slide lines. Without it the news still syncs and the Arabic is typed on the page.
 - Never hardcode secrets in migrations or function source. VAPID keys live in `push_config`;
   the Apify token in `apify_config`; Lightspeed tokens in `lightspeed_auth`.

@@ -14,6 +14,7 @@ import AssignTasksPage from './pages/AssignTasks';
 import NotificationSettingsPage from './pages/NotificationSettings';
 import NotificationsPage from './pages/Notifications';
 import InstagramPage from './pages/Instagram';
+import WatchNewsPage from './pages/WatchNews';
 import UserActivityPage from './pages/UserActivity';
 import SettingsPage from './pages/Settings';
 import LeavePage from './pages/Leave';
@@ -59,6 +60,7 @@ function Shell() {
         <Route path="/limited-projects" element={g('/limited-projects', <LimitedProjectsPage />)} />
         <Route path="/repairs" element={g('/repairs', <RepairWatchesPage />)} />
         <Route path="/instagram" element={g('/instagram', <InstagramPage />)} />
+        <Route path="/news" element={g('/news', <WatchNewsPage />)} />
         <Route path="/content" element={g('/content', <ContentPlannerPage />)} />
         <Route path="/paid-ads" element={g('/paid-ads', <PaidAdsPage />)} />
         <Route path="/influencers" element={g('/influencers', <InfluencersPage />)} />
