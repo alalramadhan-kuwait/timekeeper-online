@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Activity, RefreshCw } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Spinner, Badge } from '../components/ui';
+import { roleLabel } from '../lib/roles';
 
 interface TeamRow { id: string; full_name: string; role: string; email?: string; last_sign_in_at?: string | null }
 interface ActivityRow { user_id: string; last_active: string | null; views_7d: number; views_30d: number; recent_pages: string[] | null }
@@ -121,7 +122,7 @@ export default function UserActivityPage() {
               return (
                 <tr key={r.id} className={`border-b border-slate-100 last:border-0 hover:bg-slate-50 ${stale ? 'bg-rose-50/30' : ''}`}>
                   <td className="px-4 py-2.5 font-medium text-slate-700 whitespace-nowrap">{r.full_name}</td>
-                  <td className="px-4 py-2.5 capitalize text-slate-500">{r.role}</td>
+                  <td className="px-4 py-2.5 text-slate-500">{roleLabel(r.role)}</td>
                   <td className="px-4 py-2.5 text-slate-500 hidden md:table-cell whitespace-nowrap">{rel(r.last_sign_in_at)}</td>
                   <td className={`px-4 py-2.5 whitespace-nowrap ${stale ? 'text-rose-600 font-medium' : 'text-slate-600'}`}>{rel(r.last_active)}</td>
                   <td className="px-4 py-2.5 text-right tabular-nums hidden sm:table-cell">{r.views_7d || '—'}</td>

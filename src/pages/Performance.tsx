@@ -4,6 +4,7 @@ import { UserRound, Clock, Activity as ActivityIcon, Pencil, CalendarDays, MapPi
 import { supabase } from '../lib/supabase';
 import { Spinner, Badge } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
+import { roleLabel } from '../lib/roles';
 
 // One place to see a person from every angle: attendance, app activity, and the edits
 // they've made. Everything is keyed by user_id (the login), so names never duplicate.
@@ -234,7 +235,7 @@ export default function PerformancePage() {
           </div>
           {mode === 'individual' && (
             <select value={sel} onChange={(e) => setSel(e.target.value)} className="px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm">
-              {people.map((p) => <option key={p.id} value={p.id}>{p.name} · {p.role}</option>)}
+              {people.map((p) => <option key={p.id} value={p.id}>{p.name} · {roleLabel(p.role)}</option>)}
             </select>
           )}
           <select value={range} onChange={(e) => setRange(e.target.value)} className="px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm">
@@ -276,7 +277,7 @@ export default function PerformancePage() {
                       </td>
                       <td className="px-4 py-2.5">
                         <span className="font-medium text-slate-800">{r.person!.name}</span>
-                        <span className="text-xs text-slate-400 ml-1.5 capitalize">{r.person!.role}</span>
+                        <span className="text-xs text-slate-400 ml-1.5">{roleLabel(r.person!.role)}</span>
                       </td>
                       <td className="px-4 py-2.5 text-right font-bold text-slate-900 tabular-nums">{r.pts.toLocaleString()}</td>
                       <td className="px-4 py-2.5 text-right tabular-nums hidden sm:table-cell">{r.days_present}</td>
@@ -302,7 +303,7 @@ export default function PerformancePage() {
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 flex flex-wrap items-center gap-x-6 gap-y-2">
           <div className="w-14 h-14 rounded-full bg-slate-100 flex items-center justify-center text-xl font-bold text-slate-400">{person.name.slice(0, 1).toUpperCase()}</div>
           <div>
-            <div className="flex items-center gap-2"><h2 className="text-lg font-bold text-slate-900">{person.name}</h2><Badge className="bg-slate-100 text-slate-600 border-slate-200 capitalize">{person.role}</Badge>{person.status && <Badge className={person.status === 'Active' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-500 border-slate-200'}>{person.status}</Badge>}</div>
+            <div className="flex items-center gap-2"><h2 className="text-lg font-bold text-slate-900">{person.name}</h2><Badge className="bg-slate-100 text-slate-600 border-slate-200">{roleLabel(person.role)}</Badge>{person.status && <Badge className={person.status === 'Active' ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-500 border-slate-200'}>{person.status}</Badge>}</div>
             <div className="text-sm text-slate-500 flex flex-wrap gap-x-4 gap-y-1 mt-1">
               {person.job_title && <span className="flex items-center gap-1"><Briefcase size={13} /> {person.job_title}</span>}
               {person.location && <span className="flex items-center gap-1"><MapPin size={13} /> {person.location}</span>}

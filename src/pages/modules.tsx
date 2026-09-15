@@ -6,6 +6,7 @@ import { formatKD } from '../lib/format';
 import { expiryTier, tierClass, tierLabel } from '../lib/expiry';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
+import { roleLabel } from '../lib/roles';
 
 /** Unify any Instagram handle (@name / profile URL / bare) to a clean bare username. */
 export const cleanHandle = (h: unknown): string | null => {
@@ -614,7 +615,7 @@ export function EmployeesPage() {
     ...employees,
     fields: employees.fields.map((f) =>
       f.key === 'user_id'
-        ? { ...f, options: [{ value: '', label: '— not linked —' }, ...profiles.map((p) => ({ value: p.id, label: `${p.full_name} (${p.role})` }))] }
+        ? { ...f, options: [{ value: '', label: '— not linked —' }, ...profiles.map((p) => ({ value: p.id, label: `${p.full_name} (${roleLabel(p.role)})` }))] }
         : f),
     columns: [
       { key: 'full_name', label: 'Employee', sortable: true },
@@ -631,7 +632,7 @@ export function EmployeesPage() {
               <Badge className={r.portal_enabled ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 'bg-amber-100 text-amber-700 border-amber-200'}>
                 {r.portal_enabled ? 'Linked' : 'Linked · portal off'}
               </Badge>
-              {p && <span className="text-xs text-slate-400 capitalize">{p.role}</span>}
+              {p && <span className="text-xs text-slate-400">{roleLabel(p.role)}</span>}
             </span>
           );
         },

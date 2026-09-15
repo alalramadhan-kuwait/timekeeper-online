@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase';
 import { Spinner, Badge } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { PAGES } from '../components/Layout';
+import { roleLabel, managerLabel, ROLE_HINT } from '../lib/roles';
 
 interface Brand { id: string; name: string; is_active: boolean }
 interface TeamProfile { id: string; full_name: string; role: string; email?: string; page_access?: string[] | null; sales_name?: string | null }
@@ -13,16 +14,6 @@ const usernameOf = (email?: string) =>
   email ? (email.toLowerCase().endsWith('@time-keeper.com') ? email.split('@')[0] : email) : '—';
 
 const ROLES = ['admin', 'manager', 'sales', 'operations', 'marketing', 'staff', 'hr', 'viewer'];
-const ROLE_HINTS: Record<string, string> = {
-  admin: 'Full access + settings & users',
-  manager: 'Full access',
-  sales: 'CRM, follow-ups, VIP, demand list',
-  operations: 'Supplier payments, consignments, limited projects, stock, repairs',
-  marketing: 'Instagram performance, content planner',
-  staff: 'Sales + purchasing view (legacy)',
-  hr: 'Employees, leave, company documents',
-  viewer: 'Read-only',
-};
 
 /** Admin & manager: team members and role-based access (managers cannot touch admin accounts) */
 function TeamAccess({ staffRoster }: { staffRoster: string[] }) {
@@ -47,6 +38,10 @@ function TeamAccess({ staffRoster }: { staffRoster: string[] }) {
   const [accessFor, setAccessFor] = useState<string | null>(null);
   const [accessSel, setAccessSel] = useState<Set<string>>(new Set());
   const [accessCustom, setAccessCustom] = useState(false);
+  /* Which workplaces each manager covers, so the team list can say WHICH
+     manager someone is. One role does two jobs — head office and the shops —
+     and "Manager" against two different names answers nothing. */
+  const [scopes, setScopes] = useState<Record<string, string[]>>({});
   // managers may not modify admin accounts; nobody may modify their own via this panel
   const protectedRow = (t: TeamProfile) => isManager && t.role === 'admin';
   const lockedRow = (t: TeamProfile) => t.id === user?.id || protectedRow(t);
@@ -64,6 +59,21 @@ function TeamAccess({ staffRoster }: { staffRoster: string[] }) {
     }
   }
   useEffect(() => { load(); }, []);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase.from('manager_scopes').select('manager_id, location');
+      const by: Record<string, string[]> = {};
+      for (const r of (data ?? []) as { manager_id: string; location: string }[]) {
+        (by[r.manager_id] ??= []).push(r.location);
+      }
+      setScopes(by);
+    })();
+  }, []);
+
+  /** A manager is named for what they run; everyone else by their role. */
+  const labelFor = (t: TeamProfile) =>
+    t.role === 'manager' ? managerLabel(scopes[t.id]) : roleLabel(t.role);
 
   async function call(body: Record<string, unknown>) {
     setBusy(true); setMsg(null); setErr(null);
@@ -212,9 +222,9 @@ function TeamAccess({ staffRoster }: { staffRoster: string[] }) {
                     disabled={busy || lockedRow(t)}
                     onChange={(e) => setRole(t.id, e.target.value)}
                     title={protectedRow(t) ? 'Only admins can change admin accounts' : undefined}
-                    className="px-2 py-1 rounded-lg border border-slate-300 text-xs bg-white capitalize disabled:opacity-50"
+                    className="px-2 py-1 rounded-lg border border-slate-300 text-xs bg-white disabled:opacity-50"
                   >
-                    {(t.role === 'admin' ? ROLES : assignableRoles).map((r) => <option key={r} value={r}>{r}</option>)}
+                    {(t.role === 'admin' ? ROLES : assignableRoles).map((r) => <option key={r} value={r}>{roleLabel(r)}</option>)}
                   </select>
                 </td>
                 <td className="px-2 py-2 text-xs hidden lg:table-cell whitespace-nowrap">
@@ -228,7 +238,12 @@ function TeamAccess({ staffRoster }: { staffRoster: string[] }) {
                 <td className="px-2 py-2 text-xs hidden lg:table-cell">
                   {Array.isArray(t.page_access)
                     ? <span className="text-violet-600 font-medium">{t.page_access.length ? `Custom · ${t.page_access.length} pages` : 'Portal only'}</span>
-                    : <span className="text-slate-400">{ROLE_HINTS[t.role] ?? ''}</span>}
+                    : <span className="text-slate-400">{ROLE_HINT[t.role] ?? ''}</span>}
+                  {t.role === 'manager' && scopes[t.id]?.length > 0 && (
+                    <div className="text-[11px] text-slate-400 mt-0.5">
+                      {labelFor(t)} · approves {scopes[t.id].join(', ')}
+                    </div>
+                  )}
                 </td>
                 <td className="px-2 py-2 text-right whitespace-nowrap">
                   {!protectedRow(t) && (
@@ -283,7 +298,7 @@ function TeamAccess({ staffRoster }: { staffRoster: string[] }) {
                     <label className="flex items-center gap-2 text-sm mb-2 cursor-pointer">
                       <input type="checkbox" checked={accessCustom} onChange={(e) => setAccessCustom(e.target.checked)} className="h-4 w-4" />
                       <span className="font-medium text-slate-700">Custom page access for {t.full_name}</span>
-                      <span className="text-xs text-slate-400">(off = use the {t.role} role defaults)</span>
+                      <span className="text-xs text-slate-400">(off = use the {roleLabel(t.role)} defaults)</span>
                     </label>
                     {accessCustom && (
                       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-1 mb-3 pl-1">
@@ -346,11 +361,11 @@ function TeamAccess({ staffRoster }: { staffRoster: string[] }) {
         <input value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Temporary password (6+ chars)" type="text"
           className="px-3 py-1.5 rounded-lg border border-slate-300 text-sm" />
         <select value={newRole} onChange={(e) => setNewRole(e.target.value)}
-          className="px-3 py-1.5 rounded-lg border border-slate-300 text-sm bg-white capitalize">
-          {assignableRoles.map((r) => <option key={r} value={r}>{r}</option>)}
+          className="px-3 py-1.5 rounded-lg border border-slate-300 text-sm bg-white">
+          {assignableRoles.map((r) => <option key={r} value={r}>{roleLabel(r)}</option>)}
         </select>
       </div>
-      <p className="text-xs text-slate-400 mb-2">{ROLE_HINTS[newRole]}</p>
+      <p className="text-xs text-slate-400 mb-2">{ROLE_HINT[newRole]}</p>
       <button onClick={createUser} disabled={busy}
         className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-slate-900 text-white text-sm font-medium hover:bg-slate-700 disabled:opacity-60">
         <UserPlus size={13} /> {busy ? 'Working…' : 'Create account'}
