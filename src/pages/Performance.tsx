@@ -116,7 +116,7 @@ export default function PerformancePage() {
       supabase.from('user_activity').select('path, occurred_at').eq('user_id', person.id).gte('occurred_at', sinceIso),
       supabase.from('audit_log').select('table_name, action, changed_at').eq('changed_by', person.id).gte('changed_at', sinceIso).order('changed_at', { ascending: false }).limit(1000),
       person.employee_id
-        ? supabase.from('leave_records').select('leave_type, leave_start, leave_end, approval_status').eq('employee_id', person.employee_id)
+        ? supabase.from('leave_records').select('leave_type, leave_start, leave_end, days, approval_status, manager_status').eq('employee_id', person.employee_id)
         : Promise.resolve({ data: [] as any[] }),
     ]);
 
@@ -158,20 +158,36 @@ export default function PerformancePage() {
     const topTables = [...byTable.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
     const recentEdits = erows.slice(0, 10);
 
-    // leave (overlapping the range, approved)
-    const lrows = (lv.data ?? []) as any[];
+    /* Leave in the chosen range, by type.
+       Two things were wrong here. The query had no date filter at all, so
+       "leave days" was every day the person had ever taken while every other
+       figure on the page respected the 30/90-day range beside it. And the days
+       were recomputed as the calendar span, which counts the Fridays and the
+       halves that the leave itself does not — `days` is the figure the balance,
+       the portal and Leave Tracking all use, so it is the figure to use here.
+       A leave that straddles the start of the range counts: it is leave taken
+       in the period, and its stored length is the whole booking. */
+    const sinceDay = sinceIso.slice(0, 10);
+    const inRange = (r: any) => !days || (r.leave_end ?? r.leave_start) >= sinceDay;
+    const lrows = ((lv.data ?? []) as any[]).filter(inRange);
     const approvedLeave = lrows.filter((r) => r.approval_status === 'Approved');
     const pendingReq = lrows.filter((r) => r.approval_status === 'Pending').length;
-    const leaveDays = approvedLeave.reduce((s, r) => {
-      const start = new Date(r.leave_start), end = new Date(r.leave_end);
-      return s + Math.max(0, Math.round((end.getTime() - start.getTime()) / 86400_000) + 1);
-    }, 0);
+    const leaveDays = approvedLeave.reduce((s, r) => s + Number(r.days ?? 0), 0);
+    // Built from the rows, not a fixed list, so a new leave type appears here
+    // the day it is first used instead of silently landing in nothing.
+    const leaveByType = [...approvedLeave.reduce((m, r) => {
+      const t = r.leave_type ?? 'Annual';
+      const cur = m.get(t) ?? { days: 0, times: 0 };
+      m.set(t, { days: cur.days + Number(r.days ?? 0), times: cur.times + 1 });
+      return m;
+    }, new Map<string, { days: number; times: number }>())]
+      .sort((a, b) => b[1].days - a[1].days);
 
     setData({
       daysPresent, lateCount, fullDays, overtimeDays, shortDays, onTimePct, avgHours: daysPresent ? totalHours / daysPresent : 0, avgArrStr, lastClock, missedOut,
       views: acts.length, activeDays: actDays.size, lastActive, topPages,
       editTotal: erows.length, byAction, topTables, recentEdits,
-      leaveDays, pendingReq,
+      leaveDays, pendingReq, leaveByType,
     });
     setBusy(false);
   }, [person, range]);
@@ -368,9 +384,37 @@ export default function PerformancePage() {
             <>
               <SectionTitle>Leave</SectionTitle>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                <Kpi icon={<CalendarDays size={13} />} label="Approved leave days" value={String(data.leaveDays)} link="/leave" />
+                <Kpi icon={<CalendarDays size={13} />} label="Approved leave days" value={String(data.leaveDays)}
+                  sub={range === 'all' ? 'all time' : `in the last ${range} days`} link="/leave" />
                 <Kpi icon={<CalendarDays size={13} />} label="Pending requests" value={String(data.pendingReq)} accent={data.pendingReq ? 'text-amber-600' : undefined} link="/leave" />
               </div>
+              {/* The total on its own never says whether someone took a holiday
+                  or was off sick nine times, which is the question actually
+                  being asked of this page. */}
+              {data.leaveByType.length > 0 && (
+                <div className="mt-3 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                  <table className="w-full text-sm">
+                    <thead className="bg-slate-50 text-slate-500 text-xs">
+                      <tr><th className="text-left px-4 py-2 font-medium">Type</th>
+                          <th className="text-right px-4 py-2 font-medium">Days</th>
+                          <th className="text-right px-4 py-2 font-medium">Times</th>
+                          <th className="text-right px-4 py-2 font-medium">Share</th></tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {data.leaveByType.map(([type, v]: [string, { days: number; times: number }]) => (
+                        <tr key={type}>
+                          <td className="px-4 py-2 text-slate-700">{type === 'WFH' ? 'Work from home' : `${type} leave`}</td>
+                          <td className="px-4 py-2 text-right font-semibold text-slate-800">{v.days}</td>
+                          <td className="px-4 py-2 text-right text-slate-500">{v.times}</td>
+                          <td className="px-4 py-2 text-right text-slate-400">
+                            {data.leaveDays ? `${Math.round((v.days / data.leaveDays) * 100)}%` : '—'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </>
           )}
         </>

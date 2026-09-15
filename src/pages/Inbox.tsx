@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Inbox as InboxIcon, CheckCircle, Clock, CalendarRange, FileText, Check, X, ChevronRight, ClipboardList } from 'lucide-react';
+import { Inbox as InboxIcon, CheckCircle, Clock, CalendarRange, FileText, Check, X, ChevronRight, ClipboardList, Info } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { Spinner, Badge } from '../components/ui';
@@ -188,12 +188,14 @@ export default function InboxPage() {
                 <div className="min-w-0 flex-1">
                   <div className="text-sm font-medium text-slate-800">{l.employee_name} · <span className="text-slate-500">{l.leave_type}</span></div>
                   <div className="text-xs text-slate-400">{l.leave_start} → {l.leave_end} ({l.days}d){l.notes ? ` · ${l.notes}` : ''}</div>
-                  {/* An owner needs to know whether the store manager has seen it yet. */}
+                  {/* An owner needs to know whether the manager has seen it yet. */}
                   {l.stage === 'final' && l.managerStatus !== 'Not required' && (
                     <div className="text-[11px] mt-0.5">
                       {l.managerStatus === 'Approved'
-                        ? <span className="text-emerald-600">✓ Store manager approved</span>
-                        : <span className="text-amber-600">Waiting on the store manager</span>}
+                        ? <span className="text-emerald-600">✓ {l.withManager ?? 'Manager'} approved</span>
+                        : l.managerStatus === 'Skipped'
+                        ? <span className="text-slate-500">Decided without the manager's step</span>
+                        : <span className="text-amber-600">Waiting on {l.withManager ?? 'the manager'}</span>}
                     </div>
                   )}
                 </div>
@@ -204,6 +206,32 @@ export default function InboxPage() {
                     className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-rose-300 text-rose-600 text-xs font-medium hover:bg-rose-50 disabled:opacity-50"><X size={13} /> Reject</button>
                   <button onClick={() => navigate('/leave')} className="text-xs text-blue-600 hover:underline">Open</button>
                 </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {/* ── With a manager: for the owners' information, not their action ── */}
+      {data.awaitingManager.length > 0 && (
+        <section className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+          <div className="flex items-center gap-2 px-5 py-3 border-b border-slate-100">
+            <Info size={16} className="text-slate-400" />
+            <h2 className="text-sm font-semibold text-slate-600">With the manager — for your information</h2>
+            <Badge className="bg-slate-100 text-slate-500 border-slate-200">{data.awaitingManager.length}</Badge>
+          </div>
+          <ul className="divide-y divide-slate-100">
+            {data.awaitingManager.map((l) => (
+              <li key={l.id} id={`nid-${l.id}`} className={`px-5 py-3 flex flex-wrap items-center gap-3 ${hl(l.id)}`}>
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm text-slate-700">{l.employee_name} · <span className="text-slate-500">{l.leave_type}</span></div>
+                  <div className="text-xs text-slate-400">{l.leave_start} → {l.leave_end} ({l.days}d){l.notes ? ` · ${l.notes}` : ''}</div>
+                  <div className="text-[11px] mt-0.5 text-amber-600">Waiting on {l.withManager ?? 'the manager'} for the first approval</div>
+                </div>
+                {/* No buttons here on purpose: it is not the owners' turn. They
+                    keep the power to decide outright — that lives on Leave
+                    Tracking, where the manager's step is recorded as Skipped. */}
+                <button onClick={() => navigate('/leave')} className="text-xs text-blue-600 hover:underline">Open</button>
               </li>
             ))}
           </ul>

@@ -22,8 +22,10 @@ export interface LeaveApproval {
   leave_start: string; leave_end: string; days: number; notes: string | null;
   /** Which half of the chain this viewer is being asked for. */
   stage: 'manager' | 'final';
-  /** The store manager's step, so an owner can see whether it has happened. */
+  /** The manager's step, so an owner can see whether it has happened. */
   managerStatus: string;
+  /** Who the first approval is sitting with, when it has not happened yet. */
+  withManager?: string | null;
 }
 
 export interface RequestApproval {
@@ -41,6 +43,10 @@ export interface InboxData {
   myTasks: MyTask[];
   tasks: InboxTask[];
   leaveApprovals: LeaveApproval[];
+  /** Owners only: requests still with a manager. Shown to keep the owners in
+      the picture, not to ask them for anything — they can still decide
+      outright from Leave Tracking, which records the manager's step Skipped. */
+  awaitingManager: LeaveApproval[];
   requestApprovals: RequestApproval[];
   isApprover: boolean;
   /** True when this viewer is the store manager giving the first approval. */
@@ -147,17 +153,26 @@ export async function loadInbox(user: User, profile: Profile | null, role: Role 
   }
   const isStoreManager = myLocations.length > 0;
   let leaveApprovals: LeaveApproval[] = [];
+  let awaitingManager: LeaveApproval[] = [];
   let requestApprovals: RequestApproval[] = [];
 
   if (isApprover) {
-    const [lv, empRows, req, profRows] = await Promise.all([
+    const [lv, empRows, req, profRows, scopeRows] = await Promise.all([
       safe<any>(supabase.from('leave_records').select('id, employee_id, leave_type, leave_start, leave_end, days, notes, approval_status, manager_status').eq('approval_status', 'Pending')),
       safe<any>(supabase.from('employees').select('id, full_name, user_id, location')),
       safe<any>(supabase.from('employee_requests').select('id, request_type, details, created_at, user_id, employee_id, status').or('status.eq.Pending,status.is.null')),
       safe<any>(supabase.from('profiles').select('id, full_name')),
+      safe<any>(supabase.from('manager_scopes').select('manager_id, location')),
     ]);
     const empById = new Map(empRows.map((e) => [e.id, e.full_name]));
     const empLocation = new Map(empRows.map((e) => [e.id, e.location as string | null]));
+    // Who a workplace's first approval belongs to — so "with the manager" can
+    // name her rather than leaving an owner to guess which manager it means.
+    const managerAt = new Map<string, string>();
+    for (const sc of scopeRows) {
+      const who = profRows.find((p) => p.id === sc.manager_id)?.full_name;
+      if (who && sc.location) managerAt.set(sc.location, who);
+    }
     const empByUser = new Map(empRows.filter((e) => e.user_id).map((e) => [e.user_id, e.full_name]));
     const profById = new Map(profRows.map((p) => [p.id, p.full_name]));
 
@@ -165,24 +180,30 @@ export async function loadInbox(user: User, profile: Profile | null, role: Role 
     // they cover. Filtering on manager_status alone was enough while there was
     // one manager; with a manager per workplace it would have put head office's
     // requests in front of the shops manager and the other way round.
-    leaveApprovals = lv
-      .filter((l) => (isStoreManager
-        ? l.manager_status === 'Pending' && myLocations.includes(empLocation.get(l.employee_id) ?? '')
-        : role === 'admin'))
-      .map((l) => ({
-        id: l.id, employee_name: empById.get(l.employee_id) ?? 'Unknown',
-        leave_type: l.leave_type ?? 'Annual', leave_start: l.leave_start, leave_end: l.leave_end,
-        days: Number(l.days), notes: l.notes,
-        stage: (isStoreManager ? 'manager' : 'final') as 'manager' | 'final',
-        managerStatus: l.manager_status ?? 'Not required',
-      }));
+    const asApproval = (l: any): LeaveApproval => ({
+      id: l.id, employee_name: empById.get(l.employee_id) ?? 'Unknown',
+      leave_type: l.leave_type ?? 'Annual', leave_start: l.leave_start, leave_end: l.leave_end,
+      days: Number(l.days), notes: l.notes,
+      stage: (isStoreManager ? 'manager' : 'final') as 'manager' | 'final',
+      managerStatus: l.manager_status ?? 'Not required',
+      withManager: managerAt.get(empLocation.get(l.employee_id) ?? '') ?? null,
+    });
+    const mine = lv.filter((l) => (isStoreManager
+      ? l.manager_status === 'Pending' && myLocations.includes(empLocation.get(l.employee_id) ?? '')
+      : role === 'admin'));
+    // For an owner, a request still with a manager is news, not a job: listing
+    // it beside the ones that are genuinely theirs to decide made every
+    // request look equally overdue for their attention.
+    leaveApprovals = mine.filter((l) => isStoreManager || l.manager_status !== 'Pending').map(asApproval);
+    awaitingManager = isStoreManager ? []
+      : mine.filter((l) => l.manager_status === 'Pending').map(asApproval);
     requestApprovals = req.map((r) => ({
       id: r.id, request_type: r.request_type, details: r.details, created_at: r.created_at,
       requester: (r.employee_id && empById.get(r.employee_id)) || empByUser.get(r.user_id) || profById.get(r.user_id) || 'Someone',
     }));
   }
 
-  return { myTasks, tasks, leaveApprovals, requestApprovals, isApprover, isStoreManager };
+  return { myTasks, tasks, leaveApprovals, awaitingManager, requestApprovals, isApprover, isStoreManager };
 }
 
 export function inboxCount(d: InboxData): number {
