@@ -1,6 +1,8 @@
 // Watch News sync — reads the watch press, scores each story against the brands
 // we carry, and keeps the lead photo so a slide can be built from it.
 // Callers: pg_cron (x-sync-key) or an admin/manager/marketing JWT ("Sync now").
+// POST {} runs the feeds; POST { url } ingests that one article straight away —
+// the story you want is usually the one you just read on your phone.
 //
 // Two secrets, both optional in different ways:
 //   ANTHROPIC_API_KEY — writes the Arabic headline. Without it the story still
@@ -222,6 +224,134 @@ async function arabicHeadlines(rows: { id: string; title: string; summary: strin
   return out;
 }
 
+/* ---------------- one pasted link ---------------- */
+
+/** A meta tag's content, whichever attribute order the page happens to use. */
+function meta(html: string, key: string): string | null {
+  for (const re of [
+    new RegExp(`<meta[^>]+(?:property|name)=["']${key}["'][^>]+content=["']([^"']*)["']`, "i"),
+    new RegExp(`<meta[^>]+content=["']([^"']*)["'][^>]+(?:property|name)=["']${key}["']`, "i"),
+  ]) {
+    const m = html.match(re);
+    if (m?.[1]) return stripHtml(m[1]);
+  }
+  return null;
+}
+
+/** The same article shared from the app and from the web must be one story. */
+function canonicalise(u: string): string {
+  try {
+    const url = new URL(u);
+    url.hash = "";
+    for (const k of [...url.searchParams.keys()]) {
+      if (k.startsWith("utm_") || k === "ref" || k === "fbclid") url.searchParams.delete(k);
+    }
+    return url.toString();
+  } catch {
+    return u;
+  }
+}
+
+/**
+ * Which source a pasted link belongs to. A site we already follow keeps its
+ * weight and its name; anything else gets a row of its own, disabled, so the
+ * daily run does not go looking for a feed nobody configured.
+ */
+async function sourceForLink(
+  admin: ReturnType<typeof createClient>, host: string, siteName: string | null,
+): Promise<SourceRow> {
+  const bare = host.replace(/^www\./, "");
+  const { data: all } = await admin.from("news_sources").select("id, name, feed_url, homepage, weight");
+  const hit = ((all ?? []) as (SourceRow & { homepage: string | null })[])
+    .find((s) => (s.homepage ?? "").includes(bare) || (s.feed_url ?? "").includes(bare));
+  if (hit) return hit;
+
+  const { data } = await admin.from("news_sources").upsert({
+    name: siteName || bare,
+    feed_url: `https://${host}/`,
+    homepage: `https://${host}`,
+    enabled: false,
+    last_status: "added from a pasted link — no feed configured",
+  }, { onConflict: "name" }).select("id, name, feed_url, weight").single();
+  return data as SourceRow;
+}
+
+/**
+ * Ingest a single article someone pasted. This exists because the story you
+ * want is often the one you just read on your phone, and waiting for tomorrow's
+ * feed run is not an answer. Everything after the fetch is the same path a feed
+ * item takes — same scoring, same mirrored photo, same Arabic lines.
+ */
+async function ingestLink(
+  admin: ReturnType<typeof createClient>, rawUrl: string, brands: string[],
+): Promise<Response> {
+  let host: string;
+  try {
+    host = new URL(rawUrl).host;
+  } catch {
+    return json({ error: `Not a URL: ${rawUrl.slice(0, 120)}` }, 400);
+  }
+
+  const res = await fetch(rawUrl, { headers: { "User-Agent": UA, Accept: "text/html,application/xhtml+xml" } })
+    .catch((e) => { throw new Error(`could not reach ${host}: ${(e as Error).message}`); });
+  if (!res.ok) return json({ error: `${host} answered ${res.status}` }, 400);
+  const html = (await res.text()).slice(0, 400_000);
+
+  const title = meta(html, "og:title") ?? stripHtml(html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1] ?? "");
+  if (!title) return json({ error: "No headline found on that page — is it an article?" }, 400);
+
+  const canonical = canonicalise(meta(html, "og:url") ?? rawUrl);
+  const published = meta(html, "article:published_time") ?? meta(html, "og:published_time");
+  const when = published ? new Date(published) : null;
+  const source = await sourceForLink(admin, host, meta(html, "og:site_name"));
+
+  const item: FeedItem = {
+    guid: canonical,
+    title,
+    link: canonical,
+    summary: meta(html, "og:description") ?? meta(html, "description"),
+    author: meta(html, "article:author") ?? null,
+    published_at: when && !isNaN(when.getTime()) ? when.toISOString() : new Date().toISOString(),
+    image_source_url: meta(html, "og:image") ?? meta(html, "twitter:image"),
+  };
+  const { score, matched } = scoreItem(item, Number(source.weight ?? 1), brands);
+
+  const { data: row, error } = await admin.from("news_items").insert({
+    source_id: source.id, source_name: source.name, guid: item.guid, title: item.title,
+    link: item.link, summary: item.summary, author: item.author, published_at: item.published_at,
+    image_source_url: item.image_source_url, image_credit: source.name,
+    brands: matched, score, status: "Shortlisted", // you asked for this one by name
+  }).select("*").single();
+
+  if (error) {
+    // Already stored — hand back the row we have rather than a second copy.
+    const { data: existing } = await admin.from("news_items").select("*")
+      .eq("source_id", source.id).eq("guid", item.guid).single();
+    if (existing) return json({ ok: true, already: true, item: existing });
+    return json({ error: error.message }, 400);
+  }
+
+  const id = (row as { id: string }).id;
+  const [mirrored, arabic] = await Promise.all([
+    item.image_source_url ? mirrorImage(admin, id, item.image_source_url) : Promise.resolve(null),
+    arabicHeadlines([{ id, title: item.title, summary: item.summary }]),
+  ]);
+
+  const patch: Record<string, string | null> = {};
+  if (mirrored) patch.image_url = mirrored;
+  const h = arabic.get(id);
+  if (h) {
+    patch.title_ar = h.title_ar || null;
+    patch.slide_top_ar = h.top || null;
+    patch.slide_bottom_ar = h.bottom || null;
+  }
+  const { data: final } = Object.keys(patch).length
+    ? await admin.from("news_items").update(patch).eq("id", id).select("*").single()
+    : { data: row };
+
+  return json({ ok: true, already: false, item: final ?? row });
+}
+
 /* ---------------- handler ---------------- */
 
 Deno.serve(async (req: Request) => {
@@ -244,12 +374,23 @@ Deno.serve(async (req: Request) => {
   }
   if (!allowed) return json({ error: "Unauthorized" }, 401);
 
-  const [{ data: sources }, { data: brandRows }] = await Promise.all([
-    admin.from("news_sources").select("id, name, feed_url, weight").eq("enabled", true),
-    admin.from("brands").select("name").eq("is_active", true),
-  ]);
-  if (!sources?.length) return json({ error: "No enabled sources in news_sources" }, 400);
+  const { data: brandRows } = await admin.from("brands").select("name").eq("is_active", true);
   const brands = ((brandRows ?? []) as { name: string }[]).map((b) => b.name).filter(Boolean);
+
+  // { url } ingests that one article now; an empty body runs the feeds.
+  const body = await req.json().catch(() => ({})) as { url?: string };
+  const pasted = typeof body.url === "string" ? body.url.trim() : "";
+  if (pasted) {
+    try {
+      return await ingestLink(admin, pasted, brands);
+    } catch (e) {
+      return json({ error: (e as Error).message }, 400);
+    }
+  }
+
+  const { data: sources } = await admin.from("news_sources")
+    .select("id, name, feed_url, weight").eq("enabled", true);
+  if (!sources?.length) return json({ error: "No enabled sources in news_sources" }, 400);
 
   const fresh: (FeedItem & { source: SourceRow; score: number; matched: string[] })[] = [];
   const feedStatus: Record<string, string> = {};

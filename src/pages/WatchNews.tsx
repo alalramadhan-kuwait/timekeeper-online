@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Newspaper, RefreshCw, ExternalLink, Star, EyeOff, Image as ImageIcon, Download, Save, AlertTriangle } from 'lucide-react';
+import { Newspaper, RefreshCw, ExternalLink, Star, EyeOff, Image as ImageIcon, Download, Save, AlertTriangle, Link2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Spinner, Modal, Badge } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
@@ -46,6 +46,8 @@ export default function WatchNewsPage() {
   const [source, setSource] = useState<string>('');
   const [brand, setBrand] = useState<string>('');
   const [composing, setComposing] = useState<NewsRow | null>(null);
+  const [link, setLink] = useState('');
+  const [adding, setAdding] = useState(false);
 
   async function load() {
     const [n, s] = await Promise.all([
@@ -77,6 +79,26 @@ export default function WatchNewsPage() {
     }
     setSyncing(false);
     load();
+  }
+
+  /** Fetch one article now. The function reads it server-side, where the
+   *  publishers are reachable, and hands back the story ready to build from. */
+  async function addLink() {
+    const url = link.trim();
+    if (!url) return;
+    setAdding(true); setMsg(null);
+    const { data, error } = await supabase.functions.invoke('watch-news-sync', { body: { url } });
+    const failed = (data as { error?: string })?.error ?? error?.message;
+    if (failed) {
+      setMsg(`Could not add that link: ${failed}`);
+    } else {
+      const d = data as { item: NewsRow; already?: boolean };
+      setMsg(d.already ? 'That story is already in the feed ✓' : 'Added ✓');
+      setLink('');
+      await load();
+      setComposing(d.item);
+    }
+    setAdding(false);
   }
 
   async function setItemStatus(row: NewsRow, next: string) {
@@ -114,6 +136,21 @@ export default function WatchNewsPage() {
           </button>
         )}
       </div>
+
+      {canEdit && (
+        <form onSubmit={(e) => { e.preventDefault(); addLink(); }} className="flex gap-2 mb-3">
+          <div className="relative flex-1 min-w-0">
+            <Link2 size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input value={link} onChange={(e) => setLink(e.target.value)} type="url"
+              placeholder="Paste an article link to add it now"
+              className="w-full pl-9 pr-3 py-2 rounded-lg border border-slate-300 text-sm" />
+          </div>
+          <button type="submit" disabled={adding || !link.trim()}
+            className="px-4 py-2 rounded-lg border border-slate-300 text-sm font-medium hover:bg-slate-50 disabled:opacity-50 whitespace-nowrap">
+            {adding ? 'Fetching…' : 'Add story'}
+          </button>
+        </form>
+      )}
 
       {msg && (
         <div className={`mb-3 px-4 py-2 rounded-lg text-sm border ${msg.includes('✓') ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-red-50 border-red-200 text-red-700'}`}>{msg}</div>

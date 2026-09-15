@@ -32,7 +32,7 @@ supabase db push                  # applies to the linked project
 Committed here (active):
 - **notify-flush** — cron dispatcher for notifications (every 30s). Secret read from `app_config`.
 - **notify-test** — "Send test" from Notification Settings (JWT-auth).
-- **watch-news-sync** — the Watch News engine: reads the RSS feeds in `news_sources`, scores each story, mirrors the lead photo into the `news-images` bucket, and writes the Arabic slide lines. Cron (`x-sync-key`) or an admin/manager/marketing JWT.
+- **watch-news-sync** — the Watch News engine: reads the RSS feeds in `news_sources`, scores each story, mirrors the lead photo into the `news-images` bucket, and writes the Arabic slide lines. `POST {}` runs the feeds; `POST { url }` ingests a single pasted article. Cron (`x-sync-key`) or an admin/manager/marketing JWT.
 
 Other active functions still to be pulled with `supabase functions download <slug>`:
 `admin-users`, `lightspeed-sync`, `lightspeed-po-sync`, `lightspeed-oauth-callback`,
