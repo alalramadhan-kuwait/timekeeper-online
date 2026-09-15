@@ -11,6 +11,7 @@
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { XMLParser } from "npm:fast-xml-parser";
 import Anthropic from "npm:@anthropic-ai/sdk";
+import { bestImage, imageCandidates, pooled, upgrades, SLIDE_WIDTH, type ImagePick } from "./images.ts";
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -115,22 +116,26 @@ function scoreItem(item: FeedItem, weight: number, brands: string[]): { score: n
 
 /* ---------------- the lead photo ---------------- */
 
-/** Fall back to the article's og:image when the feed carried no picture. */
-async function ogImage(url: string): Promise<string | null> {
-  try {
-    const res = await fetch(url, { headers: { "User-Agent": UA } });
-    if (!res.ok) return null;
-    const html = (await res.text()).slice(0, 200_000); // <head> is all we need
-    for (const re of [
-      /<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i,
-      /<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i,
-      /<meta[^>]+name=["']twitter:image["'][^>]+content=["']([^"']+)["']/i,
-    ]) {
-      const m = html.match(re);
-      if (m?.[1]) return m[1];
-    }
-  } catch { /* an article that will not load is not worth a retry */ }
-  return null;
+/**
+ * The best photo for a story, measured rather than assumed.
+ *
+ * `og:image` is a share card — usually 1200x630 and cropped — so it is only one
+ * candidate among the page's srcset entries, JSON-LD image, lazy-load
+ * attributes and whatever the feed carried, each rewritten into the largest
+ * form its host is known to serve. Whichever measures biggest wins.
+ */
+async function resolveImage(
+  link: string | null, seed: string | null, limit: number,
+): Promise<ImagePick | null> {
+  let candidates: { url: string; strategy: string }[] = [];
+  if (link) {
+    try {
+      const res = await fetch(link, { headers: { "User-Agent": UA, Accept: "text/html,application/xhtml+xml" } });
+      if (res.ok) candidates = imageCandidates((await res.text()).slice(0, 400_000), link, seed);
+    } catch { /* an article that will not load still has whatever the feed gave us */ }
+  }
+  if (candidates.length === 0 && seed) candidates = upgrades(seed);
+  return candidates.length ? await bestImage(candidates, limit) : null;
 }
 
 /**
@@ -139,16 +144,16 @@ async function ogImage(url: string): Promise<string | null> {
  * and this way the slide survives the article being edited or pulled.
  */
 async function mirrorImage(
-  admin: ReturnType<typeof createClient>, itemId: string, src: string,
+  admin: ReturnType<typeof createClient>, itemId: string, pick: ImagePick,
 ): Promise<string | null> {
   try {
-    const res = await fetch(src, { headers: { "User-Agent": UA } });
+    const res = await fetch(pick.url, { headers: { "User-Agent": UA } });
     if (!res.ok) return null;
-    const type = res.headers.get("content-type") ?? "image/jpeg";
+    const type = res.headers.get("content-type") ?? pick.contentType;
     if (!type.startsWith("image/")) return null;
     const bytes = new Uint8Array(await res.arrayBuffer());
-    if (bytes.byteLength < 8_000 || bytes.byteLength > 12_000_000) return null; // tracking pixel / absurdly large
-    const ext = type.includes("png") ? "png" : type.includes("webp") ? "webp" : "jpg";
+    if (bytes.byteLength < 8_000 || bytes.byteLength > 20_000_000) return null;
+    const ext = type.includes("png") ? "png" : type.includes("webp") ? "webp" : type.includes("avif") ? "avif" : "jpg";
     const path = `${itemId}.${ext}`;
     const { error } = await admin.storage.from("news-images")
       .upload(path, bytes, { contentType: type, upsert: true });
@@ -157,6 +162,23 @@ async function mirrorImage(
   } catch {
     return null;
   }
+}
+
+/** Everything we learned about the photo, ready to write onto the row. */
+async function imagePatch(
+  admin: ReturnType<typeof createClient>, id: string, pick: ImagePick | null,
+): Promise<Record<string, unknown>> {
+  if (!pick) return { image_needs_browser: true };
+  const mirrored = await mirrorImage(admin, id, pick);
+  return {
+    image_url: mirrored,
+    image_source_url: pick.url,
+    image_width: pick.width,
+    image_height: pick.height,
+    image_strategy: pick.strategy,
+    // Under slide width means it would be upscaled — worth a second look.
+    image_needs_browser: !mirrored || pick.width < SLIDE_WIDTH,
+  };
 }
 
 /* ---------------- the Arabic headline ---------------- */
@@ -332,22 +354,21 @@ async function ingestLink(
   }
 
   const id = (row as { id: string }).id;
-  const [mirrored, arabic] = await Promise.all([
-    item.image_source_url ? mirrorImage(admin, id, item.image_source_url) : Promise.resolve(null),
+  // The page is already in hand, so go wide on candidates — a link someone
+  // pasted is a story they want, and it is one article rather than forty.
+  const [pick, arabic] = await Promise.all([
+    bestImage(imageCandidates(html, canonical, item.image_source_url), 10),
     arabicHeadlines([{ id, title: item.title, summary: item.summary }]),
   ]);
 
-  const patch: Record<string, string | null> = {};
-  if (mirrored) patch.image_url = mirrored;
+  const patch: Record<string, unknown> = await imagePatch(admin, id, pick);
   const h = arabic.get(id);
   if (h) {
     patch.title_ar = h.title_ar || null;
     patch.slide_top_ar = h.top || null;
     patch.slide_bottom_ar = h.bottom || null;
   }
-  const { data: final } = Object.keys(patch).length
-    ? await admin.from("news_items").update(patch).eq("id", id).select("*").single()
-    : { data: row };
+  const { data: final } = await admin.from("news_items").update(patch).eq("id", id).select("*").single();
 
   return json({ ok: true, already: false, item: final ?? row });
 }
@@ -446,14 +467,14 @@ Deno.serve(async (req: Request) => {
     if (!error && data) inserted.push(data as typeof inserted[number]);
   }
 
-  // Photos and Arabic in parallel — neither needs the other.
+  // Photos and Arabic in parallel — neither needs the other. The photos go a
+  // few stories at a time: each one reads an article page and measures several
+  // candidates, and forty of those at once is rude and slower than it looks.
   const [, arabic] = await Promise.all([
-    Promise.all(inserted.map(async (row) => {
-      const src = row.image_source_url ?? (row.link ? await ogImage(row.link) : null);
-      if (!src) return;
-      const url = await mirrorImage(admin, row.id, src);
-      if (url) await admin.from("news_items").update({ image_url: url, image_source_url: src }).eq("id", row.id);
-    })),
+    pooled(inserted, 5, async (row) => {
+      const pick = await resolveImage(row.link, row.image_source_url, 5);
+      await admin.from("news_items").update(await imagePatch(admin, row.id, pick)).eq("id", row.id);
+    }),
     arabicHeadlines(inserted.map((r) => ({ id: r.id, title: r.title, summary: r.summary }))),
   ]);
 

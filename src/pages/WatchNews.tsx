@@ -14,8 +14,12 @@ interface NewsRow {
   id: string; source_name: string | null; title: string; link: string | null; summary: string | null;
   published_at: string | null; title_ar: string | null; slide_top_ar: string | null; slide_bottom_ar: string | null;
   image_url: string | null; image_credit: string | null; brands: string[]; score: number; status: string;
+  image_width: number | null; image_height: number | null; image_strategy: string | null; image_needs_browser: boolean;
   content_task_id: string | null;
 }
+
+// A slide is 1080 wide. Below that the photo is upscaled and it shows.
+const SLIDE_WIDTH = 1080;
 
 const STATUS_COLOR: Record<string, string> = {
   New: 'bg-slate-100 text-slate-600',
@@ -52,7 +56,7 @@ export default function WatchNewsPage() {
   async function load() {
     const [n, s] = await Promise.all([
       supabase.from('news_items')
-        .select('id, source_name, title, link, summary, published_at, title_ar, slide_top_ar, slide_bottom_ar, image_url, image_credit, brands, score, status, content_task_id')
+        .select('id, source_name, title, link, summary, published_at, title_ar, slide_top_ar, slide_bottom_ar, image_url, image_credit, brands, score, status, content_task_id, image_width, image_height, image_strategy, image_needs_browser')
         .order('score', { ascending: false }).order('published_at', { ascending: false }).limit(300),
       supabase.from('news_sources').select('id, name, enabled, last_synced_at, last_status').order('name'),
     ]);
@@ -202,10 +206,18 @@ export default function WatchNewsPage() {
         <div className="space-y-3">
           {shown.map((row) => (
             <article key={row.id} className="bg-white rounded-xl border border-slate-200 shadow-sm p-3 flex gap-3">
-              <div className="w-28 h-28 sm:w-36 sm:h-36 shrink-0 rounded-lg bg-slate-100 overflow-hidden flex items-center justify-center">
-                {row.image_url
-                  ? <img src={row.image_url} alt="" className="w-full h-full object-cover" loading="lazy" />
-                  : <ImageIcon size={20} className="text-slate-300" />}
+              <div className="shrink-0">
+                <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-lg bg-slate-100 overflow-hidden flex items-center justify-center">
+                  {row.image_url
+                    ? <img src={row.image_url} alt="" className="w-full h-full object-cover" loading="lazy" />
+                    : <ImageIcon size={20} className="text-slate-300" />}
+                </div>
+                {row.image_width != null && (
+                  <p className={`text-[10px] mt-1 text-center ${row.image_width < SLIDE_WIDTH ? 'text-amber-600 font-medium' : 'text-slate-400'}`}
+                    title={row.image_strategy ? `found via ${row.image_strategy}` : undefined}>
+                    {row.image_width} × {row.image_height}
+                  </p>
+                )}
               </div>
 
               <div className="min-w-0 flex-1">
@@ -241,7 +253,8 @@ export default function WatchNewsPage() {
                         <EyeOff size={12} /> {row.status === 'Hidden' ? 'Unhide' : 'Hide'}
                       </button>
                       <button onClick={() => setComposing(row)} disabled={!row.image_url}
-                        title={row.image_url ? undefined : 'No photo was found for this story, so there is nothing to build a slide from'}
+                        title={!row.image_url ? 'No photo was found for this story, so there is nothing to build a slide from'
+                          : row.image_needs_browser ? `Only ${row.image_width}px wide — it will be upscaled to fill the slide` : undefined}
                         className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs bg-slate-900 text-white hover:bg-slate-700 disabled:opacity-40">
                         <ImageIcon size={12} /> Make slides
                       </button>
@@ -371,6 +384,14 @@ function SlideComposer({ row, onClose, onSaved }: { row: NewsRow; onClose: () =>
             </select>
           </label>
         </div>
+
+        {row.image_needs_browser && row.image_width != null && (
+          <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+            The largest photo on that page is {row.image_width} × {row.image_height} — under the slide's 1080px,
+            so it will be upscaled. Open the article, save the photo yourself, and use it in the Content Planner
+            if this one has to look sharp.
+          </p>
+        )}
 
         {!top.trim() && (
           <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
