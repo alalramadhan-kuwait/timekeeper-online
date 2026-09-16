@@ -1,7 +1,7 @@
 import { NavLink, Outlet, useLocation, useSearchParams } from 'react-router-dom';
 import {
   LayoutDashboard, TrendingUp, Hourglass, Truck, Handshake,
-  Star, Users, CalendarRange, LogOut, Watch, Menu, Contact, Settings, Gem, ClipboardCheck, PhoneCall, Boxes, History, UserRound, Wrench, Instagram, Clapperboard, Megaphone, Sparkles, Activity, Gauge, Inbox, ClipboardList, ChevronDown, BellRing, Bell, Download, Share, type LucideIcon,
+  Star, Users, CalendarRange, LogOut, Watch, Menu, Contact, Settings, Gem, ClipboardCheck, PhoneCall, Boxes, History, UserRound, Wrench, Instagram, Clapperboard, Megaphone, Target, Sparkles, Activity, Gauge, Inbox, ClipboardList, ChevronDown, BellRing, Bell, Download, Share, type LucideIcon,
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useAuth, Role } from '../context/AuthContext';
@@ -70,6 +70,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/instagram', label: 'Instagram Performance', icon: Instagram, roles: ['admin', 'manager', 'marketing', 'sales'] },
       { to: '/content', label: 'Content Planner', icon: Clapperboard, roles: ['admin', 'manager', 'marketing', 'sales'] },
       { to: '/paid-ads', label: 'Paid Ads Tracker', icon: Megaphone, roles: ['admin', 'manager', 'marketing', 'sales'] },
+      { to: '/meta-campaigns', label: 'Meta Campaigns', icon: Target, roles: ['admin', 'manager', 'marketing'] },
       { to: '/influencers', label: 'Influencer Tracker', icon: Sparkles, roles: ['admin', 'manager', 'marketing', 'sales'] },
     ],
   },

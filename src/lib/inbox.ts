@@ -31,6 +31,20 @@ export interface LeaveApproval {
 export interface RequestApproval {
   id: string; request_type: string; details: string;
   requester: string; created_at: string;
+  /* An attendance correction carries the day and the times it proposes, so the
+     approver can see exactly what they are agreeing to and approving can write
+     it onto the record. Null on an HR update, and on the free-text corrections
+     raised before the form asked for times. */
+  attendance_date: string | null;
+  proposed_clock_in: string | null;
+  proposed_clock_out: string | null;
+  attendance_record_id: string | null;
+  /** The person whose attendance it is — the record is theirs, not the
+   *  requester's login, and the two are different rows. */
+  employee_id: string | null;
+  user_id: string | null;
+  employee_name: string | null;
+  employee_location: string | null;
 }
 
 export interface MyTask {
@@ -160,7 +174,7 @@ export async function loadInbox(user: User, profile: Profile | null, role: Role 
     const [lv, empRows, req, profRows, scopeRows] = await Promise.all([
       safe<any>(supabase.from('leave_records').select('id, employee_id, leave_type, leave_start, leave_end, days, notes, approval_status, manager_status').eq('approval_status', 'Pending')),
       safe<any>(supabase.from('employees').select('id, full_name, user_id, location')),
-      safe<any>(supabase.from('employee_requests').select('id, request_type, details, created_at, user_id, employee_id, status').or('status.eq.Pending,status.is.null')),
+      safe<any>(supabase.from('employee_requests').select('id, request_type, details, created_at, user_id, employee_id, status, attendance_date, proposed_clock_in, proposed_clock_out, attendance_record_id').or('status.eq.Pending,status.is.null')),
       safe<any>(supabase.from('profiles').select('id, full_name')),
       safe<any>(supabase.from('manager_scopes').select('manager_id, location')),
     ]);
@@ -197,10 +211,22 @@ export async function loadInbox(user: User, profile: Profile | null, role: Role 
     leaveApprovals = mine.filter((l) => isStoreManager || l.manager_status !== 'Pending').map(asApproval);
     awaitingManager = isStoreManager ? []
       : mine.filter((l) => l.manager_status === 'Pending').map(asApproval);
-    requestApprovals = req.map((r) => ({
-      id: r.id, request_type: r.request_type, details: r.details, created_at: r.created_at,
-      requester: (r.employee_id && empById.get(r.employee_id)) || empByUser.get(r.user_id) || profById.get(r.user_id) || 'Someone',
-    }));
+    const empByUserRow = new Map(empRows.filter((e) => e.user_id).map((e) => [e.user_id, e]));
+    requestApprovals = req.map((r) => {
+      const emp = (r.employee_id && empRows.find((e) => e.id === r.employee_id)) || empByUserRow.get(r.user_id) || null;
+      return {
+        id: r.id, request_type: r.request_type, details: r.details, created_at: r.created_at,
+        requester: (r.employee_id && empById.get(r.employee_id)) || empByUser.get(r.user_id) || profById.get(r.user_id) || 'Someone',
+        attendance_date: r.attendance_date ?? null,
+        proposed_clock_in: r.proposed_clock_in ?? null,
+        proposed_clock_out: r.proposed_clock_out ?? null,
+        attendance_record_id: r.attendance_record_id ?? null,
+        employee_id: r.employee_id ?? null,
+        user_id: r.user_id ?? null,
+        employee_name: emp?.full_name ?? null,
+        employee_location: emp?.location ?? null,
+      };
+    });
   }
 
   return { myTasks, tasks, leaveApprovals, awaitingManager, requestApprovals, isApprover, isStoreManager };
