@@ -32,6 +32,10 @@ function haversineMeters(lat1: number, lng1: number, lat2: number, lng2: number)
 }
 const fmtTime = (iso: string) => new Date(iso).toLocaleTimeString('en-KW', { hour: '2-digit', minute: '2-digit', hour12: true, timeZone: 'Asia/Kuwait' });
 const todayKuwait = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kuwait' });
+/** A Kuwait wall-clock time on a day, as an instant. Kuwait is UTC+3 all year. */
+const kuwaitISO = (date: string, time: string) => new Date(`${date}T${time}:00+03:00`).toISOString();
+const kuwaitHM = (iso: string) => new Intl.DateTimeFormat('en-GB',
+  { timeZone: 'Asia/Kuwait', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(iso));
 const kwDate = (iso: string) => new Date(iso).toLocaleDateString('en-CA', { timeZone: 'Asia/Kuwait' });
 const satOfWeek = (ymd: string) => { const d = new Date(`${ymd}T12:00:00Z`); d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 1) % 7)); return d.toISOString().slice(0, 10); }; // Kuwait week starts Saturday
 const hoursBetween = (a: string, b: string | null) => (b ? (new Date(b).getTime() - new Date(a).getTime()) / 3600000 : 0);
@@ -175,6 +179,13 @@ export default function MyPortalPage() {
   const [lvNotes, setLvNotes] = useState('');
   const [lvFile, setLvFile] = useState<File | null>(null);
   const [showReqForm, setShowReqForm] = useState<null | 'HR update' | 'Attendance correction'>(null);
+  /* Same shape as the DSR's portal: a correction names the day and the times,
+     because approving it writes them onto the record. */
+  const [corDate, setCorDate] = useState(() => todayKuwait());
+  const [corIn, setCorIn] = useState('');
+  const [corOut, setCorOut] = useState('');
+  const [corExisting, setCorExisting] = useState<AttRec[] | null>(null);
+  const [corLoading, setCorLoading] = useState(false);
   const [reqDetails, setReqDetails] = useState('');
   const [busy, setBusy] = useState(false);
 
@@ -309,17 +320,55 @@ export default function MyPortalPage() {
   }
 
   async function submitRequest() {
-    if (!showReqForm || !reqDetails.trim()) { setMsg('Describe what you need'); return; }
-    setBusy(true); setMsg(null);
-    const { error } = await supabase.from('employee_requests').insert({
+    if (!showReqForm || !reqDetails.trim()) { setMsg('Say why the change is needed'); return; }
+    const payload: Record<string, unknown> = {
       user_id: user!.id, employee_id: emp?.id ?? null, request_type: showReqForm, details: reqDetails.trim(),
-    });
+    };
+    if (showReqForm === 'Attendance correction') {
+      if (!corDate) { setMsg('Pick the day to correct'); return; }
+      if (corDate > todayKuwait()) { setMsg('That day has not happened yet'); return; }
+      if (!corIn && !corOut) { setMsg('Give the time you arrived, the time you left, or both'); return; }
+      if (corIn && corOut && corOut <= corIn) { setMsg('The leaving time is before the arrival time — check both'); return; }
+      const first = corExisting?.[0] ?? null;
+      payload.attendance_date = corDate;
+      payload.proposed_clock_in = corIn ? kuwaitISO(corDate, corIn) : null;
+      payload.proposed_clock_out = corOut ? kuwaitISO(corDate, corOut) : null;
+      payload.attendance_record_id = first?.id ?? null;
+      const asks = [corIn && `in ${corIn}`, corOut && `out ${corOut}`].filter(Boolean).join(', ');
+      payload.details = `${corDate} — ${asks}${first ? '' : ' (no record for that day)'}: ${reqDetails.trim()}`;
+    }
+    setBusy(true); setMsg(null);
+    const { error } = await supabase.from('employee_requests').insert(payload);
     setBusy(false);
     if (error) { setMsg(`Could not submit: ${error.message}`); return; }
     setMsg('Request submitted — HR/manager will review it');
-    setShowReqForm(null); setReqDetails('');
+    setShowReqForm(null); setReqDetails(''); setCorIn(''); setCorOut(''); setCorExisting(null);
+    setCorDate(todayKuwait());
     load();
   }
+
+  /* What the chosen day currently says, so the employee changes one end rather
+     than retyping both. */
+  useEffect(() => {
+    if (showReqForm !== 'Attendance correction' || !user || !corDate) return;
+    let live = true;
+    setCorLoading(true);
+    supabase.from('attendance_records')
+      .select('id, clock_in, clock_out, is_late, justified, location, correction_reason')
+      .eq('user_id', user.id)
+      .gte('clock_in', `${corDate}T00:00:00+03:00`).lte('clock_in', `${corDate}T23:59:59+03:00`)
+      .order('clock_in', { ascending: true })
+      .then(({ data }) => {
+        if (!live) return;
+        const recs = (data ?? []) as unknown as AttRec[];
+        setCorExisting(recs);
+        setCorIn(recs[0] ? kuwaitHM(recs[0].clock_in) : '');
+        const out = recs[recs.length - 1]?.clock_out;
+        setCorOut(out ? kuwaitHM(out) : '');
+        setCorLoading(false);
+      }, () => { if (live) { setCorExisting([]); setCorLoading(false); } });
+    return () => { live = false; };
+  }, [showReqForm, corDate, user]);
 
   // ── employee edits / cancels their own leave request ──
   const edDays = useMemo(() => (edStart && edEnd && edEnd >= edStart ? workingDaysBetween(edStart, edEnd) : 0), [edStart, edEnd]);
@@ -607,8 +656,47 @@ export default function MyPortalPage() {
       {showReqForm && (
         <section className="bg-white rounded-2xl border border-blue-200 p-5 sm:p-6">
           <h2 className="text-sm font-semibold text-slate-700 mb-2">{showReqForm === 'HR update' ? 'Request an update to my HR information' : 'Request an attendance correction'}</h2>
+
+          {showReqForm === 'Attendance correction' && (
+            <div className="mb-3 space-y-3 max-w-xl">
+              <label className="block">
+                <span className="block text-xs font-medium text-slate-500 mb-1">Which day</span>
+                <input type="date" value={corDate} max={todayKuwait()}
+                  onChange={(e) => setCorDate(e.target.value)} className={`${input} w-auto`} />
+              </label>
+              <div className="rounded-lg bg-slate-50 border border-slate-200 px-3 py-2 text-xs">
+                <span className="font-medium text-slate-500">Recorded now: </span>
+                {corLoading ? <span className="text-slate-400">checking…</span>
+                  : !corExisting?.length ? <span className="text-amber-700">nothing — no clock-in for that day</span>
+                  : <span className="text-slate-600">
+                      {corExisting.map((r, i) => (
+                        <span key={r.id}>
+                          {i > 0 && ' · '}{kuwaitHM(r.clock_in)} → {r.clock_out ? kuwaitHM(r.clock_out) : 'never clocked out'}
+                        </span>
+                      ))}
+                    </span>}
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <label className="block">
+                  <span className="block text-xs font-medium text-slate-500 mb-1">I arrived at</span>
+                  <input type="time" value={corIn} onChange={(e) => setCorIn(e.target.value)} className={`${input} w-full`} />
+                </label>
+                <label className="block">
+                  <span className="block text-xs font-medium text-slate-500 mb-1">I left at</span>
+                  <input type="time" value={corOut} onChange={(e) => setCorOut(e.target.value)} className={`${input} w-full`} />
+                </label>
+              </div>
+              <p className="text-[11px] text-slate-400 -mt-1">
+                Leave a box empty to keep what is recorded. Approving writes these times onto the record.
+              </p>
+            </div>
+          )}
+
+          <span className="block text-xs font-medium text-slate-500 mb-1">
+            {showReqForm === 'HR update' ? 'What needs changing' : 'Why the change is needed'}
+          </span>
           <textarea value={reqDetails} onChange={(e) => setReqDetails(e.target.value)} rows={3} autoFocus
-            placeholder={showReqForm === 'HR update' ? 'e.g. My phone number changed to 9xxxxxxx' : 'e.g. I forgot to clock out yesterday — I left at 5:30 PM'}
+            placeholder={showReqForm === 'HR update' ? 'e.g. My phone number changed to 9xxxxxxx' : 'e.g. Phone died at the end of the shift, Hussain saw me leave'}
             className={`${input} w-full resize-none mb-2`} />
           <div className="flex gap-2">
             <button onClick={submitRequest} disabled={busy}

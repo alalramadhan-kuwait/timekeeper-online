@@ -4,9 +4,14 @@ import { Inbox as InboxIcon, CheckCircle, Clock, CalendarRange, FileText, Check,
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { Spinner, Badge } from '../components/ui';
-import { loadInbox, InboxData } from '../lib/inbox';
+import { loadInbox, InboxData, type RequestApproval } from '../lib/inbox';
+import { applyCorrection, isApplicable } from '../lib/attendanceCorrection';
 
 const todayKuwait = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kuwait' });
+const kuwaitHM = (iso: string | null) => (!iso ? null : new Intl.DateTimeFormat('en-GB',
+  { timeZone: 'Asia/Kuwait', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(iso)));
+const kuwaitDay = (d: string) => new Date(`${d}T12:00:00+03:00`)
+  .toLocaleDateString('en-GB', { timeZone: 'Asia/Kuwait', weekday: 'short', day: '2-digit', month: 'short' });
 
 const MODULE_BADGE: Record<string, string> = {
   'Content Planner': 'bg-fuchsia-100 text-fuchsia-700 border-fuchsia-200',
@@ -57,9 +62,21 @@ export default function InboxPage() {
     setErr(error ? error.message : null);
     await reload(); setBusy(null);
   }
-  async function decideRequest(id: string, status: 'Approved' | 'Rejected') {
-    setBusy(`rq-${id}`);
-    await supabase.from('employee_requests').update({ status, manager_remarks: remarks[id]?.trim() || null }).eq('id', id);
+  async function decideRequest(r: RequestApproval, status: 'Approved' | 'Rejected') {
+    setBusy(`rq-${r.id}`);
+    setErr(null);
+    let applied = false;
+    if (status === 'Approved') {
+      const problem = await applyCorrection(r, remarks[r.id]);
+      if (problem) { setErr(problem); setBusy(null); return; }
+      applied = isApplicable(r);
+    }
+    const { error } = await supabase.from('employee_requests').update({
+      status,
+      manager_remarks: remarks[r.id]?.trim() || null,
+      ...(applied ? { applied_at: new Date().toISOString(), applied_by: user?.id ?? null } : {}),
+    }).eq('id', r.id);
+    if (error) setErr(error.message);
     await reload(); setBusy(null);
   }
   async function markTaskDone(id: string) {
@@ -254,13 +271,14 @@ export default function InboxPage() {
                   <Badge className="bg-slate-100 text-slate-600 border-slate-200">{r.request_type}</Badge>
                   <span className="text-xs text-slate-400 ml-auto">{(r.created_at ?? '').slice(0, 10)}</span>
                 </div>
+                <CorrectionAsk r={r} />
                 <p className="text-sm text-slate-600">{r.details}</p>
                 <div className="flex flex-wrap items-center gap-2">
                   <input value={remarks[r.id] ?? ''} onChange={(e) => setRemarks((m) => ({ ...m, [r.id]: e.target.value }))}
                     placeholder="Remarks (optional)" className="flex-1 min-w-[10rem] px-3 py-1.5 rounded-lg border border-slate-300 text-sm bg-white" />
-                  <button disabled={busy === `rq-${r.id}`} onClick={() => decideRequest(r.id, 'Approved')}
+                  <button disabled={busy === `rq-${r.id}`} onClick={() => decideRequest(r, 'Approved')}
                     className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-medium hover:bg-emerald-700 disabled:opacity-50"><Check size={13} /> Approve</button>
-                  <button disabled={busy === `rq-${r.id}`} onClick={() => decideRequest(r.id, 'Rejected')}
+                  <button disabled={busy === `rq-${r.id}`} onClick={() => decideRequest(r, 'Rejected')}
                     className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-rose-300 text-rose-600 text-xs font-medium hover:bg-rose-50 disabled:opacity-50"><X size={13} /> Reject</button>
                 </div>
               </li>
@@ -268,6 +286,35 @@ export default function InboxPage() {
           </ul>
         </section>
       )}
+    </div>
+  );
+}
+
+/**
+ * The times a correction proposes, said as times rather than left in prose.
+ *
+ * Approving writes these onto the record, so they are shown as the thing being
+ * agreed to — a blank end means "leave that one as it is", which has to be
+ * visible or an approver will read a missing time as a missing answer.
+ */
+function CorrectionAsk({ r }: { r: RequestApproval }) {
+  if (r.request_type !== 'Attendance correction' || !r.attendance_date) return null;
+  const inAt = kuwaitHM(r.proposed_clock_in);
+  const outAt = kuwaitHM(r.proposed_clock_out);
+  if (!inAt && !outAt) return null;
+  return (
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-lg bg-slate-50 border border-slate-200 px-3 py-2 text-xs">
+      <span className="font-semibold text-slate-600">{kuwaitDay(r.attendance_date)}</span>
+      <span className="text-slate-500">
+        Arrived <span className="font-semibold text-slate-800 tabular-nums">{inAt ?? 'unchanged'}</span>
+      </span>
+      <span className="text-slate-500">
+        Left <span className="font-semibold text-slate-800 tabular-nums">{outAt ?? 'unchanged'}</span>
+      </span>
+      {!r.attendance_record_id && (
+        <span className="text-amber-700">no record for that day — approving creates one</span>
+      )}
+      <span className="text-slate-400 ml-auto">Approving writes this to the record</span>
     </div>
   );
 }

@@ -258,6 +258,18 @@ on; `Unknown` is the correct answer when the data does not carry one.
 
 ## 13. Changelog
 
+- **2026-09-16** (later 4) — **An attendance correction says which day and which times, and approving it fixes the record.**
+
+  The old path: My Portal → "Ask for a correction" → one free-text box → `employee_requests` → the approver's Inbox → Approve. Approve set `status = 'Approved'` **and nothing else**. To actually change the record the manager then opened HR → Attendance, found the day, and retyped the times out of the employee's paragraph. Three failures in one: the employee could describe a problem without ever being asked for a time, so half the requests did not contain the answer; the manager retyped from prose, which is where 17:30 becomes 17:00; and "Approved" meant a manager agreed, not that anything changed — an approved correction and an applied one looked identical, so one could be agreed to and quietly never made.
+
+  Both portals (DSR and Timekeeper) now ask for **the day, the arrival time, the leaving time and the reason**. Any past day — a missed clock-out is usually noticed when the month's hours are read, not on the day. The form shows what that day currently records and prefills from it, so one end is changed rather than both retyped; **an empty box means "keep what is recorded"**, which is a real answer and is said on screen. A day with no record at all is askable, and is called out as such.
+
+  Migration `20260916190000` adds `attendance_date`, `proposed_clock_in`, `proposed_clock_out`, `attendance_record_id`, `applied_at` and `applied_by` to `employee_requests`, with two checks: a correction naming a day must propose at least one time, and the times must fall near that day (an overnight shift is fine, a time three months away is a typo). `details` is still written as a readable sentence, because that is what notifications and older screens show.
+
+  The Inbox shows the times as times — "Tue 15 Sep · Arrived 08:55 · Left 17:30", or "unchanged" for an end being kept — and **Approve applies it** (`src/lib/attendanceCorrection.ts`). A time nobody gave is left alone; lateness is recomputed from the corrected arrival unless the day was already excused; a day with no record gets one created, carrying the employee's shop; a leaving time with no record and no arrival is refused rather than a start being invented; and a record deleted since the request becomes an insert rather than a failure. If the write fails, the status is not changed — a request reading Approved over an unchanged record is worse than one plainly stuck. `applied_at` records that the approval actually reached the record.
+
+  Verified: 8 checks against the live schema (both constraints, an overnight shift, an HR update unaffected, an approver recording `applied_at`, nothing left behind) and 15 against the apply logic in a browser, covering every branch above.
+
 - **2026-09-16** (later 3) — **Ad spend reads in KD.** Meta bills this ad account in USD and reported every figure in USD, so the one number an owner wants to hold against a budget was the only number on the screen in a foreign currency — the Paid Ads Tracker literally had a KD budget column beside a USD spend column, with a comment saying they were not comparable. Both are KD now.
 
   The rate is typed in, not fetched: **Settings → Ad spend currency** (owner only) writes `meta_ads_config.kwd_per_usd`, seeded at 0.3065. The dinar is pegged and moves by fractions of a per cent in a year, so a daily sync would add something that can fail in exchange for noise — and a rate fetched today would still be applied to spend from 2023.
