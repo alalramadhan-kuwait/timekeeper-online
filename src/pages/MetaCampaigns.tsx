@@ -117,14 +117,12 @@ export function MetaCampaignsPage() {
 
       <h1 className="text-2xl font-bold text-slate-900">Meta Campaigns</h1>
       {/* The two pages are easy to confuse, and the difference decides which one
-          somebody should be looking at. Said plainly, on both. */}
-      <p className="text-slate-500 text-sm mt-1 max-w-3xl">
-        Every campaign that exists on the Meta ad account, exactly as Meta reports it. To record a
-        budget, a client or a contract against one, use the{' '}
-        <span className="inline-flex items-center gap-1 font-medium text-slate-600">
-          <Megaphone size={13} /> Paid Ads Tracker
-        </span>{' '}
-        — that holds the campaigns you have chosen to track commercially.
+          somebody should be looking at — but one line is enough to say it. */}
+      <p className="text-slate-400 text-xs mt-1">
+        Meta's own records. Budgets and contracts live in the{' '}
+        <span className="inline-flex items-center gap-1 font-medium text-slate-500">
+          <Megaphone size={12} /> Paid Ads Tracker
+        </span>.
       </p>
 
       <div className="flex flex-wrap items-center gap-3 mt-4 mb-3">
@@ -160,15 +158,15 @@ export function MetaCampaignsPage() {
 
       <p className="text-xs text-slate-400 mb-3">
         {searching
-          ? `Searching every campaign that has spent${total ? ` (${total})` : ''} — ${sorted.length} match${sorted.length === 1 ? '' : 'es'}.`
+          ? `${sorted.length} match${sorted.length === 1 ? '' : 'es'}${total ? ` in ${total} campaigns` : ''}.`
           : scope === 'recent'
-            ? `Showing ${sorted.length} campaign${sorted.length === 1 ? '' : 's'} that spent something in the last 90 days${total ? `, out of ${total} that have ever spent` : ''}. Meta reports almost every old campaign as Active, so spend — not status — is what separates the live board from the archive. Campaigns that never spent are kept in the data but not listed anywhere.`
+            ? `${sorted.length} spent in the last 90 days${total ? `, of ${total} that have ever spent` : ''}.`
             : scope === 'untagged'
-              ? `${sorted.length} campaign${sorted.length === 1 ? '' : 's'} nobody has named a brand for, biggest spender first. Open one and set its brand; a brand set here always beats what the name says. The figures above cover only these, so they show exactly what is still being guessed at.`
-              : `Showing ${sorted.length} campaign${sorted.length === 1 ? '' : 's'} that have ever spent${total && sorted.length < total ? ` — first 1,000 of ${total} by name` : ''}.`}
+              ? `${sorted.length} without a brand, biggest spender first. Open one to set it — a brand set here beats what the name says.`
+              : `${sorted.length} campaign${sorted.length === 1 ? '' : 's'} that have ever spent${total && sorted.length < total ? `, first 1,000 by name` : ''}.`}
       </p>
 
-      {!loading && !!sorted.length && <MetaSummary rows={sorted} onOpen={setOpen} />}
+      {!loading && !!sorted.length && <MetaSummary rows={sorted} />}
 
       {loading ? (
         <div className="py-20 flex justify-center"><Spinner /></div>

@@ -138,18 +138,11 @@ export interface CampaignSummary {
   brandShare: number;
   topBySpend: BrandRow | null;
   topByPurchases: BrandRow | null;
-  /** How the brand split was arrived at. The whole point of the mapping table
-   *  is to move spend out of `readSpend` and into `storedSpend`, so the page
-   *  shows the balance rather than implying the split is equally trustworthy
-   *  throughout. */
+  /** How much of the spend has a brand somebody stated, rather than one read
+   *  off a name. The two are not equally good, so the page shows the balance
+   *  instead of implying the whole split is equally trustworthy. */
   storedSpend: number;
   storedShare: number;
-  readSpend: number;
-  readCampaigns: number;
-  /** Untagged campaigns, biggest spender first — the tagging queue. A handful
-   *  of campaigns carry most of the money on this account, so the order is the
-   *  difference between an afternoon's work and a week's. */
-  untagged: { id: string; name: string | null; spend: number; guess: string; kind: BrandKind }[];
 }
 
 /* Meta's figures arrive as strings and are shown as strings. Here they are read
@@ -175,10 +168,9 @@ const purchasesOf = (actions: { action_type: string; value: string }[] | null | 
 export function summarise(rows: Record<string, any>[]): CampaignSummary {
   const byBrand = new Map<string, BrandRow>();
   let spend = 0, impressions = 0, clicks = 0, purchases = 0, purchasingCampaigns = 0;
-  let storedSpend = 0, readSpend = 0, readCampaigns = 0;
+  let storedSpend = 0;
   let earliest: string | null = null, latest: string | null = null;
   let currency = 'USD';
-  const untagged: CampaignSummary['untagged'] = [];
 
   for (const r of rows) {
     const m = r.__meta ?? {};
@@ -194,14 +186,7 @@ export function summarise(rows: Record<string, any>[]): CampaignSummary {
     if (m.date_stop && (!latest || m.date_stop > latest)) latest = m.date_stop;
 
     const a = attribute(r.name, r.__tag as StoredTag | null | undefined);
-    if (a.source === 'stored') {
-      storedSpend += s;
-    } else {
-      readSpend += s;
-      readCampaigns += 1;
-      const g = brandOf(r.name);
-      untagged.push({ id: r.id, name: r.name ?? null, spend: s, guess: g.brand, kind: g.kind });
-    }
+    if (a.source === 'stored') storedSpend += s;
 
     const row = byBrand.get(a.bucket)
       ?? { brand: a.bucket, kind: a.kind, campaigns: 0, spend: 0, purchases: 0, share: 0, storedSpend: 0, alsoCovers: [] };
@@ -220,7 +205,6 @@ export function summarise(rows: Record<string, any>[]): CampaignSummary {
 
   const named = brands.filter((b) => b.kind === 'brand');
   const brandSpend = named.reduce((t, b) => t + b.spend, 0);
-  untagged.sort((a, b) => b.spend - a.spend);
 
   return {
     campaigns: rows.length,
@@ -232,7 +216,6 @@ export function summarise(rows: Record<string, any>[]): CampaignSummary {
     topByPurchases: [...named].sort((a, b) => b.purchases - a.purchases)[0] ?? null,
     storedSpend,
     storedShare: spend > 0 ? (storedSpend / spend) * 100 : 0,
-    readSpend, readCampaigns, untagged,
   };
 }
 
