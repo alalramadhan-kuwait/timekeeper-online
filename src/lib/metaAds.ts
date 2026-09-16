@@ -42,23 +42,35 @@ export interface MetaFigures {
  * live ones to the top is the difference between one tap and a hunt, and the
  * search box still reaches every one of them.
  */
-export async function loadMetaCampaignOptions(): Promise<MetaCampaignOption[]> {
+export async function loadMetaCampaignOptions(current?: string): Promise<MetaCampaignOption[]> {
   const since = new Date(Date.now() - 90 * 86400_000).toISOString().slice(0, 10);
-  const [{ data: campaigns }, { data: recent }] = await Promise.all([
+  const [{ data: campaigns }, { data: recent }, spending] = await Promise.all([
     supabase.from('meta_ad_campaigns').select('id, name, effective_status').order('name'),
     supabase.from('meta_ad_insights').select('campaign_id').eq('period', 'daily').gte('date_start', since),
+    loadSpendingCampaignIds(),
   ]);
   const active = new Set((recent ?? []).map((r) => r.campaign_id as string));
-  const rows = (campaigns ?? []) as { id: string; name: string | null; effective_status: string | null }[];
+  const all = (campaigns ?? []) as { id: string; name: string | null; effective_status: string | null }[];
+
+  /* Only campaigns that have spent are offered. The one exception is the
+     campaign this row is ALREADY linked to: excluding it would leave the
+     picker showing nothing selected, and saving the row would then quietly
+     drop a link somebody made on purpose. It is kept, and labelled. */
+  const rows = all.filter((c) => spending.has(c.id) || (current && c.id === current));
 
   const opt = (c: typeof rows[number], group: string): MetaCampaignOption => ({
     value: c.id,
     label: c.name?.trim() || `Campaign ${c.id}`,
     group,
   });
+  const linkedButUnlisted = current && !spending.has(current)
+    ? rows.filter((c) => c.id === current).map((c) => opt(c, 'Linked already · no spend on Meta'))
+    : [];
+  const offered = rows.filter((c) => spending.has(c.id));
   return [
-    ...rows.filter((c) => active.has(c.id)).map((c) => opt(c, 'Ran in the last 90 days')),
-    ...rows.filter((c) => !active.has(c.id)).map((c) => opt(c, 'Everything else')),
+    ...linkedButUnlisted,
+    ...offered.filter((c) => active.has(c.id)).map((c) => opt(c, 'Spent in the last 90 days')),
+    ...offered.filter((c) => !active.has(c.id)).map((c) => opt(c, 'Spent earlier')),
   ];
 }
 
@@ -261,6 +273,28 @@ export async function loadAllCampaignsWithFigures(): Promise<Record<string, any>
   });
 }
 
+
+/**
+ * Campaigns that have ever spent anything, by id.
+ *
+ * A campaign that never spent is noise on every screen — 939 of the 1,200 on
+ * this account. They stay synced and stored; they are simply not offered.
+ * Spend is read here to decide what to LIST, which is a selection test: no
+ * figure shown anywhere is computed, rounded or converted by it.
+ */
+export async function loadSpendingCampaignIds(): Promise<Set<string>> {
+  const out = new Set<string>();
+  for (let from = 0; ; from += 1000) {
+    const { data } = await supabase.from('meta_ad_insights')
+      .select('campaign_id, spend').eq('period', 'lifetime').range(from, from + 999);
+    for (const r of data ?? []) {
+      if (Number(r.spend ?? 0) > 0) out.add(r.campaign_id as string);
+    }
+    if (!data || data.length < 1000) break;
+  }
+  return out;
+}
+
 export type CampaignScope = 'recent' | 'all';
 
 /**
@@ -279,7 +313,11 @@ export async function loadCampaignPage(
   opts: { scope: CampaignScope; search?: string },
 ): Promise<Record<string, any>[]> {
   const term = (opts.search ?? '').trim();
-  const { data: cfg } = await supabase.from('meta_ads_config').select('last_synced_at').eq('id', 1).maybeSingle();
+  const [{ data: cfg }, spending] = await Promise.all([
+    supabase.from('meta_ads_config').select('last_synced_at').eq('id', 1).maybeSingle(),
+    loadSpendingCampaignIds(),
+  ]);
+  if (!spending.size) return [];
 
   let ids: string[] | null = null;
   if (!term && opts.scope === 'recent') {
@@ -301,13 +339,19 @@ export async function loadCampaignPage(
       }
       if (!data || data.length < 1000) break;
     }
-    ids = [...spent];
+    ids = [...spent].filter((id) => spending.has(id));
     if (!ids.length) return [];
+  } else {
+    /* Both the archive and a search stay inside the same universe: a campaign
+       that never spent is not offered anywhere, however it is reached. */
+    ids = [...spending];
   }
 
   let q = supabase.from('meta_ad_campaigns')
     .select('id, name, objective, effective_status, start_time, stop_time, synced_at');
-  if (ids) q = q.in('id', ids);
+  // Postgrest has a ceiling on how long an `in` list may be; 357 is well under
+  // it, and the archive is capped below anyway.
+  if (ids) q = q.in('id', ids.slice(0, 1000));
   if (term) {
     // Name or Meta campaign id — an id is what someone pastes from Ads Manager.
     const safe = term.replace(/[%,()]/g, ' ');
@@ -343,9 +387,9 @@ export async function loadCampaignPage(
   });
 }
 
-/** How many campaigns exist in total, for the "showing N of M" line. */
-export async function countAllCampaigns(): Promise<number> {
-  const { count } = await supabase.from('meta_ad_campaigns')
-    .select('id', { count: 'exact', head: true });
-  return count ?? 0;
+/** How many campaigns are offered at all — those that have ever spent. The
+ *  "of N" line should count what someone could reach, not the 1,200 records
+ *  behind it. */
+export async function countAvailableCampaigns(): Promise<number> {
+  return (await loadSpendingCampaignIds()).size;
 }

@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Plus, Pencil, Trash2, Search, ImageOff, ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react';
 import { supabase } from '../lib/supabase';
@@ -28,7 +28,7 @@ export interface FieldDef {
   /** searchselect: options fetched once when the form opens, rather than
       derived from the rows already loaded. For lists that live in another
       table and are too long to put in a dropdown. */
-  loadOptions?: () => Promise<{ value: string; label: string; group?: string }[]>;
+  loadOptions?: (current?: string) => Promise<{ value: string; label: string; group?: string }[]>;
 }
 
 export interface ColumnDef {
@@ -430,11 +430,16 @@ function SearchSelect({ field, value, onChange }: {
   const [q, setQ] = useState('');
   const [open, setOpen] = useState(false);
 
+  /* What was selected when the form opened. Passed to the loader so a list
+     that filters options can still include this one — dropping it would show
+     an empty picker on a record that is linked, and saving would wipe the
+     link. Captured once: re-fetching on every change would fight the user. */
+  const initial = useRef(value);
   useEffect(() => {
     let dead = false;
     (async () => {
       try {
-        const list = field.loadOptions ? await field.loadOptions() : [];
+        const list = field.loadOptions ? await field.loadOptions(initial.current) : [];
         if (!dead) setOpts(list);
       } finally {
         if (!dead) setLoading(false);

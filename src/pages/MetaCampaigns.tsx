@@ -6,7 +6,7 @@ import { Modal } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { MetaLinkChip, MetaFigureGrid } from '../components/MetaFigures';
 import {
-  loadCampaignPage, countAllCampaigns, loadMetaSyncState, whenSynced, staleHours,
+  loadCampaignPage, countAvailableCampaigns, loadMetaSyncState, whenSynced, staleHours,
   type CampaignScope, type MetaSyncState, type MetaFigures,
 } from '../lib/metaAds';
 
@@ -53,7 +53,7 @@ export function MetaCampaignsPage() {
   useEffect(() => { void load(); }, [load]);
   useEffect(() => {
     void loadMetaSyncState().then(setSync);
-    void countAllCampaigns().then(setTotal);
+    void countAvailableCampaigns().then(setTotal);
   }, []);
 
   async function refresh() {
@@ -132,7 +132,7 @@ export function MetaCampaignsPage() {
           )}
         </div>
         <div className="flex rounded-lg border border-slate-300 overflow-hidden text-sm">
-          {([['recent', 'Spending in the last 90 days'], ['all', 'All historical campaigns']] as const).map(([v, label]) => (
+          {([['recent', 'Spending in the last 90 days'], ['all', 'All campaigns that spent']] as const).map(([v, label]) => (
             <button key={v} onClick={() => setScope(v)}
               className={`px-3 py-2 font-medium ${scope === v ? 'bg-slate-900 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}>
               {label}
@@ -143,10 +143,10 @@ export function MetaCampaignsPage() {
 
       <p className="text-xs text-slate-400 mb-3">
         {searching
-          ? `Searching every campaign${total ? ` (${total} in total)` : ''} — ${sorted.length} match${sorted.length === 1 ? '' : 'es'}.`
+          ? `Searching every campaign that has spent${total ? ` (${total})` : ''} — ${sorted.length} match${sorted.length === 1 ? '' : 'es'}.`
           : scope === 'recent'
-            ? `Showing ${sorted.length} campaign${sorted.length === 1 ? '' : 's'} that spent something in the last 90 days${total ? ` of ${total} on the account` : ''}. Meta reports almost every old campaign as Active, so spend — not status — is what separates the live board from the archive. Campaigns with no spend are still here: search finds them, or switch to all historical campaigns.`
-            : `Showing ${sorted.length} campaign${sorted.length === 1 ? '' : 's'}${total && sorted.length < total ? ` of ${total} (first 400 by name)` : ''}.`}
+            ? `Showing ${sorted.length} campaign${sorted.length === 1 ? '' : 's'} that spent something in the last 90 days${total ? `, out of ${total} that have ever spent` : ''}. Meta reports almost every old campaign as Active, so spend — not status — is what separates the live board from the archive. Campaigns that never spent are kept in the data but not listed anywhere.`
+            : `Showing ${sorted.length} campaign${sorted.length === 1 ? '' : 's'} that have ever spent${total && sorted.length < total ? ` — first 400 of ${total} by name` : ''}.`}
       </p>
 
       {loading ? (
