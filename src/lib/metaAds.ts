@@ -69,7 +69,7 @@ const STATUS_WORDS: Record<string, string> = {
   DISAPPROVED: 'Disapproved by Meta', PENDING_REVIEW: 'Pending review',
   IN_PROCESS: 'In process', WITH_ISSUES: 'Has issues', PREAPPROVED: 'Pre-approved',
 };
-const statusWord = (s: string | null) =>
+export const statusWord = (s: string | null) =>
   !s ? 'Unknown' : STATUS_WORDS[s] ?? s.replace(/_/g, ' ').toLowerCase().replace(/^./, (c) => c.toUpperCase());
 
 /** What Meta reports for these campaigns, over their whole life. */
@@ -212,3 +212,51 @@ export const whenSynced = (iso: string | null | undefined) =>
 /** Hours since a timestamp — used only to colour a freshness pill, never to
  *  alter a figure. */
 export const staleHours = (iso: string) => (Date.now() - new Date(iso).getTime()) / 3_600_000;
+
+/**
+ * Every campaign on the account, with the figures Meta reports for it.
+ *
+ * Shaped for the Campaigns page, which lists Meta's own records rather than
+ * ours. Same rule as everywhere else: the figures are the strings Meta sent.
+ */
+export async function loadAllCampaignsWithFigures(): Promise<Record<string, any>[]> {
+  const [{ data: camps }, { data: cfg }] = await Promise.all([
+    supabase.from('meta_ad_campaigns')
+      .select('id, name, objective, effective_status, start_time, stop_time, synced_at')
+      .order('name'),
+    supabase.from('meta_ads_config').select('last_synced_at').eq('id', 1).maybeSingle(),
+  ]);
+  const rows = (camps ?? []) as any[];
+  if (!rows.length) return [];
+
+  // Insights come back in pages like any other table; ask for all of them.
+  const ins: any[] = [];
+  for (let from = 0; ; from += 1000) {
+    const { data } = await supabase.from('meta_ad_insights')
+      .select('campaign_id, spend, impressions, reach, clicks, ctr, cpc, cpm, actions, account_currency, date_start, date_stop, synced_at')
+      .eq('period', 'lifetime').range(from, from + 999);
+    ins.push(...(data ?? []));
+    if (!data || data.length < 1000) break;
+  }
+  const byCampaign = new Map(ins.map((r) => [r.campaign_id, r]));
+
+  const lastOk = (cfg as { last_synced_at?: string } | null)?.last_synced_at;
+  const cutoff = lastOk ? new Date(lastOk).getTime() - 5 * 60_000 : null;
+
+  return rows.map((c) => {
+    const i = byCampaign.get(c.id) ?? {};
+    const seen = !cutoff ? true : !!c.synced_at && new Date(c.synced_at).getTime() >= cutoff;
+    const figures: MetaFigures = {
+      link_state: !seen ? 'missing' : c.effective_status === 'ACTIVE' ? 'live' : 'stopped',
+      status_label: !seen ? 'No longer returned by Meta' : statusWord(c.effective_status),
+      campaign_id: c.id, campaign_name: c.name ?? null, objective: c.objective ?? null,
+      effective_status: c.effective_status ?? null,
+      spend: i.spend ?? null, impressions: i.impressions ?? null, reach: i.reach ?? null,
+      clicks: i.clicks ?? null, ctr: i.ctr ?? null, cpc: i.cpc ?? null, cpm: i.cpm ?? null,
+      actions: i.actions ?? null, account_currency: i.account_currency ?? null,
+      date_start: i.date_start ?? null, date_stop: i.date_stop ?? null,
+      synced_at: i.synced_at ?? c.synced_at ?? null,
+    };
+    return { ...c, __meta: figures, __result: resultFor(figures) };
+  });
+}

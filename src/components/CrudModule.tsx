@@ -303,7 +303,9 @@ export function CrudModule({ config }: { config: CrudConfig }) {
             onChange={(e) => setExtraFilterValues((p) => ({ ...p, [ef.key]: e.target.value }))}
             className="px-3 py-1.5 rounded-lg border border-slate-300 text-sm bg-white"
           >
-            <option value="All">All {ef.label}s</option>
+            {/* "Status" must not become "Statuss". Words already ending in s,
+                x or z are left alone rather than blindly suffixed. */}
+            <option value="All">All {/s$|x$|z$/i.test(ef.label) ? ef.label : `${ef.label}s`}</option>
             {(extraFilterOptions[ef.key] ?? []).map((o) => <option key={o} value={o}>{o}</option>)}
           </select>
         ))}
@@ -354,8 +356,11 @@ export function CrudModule({ config }: { config: CrudConfig }) {
                   </tr>
                 )}
                 <tr
-                  className={`border-b border-slate-100 last:border-0 hover:bg-slate-50 ${config.rowLink || (config.rowClickToEdit && writable) ? 'cursor-pointer' : ''}`}
-                  onClick={config.rowLink ? () => navigate(config.rowLink!(row)) : (config.rowClickToEdit && writable ? () => { setEditing(row); setShowForm(true); } : undefined)}
+                  className={`border-b border-slate-100 last:border-0 hover:bg-slate-50 ${config.rowLink || (config.rowClickToEdit && (writable || config.detailView)) ? 'cursor-pointer' : ''}`}
+                  /* A read-only table still has records worth opening: where a
+                     detailView exists, tapping a row shows it even though
+                     nothing here can be edited. */
+                  onClick={config.rowLink ? () => navigate(config.rowLink!(row)) : (config.rowClickToEdit && (writable || config.detailView) ? () => { setEditing(row); setShowForm(true); } : undefined)}
                 >
                   {config.columns.map((c) => (
                     <td key={c.key} className={`px-4 py-2.5 whitespace-nowrap ${c.hideBelow ? HIDE_CLASS[c.hideBelow] : ''}`}>

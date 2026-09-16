@@ -23,7 +23,7 @@ import PerformancePage from './pages/Performance';
 import { PurchaseOrdersPage } from './pages/PurchaseOrders';
 import {
   WaitingListPage, PreOrdersPage, ConsignmentsPage,
-  VipCustomersPage, EmployeesPage, CompanyDocsPage, LimitedProjectsPage, RepairWatchesPage, ContentPlannerPage, PaidAdsPage, InfluencersPage,
+  VipCustomersPage, EmployeesPage, CompanyDocsPage, LimitedProjectsPage, RepairWatchesPage, ContentPlannerPage, PaidAdsPage, MetaCampaignsPage, InfluencersPage,
 } from './pages/modules';
 import { Spinner } from './components/ui';
 
@@ -61,6 +61,7 @@ function Shell() {
         <Route path="/instagram" element={g('/instagram', <InstagramPage />)} />
         <Route path="/content" element={g('/content', <ContentPlannerPage />)} />
         <Route path="/paid-ads" element={g('/paid-ads', <PaidAdsPage />)} />
+        <Route path="/meta-campaigns" element={g('/meta-campaigns', <MetaCampaignsPage />)} />
         <Route path="/influencers" element={g('/influencers', <InfluencersPage />)} />
         <Route path="/influencers/:id" element={g('/influencers', <InfluencerProfilePage />)} />
         <Route path="/activity" element={g('/activity', <UserActivityPage />)} />
