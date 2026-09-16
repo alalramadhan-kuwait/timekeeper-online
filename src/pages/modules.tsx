@@ -6,6 +6,7 @@ import { formatKD } from '../lib/format';
 import { expiryTier, tierClass, tierLabel } from '../lib/expiry';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
+import { MetaLinkChip, MetaFigureGrid } from '../components/MetaFigures';
 import {
   loadMetaCampaignOptions, loadMetaFigures, resultFor, loadMetaSyncState, hasNoFigures, whenSynced, staleHours,
   loadAllCampaignsWithFigures,
@@ -164,78 +165,6 @@ function ContentCalendar({ month, tasks }: { month: string; tasks: any[] }) {
    No formatting that changes a value: no rounding, no thousands separator on a
    decimal, no currency conversion. The currency is Meta's and is labelled, so
    a USD spend is never mistaken for the KD budget beside it. */
-/* Whether the link still points at a live campaign. Said in words, not left to
-   an empty cell: "no figures" and "this campaign is gone" look identical
-   otherwise, and only one of them needs somebody to do something. */
-function MetaLinkChip({ f }: { f: MetaFigures }) {
-  const cls = f.link_state === 'live' ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
-    : f.link_state === 'stopped' ? 'bg-amber-100 text-amber-700 border-amber-200'
-    : 'bg-rose-100 text-rose-700 border-rose-200';
-  return <Badge className={cls}>{f.status_label}</Badge>;
-}
-
-function MetaFigureGrid({ f }: { f: MetaFigures }) {
-  const res = resultFor(f);
-  const cells: { label: string; value: string | null }[] = [
-    { label: `Spend (${f.account_currency ?? '—'})`, value: f.spend },
-    { label: 'Impressions', value: f.impressions },
-    { label: 'Reach', value: f.reach },
-    { label: 'Clicks', value: f.clicks },
-    { label: 'CTR', value: f.ctr },
-    { label: 'CPC', value: f.cpc },
-    { label: 'CPM', value: f.cpm },
-    ...(res ? [{ label: res.label, value: res.value }] : []),
-  ];
-  return (
-    <div>
-      <p className="text-xs font-semibold text-slate-600 mb-2">As reported by Meta</p>
-      {/* Both stated outright rather than tucked into one grey line: a figure
-          is only worth reading once you know what period it covers and how old
-          it is. */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3">
-        <div className="rounded-lg border border-slate-200 bg-white px-3 py-2">
-          <p className="text-[10px] uppercase tracking-wider text-slate-400">Campaign status</p>
-          <div className="mt-0.5"><MetaLinkChip f={f} /></div>
-        </div>
-        <div className="rounded-lg border border-slate-200 bg-white px-3 py-2">
-          <p className="text-[10px] uppercase tracking-wider text-slate-400">Meta reporting period</p>
-          <p className="text-sm text-slate-700 tabular-nums">
-            {f.date_start && f.date_stop ? `${f.date_start} → ${f.date_stop}` : 'No delivery yet'}
-          </p>
-        </div>
-        <div className="rounded-lg border border-slate-200 bg-white px-3 py-2">
-          <p className="text-[10px] uppercase tracking-wider text-slate-400">Last synced</p>
-          <p className="text-sm text-slate-700">{whenSynced(f.synced_at)}</p>
-        </div>
-      </div>
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-        {cells.map((c) => (
-          <div key={c.label} className="rounded-lg border border-slate-200 bg-white px-3 py-2">
-            <p className="text-[10px] uppercase tracking-wider text-slate-400">{c.label}</p>
-            <p className="text-sm font-semibold text-slate-800 tabular-nums break-all">{c.value ?? '—'}</p>
-          </div>
-        ))}
-      </div>
-      {f.link_state === 'missing' && (
-        <p className="text-xs text-rose-700 bg-rose-50 border border-rose-200 rounded-lg px-3 py-2 mt-2">
-          Meta did not return this campaign on the last successful sync. It has most likely been
-          deleted. The figures above are the last ones Meta sent; pick another campaign to start
-          reporting again.
-        </p>
-      )}
-      {f.link_state === 'stopped' && (
-        <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mt-2">
-          This campaign is {f.status_label.toLowerCase()} on Meta, so the figures stop moving until
-          it runs again.
-        </p>
-      )}
-      <p className="text-[11px] text-slate-400 mt-2">
-        Figures are Meta’s and are shown unchanged — not recalculated, not converted.
-      </p>
-    </div>
-  );
-}
-
 /* ---------------- Paid Ads Tracker (Marketing) ---------------- */
 const AD_STATUSES = ['Planned', 'Waiting content', 'Waiting approval', 'Active', 'Completed', 'Paused', 'Cancelled'];
 const AD_PLATFORMS = ['Instagram', 'Meta', 'Google', 'TikTok', 'Snapchat', 'Other'];
@@ -266,7 +195,7 @@ const paidAds: CrudConfig = {
     return rows.map((r) => ({ ...r, __meta: figures.get(r.meta_campaign_id) ?? null }));
   },
   title: 'Paid Ads Tracker',
-  description: 'Ads we run for Timekeeper and paid contracts we run for external companies.',
+  description: 'The campaigns we have chosen to track commercially — our budget, client and contract against Meta\u2019s figures. Media & Marketing \u2192 Meta Campaigns lists everything Meta has.',
   canWrite: marketingRoles,
   statusField: 'status',
   statusOptions: AD_STATUSES,
@@ -359,118 +288,6 @@ const paidAds: CrudConfig = {
 };
 /* The figures refresh themselves every morning; this is for when someone has
    just changed something in Ads Manager and wants to see it now. */
-/* ---------------- Meta Campaigns (Media & Marketing) ---------------- */
-/* Meta's campaigns, as Meta reports them. Read-only on purpose: this table is
-   a window onto another system's records, and there is nothing here a person
-   should be able to edit. The Paid Ads Tracker remains the place where our own
-   information — client, contract, budget — is kept. */
-const metaCampaigns: CrudConfig = {
-  table: 'meta_ad_campaigns',
-  title: 'Meta Campaigns',
-  description: 'Every campaign on the Meta ad account, with the figures Meta reports for it.',
-  canWrite: () => false,
-  allowCreate: false,
-  rowClickToEdit: true,
-  searchKeys: ['name', 'id', 'objective'],
-  orderBy: { column: 'name', ascending: true },
-  extraFilters: [
-    { key: 'effective_status', label: 'Status' },
-    { key: 'objective', label: 'Objective' },
-  ],
-  /* The table itself holds only names and statuses; the figures live beside it
-     and are joined here so the columns can show them. */
-  enrich: async () => await loadAllCampaignsWithFigures(),
-  fields: [],
-  columns: [
-    { key: 'name', label: 'Campaign', sortable: true,
-      render: (r) => <span className="block max-w-[28rem] truncate" title={r.name ?? ''}>{r.name || <span className="text-slate-400">Untitled</span>}</span> },
-    { key: 'effective_status', label: 'Status', sortable: true,
-      render: (r) => <MetaLinkChip f={r.__meta} /> },
-    { key: 'objective', label: 'Objective', sortable: true, hideBelow: 'lg',
-      render: (r) => <span className="text-xs text-slate-500">{r.objective ? String(r.objective).replace(/^OUTCOME_/, '').replace(/_/g, ' ').toLowerCase() : '—'}</span> },
-    { key: 'spend', label: 'Spend', sortable: true, sortValue: (r) => Number(r.__meta?.spend ?? -1),
-      render: (r) => r.__meta?.spend
-        ? <span className="tabular-nums">{r.__meta.spend} <span className="text-slate-400 text-xs">{r.__meta.account_currency}</span></span>
-        : <span className="text-slate-300 text-xs">no delivery</span> },
-    { key: 'impressions', label: 'Impressions', sortable: true, hideBelow: 'md',
-      sortValue: (r) => Number(r.__meta?.impressions ?? -1),
-      render: (r) => <span className="tabular-nums text-sm">{r.__meta?.impressions ?? '—'}</span> },
-    { key: 'clicks', label: 'Clicks', sortable: true, hideBelow: 'lg',
-      sortValue: (r) => Number(r.__meta?.clicks ?? -1),
-      render: (r) => <span className="tabular-nums text-sm">{r.__meta?.clicks ?? '—'}</span> },
-    { key: 'ctr', label: 'CTR', sortable: true, hideBelow: 'xl',
-      sortValue: (r) => Number(r.__meta?.ctr ?? -1),
-      render: (r) => <span className="tabular-nums text-sm">{r.__meta?.ctr ?? '—'}</span> },
-    { key: 'results', label: 'Results', hideBelow: 'lg',
-      render: (r) => r.__result
-        ? <span className="text-xs"><span className="font-semibold tabular-nums">{r.__result.value}</span> <span className="text-slate-400">{r.__result.label}</span></span>
-        : <span className="text-slate-300 text-xs">—</span> },
-  ],
-  detailView: (row, { onClose }) => (
-    <div className="space-y-4">
-      <div className="flex items-start justify-between gap-4">
-        <div className="min-w-0">
-          <h3 className="text-base font-bold text-slate-900 break-words">{row.name || 'Untitled campaign'}</h3>
-          <p className="text-xs text-slate-400 mt-0.5 font-mono">{row.id}</p>
-        </div>
-        <button onClick={onClose} className="shrink-0 text-slate-400 hover:text-slate-700"><X size={18} /></button>
-      </div>
-      <MetaFigureGrid f={row.__meta} />
-    </div>
-  ),
-};
-
-export function MetaCampaignsPage() {
-  const { role } = useAuth();
-  const [sync, setSync] = useState<MetaSyncState | null>(null);
-  const [busy, setBusy] = useState(false);
-  const [key, setKey] = useState(0);
-  const canSync = ['admin', 'manager', 'marketing'].includes(role ?? '');
-  const readSync = () => { void loadMetaSyncState().then(setSync); };
-  useEffect(readSync, []);
-
-  async function refresh() {
-    setBusy(true);
-    try {
-      await supabase.functions.invoke('meta-ads-sync', { body: { days: 14 } });
-      setKey((k) => k + 1);
-    } finally {
-      setBusy(false);
-      readSync();
-    }
-  }
-
-  return (
-    <div>
-      {sync?.last_error && (
-        <div className="mb-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm text-amber-800">
-          <span className="font-semibold">Meta’s last sync did not finish.</span>{' '}
-          These are the last campaigns Meta sent, from {whenSynced(sync.last_synced_at)}.
-        </div>
-      )}
-      <div className="flex flex-wrap items-center gap-3 mb-3">
-        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${
-          !sync?.last_synced_at ? 'bg-slate-100 text-slate-500 border-slate-200'
-            : staleHours(sync.last_synced_at) > 36 ? 'bg-amber-100 text-amber-800 border-amber-200'
-            : 'bg-emerald-100 text-emerald-700 border-emerald-200'}`}>
-          <span className="w-1.5 h-1.5 rounded-full bg-current" />
-          Last successful sync: {whenSynced(sync?.last_synced_at)}
-        </span>
-        <span className="text-xs text-slate-400">
-          {sync?.account_name ?? 'Meta ad account'} · figures in {sync?.currency ?? 'USD'}
-        </span>
-        {canSync && (
-          <button onClick={refresh} disabled={busy}
-            className="ml-auto flex items-center gap-2 bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-50 disabled:opacity-60">
-            <RefreshCw size={15} className={busy ? 'animate-spin' : ''} /> {busy ? 'Asking Meta…' : 'Refresh from Meta'}
-          </button>
-        )}
-      </div>
-      <CrudModule key={key} config={metaCampaigns} />
-    </div>
-  );
-}
-
 export function PaidAdsPage() {
   const { role } = useAuth();
   const [busy, setBusy] = useState(false);

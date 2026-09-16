@@ -23,8 +23,9 @@ import PerformancePage from './pages/Performance';
 import { PurchaseOrdersPage } from './pages/PurchaseOrders';
 import {
   WaitingListPage, PreOrdersPage, ConsignmentsPage,
-  VipCustomersPage, EmployeesPage, CompanyDocsPage, LimitedProjectsPage, RepairWatchesPage, ContentPlannerPage, PaidAdsPage, MetaCampaignsPage, InfluencersPage,
+  VipCustomersPage, EmployeesPage, CompanyDocsPage, LimitedProjectsPage, RepairWatchesPage, ContentPlannerPage, PaidAdsPage, InfluencersPage,
 } from './pages/modules';
+import { MetaCampaignsPage } from './pages/MetaCampaigns';
 import { Spinner } from './components/ui';
 
 function Shell() {

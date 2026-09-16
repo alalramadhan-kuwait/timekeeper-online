@@ -260,3 +260,77 @@ export async function loadAllCampaignsWithFigures(): Promise<Record<string, any>
     return { ...c, __meta: figures, __result: resultFor(figures) };
   });
 }
+
+export type CampaignScope = 'recent' | 'all';
+
+/**
+ * Campaigns for the Campaigns page.
+ *
+ * The account carries 1,200 campaigns and Meta reports nearly all of them as
+ * ACTIVE or PAUSED however long ago they last ran, so status cannot separate
+ * the live board from the archive — only delivery can. The default is the 40
+ * that actually ran in the last 90 days; 'all' is there when someone needs the
+ * history.
+ *
+ * A search always reaches every campaign regardless of scope: the point of
+ * searching is to find the old one that is not on the default list.
+ */
+export async function loadCampaignPage(
+  opts: { scope: CampaignScope; search?: string },
+): Promise<Record<string, any>[]> {
+  const term = (opts.search ?? '').trim();
+  const { data: cfg } = await supabase.from('meta_ads_config').select('last_synced_at').eq('id', 1).maybeSingle();
+
+  let ids: string[] | null = null;
+  if (!term && opts.scope === 'recent') {
+    const since = new Date(Date.now() - 90 * 86400_000).toISOString().slice(0, 10);
+    const { data } = await supabase.from('meta_ad_insights')
+      .select('campaign_id').eq('period', 'daily').gte('date_start', since);
+    ids = [...new Set((data ?? []).map((r) => r.campaign_id as string))];
+    if (!ids.length) return [];
+  }
+
+  let q = supabase.from('meta_ad_campaigns')
+    .select('id, name, objective, effective_status, start_time, stop_time, synced_at');
+  if (ids) q = q.in('id', ids);
+  if (term) {
+    // Name or Meta campaign id — an id is what someone pastes from Ads Manager.
+    const safe = term.replace(/[%,()]/g, ' ');
+    q = q.or(`name.ilike.%${safe}%,id.ilike.%${safe}%`);
+  }
+  const { data: camps } = await q.order('name').limit(400);
+  const rows = (camps ?? []) as any[];
+  if (!rows.length) return [];
+
+  const { data: ins } = await supabase.from('meta_ad_insights')
+    .select('campaign_id, spend, impressions, reach, clicks, ctr, cpc, cpm, actions, account_currency, date_start, date_stop, synced_at')
+    .eq('period', 'lifetime').in('campaign_id', rows.map((c) => c.id));
+  const byCampaign = new Map((ins ?? []).map((r) => [r.campaign_id, r]));
+
+  const lastOk = (cfg as { last_synced_at?: string } | null)?.last_synced_at;
+  const cutoff = lastOk ? new Date(lastOk).getTime() - 5 * 60_000 : null;
+
+  return rows.map((c) => {
+    const i: any = byCampaign.get(c.id) ?? {};
+    const seen = !cutoff ? true : !!c.synced_at && new Date(c.synced_at).getTime() >= cutoff;
+    const figures: MetaFigures = {
+      link_state: !seen ? 'missing' : c.effective_status === 'ACTIVE' ? 'live' : 'stopped',
+      status_label: !seen ? 'No longer returned by Meta' : statusWord(c.effective_status),
+      campaign_id: c.id, campaign_name: c.name ?? null, objective: c.objective ?? null,
+      effective_status: c.effective_status ?? null,
+      spend: i.spend ?? null, impressions: i.impressions ?? null, reach: i.reach ?? null,
+      clicks: i.clicks ?? null, ctr: i.ctr ?? null, cpc: i.cpc ?? null, cpm: i.cpm ?? null,
+      actions: i.actions ?? null, account_currency: i.account_currency ?? null,
+      date_start: i.date_start ?? null, date_stop: i.date_stop ?? null,
+      synced_at: i.synced_at ?? c.synced_at ?? null,
+    };
+    return { ...c, __meta: figures, __result: resultFor(figures) };
+  });
+}
+
+/** How many campaigns exist in total, for the "showing N of M" line. */
+export async function countAllCampaigns(): Promise<number> {
+  const { count } = await supabase.from('meta_ad_campaigns')
+    .select('id', { count: 'exact', head: true });
+  return count ?? 0;
+}
