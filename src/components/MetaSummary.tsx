@@ -19,7 +19,12 @@ import { summarise, type BrandRow } from '../lib/metaBrands';
  *    and mean nothing. Purchases is shown on its own instead, which is
  *    comparable because it is one thing.
  */
-export function MetaSummary({ rows }: { rows: Record<string, any>[] }) {
+export function MetaSummary({ rows, onOpen }: {
+  rows: Record<string, any>[];
+  /** Opens a campaign's sheet, so the tagging queue can be worked from here
+   *  rather than hunted for in the list. */
+  onOpen?: (row: Record<string, any>) => void;
+}) {
   const s = useMemo(() => summarise(rows), [rows]);
   if (!s.campaigns) return null;
 
@@ -83,7 +88,7 @@ export function MetaSummary({ rows }: { rows: Record<string, any>[] }) {
         </div>
       </details>
 
-      <Brands s={s} />
+      <Brands s={s} rows={rows} onOpen={onOpen} />
     </div>
   );
 }
@@ -118,7 +123,11 @@ function Card({ label, value, unit, note, strong }: {
  * into an "other" line. Hiding them would make a $13k brand look like the
  * biggest thing the shop does.
  */
-function Brands({ s }: { s: ReturnType<typeof summarise> }) {
+function Brands({ s, rows, onOpen }: {
+  s: ReturnType<typeof summarise>;
+  rows: Record<string, any>[];
+  onOpen?: (row: Record<string, any>) => void;
+}) {
   const money = (n: number) => n.toLocaleString('en-GB', { maximumFractionDigits: 0 });
   const named = s.brands.filter((b) => b.kind === 'brand');
   const rest = s.brands.filter((b) => b.kind !== 'brand');
@@ -129,7 +138,12 @@ function Brands({ s }: { s: ReturnType<typeof summarise> }) {
     <div className="bg-white rounded-xl border border-slate-200 p-4">
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <h2 className="text-sm font-semibold text-slate-800">Which brands the spend goes to</h2>
-        <p className="text-xs text-slate-400">Brand read from the campaign name</p>
+        {/* Where the answer came from, because the two are not equally good and
+            the page should not pretend otherwise. */}
+        <p className="text-xs text-slate-400">
+          <span className="font-semibold text-slate-600">{s.storedShare.toFixed(0)}%</span> of spend
+          has a brand set by hand{s.readSpend > 0 && <> · the rest is read from campaign names</>}
+        </p>
       </div>
 
       {/* The whole spend, split three ways. This is the honest headline: it is
@@ -179,6 +193,49 @@ function Brands({ s }: { s: ReturnType<typeof summarise> }) {
         </>
       )}
 
+      {!!s.untagged.length && (
+        <div className="mt-4 pt-3 border-t border-slate-100">
+          <p className="text-[11px] uppercase tracking-wider font-semibold text-slate-400">
+            Worth naming next
+          </p>
+          {/* Sorted by spend, and the running share is the argument for doing it:
+              on this account a handful of campaigns carry most of the money, so
+              tagging is a short job done in the right order and a hopeless one
+              done in any other. */}
+          <p className="text-[11px] text-slate-400 mt-0.5">
+            {money(s.readSpend)} {s.currency} across {s.readCampaigns} campaign
+            {s.readCampaigns === 1 ? '' : 's'} is still read from names.
+            {queueShare(s) >= 40 && ` Naming just these ${Math.min(5, s.untagged.length)} covers ${queueShare(s).toFixed(0)}% of it.`}
+          </p>
+          <div className="mt-2 space-y-1 max-w-3xl">
+            {s.untagged.slice(0, 5).map((u) => {
+              const row = rows.find((r) => r.id === u.id);
+              const body = (
+                <>
+                  <span className="flex-1 truncate text-slate-600" title={u.name ?? ''}>
+                    {u.name || 'Untitled'}
+                  </span>
+                  <span className="shrink-0 text-slate-400">
+                    name says <span className="text-slate-500">{u.guess}</span>
+                  </span>
+                  <span className="w-24 text-right tabular-nums text-slate-700 shrink-0">
+                    {money(u.spend)} <span className="text-[10px] text-slate-400">{s.currency}</span>
+                  </span>
+                </>
+              );
+              return onOpen && row ? (
+                <button key={u.id} type="button" onClick={() => onOpen(row)}
+                  className="w-full flex items-center gap-3 text-xs text-left rounded-lg px-2 py-1 -mx-2 hover:bg-slate-50">
+                  {body}
+                </button>
+              ) : (
+                <div key={u.id} className="flex items-center gap-3 text-xs px-2 py-1 -mx-2">{body}</div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       <p className="mt-4 pt-3 border-t border-slate-100 text-[11px] text-slate-400 leading-relaxed max-w-3xl">
         {restShare > 50 && (
           <>
@@ -189,13 +246,23 @@ function Brands({ s }: { s: ReturnType<typeof summarise> }) {
         )}
         <span className="font-medium text-slate-500">Whole shop</span> is campaigns that were never
         for one brand — retargeting, the catalogue, the app, straps, seasonal sales.{' '}
-        <span className="font-medium text-slate-500">Unknown</span> is mostly boosted Instagram
-        posts: Meta names those after the post’s own caption and truncates it, often mid-word and
-        before the brand appears. Neither is guessed at. Grouping by brand is our own; every
-        campaign’s figures underneath stay exactly as Meta reported them.
+        <span className="font-medium text-slate-500">Unknown</span> is a campaign nobody can place:
+        mostly boosted Instagram posts, which Meta names after the post’s own caption and truncates,
+        often mid-word and before the brand appears. Neither is guessed at. A brand set on a campaign
+        always beats what its name says, and reading the name is only what happens until somebody has
+        set one. <span className="font-medium text-slate-500">Several brands</span> is a campaign that
+        really did cover more than one: Meta reports a single figure for it, so it is counted once
+        under its own row rather than split between brands or added to each of them. Grouping by brand
+        is our own; every campaign’s figures underneath stay exactly as Meta reported them.
       </p>
     </div>
   );
+}
+
+/** What share of the still-guessed spend the top five campaigns carry. */
+function queueShare(s: ReturnType<typeof summarise>): number {
+  if (!s.readSpend) return 0;
+  return (s.untagged.slice(0, 5).reduce((t, u) => t + u.spend, 0) / s.readSpend) * 100;
 }
 
 function Key({ tone, text }: { tone: string; text: string }) {
@@ -223,7 +290,7 @@ function Bar({ b, max, currency }: { b: BrandRow; max: number; currency: string 
   return (
     <div className="flex items-center gap-2 sm:gap-3 text-sm">
       <span className={`w-28 sm:w-44 shrink-0 truncate ${b.kind === 'brand' ? 'text-slate-700' : 'text-slate-400 italic'}`}
-        title={b.brand}>
+        title={b.alsoCovers.length ? `${b.brand}: ${b.alsoCovers.join(', ')}` : b.brand}>
         {b.brand}
       </span>
       {/* The bar is the first thing to give up room on a narrow screen. The

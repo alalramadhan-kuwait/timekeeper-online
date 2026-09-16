@@ -18,6 +18,12 @@
  * So there are three answers, not two: a brand, "Whole shop", or "Unknown".
  * Collapsing the first two would blame the naming for money that was never
  * meant to belong to a brand.
+ *
+ * None of this is the first answer any more. A brand STATED by a person, in
+ * `meta_campaign_brands`, always wins; what follows is only what happens when
+ * nobody has said. That order matters both ways: it means the page works from
+ * the first day without anyone tagging anything, and it means a tag is never
+ * argued with by a regex.
  */
 
 /** A brand and the spellings it appears under, English and Arabic.
@@ -104,6 +110,11 @@ export interface BrandRow {
   purchases: number;
   /** Share of the spend on screen, 0–100. */
   share: number;
+  /** How much of this row's spend comes from campaigns somebody tagged, rather
+   *  than from reading a name. A row at 100% is as good as the data gets. */
+  storedSpend: number;
+  /** For the "Several brands" row: which brands those campaigns covered. */
+  alsoCovers: string[];
 }
 
 export interface CampaignSummary {
@@ -127,6 +138,18 @@ export interface CampaignSummary {
   brandShare: number;
   topBySpend: BrandRow | null;
   topByPurchases: BrandRow | null;
+  /** How the brand split was arrived at. The whole point of the mapping table
+   *  is to move spend out of `readSpend` and into `storedSpend`, so the page
+   *  shows the balance rather than implying the split is equally trustworthy
+   *  throughout. */
+  storedSpend: number;
+  storedShare: number;
+  readSpend: number;
+  readCampaigns: number;
+  /** Untagged campaigns, biggest spender first — the tagging queue. A handful
+   *  of campaigns carry most of the money on this account, so the order is the
+   *  difference between an afternoon's work and a week's. */
+  untagged: { id: string; name: string | null; spend: number; guess: string; kind: BrandKind }[];
 }
 
 /* Meta's figures arrive as strings and are shown as strings. Here they are read
@@ -152,8 +175,10 @@ const purchasesOf = (actions: { action_type: string; value: string }[] | null | 
 export function summarise(rows: Record<string, any>[]): CampaignSummary {
   const byBrand = new Map<string, BrandRow>();
   let spend = 0, impressions = 0, clicks = 0, purchases = 0, purchasingCampaigns = 0;
+  let storedSpend = 0, readSpend = 0, readCampaigns = 0;
   let earliest: string | null = null, latest: string | null = null;
   let currency = 'USD';
+  const untagged: CampaignSummary['untagged'] = [];
 
   for (const r of rows) {
     const m = r.__meta ?? {};
@@ -168,19 +193,34 @@ export function summarise(rows: Record<string, any>[]): CampaignSummary {
     if (m.date_start && (!earliest || m.date_start < earliest)) earliest = m.date_start;
     if (m.date_stop && (!latest || m.date_stop > latest)) latest = m.date_stop;
 
-    const { brand, kind } = brandOf(r.name);
-    const row = byBrand.get(brand) ?? { brand, kind, campaigns: 0, spend: 0, purchases: 0, share: 0 };
+    const a = attribute(r.name, r.__tag as StoredTag | null | undefined);
+    if (a.source === 'stored') {
+      storedSpend += s;
+    } else {
+      readSpend += s;
+      readCampaigns += 1;
+      const g = brandOf(r.name);
+      untagged.push({ id: r.id, name: r.name ?? null, spend: s, guess: g.brand, kind: g.kind });
+    }
+
+    const row = byBrand.get(a.bucket)
+      ?? { brand: a.bucket, kind: a.kind, campaigns: 0, spend: 0, purchases: 0, share: 0, storedSpend: 0, alsoCovers: [] };
     row.campaigns += 1;
     row.spend += s;
     row.purchases += p;
-    byBrand.set(brand, row);
+    if (a.source === 'stored') row.storedSpend += s;
+    if (a.bucket === SEVERAL_BRANDS) {
+      for (const n of a.brands) if (!row.alsoCovers.includes(n)) row.alsoCovers.push(n);
+    }
+    byBrand.set(a.bucket, row);
   }
 
   const brands = [...byBrand.values()].sort((a, b) => b.spend - a.spend);
-  for (const b of brands) b.share = spend > 0 ? (b.spend / spend) * 100 : 0;
+  for (const b of brands) { b.share = spend > 0 ? (b.spend / spend) * 100 : 0; b.alsoCovers.sort(); }
 
   const named = brands.filter((b) => b.kind === 'brand');
   const brandSpend = named.reduce((t, b) => t + b.spend, 0);
+  untagged.sort((a, b) => b.spend - a.spend);
 
   return {
     campaigns: rows.length,
@@ -190,5 +230,135 @@ export function summarise(rows: Record<string, any>[]): CampaignSummary {
     brandShare: spend > 0 ? (brandSpend / spend) * 100 : 0,
     topBySpend: named[0] ?? null,
     topByPurchases: [...named].sort((a, b) => b.purchases - a.purchases)[0] ?? null,
+    storedSpend,
+    storedShare: spend > 0 ? (storedSpend / spend) * 100 : 0,
+    readSpend, readCampaigns, untagged,
   };
 }
+
+
+/* ── what somebody actually said ────────────────────────────────────────── */
+
+import { supabase } from './supabase';
+
+export interface Brand { id: string; name: string }
+
+/** The brand decision stored against a campaign. `kind` 'brand' carries one or
+ *  more brands; the other two carry none and mean it. */
+export interface StoredTag {
+  kind: 'brand' | 'whole_shop' | 'unknown';
+  brandIds: string[];
+  brandNames: string[];
+  setAt: string | null;
+  setBy: string | null;
+}
+
+/** The brands the shop carries, for the picker. Active ones first — an
+ *  inactive brand is kept because old campaigns still point at it. */
+export async function loadBrands(): Promise<Brand[]> {
+  const { data } = await supabase
+    .from('brands').select('id, name, is_active')
+    .order('is_active', { ascending: false }).order('name');
+  return ((data ?? []) as any[]).map((b) => ({ id: b.id, name: b.name }));
+}
+
+/** What has been said about these campaigns. Absent from the map = nobody has
+ *  said anything, which is not the same as "no brand". */
+export async function loadCampaignTags(campaignIds: string[]): Promise<Map<string, StoredTag>> {
+  const ids = [...new Set(campaignIds.filter(Boolean))];
+  const out = new Map<string, StoredTag>();
+  if (!ids.length) return out;
+
+  // Chunked: a campaign can carry several rows, and the archive is 357 wide.
+  const rows: any[] = [];
+  for (let i = 0; i < ids.length; i += 200) {
+    const { data } = await supabase
+      .from('meta_campaign_brands')
+      .select('campaign_id, brand_id, kind, set_at, set_by, brands(name)')
+      .in('campaign_id', ids.slice(i, i + 200));
+    rows.push(...((data ?? []) as any[]));
+  }
+
+  for (const r of rows) {
+    const t: StoredTag = out.get(r.campaign_id) ?? {
+      kind: r.kind, brandIds: [], brandNames: [], setAt: null, setBy: null,
+    };
+    t.kind = r.kind;
+    if (r.brand_id) {
+      t.brandIds.push(r.brand_id);
+      const name = (r as any).brands?.name;
+      if (name) t.brandNames.push(name);
+    }
+    // Several rows, one decision: the most recent edit dates the whole set.
+    if (!t.setAt || (r.set_at && r.set_at > t.setAt)) { t.setAt = r.set_at; t.setBy = r.set_by; }
+    out.set(r.campaign_id, t);
+  }
+  for (const t of out.values()) t.brandNames.sort();
+  return out;
+}
+
+/**
+ * Replace what is stored for one campaign.
+ *
+ * Written as a clear-then-insert rather than a merge because the picker edits a
+ * whole decision, not one row of it: removing a brand has to remove its row,
+ * and switching from two brands to "whole shop" has to remove both. The delete
+ * comes first for the same reason the database refuses the combination — a
+ * campaign holding both brands and "no brand" would make the spend split add up
+ * to more than the spend.
+ *
+ * `null` means "unsay it": the campaign goes back to being read from its name.
+ */
+export async function saveCampaignTag(
+  campaignId: string,
+  tag: { kind: StoredTag['kind']; brandIds: string[] } | null,
+  setBy: string | null,
+): Promise<void> {
+  const del = await supabase.from('meta_campaign_brands').delete().eq('campaign_id', campaignId);
+  if (del.error) throw del.error;
+  if (!tag) return;
+
+  const rows: Record<string, unknown>[] = tag.kind === 'brand'
+    ? [...new Set(tag.brandIds)].map((brand_id) => ({ campaign_id: campaignId, brand_id, kind: 'brand', set_by: setBy }))
+    : [{ campaign_id: campaignId, brand_id: null, kind: tag.kind, set_by: setBy }];
+  if (!rows.length) return;
+
+  const ins = await supabase.from('meta_campaign_brands').insert(rows as any);
+  if (ins.error) throw ins.error;
+}
+
+export interface Attribution {
+  /** The row this campaign is counted under in the chart. */
+  bucket: string;
+  kind: BrandKind;
+  /** The brands involved — one entry for a single brand, several for a campaign
+   *  that genuinely covered more than one. */
+  brands: string[];
+  source: 'stored' | 'name';
+}
+
+/**
+ * Where a campaign's spend is counted, stored answer first.
+ *
+ * A campaign covering several brands is counted under "Several brands" rather
+ * than under each of them. Counting it in full under both would make the bars
+ * add up to more than the spend, and splitting it evenly would invent a number
+ * nobody knows — Meta reports one figure for the campaign, not a figure per
+ * brand in it. The brands are named on the row and in the campaign's own sheet,
+ * so nothing is lost; it is simply not claimed to be divisible.
+ */
+export function attribute(name: string | null | undefined, stored?: StoredTag | null): Attribution {
+  if (stored) {
+    if (stored.kind === 'whole_shop') return { bucket: WHOLE_SHOP, kind: 'shop', brands: [], source: 'stored' };
+    if (stored.kind === 'unknown') return { bucket: UNKNOWN_BRAND, kind: 'unknown', brands: [], source: 'stored' };
+    const names = stored.brandNames;
+    if (names.length === 1) return { bucket: names[0], kind: 'brand', brands: names, source: 'stored' };
+    if (names.length > 1) return { bucket: SEVERAL_BRANDS, kind: 'shop', brands: names, source: 'stored' };
+  }
+  const { brand, kind } = brandOf(name);
+  return { bucket: brand, kind, brands: kind === 'brand' ? [brand] : [], source: 'name' };
+}
+
+/** When a brand was last stated, as a person reads it. */
+export const whenTagged = (iso: string | null | undefined) =>
+  !iso ? '' : new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });

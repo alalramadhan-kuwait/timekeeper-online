@@ -6,6 +6,7 @@
  * to fetch and show, and Meta is the source of truth for what the numbers are.
  */
 import { supabase } from './supabase';
+import { loadCampaignTags } from './metaBrands';
 
 export interface MetaCampaignOption { value: string; label: string; group?: string }
 
@@ -295,7 +296,12 @@ export async function loadSpendingCampaignIds(): Promise<Set<string>> {
   return out;
 }
 
-export type CampaignScope = 'recent' | 'all';
+/* 'untagged' is the same universe as 'all', kept back to the campaigns nobody
+   has named a brand for and ordered by spend. It exists because tagging is not
+   a 357-campaign job: about sixty campaigns carry ninety per cent of the money
+   here, and doing those first is the difference between an afternoon and a
+   week. */
+export type CampaignScope = 'recent' | 'all' | 'untagged';
 
 /**
  * Campaigns for the Campaigns page.
@@ -364,15 +370,20 @@ export async function loadCampaignPage(
   const rows = (camps ?? []) as any[];
   if (!rows.length) return [];
 
-  const { data: ins } = await supabase.from('meta_ad_insights')
-    .select('campaign_id, spend, impressions, reach, clicks, ctr, cpc, cpm, actions, account_currency, date_start, date_stop, synced_at')
-    .eq('period', 'lifetime').in('campaign_id', rows.map((c) => c.id));
+  const [{ data: ins }, tags] = await Promise.all([
+    supabase.from('meta_ad_insights')
+      .select('campaign_id, spend, impressions, reach, clicks, ctr, cpc, cpm, actions, account_currency, date_start, date_stop, synced_at')
+      .eq('period', 'lifetime').in('campaign_id', rows.map((c) => c.id)),
+    // What a person has said the campaign was for. Loaded here rather than in
+    // the page so the brand figures and the list can never disagree.
+    loadCampaignTags(rows.map((c) => c.id as string)),
+  ]);
   const byCampaign = new Map((ins ?? []).map((r) => [r.campaign_id, r]));
 
   const lastOk = (cfg as { last_synced_at?: string } | null)?.last_synced_at;
   const cutoff = lastOk ? new Date(lastOk).getTime() - 5 * 60_000 : null;
 
-  return rows.map((c) => {
+  const out = rows.map((c) => {
     const i: any = byCampaign.get(c.id) ?? {};
     const seen = !cutoff ? true : !!c.synced_at && new Date(c.synced_at).getTime() >= cutoff;
     const figures: MetaFigures = {
@@ -386,8 +397,10 @@ export async function loadCampaignPage(
       date_start: i.date_start ?? null, date_stop: i.date_stop ?? null,
       synced_at: i.synced_at ?? c.synced_at ?? null,
     };
-    return { ...c, __meta: figures, __result: resultFor(figures) };
+    return { ...c, __meta: figures, __result: resultFor(figures), __tag: tags.get(c.id) ?? null };
   });
+
+  return opts.scope === 'untagged' && !term ? out.filter((r) => !r.__tag) : out;
 }
 
 /** How many campaigns are offered at all — those that have ever spent. The

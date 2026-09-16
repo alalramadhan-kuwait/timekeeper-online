@@ -6,6 +6,8 @@ import { Modal } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { MetaLinkChip, MetaFigureGrid } from '../components/MetaFigures';
 import { MetaSummary } from '../components/MetaSummary';
+import { CampaignBrandPicker } from '../components/CampaignBrandPicker';
+import { loadBrands, attribute, type Brand, type StoredTag } from '../lib/metaBrands';
 import {
   loadCampaignPage, countAvailableCampaigns, loadMetaSyncState, whenSynced, staleHours,
   type CampaignScope, type MetaSyncState, type MetaFigures,
@@ -23,8 +25,9 @@ import {
  * Read-only throughout. Nothing here is ours to edit.
  */
 export function MetaCampaignsPage() {
-  const { role } = useAuth();
+  const { role, user } = useAuth();
   const canSync = ['admin', 'manager', 'marketing'].includes(role ?? '');
+  const [brands, setBrands] = useState<Brand[]>([]);
 
   const [scope, setScope] = useState<CampaignScope>('recent');
   const [search, setSearch] = useState('');
@@ -55,6 +58,15 @@ export function MetaCampaignsPage() {
   useEffect(() => {
     void loadMetaSyncState().then(setSync);
     void countAvailableCampaigns().then(setTotal);
+    void loadBrands().then(setBrands);
+  }, []);
+
+  /* A saved brand changes the figures at the top as well as the row, so it is
+     written back into the list rather than re-fetched: the totals are computed
+     from these rows, and a refetch would blink the whole page for one edit. */
+  const tagged = useCallback((id: string, tag: StoredTag | null) => {
+    setRows((rs) => rs.map((r) => (r.id === id ? { ...r, __tag: tag } : r)));
+    setOpen((o) => (o && o.id === id ? { ...o, __tag: tag } : o));
   }, []);
 
   async function refresh() {
@@ -133,7 +145,11 @@ export function MetaCampaignsPage() {
           )}
         </div>
         <div className="flex rounded-lg border border-slate-300 overflow-hidden text-sm">
-          {([['recent', 'Spending in the last 90 days'], ['all', 'All campaigns that spent']] as const).map(([v, label]) => (
+          {([
+            ['recent', 'Spending in the last 90 days'],
+            ['all', 'All campaigns that spent'],
+            ['untagged', 'Needs a brand'],
+          ] as const).map(([v, label]) => (
             <button key={v} onClick={() => setScope(v)}
               className={`px-3 py-2 font-medium ${scope === v ? 'bg-slate-900 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}>
               {label}
@@ -147,10 +163,12 @@ export function MetaCampaignsPage() {
           ? `Searching every campaign that has spent${total ? ` (${total})` : ''} — ${sorted.length} match${sorted.length === 1 ? '' : 'es'}.`
           : scope === 'recent'
             ? `Showing ${sorted.length} campaign${sorted.length === 1 ? '' : 's'} that spent something in the last 90 days${total ? `, out of ${total} that have ever spent` : ''}. Meta reports almost every old campaign as Active, so spend — not status — is what separates the live board from the archive. Campaigns that never spent are kept in the data but not listed anywhere.`
-            : `Showing ${sorted.length} campaign${sorted.length === 1 ? '' : 's'} that have ever spent${total && sorted.length < total ? ` — first 1,000 of ${total} by name` : ''}.`}
+            : scope === 'untagged'
+              ? `${sorted.length} campaign${sorted.length === 1 ? '' : 's'} nobody has named a brand for, biggest spender first. Open one and set its brand; a brand set here always beats what the name says. The figures above cover only these, so they show exactly what is still being guessed at.`
+              : `Showing ${sorted.length} campaign${sorted.length === 1 ? '' : 's'} that have ever spent${total && sorted.length < total ? ` — first 1,000 of ${total} by name` : ''}.`}
       </p>
 
-      {!loading && !!sorted.length && <MetaSummary rows={sorted} />}
+      {!loading && !!sorted.length && <MetaSummary rows={sorted} onOpen={setOpen} />}
 
       {loading ? (
         <div className="py-20 flex justify-center"><Spinner /></div>
@@ -166,7 +184,7 @@ export function MetaCampaignsPage() {
                 <tr>
                   <th className="text-left px-4 py-3 font-semibold">Campaign</th>
                   <th className="text-left px-4 py-3 font-semibold">Status</th>
-                  <th className="text-left px-4 py-3 font-semibold">Objective</th>
+                  <th className="text-left px-4 py-3 font-semibold">Brand</th>
                   <th className="text-right px-4 py-3 font-semibold">Spend</th>
                   <th className="text-right px-4 py-3 font-semibold">Impressions</th>
                   <th className="text-right px-4 py-3 font-semibold">Clicks</th>
@@ -182,9 +200,7 @@ export function MetaCampaignsPage() {
                       <span className="block text-[11px] text-slate-400 font-mono">{r.id}</span>
                     </td>
                     <td className="px-4 py-3"><MetaLinkChip f={r.__meta as MetaFigures} /></td>
-                    <td className="px-4 py-3 text-xs text-slate-500">
-                      {r.objective ? String(r.objective).replace(/^OUTCOME_/, '').replace(/_/g, ' ').toLowerCase() : '—'}
-                    </td>
+                    <td className="px-4 py-3 text-xs"><BrandCell r={r} /></td>
                     <td className="px-4 py-3 text-right tabular-nums">
                       {r.__meta?.spend
                         ? <>{r.__meta.spend} <span className="text-slate-400 text-xs">{r.__meta.account_currency}</span></>
@@ -213,6 +229,7 @@ export function MetaCampaignsPage() {
                   <MetaLinkChip f={r.__meta as MetaFigures} />
                 </div>
                 <p className="text-[11px] text-slate-400 font-mono mt-0.5">{r.id}</p>
+                <div className="mt-1 text-xs"><BrandCell r={r} /></div>
                 <div className="flex items-baseline gap-3 mt-2 text-sm">
                   <span className="font-semibold tabular-nums">
                     {r.__meta?.spend ? `${r.__meta.spend} ${r.__meta.account_currency}` : 'no delivery'}
@@ -229,10 +246,36 @@ export function MetaCampaignsPage() {
         <Modal onClose={() => setOpen(null)} title={open.name || 'Campaign'}>
           <div className="space-y-3">
             <p className="text-xs text-slate-400 font-mono break-all">{open.id}</p>
+            <CampaignBrandPicker
+              key={open.id}
+              campaignId={open.id}
+              campaignName={open.name ?? null}
+              tag={(open.__tag as StoredTag | null) ?? null}
+              brands={brands}
+              canEdit={canSync}
+              userId={user?.id ?? null}
+              onSaved={(t) => tagged(open.id, t)}
+            />
             <MetaFigureGrid f={open.__meta as MetaFigures} />
           </div>
         </Modal>
       )}
     </div>
+  );
+}
+
+/** What this campaign is counted under, and whether anybody said so. The
+ *  distinction is the whole point of the mapping table, so it is visible in the
+ *  list rather than only inside the sheet. */
+function BrandCell({ r }: { r: Record<string, any> }) {
+  const a = attribute(r.name, r.__tag as StoredTag | null);
+  const label = a.bucket === 'Several brands' && a.brands.length ? a.brands.join(' + ') : a.bucket;
+  return (
+    <span className="inline-flex items-center gap-1.5">
+      <span className={a.kind === 'brand' ? 'text-slate-700' : 'text-slate-400 italic'}>{label}</span>
+      {a.source === 'stored'
+        ? <span className="text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200 rounded px-1 py-px">set</span>
+        : <span className="text-[10px] text-slate-400 bg-slate-50 border border-slate-200 rounded px-1 py-px">from name</span>}
+    </span>
   );
 }
