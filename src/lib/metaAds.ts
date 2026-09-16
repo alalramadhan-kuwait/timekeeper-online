@@ -283,10 +283,25 @@ export async function loadCampaignPage(
 
   let ids: string[] | null = null;
   if (!term && opts.scope === 'recent') {
+    /* Spent something in the last 90 days — not merely "has a row". Meta writes
+       a daily row for a campaign that was live but spent nothing, and those are
+       exactly the ones nobody wants on the board.
+       Reading spend to decide whether a campaign is listed is a selection test,
+       not arithmetic on a figure: no displayed number is touched by it, and a
+       campaign kept by this test still shows Meta's own string untouched. */
     const since = new Date(Date.now() - 90 * 86400_000).toISOString().slice(0, 10);
-    const { data } = await supabase.from('meta_ad_insights')
-      .select('campaign_id').eq('period', 'daily').gte('date_start', since);
-    ids = [...new Set((data ?? []).map((r) => r.campaign_id as string))];
+    const spent = new Set<string>();
+    // Paged: a busy quarter can carry more daily rows than one request returns.
+    for (let from = 0; ; from += 1000) {
+      const { data } = await supabase.from('meta_ad_insights')
+        .select('campaign_id, spend').eq('period', 'daily')
+        .gte('date_start', since).range(from, from + 999);
+      for (const r of data ?? []) {
+        if (Number(r.spend ?? 0) > 0) spent.add(r.campaign_id as string);
+      }
+      if (!data || data.length < 1000) break;
+    }
+    ids = [...spent];
     if (!ids.length) return [];
   }
 

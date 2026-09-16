@@ -132,7 +132,7 @@ export function MetaCampaignsPage() {
           )}
         </div>
         <div className="flex rounded-lg border border-slate-300 overflow-hidden text-sm">
-          {([['recent', 'Active in the last 90 days'], ['all', 'All historical campaigns']] as const).map(([v, label]) => (
+          {([['recent', 'Spending in the last 90 days'], ['all', 'All historical campaigns']] as const).map(([v, label]) => (
             <button key={v} onClick={() => setScope(v)}
               className={`px-3 py-2 font-medium ${scope === v ? 'bg-slate-900 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}>
               {label}
@@ -145,7 +145,7 @@ export function MetaCampaignsPage() {
         {searching
           ? `Searching every campaign${total ? ` (${total} in total)` : ''} — ${sorted.length} match${sorted.length === 1 ? '' : 'es'}.`
           : scope === 'recent'
-            ? `Showing ${sorted.length} campaign${sorted.length === 1 ? '' : 's'} that delivered in the last 90 days${total ? ` of ${total} on the account` : ''}. Meta reports almost every old campaign as Active, so delivery — not status — is what separates the live board from the archive. Search reaches all of them.`
+            ? `Showing ${sorted.length} campaign${sorted.length === 1 ? '' : 's'} that spent something in the last 90 days${total ? ` of ${total} on the account` : ''}. Meta reports almost every old campaign as Active, so spend — not status — is what separates the live board from the archive. Campaigns with no spend are still here: search finds them, or switch to all historical campaigns.`
             : `Showing ${sorted.length} campaign${sorted.length === 1 ? '' : 's'}${total && sorted.length < total ? ` of ${total} (first 400 by name)` : ''}.`}
       </p>
 
@@ -153,7 +153,7 @@ export function MetaCampaignsPage() {
         <div className="py-20 flex justify-center"><Spinner /></div>
       ) : !sorted.length ? (
         <div className="py-16 text-center text-slate-400">
-          {searching ? `Nothing matches “${term}”.` : 'No campaigns delivered in the last 90 days.'}
+          {searching ? `Nothing matches “${term}”.` : 'No campaign has spent anything in the last 90 days.'}
         </div>
       ) : (
         <>
