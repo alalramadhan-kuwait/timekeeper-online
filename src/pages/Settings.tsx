@@ -637,6 +637,82 @@ function Geofences({ workStartTime, setWorkStartTime, onSaveHours, savedMsg }: {
 }
 
 /** Admin: monthly sales targets used by the dashboard "Sales vs target" KPIs. */
+/**
+ * What a dollar of Meta spend is worth in dinars.
+ *
+ * Meta bills this ad account in USD; every other figure in the business is KD.
+ * The rate is typed in rather than fetched because the dinar is pegged and
+ * moves by fractions of a per cent in a year — a daily sync would add something
+ * that can fail in exchange for noise, and it would still be applying today's
+ * rate to spend from 2023.
+ *
+ * It changes what is DISPLAYED and nothing else: Meta's figures stay in the
+ * database exactly as they arrived, and every screen that shows a converted
+ * number prints the rate beside it.
+ */
+function AdCurrency() {
+  const [rate, setRate] = useState('');
+  const [account, setAccount] = useState<{ currency: string | null; updated: string | null }>({ currency: null, updated: null });
+  const [msg, setMsg] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    supabase.from('meta_ads_config').select('currency, kwd_per_usd, rate_updated_at').eq('id', 1).maybeSingle()
+      .then(({ data }) => {
+        if (!data) return;
+        setRate(data.kwd_per_usd != null ? String(data.kwd_per_usd) : '');
+        setAccount({ currency: data.currency, updated: data.rate_updated_at });
+      });
+  }, []);
+
+  async function save() {
+    const v = rate.trim() === '' ? null : Number(rate);
+    if (v !== null && !(v > 0)) { setMsg('The rate must be a number above zero.'); return; }
+    setBusy(true);
+    const { error } = await supabase.from('meta_ads_config')
+      .update({ kwd_per_usd: v, rate_updated_at: new Date().toISOString() }).eq('id', 1);
+    setBusy(false);
+    setMsg(error ? `Failed: ${error.message}` : v === null ? `Cleared — spend now shows in ${account.currency ?? 'USD'}` : 'Rate saved');
+    if (!error) setAccount((a) => ({ ...a, updated: new Date().toISOString() }));
+  }
+
+  const preview = Number(rate) > 0 ? (1000 * Number(rate)) : null;
+
+  return (
+    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 lg:col-span-2">
+      <h2 className="text-sm font-semibold text-slate-700 mb-1">Ad spend currency</h2>
+      <p className="text-xs text-slate-400 mb-3">
+        Meta bills the ad account in <span className="font-medium text-slate-500">{account.currency ?? 'USD'}</span>.
+        Set the rate and Meta Campaigns and the Paid Ads Tracker show spend in KD, so it sits
+        beside a KD budget. Meta’s own figures are never changed — each campaign’s sheet still
+        shows them exactly as Meta sent them. Leave blank to show {account.currency ?? 'USD'} everywhere.
+      </p>
+      <div className="flex flex-wrap items-end gap-2">
+        <label className="text-xs">
+          <span className="block text-slate-500 mb-1">KD per 1 {account.currency ?? 'USD'}</span>
+          <input type="number" step="0.0001" min="0" value={rate} onChange={(e) => setRate(e.target.value)}
+            placeholder="0.3065" className="px-3 py-1.5 rounded-lg border border-slate-300 text-sm w-36" />
+        </label>
+        <button onClick={save} disabled={busy}
+          className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-slate-900 text-white text-sm font-medium hover:bg-slate-700 disabled:opacity-50">
+          <Save size={13} /> {busy ? 'Saving…' : 'Save rate'}
+        </button>
+        {preview !== null && (
+          <span className="text-xs text-slate-400">
+            1,000 {account.currency ?? 'USD'} of spend reads as {preview.toLocaleString('en-GB', { maximumFractionDigits: 0 })} KD
+          </span>
+        )}
+        {msg && <span className={`text-xs ${msg.startsWith('Failed') || msg.startsWith('The rate') ? 'text-red-600' : 'text-emerald-600'}`}>{msg}</span>}
+      </div>
+      {account.updated && (
+        <p className="text-[11px] text-slate-400 mt-2">
+          Last changed {new Date(account.updated).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}.
+        </p>
+      )}
+    </div>
+  );
+}
+
 function SalesTarget() {
   const [target, setTarget] = useState('');
   const [avenues, setAvenues] = useState('');
@@ -811,6 +887,7 @@ export default function SettingsPage() {
         {/* Daily Briefing parked (cleanup item 14) — <DailyBriefing /> and the edge function are kept for when it's wanted */}
 
         {isAdmin && <SalesTarget />}
+        {isAdmin && <AdCurrency />}
         {isAdmin && <Geofences workStartTime={workStartTime} setWorkStartTime={setWorkStartTime} onSaveHours={saveGeofence} savedMsg={geofenceMsg} />}
 
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 lg:col-span-2">

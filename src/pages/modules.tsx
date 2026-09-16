@@ -9,6 +9,7 @@ import { useAuth } from '../context/AuthContext';
 import { MetaLinkChip, MetaFigureGrid } from '../components/MetaFigures';
 import {
   loadMetaCampaignOptions, loadMetaFigures, resultFor, loadMetaSyncState, hasNoFigures, whenSynced, staleHours,
+  rateFrom, inDisplayCurrency, displayCode, money as fmtMoney, type DisplayRate,
   loadAllCampaignsWithFigures,
   type MetaFigures, type MetaSyncState,
 } from '../lib/metaAds';
@@ -168,6 +169,20 @@ function ContentCalendar({ month, tasks }: { month: string; tasks: any[] }) {
 /* ---------------- Paid Ads Tracker (Marketing) ---------------- */
 const AD_STATUSES = ['Planned', 'Waiting content', 'Waiting approval', 'Active', 'Completed', 'Paused', 'Cancelled'];
 const AD_PLATFORMS = ['Instagram', 'Meta', 'Google', 'TikTok', 'Snapchat', 'Other'];
+/** Meta's spend in the currency the rest of the row is in, with Meta's own
+ *  figure on hover so the conversion is always checkable. */
+function MetaSpend({ f, rate }: { f: MetaFigures; rate?: DisplayRate }) {
+  const r = rate ?? { kwdPerUsd: null, updatedAt: null };
+  const code = displayCode(f.account_currency, r);
+  return (
+    <span className="tabular-nums"
+      title={code === f.account_currency ? undefined : `Meta: ${f.spend} ${f.account_currency}`}>
+      {fmtMoney(inDisplayCurrency(Number(f.spend), f.account_currency, r), code)}{' '}
+      <span className="text-slate-400 text-xs">{code}</span>
+    </span>
+  );
+}
+
 const paidAds: CrudConfig = {
   rowClickToEdit: true,
   table: 'paid_ads',
@@ -191,8 +206,15 @@ const paidAds: CrudConfig = {
   /* Meta's figures live in their own table. Attach them once per load rather
      than having every cell fetch its own. */
   enrich: async (rows) => {
-    const figures = await loadMetaFigures(rows.map((r) => r.meta_campaign_id).filter(Boolean));
-    return rows.map((r) => ({ ...r, __meta: figures.get(r.meta_campaign_id) ?? null }));
+    /* The rate rides along with the figures so the spend column can be drawn in
+       the same currency as the budget beside it. Fetched once per load, like
+       the figures — a column cannot fetch its own. */
+    const [figures, sync] = await Promise.all([
+      loadMetaFigures(rows.map((r) => r.meta_campaign_id).filter(Boolean)),
+      loadMetaSyncState(),
+    ]);
+    const rate = rateFrom(sync);
+    return rows.map((r) => ({ ...r, __meta: figures.get(r.meta_campaign_id) ?? null, __rate: rate }));
   },
   title: 'Paid Ads Tracker',
   description: 'The campaigns we have chosen to track commercially — our budget, client and contract against Meta\u2019s figures. Media & Marketing \u2192 Meta Campaigns lists everything Meta has.',
@@ -204,7 +226,7 @@ const paidAds: CrudConfig = {
     const f: MetaFigures | null = row?.__meta ?? null;
     if (!row?.meta_campaign_id) return null;
     if (!f) return <p className="text-xs text-slate-400 sm:col-span-2">No figures synced for this campaign yet.</p>;
-    return <div className="sm:col-span-2 rounded-xl bg-slate-50 border border-slate-200 p-3"><MetaFigureGrid f={f} /></div>;
+    return <div className="sm:col-span-2 rounded-xl bg-slate-50 border border-slate-200 p-3"><MetaFigureGrid f={f} rate={row.__rate as DisplayRate} /></div>;
   },
   orderBy: { column: 'start_date', ascending: false },
   groupBy: 'client_type',
@@ -250,8 +272,9 @@ const paidAds: CrudConfig = {
     { key: 'end_date', label: 'End', sortable: true, hideBelow: 'lg', render: (r) => <ExpiryCell date={r.end_date} /> },
     { key: 'budget', label: 'Budget', sortable: true, hideBelow: 'md', render: (r) => kd(r.budget) },
     { key: 'amount_charged', label: 'Charged', sortable: true, render: (r) => r.client_type === 'External company' ? kd(r.amount_charged) : <span className="text-slate-300 text-xs">—</span> },
-    /* Meta's spend, in Meta's currency, beside a KD budget it is not comparable
-       to — hence the currency printed on every value. */
+    /* Meta bills in USD and the budget beside this is in KD, so the spend is
+       shown in KD too — at the rate an owner set, with Meta's own figure on
+       hover. Two columns of money that cannot be compared is worse than none. */
     { key: '__meta_spend', label: 'Meta spend', sortable: true, hideBelow: 'md',
       sortValue: (r) => Number(r.__meta?.spend ?? -1),
       render: (r) => {
@@ -260,9 +283,8 @@ const paidAds: CrudConfig = {
         if (!f) return <span className="text-slate-300 text-xs">no figures yet</span>;
         return (
           <div className="flex flex-col gap-0.5">
-            {f.spend
-              ? <span className="tabular-nums">{f.spend} <span className="text-slate-400 text-xs">{f.account_currency}</span></span>
-              : <span className="text-slate-300 text-xs">no delivery</span>}
+            {f.spend ? <MetaSpend f={f} rate={r.__rate as DisplayRate} />
+                     : <span className="text-slate-300 text-xs">no delivery</span>}
             {f.link_state !== 'live' && <MetaLinkChip f={f} />}
           </div>
         );

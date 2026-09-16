@@ -10,6 +10,7 @@ import { CampaignBrandPicker } from '../components/CampaignBrandPicker';
 import { loadBrands, attribute, type Brand, type StoredTag } from '../lib/metaBrands';
 import {
   loadCampaignPage, countAvailableCampaigns, loadMetaSyncState, whenSynced, staleHours,
+  rateFrom, inDisplayCurrency, displayCode, money,
   type CampaignScope, type MetaSyncState, type MetaFigures,
 } from '../lib/metaAds';
 
@@ -80,6 +81,7 @@ export function MetaCampaignsPage() {
     }
   }
 
+  const rate = useMemo(() => rateFrom(sync), [sync]);
   const searching = term.trim().length > 0;
   const sorted = useMemo(
     () => [...rows].sort((a, b) => Number(b.__meta?.spend ?? -1) - Number(a.__meta?.spend ?? -1)),
@@ -105,7 +107,9 @@ export function MetaCampaignsPage() {
           Last successful sync: {whenSynced(sync?.last_synced_at)}
         </span>
         <span className="text-xs text-slate-400">
-          {sync?.account_name ?? 'Meta ad account'} · figures in {sync?.currency ?? 'USD'}
+          {sync?.account_name ?? 'Meta ad account'} · spend in{' '}
+          {displayCode(sync?.currency, rate)}
+          {rate.kwdPerUsd ? ` at ${rate.kwdPerUsd} per USD` : ''}
         </span>
         {canSync && (
           <button onClick={refresh} disabled={busy}
@@ -166,7 +170,7 @@ export function MetaCampaignsPage() {
               : `${sorted.length} campaign${sorted.length === 1 ? '' : 's'} that have ever spent${total && sorted.length < total ? `, first 1,000 by name` : ''}.`}
       </p>
 
-      {!loading && !!sorted.length && <MetaSummary rows={sorted} />}
+      {!loading && !!sorted.length && <MetaSummary rows={sorted} rate={rate} />}
 
       {loading ? (
         <div className="py-20 flex justify-center"><Spinner /></div>
@@ -200,9 +204,7 @@ export function MetaCampaignsPage() {
                     <td className="px-4 py-3"><MetaLinkChip f={r.__meta as MetaFigures} /></td>
                     <td className="px-4 py-3 text-xs"><BrandCell r={r} /></td>
                     <td className="px-4 py-3 text-right tabular-nums">
-                      {r.__meta?.spend
-                        ? <>{r.__meta.spend} <span className="text-slate-400 text-xs">{r.__meta.account_currency}</span></>
-                        : <span className="text-slate-300 text-xs">no delivery</span>}
+                      <SpendCell f={r.__meta as MetaFigures} rate={rate} />
                     </td>
                     <td className="px-4 py-3 text-right tabular-nums">{r.__meta?.impressions ?? '—'}</td>
                     <td className="px-4 py-3 text-right tabular-nums">{r.__meta?.clicks ?? '—'}</td>
@@ -230,7 +232,7 @@ export function MetaCampaignsPage() {
                 <div className="mt-1 text-xs"><BrandCell r={r} /></div>
                 <div className="flex items-baseline gap-3 mt-2 text-sm">
                   <span className="font-semibold tabular-nums">
-                    {r.__meta?.spend ? `${r.__meta.spend} ${r.__meta.account_currency}` : 'no delivery'}
+                    <SpendCell f={r.__meta as MetaFigures} rate={rate} />
                   </span>
                   {r.__result && <span className="text-xs text-slate-500">{r.__result.value} {r.__result.label}</span>}
                 </div>
@@ -254,7 +256,7 @@ export function MetaCampaignsPage() {
               userId={user?.id ?? null}
               onSaved={(t) => tagged(open.id, t)}
             />
-            <MetaFigureGrid f={open.__meta as MetaFigures} />
+            <MetaFigureGrid f={open.__meta as MetaFigures} rate={rate} />
           </div>
         </Modal>
       )}
@@ -274,6 +276,19 @@ function BrandCell({ r }: { r: Record<string, any> }) {
       {a.source === 'stored'
         ? <span className="text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200 rounded px-1 py-px">set</span>
         : <span className="text-[10px] text-slate-400 bg-slate-50 border border-slate-200 rounded px-1 py-px">from name</span>}
+    </span>
+  );
+}
+
+/** Spend as the page shows it, with Meta's own USD figure on hover. The KD is
+ *  worked out here for display; the string Meta sent is never replaced. */
+function SpendCell({ f, rate }: { f: MetaFigures; rate: import('../lib/metaAds').DisplayRate }) {
+  if (!f?.spend) return <span className="text-slate-300 text-xs">no delivery</span>;
+  const code = displayCode(f.account_currency, rate);
+  const shown = inDisplayCurrency(Number(f.spend), f.account_currency, rate);
+  return (
+    <span title={code === f.account_currency ? undefined : `Meta: ${f.spend} ${f.account_currency}`}>
+      {money(shown, code)} <span className="text-slate-400 text-xs">{code}</span>
     </span>
   );
 }

@@ -194,13 +194,16 @@ export interface MetaSyncState {
   currency: string | null;
   last_synced_at: string | null;
   last_error: string | null;
+  /** KD for one USD, set by an owner in Settings. Display only — see kd(). */
+  kwd_per_usd: number | null;
+  rate_updated_at: string | null;
 }
 
 /** How the last sync went, so the page can say whether the figures are current. */
 export async function loadMetaSyncState(): Promise<MetaSyncState | null> {
   const { data } = await supabase
     .from('meta_ads_config')
-    .select('account_id, account_name, currency, last_synced_at, last_error')
+    .select('account_id, account_name, currency, last_synced_at, last_error, kwd_per_usd, rate_updated_at')
     .eq('id', 1).maybeSingle();
   return (data as MetaSyncState) ?? null;
 }
@@ -409,3 +412,54 @@ export async function loadCampaignPage(
 export async function countAvailableCampaigns(): Promise<number> {
   return (await loadSpendingCampaignIds()).size;
 }
+
+
+/* ── showing Meta's money in KD ──────────────────────────────────────────── */
+
+/**
+ * The rate an owner set, carried to wherever a figure is displayed.
+ *
+ * Nothing stored is ever converted. Meta bills this account in USD and its
+ * figures stay USD strings in the database and on the campaign sheet; this
+ * turns one into KD at the moment it is drawn, and every place that does so
+ * says the rate out loud. `null` means no rate is set, and then Meta's own
+ * currency is shown rather than a number nobody can trace.
+ */
+export interface DisplayRate {
+  kwdPerUsd: number | null;
+  updatedAt: string | null;
+}
+
+export const rateFrom = (s: MetaSyncState | null | undefined): DisplayRate => ({
+  kwdPerUsd: s?.kwd_per_usd ?? null,
+  updatedAt: s?.rate_updated_at ?? null,
+});
+
+/** The code a figure is shown under, given the account's currency and the rate. */
+export const displayCode = (accountCurrency: string | null | undefined, rate: DisplayRate): string =>
+  convertible(accountCurrency, rate) ? 'KD' : (accountCurrency || 'USD');
+
+/* Only USD is converted. If the ad account is ever moved to KD, Meta's own
+   figures are already in KD and multiplying them again would be a silent
+   three-fold error on every screen. */
+const convertible = (accountCurrency: string | null | undefined, rate: DisplayRate) =>
+  !!rate.kwdPerUsd && rate.kwdPerUsd > 0 && (accountCurrency ?? 'USD').toUpperCase() === 'USD';
+
+/** A USD amount as the page shows it. Returns the number unchanged when there
+ *  is no rate, so a missing rate degrades to Meta's own figure rather than to
+ *  zero. */
+export const inDisplayCurrency = (
+  usd: number, accountCurrency: string | null | undefined, rate: DisplayRate,
+): number => (convertible(accountCurrency, rate) ? usd * (rate.kwdPerUsd as number) : usd);
+
+/** KD is quoted to three decimals in Kuwait; spend totals read better whole.
+ *  Small amounts keep their fils so a 0.4 KD campaign does not read as zero. */
+export const money = (n: number, code: string): string =>
+  n === 0 || Math.abs(n) >= 100
+    ? n.toLocaleString('en-GB', { maximumFractionDigits: 0 })
+    : n.toLocaleString('en-GB', { minimumFractionDigits: code === 'KD' ? 3 : 2, maximumFractionDigits: code === 'KD' ? 3 : 2 });
+
+/** "0.3065 KD per USD", for the line that has to sit next to a converted
+ *  figure so nobody mistakes it for something Meta said. */
+export const rateNote = (rate: DisplayRate): string | null =>
+  rate.kwdPerUsd ? `converted at ${rate.kwdPerUsd} KD per USD` : null;

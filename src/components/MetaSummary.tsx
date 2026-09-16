@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { Info } from 'lucide-react';
 import { Modal } from './ui';
 import { summarise, type BrandRow } from '../lib/metaBrands';
+import { money, rateNote, type DisplayRate } from '../lib/metaAds';
 
 /**
  * The top of the Meta Campaigns page: spend, then performance, then brands.
@@ -13,15 +14,21 @@ import { summarise, type BrandRow } from '../lib/metaBrands';
  * would mean nothing. Those rules still hold — they are just not read aloud
  * every time somebody opens the page.
  */
-export function MetaSummary({ rows }: { rows: Record<string, any>[] }) {
-  const s = useMemo(() => summarise(rows), [rows]);
+export function MetaSummary({ rows, rate }: {
+  rows: Record<string, any>[];
+  /** Meta bills this account in USD; the shop thinks in KD. Everything here is
+   *  drawn in KD at the rate an owner set, and the rate is shown beside it. */
+  rate: DisplayRate;
+}) {
+  const s = useMemo(() => summarise(rows, rate), [rows, rate]);
   const [info, setInfo] = useState(false);
   if (!s.campaigns) return null;
+  const note = s.currency === 'KD' ? rateNote(rate) : null;
 
   return (
     <div className="space-y-3 mb-6">
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
-        <Card label="Total spend" value={money(s.spend)} unit={s.currency} note={span(s)} dark />
+        <Card label="Total spend" value={money(s.spend, s.currency)} unit={s.currency} note={span(s)} dark />
         <Card label="Impressions" value={count(s.impressions)} />
         <Card label="Clicks" value={count(s.clicks)} />
         <Card label="Purchases" value={count(s.purchases)} />
@@ -30,14 +37,20 @@ export function MetaSummary({ rows }: { rows: Record<string, any>[] }) {
 
       <Brands s={s} onInfo={() => setInfo(true)} />
 
-      {info && <Methodology s={s} onClose={() => setInfo(false)} />}
+      {note && (
+        <p className="text-[11px] text-slate-400">
+          Meta reports this account in USD; figures above are shown in KD, {note}. Each campaign’s
+          own USD figures are unchanged on its sheet.
+        </p>
+      )}
+
+      {info && <Methodology s={s} rate={rate} onClose={() => setInfo(false)} />}
     </div>
   );
 }
 
 /* ── figures ─────────────────────────────────────────────────────────────── */
 
-const money = (n: number) => n.toLocaleString('en-GB', { maximumFractionDigits: 0 });
 const count = (n: number) => Math.round(n).toLocaleString('en-GB');
 const month = (d: string | null) =>
   !d ? '' : new Date(d).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' });
@@ -66,6 +79,7 @@ function Card({ label, value, unit, note, dark, wide }: {
 /* ── brands ──────────────────────────────────────────────────────────────── */
 
 function Brands({ s, onInfo }: { s: ReturnType<typeof summarise>; onInfo: () => void }) {
+  const m = (n: number) => money(n, s.currency);
   const named = s.brands.filter((b) => b.kind === 'brand');
   const rest = s.brands.filter((b) => b.kind !== 'brand');
   const top = named.slice(0, 10);
@@ -98,11 +112,11 @@ function Brands({ s, onInfo }: { s: ReturnType<typeof summarise>; onInfo: () => 
         ))}
       </div>
       <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[11px]">
-        <Key tone="bg-slate-800" name={`${named.length} brands`} value={money(s.brandSpend)}
+        <Key tone="bg-slate-800" name={`${named.length} brands`} value={m(s.brandSpend)}
           pct={s.brandShare} currency={s.currency} />
         {rest.map((b) => (
           <Key key={b.brand} tone={b.kind === 'shop' ? 'bg-slate-400' : 'bg-slate-200'}
-            name={b.brand} value={money(b.spend)} pct={b.share} currency={s.currency} />
+            name={b.brand} value={m(b.spend)} pct={b.share} currency={s.currency} />
         ))}
       </div>
 
@@ -131,11 +145,11 @@ function Brands({ s, onInfo }: { s: ReturnType<typeof summarise>; onInfo: () => 
                           style={{ width: `${Math.max((b.share / widest) * 100, 2)}%` }} />
                       </div>
                     </td>
-                    <td className="py-1.5 pl-3 text-right tabular-nums text-slate-800 whitespace-nowrap">{money(b.spend)}</td>
+                    <td className="py-1.5 pl-3 text-right tabular-nums text-slate-800 whitespace-nowrap">{m(b.spend)}</td>
                     <td className="py-1.5 pl-4 text-right tabular-nums text-slate-400 whitespace-nowrap">{b.share.toFixed(1)}%</td>
                     <td className="py-1.5 pl-4 text-right tabular-nums text-slate-600">{b.purchases ? count(b.purchases) : '—'}</td>
                     <td className="py-1.5 pl-4 text-right tabular-nums text-slate-600 whitespace-nowrap">
-                      {cp === null ? '—' : `${money(cp)} ${s.currency}`}
+                      {cp === null ? '—' : `${m(cp)} ${s.currency}`}
                     </td>
                   </tr>
                 );
@@ -168,15 +182,28 @@ function Key({ tone, name, value, pct, currency }: {
 
 /* ── the reasoning, on request ───────────────────────────────────────────── */
 
-function Methodology({ s, onClose }: { s: ReturnType<typeof summarise>; onClose: () => void }) {
+function Methodology({ s, rate, onClose }: {
+  s: ReturnType<typeof summarise>; rate: DisplayRate; onClose: () => void;
+}) {
   return (
     <Modal title="How these figures are worked out" onClose={onClose}>
       <div className="space-y-3 text-sm text-slate-600 leading-relaxed">
         <p>
-          Every per-campaign figure is the string Meta sent — not rounded, not converted, not
-          recalculated. The five totals above are sums of those figures for the campaigns listed
-          below, so they always match what is on screen, search included.
+          Every per-campaign figure is the string Meta sent — not rounded, not recalculated. The
+          five totals above are sums of those figures for the campaigns listed below, so they
+          always match what is on screen, search included.
         </p>
+        <Section title="Currency">
+          <p>
+            Meta bills and reports this ad account in <b>USD</b>. The shop's budgets, targets and
+            till are in KD, so spend is <b>shown</b> in KD
+            {rate.kwdPerUsd ? <> at <b>{rate.kwdPerUsd} KD per USD</b></> : null} — a rate an owner
+            sets in Settings, not a live one, because the dinar is pegged and a rate fetched today
+            would be applied to spend from 2023 either way. Nothing stored is converted: each
+            campaign's own sheet still shows Meta's USD figures exactly as they arrived, which is
+            what to compare against Ads Manager.
+          </p>
+        </Section>
         <Section title="What is deliberately not shown">
           <p>
             <b>Reach</b> counts people, once per campaign. Somebody reached by thirty campaigns

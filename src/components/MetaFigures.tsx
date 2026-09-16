@@ -1,5 +1,8 @@
 import { Badge } from './ui';
-import { resultFor, whenSynced, type MetaFigures } from '../lib/metaAds';
+import {
+  resultFor, whenSynced, inDisplayCurrency, displayCode, money, rateNote,
+  type MetaFigures, type DisplayRate,
+} from '../lib/metaAds';
 
 /* Whether the link still points at a live campaign. Said in words, not left to
    an empty cell: "no figures" and "this campaign is gone" look identical
@@ -11,8 +14,18 @@ export function MetaLinkChip({ f }: { f: MetaFigures }) {
   return <Badge className={cls}>{f.status_label}</Badge>;
 }
 
-export function MetaFigureGrid({ f }: { f: MetaFigures }) {
+const NO_RATE: DisplayRate = { kwdPerUsd: null, updatedAt: null };
+
+export function MetaFigureGrid({ f, rate = NO_RATE }: { f: MetaFigures; rate?: DisplayRate }) {
   const res = resultFor(f);
+  /* The sheet is the one place that shows Meta's own figures untouched, so the
+     spend cell keeps its USD string and the KD sits under it as a second line
+     rather than in place of it. This is what somebody checks against Ads
+     Manager, and a converted number there would make every check fail. */
+  const code = displayCode(f.account_currency, rate);
+  const asKd = f.spend && code !== f.account_currency
+    ? `${money(inDisplayCurrency(Number(f.spend), f.account_currency, rate), code)} ${code}`
+    : null;
   const cells: { label: string; value: string | null }[] = [
     { label: `Spend (${f.account_currency ?? '—'})`, value: f.spend },
     { label: 'Impressions', value: f.impressions },
@@ -50,6 +63,9 @@ export function MetaFigureGrid({ f }: { f: MetaFigures }) {
           <div key={c.label} className="rounded-lg border border-slate-200 bg-white px-3 py-2">
             <p className="text-[10px] uppercase tracking-wider text-slate-400">{c.label}</p>
             <p className="text-sm font-semibold text-slate-800 tabular-nums break-all">{c.value ?? '—'}</p>
+            {c.label.startsWith('Spend') && asKd && (
+              <p className="text-[11px] text-slate-400 tabular-nums">{asKd}</p>
+            )}
           </div>
         ))}
       </div>
@@ -68,6 +84,7 @@ export function MetaFigureGrid({ f }: { f: MetaFigures }) {
       )}
       <p className="text-[11px] text-slate-400 mt-2">
         Figures are Meta’s and are shown unchanged — not recalculated, not converted.
+        {asKd && ` The KD line under spend is ours, ${rateNote(rate)}; the ${f.account_currency} figure is Meta’s.`}
       </p>
     </div>
   );

@@ -165,23 +165,28 @@ const purchasesOf = (actions: { action_type: string; value: string }[] | null | 
  * query, so the figures at the top always add up to the rows underneath them —
  * including when a search has narrowed the list.
  */
-export function summarise(rows: Record<string, any>[]): CampaignSummary {
+/**
+ * @param rate  How to show money. Meta's stored figures are never touched: the
+ *   conversion happens here, on the way to the screen, and the currency code
+ *   returned alongside says which one came out.
+ */
+export function summarise(rows: Record<string, any>[], rate: DisplayRate = { kwdPerUsd: null, updatedAt: null }): CampaignSummary {
   const byBrand = new Map<string, BrandRow>();
   let spend = 0, impressions = 0, clicks = 0, purchases = 0, purchasingCampaigns = 0;
   let storedSpend = 0;
   let earliest: string | null = null, latest: string | null = null;
-  let currency = 'USD';
+  let currency = displayCode('USD', rate);
 
   for (const r of rows) {
     const m = r.__meta ?? {};
-    const s = num(m.spend);
+    const s = inDisplayCurrency(num(m.spend), m.account_currency, rate);
     const p = purchasesOf(m.actions);
     spend += s;
     impressions += num(m.impressions);
     clicks += num(m.clicks);
     purchases += p;
     if (p > 0) purchasingCampaigns += 1;
-    if (m.account_currency) currency = m.account_currency;
+    if (m.account_currency) currency = displayCode(m.account_currency, rate);
     if (m.date_start && (!earliest || m.date_start < earliest)) earliest = m.date_start;
     if (m.date_stop && (!latest || m.date_stop > latest)) latest = m.date_stop;
 
@@ -223,6 +228,7 @@ export function summarise(rows: Record<string, any>[]): CampaignSummary {
 /* ── what somebody actually said ────────────────────────────────────────── */
 
 import { supabase } from './supabase';
+import { inDisplayCurrency, displayCode, type DisplayRate } from './metaAds';
 
 export interface Brand { id: string; name: string }
 
