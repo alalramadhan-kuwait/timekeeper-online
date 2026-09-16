@@ -357,7 +357,10 @@ export async function loadCampaignPage(
     const safe = term.replace(/[%,()]/g, ' ');
     q = q.or(`name.ilike.%${safe}%,id.ilike.%${safe}%`);
   }
-  const { data: camps } = await q.order('name').limit(400);
+  /* The ceiling matches the id list above, so the figures totalled at the top
+     of the page always cover every campaign the page is describing. A lower
+     cap here would quietly turn those totals into a partial sum. */
+  const { data: camps } = await q.order('name').limit(1000);
   const rows = (camps ?? []) as any[];
   if (!rows.length) return [];
 

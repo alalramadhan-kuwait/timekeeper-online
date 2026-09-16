@@ -5,6 +5,7 @@ import { Spinner } from '../components/ui';
 import { Modal } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { MetaLinkChip, MetaFigureGrid } from '../components/MetaFigures';
+import { MetaSummary } from '../components/MetaSummary';
 import {
   loadCampaignPage, countAvailableCampaigns, loadMetaSyncState, whenSynced, staleHours,
   type CampaignScope, type MetaSyncState, type MetaFigures,
@@ -146,8 +147,10 @@ export function MetaCampaignsPage() {
           ? `Searching every campaign that has spent${total ? ` (${total})` : ''} — ${sorted.length} match${sorted.length === 1 ? '' : 'es'}.`
           : scope === 'recent'
             ? `Showing ${sorted.length} campaign${sorted.length === 1 ? '' : 's'} that spent something in the last 90 days${total ? `, out of ${total} that have ever spent` : ''}. Meta reports almost every old campaign as Active, so spend — not status — is what separates the live board from the archive. Campaigns that never spent are kept in the data but not listed anywhere.`
-            : `Showing ${sorted.length} campaign${sorted.length === 1 ? '' : 's'} that have ever spent${total && sorted.length < total ? ` — first 400 of ${total} by name` : ''}.`}
+            : `Showing ${sorted.length} campaign${sorted.length === 1 ? '' : 's'} that have ever spent${total && sorted.length < total ? ` — first 1,000 of ${total} by name` : ''}.`}
       </p>
+
+      {!loading && !!sorted.length && <MetaSummary rows={sorted} />}
 
       {loading ? (
         <div className="py-20 flex justify-center"><Spinner /></div>
