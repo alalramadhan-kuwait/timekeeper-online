@@ -258,6 +258,16 @@ on; `Unknown` is the correct answer when the data does not carry one.
 
 ## 13. Changelog
 
+- **2026-09-16** (later 5) — **Clock in at whichever workplace you are standing in.** Asked why the stores manager, who runs both shops, could not clock in at either. He can: **nothing has ever read `employees.location` when deciding a clock-in** — that field routes leave approvals and files reports, and the HR form's single Location dropdown makes it look like a restriction it is not. Both apps, and the `attendance_enforce_geofence` trigger, match on position alone. (Colleagues clock in at Avenues at 8–15 m and Time Gallery at 51 m, so both fences work.) Two real faults found on the way:
+
+  *The gate tested the nearest fence rather than the one you are inside.* `attendance_enforce_geofence` took the closest active geofence and measured you against **that one's** radius. Where sites are far apart the two questions have the same answer, which is why it has never shown: Time Gallery and head office are 295 m apart with 120 m radii. Widen either, or add a fourth site near an existing one, and standing inside B while marginally nearer to A is refused with a message about A. The app has always looped over every fence and matched any one you are inside; the database disagreed with it. Migration `20260916210000` makes it ask the same question, for clock-out too — off site now means outside **every** fence, so a manager finishing at the other shop is no longer flagged as having left work.
+
+  *The Avenues geofence was called "Avenue".* The trigger writes the matched fence's name onto the record, so five clock-ins were filed at a workplace matching nothing, while the four people who work there are filed at "Avenues" — in the column used to join attendance to the roster. Renamed and the five rows backfilled.
+
+  Both portals' refusal message now names **every** workplace with its distance instead of only the nearest, because "you are 340m from Avenues" reads as "this account is tied to Avenues".
+
+  **Not fixed, worth knowing:** a refused clock-in raises an exception and leaves no row, so nothing in the data can answer "why could he not clock in" after the fact. Hussain has no attendance records at all and no trace of an attempt.
+
 - **2026-09-16** (later 4) — **An attendance correction says which day and which times, and approving it fixes the record.**
 
   The old path: My Portal → "Ask for a correction" → one free-text box → `employee_requests` → the approver's Inbox → Approve. Approve set `status = 'Approved'` **and nothing else**. To actually change the record the manager then opened HR → Attendance, found the day, and retyped the times out of the employee's paragraph. Three failures in one: the employee could describe a problem without ever being asked for a time, so half the requests did not contain the answer; the manager retyped from prose, which is where 17:30 becomes 17:00; and "Approved" meant a manager agreed, not that anything changed — an approved correction and an applied one looked identical, so one could be agreed to and quietly never made.

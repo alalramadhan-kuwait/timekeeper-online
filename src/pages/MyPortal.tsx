@@ -238,14 +238,19 @@ export default function MyPortalPage() {
       const pos = await getPosition();
       const { latitude, longitude } = pos.coords;
       let matched: Geofence | null = null;
-      let nearest = { name: '', dist: Infinity };
       for (const f of geofences) {
         const d = haversineMeters(latitude, longitude, Number(f.lat), Number(f.lng));
-        if (d < nearest.dist) nearest = { name: f.name, dist: d };
         if (d <= f.radius_m && (!matched || d < haversineMeters(latitude, longitude, Number(matched.lat), Number(matched.lng)))) matched = f;
       }
       if (!matched) {
-        setGeoError(`You are ${Math.round(nearest.dist)}m from the nearest location (${nearest.name}). You must be on-site to clock in.`);
+        /* Every workplace, not just the closest. Naming one place makes it read
+           like the account is tied to that place, which is not the rule: you
+           may clock in at whichever site you are standing in. */
+        const all = geofences
+          .map((f) => ({ name: f.name, d: Math.round(haversineMeters(latitude, longitude, Number(f.lat), Number(f.lng))) }))
+          .sort((a, b) => a.d - b.d)
+          .map((f) => `${f.name} ${f.d}m`).join(', ');
+        setGeoError(`You are not at any workplace, so there is nothing to clock in to. You can clock in at whichever one you are standing in — right now you are ${all} away.`);
         setGeoLoading(false); return;
       }
       const now = new Date();
