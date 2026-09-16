@@ -6,6 +6,7 @@ import { formatKD } from '../lib/format';
 import { expiryTier, tierClass, tierLabel } from '../lib/expiry';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
+import { loadMetaCampaignOptions, loadMetaFigures, resultFor, type MetaFigures } from '../lib/metaAds';
 import { roleLabel } from '../lib/roles';
 
 /** Unify any Instagram handle (@name / profile URL / bare) to a clean bare username. */
@@ -155,18 +156,70 @@ function ContentCalendar({ month, tasks }: { month: string; tasks: any[] }) {
   );
 }
 
+/* Meta's own figures, printed as the strings Meta sent.
+   No formatting that changes a value: no rounding, no thousands separator on a
+   decimal, no currency conversion. The currency is Meta's and is labelled, so
+   a USD spend is never mistaken for the KD budget beside it. */
+function MetaFigureGrid({ f }: { f: MetaFigures }) {
+  const res = resultFor(f);
+  const cells: { label: string; value: string | null }[] = [
+    { label: `Spend (${f.account_currency ?? '—'})`, value: f.spend },
+    { label: 'Impressions', value: f.impressions },
+    { label: 'Reach', value: f.reach },
+    { label: 'Clicks', value: f.clicks },
+    { label: 'CTR', value: f.ctr },
+    { label: 'CPC', value: f.cpc },
+    { label: 'CPM', value: f.cpm },
+    ...(res ? [{ label: res.label, value: res.value }] : []),
+  ];
+  return (
+    <div>
+      <div className="flex items-baseline justify-between gap-3 mb-2">
+        <p className="text-xs font-semibold text-slate-600">As reported by Meta</p>
+        <p className="text-[11px] text-slate-400">
+          {f.date_start && f.date_stop ? `${f.date_start} → ${f.date_stop}` : 'no delivery yet'}
+          {f.synced_at ? ` · synced ${new Date(f.synced_at).toLocaleString()}` : ''}
+        </p>
+      </div>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        {cells.map((c) => (
+          <div key={c.label} className="rounded-lg border border-slate-200 bg-white px-3 py-2">
+            <p className="text-[10px] uppercase tracking-wider text-slate-400">{c.label}</p>
+            <p className="text-sm font-semibold text-slate-800 tabular-nums break-all">{c.value ?? '—'}</p>
+          </div>
+        ))}
+      </div>
+      <p className="text-[11px] text-slate-400 mt-2">
+        Figures are Meta’s and are shown unchanged — not recalculated, not converted.
+      </p>
+    </div>
+  );
+}
+
 /* ---------------- Paid Ads Tracker (Marketing) ---------------- */
 const AD_STATUSES = ['Planned', 'Waiting content', 'Waiting approval', 'Active', 'Completed', 'Paused', 'Cancelled'];
 const AD_PLATFORMS = ['Instagram', 'Meta', 'Google', 'TikTok', 'Snapchat', 'Other'];
 const paidAds: CrudConfig = {
   rowClickToEdit: true,
   table: 'paid_ads',
+  /* Meta's figures live in their own table. Attach them once per load rather
+     than having every cell fetch its own. */
+  enrich: async (rows) => {
+    const figures = await loadMetaFigures(rows.map((r) => r.meta_campaign_id).filter(Boolean));
+    return rows.map((r) => ({ ...r, __meta: figures.get(r.meta_campaign_id) ?? null }));
+  },
   title: 'Paid Ads Tracker',
   description: 'Ads we run for Timekeeper and paid contracts we run for external companies.',
   canWrite: marketingRoles,
   statusField: 'status',
   statusOptions: AD_STATUSES,
   searchKeys: ['ad_name', 'client_name', 'contract_ref', 'platform', 'product_brand', 'owner'],
+  formExtra: (row) => {
+    const f: MetaFigures | null = row?.__meta ?? null;
+    if (!row?.meta_campaign_id) return null;
+    if (!f) return <p className="text-xs text-slate-400 sm:col-span-2">No figures synced for this campaign yet.</p>;
+    return <div className="sm:col-span-2 rounded-xl bg-slate-50 border border-slate-200 p-3"><MetaFigureGrid f={f} /></div>;
+  },
   orderBy: { column: 'start_date', ascending: false },
   groupBy: 'client_type',
   extraFilters: [
@@ -181,6 +234,12 @@ const paidAds: CrudConfig = {
     { key: 'client_name', label: 'Client name (if external)', type: 'combobox' },
     { key: 'contract_ref', label: 'Contract reference', type: 'text' },
     { key: 'platform', label: 'Platform', type: 'select', options: AD_PLATFORMS, defaultValue: 'Instagram' },
+    /* Which Meta campaign this row reports on. Stored as the campaign id, so a
+       campaign renamed in Ads Manager keeps its link. */
+    { key: 'meta_campaign_id', label: 'Meta campaign', type: 'searchselect',
+      loadOptions: loadMetaCampaignOptions,
+      placeholder: 'Search campaigns…',
+      hint: 'Spend and results are read from Meta for the campaign you pick, and shown exactly as Meta reports them.' },
     { key: 'owner', label: 'Campaign owner', type: 'combobox' },
     { key: 'start_date', label: 'Start date', type: 'date' },
     { key: 'end_date', label: 'End date', type: 'date' },
@@ -205,6 +264,23 @@ const paidAds: CrudConfig = {
     { key: 'end_date', label: 'End', sortable: true, hideBelow: 'lg', render: (r) => <ExpiryCell date={r.end_date} /> },
     { key: 'budget', label: 'Budget', sortable: true, hideBelow: 'md', render: (r) => kd(r.budget) },
     { key: 'amount_charged', label: 'Charged', sortable: true, render: (r) => r.client_type === 'External company' ? kd(r.amount_charged) : <span className="text-slate-300 text-xs">—</span> },
+    /* Meta's spend, in Meta's currency, beside a KD budget it is not comparable
+       to — hence the currency printed on every value. */
+    { key: '__meta_spend', label: 'Meta spend', sortable: true, hideBelow: 'md',
+      sortValue: (r) => Number(r.__meta?.spend ?? -1),
+      render: (r) => {
+        const f: MetaFigures | null = r.__meta;
+        if (!r.meta_campaign_id) return <span className="text-slate-300 text-xs">not linked</span>;
+        if (!f?.spend) return <span className="text-slate-300 text-xs">no delivery</span>;
+        return <span className="tabular-nums">{f.spend} <span className="text-slate-400 text-xs">{f.account_currency}</span></span>;
+      } },
+    { key: '__meta_results', label: 'Results', hideBelow: 'lg',
+      render: (r) => {
+        const f: MetaFigures | null = r.__meta;
+        const res = f ? resultFor(f) : null;
+        if (!res) return <span className="text-slate-300 text-xs">—</span>;
+        return <span className="text-xs"><span className="font-semibold tabular-nums">{res.value}</span> <span className="text-slate-400">{res.label}</span></span>;
+      } },
     { key: 'status', label: 'Status', sortable: true },
     { key: 'payment_status', label: 'Payment', sortable: true, hideBelow: 'lg', render: (r) => {
       const cls = r.payment_status === 'Paid' ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
@@ -217,7 +293,45 @@ const paidAds: CrudConfig = {
     { key: 'report_sent', label: 'Report', hideBelow: 'xl', render: (r) => r.report_sent ? '✓' : <span className="text-amber-600 text-xs">Pending</span> },
   ],
 };
-export const PaidAdsPage = () => <CrudModule config={paidAds} />;
+/* The figures refresh themselves every morning; this is for when someone has
+   just changed something in Ads Manager and wants to see it now. */
+export function PaidAdsPage() {
+  const { role } = useAuth();
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
+  const [key, setKey] = useState(0);
+  const canSync = ['admin', 'manager', 'marketing'].includes(role ?? '');
+
+  async function refresh() {
+    setBusy(true); setMsg(null);
+    try {
+      const { data, error } = await supabase.functions.invoke('meta-ads-sync', { body: { days: 14 } });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      setMsg(`✓ ${data?.campaigns ?? 0} campaigns · ${data?.lifetime_rows ?? 0} with figures`);
+      setKey((k) => k + 1);
+    } catch (e) {
+      setMsg(e instanceof Error ? e.message : 'Could not reach Meta');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div>
+      {canSync && (
+        <div className="flex flex-wrap items-center justify-end gap-3 mb-3">
+          {msg && <span className={`text-xs ${msg.startsWith('✓') ? 'text-emerald-600' : 'text-red-600'}`}>{msg}</span>}
+          <button onClick={refresh} disabled={busy}
+            className="flex items-center gap-2 bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-50 disabled:opacity-60">
+            <RefreshCw size={15} className={busy ? 'animate-spin' : ''} /> {busy ? 'Asking Meta…' : 'Refresh from Meta'}
+          </button>
+        </div>
+      )}
+      <CrudModule key={key} config={paidAds} />
+    </div>
+  );
+}
 
 /* ---------------- Influencer Tracker (Marketing) ---------------- */
 const INF_STATUSES = ['Negotiating', 'Agreed', 'Content received', 'Posted', 'Completed', 'Cancelled'];

@@ -6,7 +6,7 @@ import { Modal, Spinner, StatusBadge } from './ui';
 import { useAuth } from '../context/AuthContext';
 import { readDraft, writeDraft, clearDraft } from '../lib/drafts';
 
-export type FieldType = 'text' | 'number' | 'date' | 'select' | 'combobox' | 'textarea' | 'checkbox' | 'image';
+export type FieldType = 'text' | 'number' | 'date' | 'select' | 'combobox' | 'textarea' | 'checkbox' | 'image' | 'searchselect';
 
 export type SelectOption = string | { value: string; label: string };
 
@@ -25,6 +25,10 @@ export interface FieldDef {
   readOnly?: boolean;
   /** Small grey note under the input. */
   hint?: string;
+  /** searchselect: options fetched once when the form opens, rather than
+      derived from the rows already loaded. For lists that live in another
+      table and are too long to put in a dropdown. */
+  loadOptions?: () => Promise<{ value: string; label: string; group?: string }[]>;
 }
 
 export interface ColumnDef {
@@ -83,6 +87,10 @@ export interface CrudConfig {
   rowActions?: (row: Record<string, any>, reload: () => void) => React.ReactNode;
   /** Custom full record view rendered instead of the generic form when editing an existing row. */
   detailView?: (row: Record<string, any>, ctx: { onClose: () => void; reload: () => void }) => React.ReactNode;
+  /** Attach data this table does not hold, once per load, so columns can render
+      it. Used where the figures belong to another system and live in their own
+      table — joining them onto the row is cheaper than every cell fetching. */
+  enrich?: (rows: Record<string, any>[]) => Promise<Record<string, any>[]>;
 }
 
 export function CrudModule({ config }: { config: CrudConfig }) {
@@ -120,7 +128,14 @@ export function CrudModule({ config }: { config: CrudConfig }) {
       if (!data || data.length < PAGE) break;
     }
     setError(null);
-    setRows(all);
+    // A failure here must not cost the rows themselves: the table is still
+    // worth showing without the figures bolted on.
+    let final = all;
+    if (config.enrich) {
+      try { final = await config.enrich(all); }
+      catch { /* keep the plain rows */ }
+    }
+    setRows(final);
     setLoading(false);
   }
 
@@ -385,6 +400,98 @@ export function CrudModule({ config }: { config: CrudConfig }) {
   );
 }
 
+/**
+ * A picker for a list too long to put in a dropdown.
+ *
+ * Shows a name, stores an id. Neither existing field type can do that: `select`
+ * would need every option in the DOM, and `combobox` stores whatever was typed,
+ * so a campaign renamed on Meta's side would quietly break the link.
+ *
+ * The list is grouped — what is live comes first — and typing searches all of
+ * it, so the common case is one tap and the rare one is still reachable.
+ */
+function SearchSelect({ field, value, onChange }: {
+  field: FieldDef;
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  const [opts, setOpts] = useState<{ value: string; label: string; group?: string }[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [q, setQ] = useState('');
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    let dead = false;
+    (async () => {
+      try {
+        const list = field.loadOptions ? await field.loadOptions() : [];
+        if (!dead) setOpts(list);
+      } finally {
+        if (!dead) setLoading(false);
+      }
+    })();
+    return () => { dead = true; };
+  }, [field]);
+
+  const chosen = opts.find((o) => o.value === value) ?? null;
+  const matches = useMemo(() => {
+    const needle = q.trim().toLowerCase();
+    const list = needle
+      ? opts.filter((o) => o.label.toLowerCase().includes(needle) || o.value.includes(needle))
+      : opts;
+    return list.slice(0, 60);
+  }, [opts, q]);
+
+  if (loading) {
+    return <div className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-slate-50 text-slate-400">Loading…</div>;
+  }
+
+  return (
+    <div className="relative">
+      {chosen && !open ? (
+        <div className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white flex items-center gap-2">
+          <span className="flex-1 truncate" title={chosen.label}>{chosen.label}</span>
+          <button type="button" onClick={() => { setOpen(true); setQ(''); }}
+            className="text-xs text-blue-600 shrink-0">Change</button>
+          <button type="button" onClick={() => onChange('')}
+            className="text-xs text-slate-400 shrink-0">Clear</button>
+        </div>
+      ) : (
+        <input
+          value={q}
+          onChange={(e) => { setQ(e.target.value); setOpen(true); }}
+          onFocus={() => setOpen(true)}
+          placeholder={field.placeholder ?? 'Search…'}
+          className="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white"
+        />
+      )}
+      {open && (
+        <div className="absolute z-20 mt-1 w-full max-h-64 overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-lg">
+          <button type="button" onClick={() => { onChange(''); setOpen(false); }}
+            className="w-full text-left px-3 py-2 text-sm text-slate-400 hover:bg-slate-50">— none —</button>
+          {matches.map((o, i) => {
+            const newGroup = o.group && o.group !== matches[i - 1]?.group;
+            return (
+              <Fragment key={o.value}>
+                {newGroup && (
+                  <div className="px-3 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400 bg-slate-50">
+                    {o.group}
+                  </div>
+                )}
+                <button type="button" onClick={() => { onChange(o.value); setOpen(false); }}
+                  className="w-full text-left px-3 py-2 text-sm hover:bg-slate-50 truncate" title={o.label}>
+                  {o.label}
+                </button>
+              </Fragment>
+            );
+          })}
+          {!matches.length && <div className="px-3 py-3 text-sm text-slate-400">Nothing matches “{q}”.</div>}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function RecordForm({ config, initial, comboboxOptions, onCancel, onSave }: {
   config: CrudConfig;
   initial: Record<string, any> | null;
@@ -486,6 +593,8 @@ function RecordForm({ config, initial, comboboxOptions, onCancel, onSave }: {
                     : <option key={o.value} value={o.value}>{o.label}</option>,
                 )}
               </select>
+            ) : f.type === 'searchselect' ? (
+              <SearchSelect field={f} value={form[f.key] ?? ''} onChange={(v) => set(f.key, v)} />
             ) : f.type === 'combobox' ? (
               <>
                 <input
