@@ -15,6 +15,10 @@ interface AttendanceRecord {
   clock_in: string; clock_out: string | null;
   is_late: boolean; justified: boolean; notes: string | null;
   correction_reason: string | null; location: string | null;
+  // Written by the database when the record is stored, never by the phone.
+  clock_in_distance_m: number | null; clock_in_accuracy_m: number | null;
+  clock_out_distance_m: number | null;
+  geo_source: string | null; geo_flag: string | null;
 }
 interface EmpLite { id: string; full_name: string; location: string | null; job_title: string | null; status: string; user_id: string | null }
 interface LeaveLite { employee_id: string; leave_type: string; leave_start: string; leave_end: string; approval_status: string }
@@ -46,6 +50,37 @@ export default function AttendancePage() {
     );
   }
   return <ManagerDashboard />;
+}
+
+/**
+ * Where a clock-in actually happened, as the database measured it.
+ *
+ * A site name on its own never showed whether someone was at the counter or in
+ * the car park 200 m away — the radius is generous by necessity. The metres do
+ * show it, so they are on the row: a column of single-digit distances with one
+ * 190 m in it tells an owner in a glance what to ask about.
+ */
+function GeoCell({ r }: { r: AttendanceRecord }) {
+  const flags = (r.geo_flag ?? '').split(',').filter(Boolean);
+  if (r.geo_source === 'manager' || (r.clock_in_distance_m == null && !r.location)) {
+    return <span title="Entered by a manager — no device location">{r.location ?? '—'}{r.geo_source === 'manager' && <span className="text-slate-300"> · by hand</span>}</span>;
+  }
+  return (
+    <span className="whitespace-nowrap">
+      {r.location ?? '—'}
+      {r.clock_in_distance_m != null && (
+        <span className="text-slate-500 tabular-nums" title={r.clock_in_accuracy_m != null ? `GPS accurate to ±${Math.round(r.clock_in_accuracy_m)} m` : undefined}>
+          {' · '}{Math.round(r.clock_in_distance_m)} m
+        </span>
+      )}
+      {flags.includes('repeat_fix') && (
+        <span className="ml-1 text-amber-600" title="Exactly the same coordinates as an earlier clock-in — a live GPS fix never repeats to the last decimal, so this was a saved or mocked position">⚑</span>
+      )}
+      {flags.includes('offsite_clock_out') && (
+        <span className="ml-1 text-slate-400" title="Clocked out from outside the radius">out↗</span>
+      )}
+    </span>
+  );
 }
 
 function ManagerDashboard() {
@@ -468,7 +503,9 @@ function ManagerDashboard() {
                       <Badge className={statusBadge(st)}>{st}</Badge>
                       {r.correction_reason && <span className="block text-[10px] text-blue-500 mt-0.5" title={r.correction_reason}>corrected</span>}
                     </td>
-                    <td className="px-4 py-2 text-xs text-slate-400 hidden md:table-cell">{r.location ?? '—'}</td>
+                    <td className="px-4 py-2 text-xs text-slate-400 hidden md:table-cell">
+                      <GeoCell r={r} />
+                    </td>
                     <td className="px-4 py-2 text-right whitespace-nowrap">
                       <button onClick={() => startEdit(r)} className={`mr-2 ${editId === r.id ? 'text-blue-600' : 'text-slate-400'} hover:text-blue-600`} title="Correct record"><Pencil size={14} /></button>
                       <button onClick={() => removeRecord(r)} className="text-slate-400 hover:text-red-600" title="Delete (mark absent)"><X size={15} /></button>

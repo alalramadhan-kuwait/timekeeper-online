@@ -119,6 +119,8 @@ export default function MyPortalPage() {
   const [monthRecs, setMonthRecs] = useState<AttRec[]>([]);
   const [geofences, setGeofences] = useState<Geofence[]>([]);
   const [workStart, setWorkStart] = useState('09:00');
+  // How vague a GPS fix may be and still count as proof of being on site.
+  const [maxAccuracy, setMaxAccuracy] = useState(200);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [geoLoading, setGeoLoading] = useState(false);
@@ -198,7 +200,7 @@ export default function MyPortalPage() {
     const [empQ, geoQ, setQ, attQ, reqQ, monthQ] = await Promise.all([
       supabase.from('employees').select('*'),
       supabase.from('geofences').select('*').eq('active', true),
-      supabase.from('settings').select('work_start_time').single(),
+      supabase.from('settings').select('work_start_time, geo_max_accuracy_m').single(),
       supabase.from('attendance_records').select('id, clock_in, clock_out, is_late, justified, location, correction_reason')
         .eq('user_id', user.id).gte('clock_in', `${today}T00:00:00+03:00`).lte('clock_in', `${today}T23:59:59+03:00`)
         .order('clock_in', { ascending: true }),
@@ -212,6 +214,7 @@ export default function MyPortalPage() {
     setEmp(mine);
     setGeofences((geoQ.data as Geofence[]) ?? []);
     if (setQ.data?.work_start_time) setWorkStart(setQ.data.work_start_time);
+    if (setQ.data?.geo_max_accuracy_m) setMaxAccuracy(Number(setQ.data.geo_max_accuracy_m));
     setTodayRecs((attQ.data as AttRec[]) ?? []);
     setRequests((reqQ.data as EmpRequest[]) ?? []);
     if (mine) {
@@ -223,11 +226,38 @@ export default function MyPortalPage() {
   }
   useEffect(() => { load(); }, [user?.id]);
 
-  // ── clock in / out (geofenced, same rules as before) ──
+  // ── clock in / out ──
+  // The checks below are the courteous half: they explain the problem before a
+  // request is sent. The binding half runs in the database (trigger
+  // attendance_geofence_gate), which re-measures every clock-in against the
+  // geofences — so a tampered page, an old tab or a hand-made request is
+  // refused there even when this code is skipped entirely.
+
+  /**
+   * The first fix a phone hands back is usually the cached wifi/cell guess —
+   * hundreds of metres wide, and wide enough to "place" someone at the shop
+   * from the next block. So watch for a few seconds and keep the sharpest fix,
+   * stopping as soon as one is tight enough to mean anything.
+   */
   async function getPosition(): Promise<GeolocationPosition> {
+    const GOOD_ENOUGH_M = 30;
+    const WAIT_MS = 10_000;
     return new Promise((resolve, reject) => {
       if (!navigator.geolocation) { reject(new Error('GPS not supported on this device')); return; }
-      navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 15000 });
+      let best: GeolocationPosition | null = null;
+      let done = false;
+      const finish = (fn: () => void) => { if (done) return; done = true; navigator.geolocation.clearWatch(watch); clearTimeout(timer); fn(); };
+      const watch = navigator.geolocation.watchPosition(
+        (pos) => {
+          if (!best || pos.coords.accuracy < best.coords.accuracy) best = pos;
+          if (best.coords.accuracy <= GOOD_ENOUGH_M) finish(() => resolve(best!));
+        },
+        (err) => { if (!best) finish(() => reject(err)); },
+        { enableHighAccuracy: true, timeout: WAIT_MS, maximumAge: 0 },
+      );
+      const timer = setTimeout(() => {
+        finish(() => (best ? resolve(best) : reject(Object.assign(new Error('Location request timed out. Please try again.'), { code: 3 }))));
+      }, WAIT_MS);
     });
   }
 
@@ -236,7 +266,11 @@ export default function MyPortalPage() {
     setGeoError(null); setGeoLoading(true);
     try {
       const pos = await getPosition();
-      const { latitude, longitude } = pos.coords;
+      const { latitude, longitude, accuracy } = pos.coords;
+      if (accuracy > maxAccuracy) {
+        setGeoError(`Your phone only placed you within ${Math.round(accuracy)}m — too vague to show you are on site. Turn on precise location and wifi, step near a window or door, and try again.`);
+        setGeoLoading(false); return;
+      }
       let matched: Geofence | null = null;
       for (const f of geofences) {
         const d = haversineMeters(latitude, longitude, Number(f.lat), Number(f.lng));
@@ -260,6 +294,7 @@ export default function MyPortalPage() {
       const { error } = await supabase.from('attendance_records').insert({
         user_id: user!.id, employee_name: profile!.full_name,
         clock_in: now.toISOString(), clock_in_lat: latitude, clock_in_lng: longitude,
+        clock_in_accuracy_m: Math.round(accuracy),
         is_late: isLate, location: matched.name,
       });
       if (error) setGeoError(error.message); else await load();
@@ -279,6 +314,7 @@ export default function MyPortalPage() {
       const pos = await getPosition();
       const { error } = await supabase.from('attendance_records').update({
         clock_out: new Date().toISOString(), clock_out_lat: pos.coords.latitude, clock_out_lng: pos.coords.longitude,
+        clock_out_accuracy_m: Math.round(pos.coords.accuracy),
       }).eq('id', open.id);
       if (error) setGeoError(error.message); else await load();
     } catch (err: any) {
