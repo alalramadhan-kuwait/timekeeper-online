@@ -6,7 +6,10 @@ import { formatKD } from '../lib/format';
 import { expiryTier, tierClass, tierLabel } from '../lib/expiry';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
-import { loadMetaCampaignOptions, loadMetaFigures, resultFor, type MetaFigures } from '../lib/metaAds';
+import {
+  loadMetaCampaignOptions, loadMetaFigures, resultFor, loadMetaSyncState, hasNoFigures, whenSynced,
+  type MetaFigures, type MetaSyncState,
+} from '../lib/metaAds';
 import { roleLabel } from '../lib/roles';
 
 /** Unify any Instagram handle (@name / profile URL / bare) to a clean bare username. */
@@ -174,12 +177,21 @@ function MetaFigureGrid({ f }: { f: MetaFigures }) {
   ];
   return (
     <div>
-      <div className="flex items-baseline justify-between gap-3 mb-2">
-        <p className="text-xs font-semibold text-slate-600">As reported by Meta</p>
-        <p className="text-[11px] text-slate-400">
-          {f.date_start && f.date_stop ? `${f.date_start} → ${f.date_stop}` : 'no delivery yet'}
-          {f.synced_at ? ` · synced ${new Date(f.synced_at).toLocaleString()}` : ''}
-        </p>
+      <p className="text-xs font-semibold text-slate-600 mb-2">As reported by Meta</p>
+      {/* Both stated outright rather than tucked into one grey line: a figure
+          is only worth reading once you know what period it covers and how old
+          it is. */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
+        <div className="rounded-lg border border-slate-200 bg-white px-3 py-2">
+          <p className="text-[10px] uppercase tracking-wider text-slate-400">Meta reporting period</p>
+          <p className="text-sm text-slate-700 tabular-nums">
+            {f.date_start && f.date_stop ? `${f.date_start} → ${f.date_stop}` : 'No delivery yet'}
+          </p>
+        </div>
+        <div className="rounded-lg border border-slate-200 bg-white px-3 py-2">
+          <p className="text-[10px] uppercase tracking-wider text-slate-400">Last synced</p>
+          <p className="text-sm text-slate-700">{whenSynced(f.synced_at)}</p>
+        </div>
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         {cells.map((c) => (
@@ -202,6 +214,23 @@ const AD_PLATFORMS = ['Instagram', 'Meta', 'Google', 'TikTok', 'Snapchat', 'Othe
 const paidAds: CrudConfig = {
   rowClickToEdit: true,
   table: 'paid_ads',
+  /* Linking a row is the moment its figures should appear. They usually
+     already exist — everything is synced nightly — so a reload is enough. The
+     exception is a campaign created since the last run, which has nothing
+     stored: that one is fetched now rather than leaving a blank panel until
+     tomorrow. Meta data is never written into this table, so none of this can
+     touch a field somebody typed. */
+  afterSave: (payload, reload) => {
+    const id = payload.meta_campaign_id;
+    if (!id) return;
+    void (async () => {
+      if (!(await hasNoFigures(id))) return;
+      try {
+        await supabase.functions.invoke('meta-ads-sync', { body: { days: 14 } });
+        reload();
+      } catch { /* the figures stay as they were; the row saved regardless */ }
+    })();
+  },
   /* Meta's figures live in their own table. Attach them once per load rather
      than having every cell fetch its own. */
   enrich: async (rows) => {
@@ -300,7 +329,14 @@ export function PaidAdsPage() {
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const [key, setKey] = useState(0);
+  const [sync, setSync] = useState<MetaSyncState | null>(null);
   const canSync = ['admin', 'manager', 'marketing'].includes(role ?? '');
+
+  /* Whether the figures on this page are current, and if not, why. A sync that
+     fails leaves the last good figures in place — which is right, but silent:
+     without this, stale numbers look exactly like fresh ones. */
+  const readSync = () => { void loadMetaSyncState().then(setSync); };
+  useEffect(readSync, []);
 
   async function refresh() {
     setBusy(true); setMsg(null);
@@ -314,13 +350,24 @@ export function PaidAdsPage() {
       setMsg(e instanceof Error ? e.message : 'Could not reach Meta');
     } finally {
       setBusy(false);
+      readSync();
     }
   }
 
   return (
     <div>
+      {sync?.last_error && (
+        <div className="mb-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm text-amber-800">
+          <span className="font-semibold">Meta’s last sync did not finish.</span>{' '}
+          The figures below are the last ones Meta sent, from {whenSynced(sync.last_synced_at)}.
+          <span className="block text-xs text-amber-700/80 mt-0.5 break-words">{sync.last_error}</span>
+        </div>
+      )}
       {canSync && (
         <div className="flex flex-wrap items-center justify-end gap-3 mb-3">
+          <span className="text-xs text-slate-400 mr-auto">
+            Meta figures ({sync?.currency ?? 'USD'}) last synced {whenSynced(sync?.last_synced_at)}
+          </span>
           {msg && <span className={`text-xs ${msg.startsWith('✓') ? 'text-emerald-600' : 'text-red-600'}`}>{msg}</span>}
           <button onClick={refresh} disabled={busy}
             className="flex items-center gap-2 bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-50 disabled:opacity-60">

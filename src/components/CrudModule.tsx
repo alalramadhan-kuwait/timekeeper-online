@@ -91,6 +91,10 @@ export interface CrudConfig {
       it. Used where the figures belong to another system and live in their own
       table — joining them onto the row is cheaper than every cell fetching. */
   enrich?: (rows: Record<string, any>[]) => Promise<Record<string, any>[]>;
+  /** Runs after a successful save, with what was written. For work that depends
+      on what changed — fetching figures for a record just linked to another
+      system — where onChanged only says that something did. */
+  afterSave?: (payload: Record<string, any>, reload: () => void) => void;
 }
 
 export function CrudModule({ config }: { config: CrudConfig }) {
@@ -245,6 +249,7 @@ export function CrudModule({ config }: { config: CrudConfig }) {
     setEditing(null);
     load();
     config.onChanged?.();
+    config.afterSave?.(payload, load);
   }
 
   async function remove(row: Record<string, any>) {

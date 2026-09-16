@@ -137,3 +137,37 @@ export const prettyAction = (t: string) => {
   };
   return named[tail] ?? tail.replace(/_/g, ' ');
 };
+
+export interface MetaSyncState {
+  account_id: string | null;
+  account_name: string | null;
+  currency: string | null;
+  last_synced_at: string | null;
+  last_error: string | null;
+}
+
+/** How the last sync went, so the page can say whether the figures are current. */
+export async function loadMetaSyncState(): Promise<MetaSyncState | null> {
+  const { data } = await supabase
+    .from('meta_ads_config')
+    .select('account_id, account_name, currency, last_synced_at, last_error')
+    .eq('id', 1).maybeSingle();
+  return (data as MetaSyncState) ?? null;
+}
+
+/** True when this campaign has no stored figures — nothing has been synced for
+ *  it yet, which is what happens to a campaign created since the last run. */
+export async function hasNoFigures(campaignId: string): Promise<boolean> {
+  if (!campaignId) return false;
+  const { count } = await supabase
+    .from('meta_ad_insights')
+    .select('campaign_id', { count: 'exact', head: true })
+    .eq('campaign_id', campaignId).eq('period', 'lifetime');
+  return (count ?? 0) === 0;
+}
+
+/** Date and time as a person reads them, for "last synced". Formatting a
+ *  timestamp is not touching a figure — no Meta metric passes through here. */
+export const whenSynced = (iso: string | null | undefined) =>
+  !iso ? 'never' : new Date(iso).toLocaleString('en-GB',
+    { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
