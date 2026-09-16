@@ -7,7 +7,7 @@ import { expiryTier, tierClass, tierLabel } from '../lib/expiry';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import {
-  loadMetaCampaignOptions, loadMetaFigures, resultFor, loadMetaSyncState, hasNoFigures, whenSynced,
+  loadMetaCampaignOptions, loadMetaFigures, resultFor, loadMetaSyncState, hasNoFigures, whenSynced, staleHours,
   type MetaFigures, type MetaSyncState,
 } from '../lib/metaAds';
 import { roleLabel } from '../lib/roles';
@@ -163,6 +163,16 @@ function ContentCalendar({ month, tasks }: { month: string; tasks: any[] }) {
    No formatting that changes a value: no rounding, no thousands separator on a
    decimal, no currency conversion. The currency is Meta's and is labelled, so
    a USD spend is never mistaken for the KD budget beside it. */
+/* Whether the link still points at a live campaign. Said in words, not left to
+   an empty cell: "no figures" and "this campaign is gone" look identical
+   otherwise, and only one of them needs somebody to do something. */
+function MetaLinkChip({ f }: { f: MetaFigures }) {
+  const cls = f.link_state === 'live' ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
+    : f.link_state === 'stopped' ? 'bg-amber-100 text-amber-700 border-amber-200'
+    : 'bg-rose-100 text-rose-700 border-rose-200';
+  return <Badge className={cls}>{f.status_label}</Badge>;
+}
+
 function MetaFigureGrid({ f }: { f: MetaFigures }) {
   const res = resultFor(f);
   const cells: { label: string; value: string | null }[] = [
@@ -181,7 +191,11 @@ function MetaFigureGrid({ f }: { f: MetaFigures }) {
       {/* Both stated outright rather than tucked into one grey line: a figure
           is only worth reading once you know what period it covers and how old
           it is. */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3">
+        <div className="rounded-lg border border-slate-200 bg-white px-3 py-2">
+          <p className="text-[10px] uppercase tracking-wider text-slate-400">Campaign status</p>
+          <div className="mt-0.5"><MetaLinkChip f={f} /></div>
+        </div>
         <div className="rounded-lg border border-slate-200 bg-white px-3 py-2">
           <p className="text-[10px] uppercase tracking-wider text-slate-400">Meta reporting period</p>
           <p className="text-sm text-slate-700 tabular-nums">
@@ -201,6 +215,19 @@ function MetaFigureGrid({ f }: { f: MetaFigures }) {
           </div>
         ))}
       </div>
+      {f.link_state === 'missing' && (
+        <p className="text-xs text-rose-700 bg-rose-50 border border-rose-200 rounded-lg px-3 py-2 mt-2">
+          Meta did not return this campaign on the last successful sync. It has most likely been
+          deleted. The figures above are the last ones Meta sent; pick another campaign to start
+          reporting again.
+        </p>
+      )}
+      {f.link_state === 'stopped' && (
+        <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mt-2">
+          This campaign is {f.status_label.toLowerCase()} on Meta, so the figures stop moving until
+          it runs again.
+        </p>
+      )}
       <p className="text-[11px] text-slate-400 mt-2">
         Figures are Meta’s and are shown unchanged — not recalculated, not converted.
       </p>
@@ -300,8 +327,15 @@ const paidAds: CrudConfig = {
       render: (r) => {
         const f: MetaFigures | null = r.__meta;
         if (!r.meta_campaign_id) return <span className="text-slate-300 text-xs">not linked</span>;
-        if (!f?.spend) return <span className="text-slate-300 text-xs">no delivery</span>;
-        return <span className="tabular-nums">{f.spend} <span className="text-slate-400 text-xs">{f.account_currency}</span></span>;
+        if (!f) return <span className="text-slate-300 text-xs">no figures yet</span>;
+        return (
+          <div className="flex flex-col gap-0.5">
+            {f.spend
+              ? <span className="tabular-nums">{f.spend} <span className="text-slate-400 text-xs">{f.account_currency}</span></span>
+              : <span className="text-slate-300 text-xs">no delivery</span>}
+            {f.link_state !== 'live' && <MetaLinkChip f={f} />}
+          </div>
+        );
       } },
     { key: '__meta_results', label: 'Results', hideBelow: 'lg',
       render: (r) => {
@@ -365,9 +399,21 @@ export function PaidAdsPage() {
       )}
       {canSync && (
         <div className="flex flex-wrap items-center justify-end gap-3 mb-3">
-          <span className="text-xs text-slate-400 mr-auto">
-            Meta figures ({sync?.currency ?? 'USD'}) last synced {whenSynced(sync?.last_synced_at)}
-          </span>
+          {/* Marketing's one-glance answer to "are these numbers current?".
+              last_synced_at is only written when a run finishes, so it is the
+              last SUCCESSFUL sync even when a later one failed. */}
+          <div className="mr-auto flex items-center gap-2 flex-wrap">
+            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${
+              !sync?.last_synced_at ? 'bg-slate-100 text-slate-500 border-slate-200'
+                : staleHours(sync.last_synced_at) > 36 ? 'bg-amber-100 text-amber-800 border-amber-200'
+                : 'bg-emerald-100 text-emerald-700 border-emerald-200'}`}>
+              <span className="w-1.5 h-1.5 rounded-full bg-current" />
+              Last successful sync: {whenSynced(sync?.last_synced_at)}
+            </span>
+            <span className="text-xs text-slate-400">
+              Meta figures in {sync?.currency ?? 'USD'} · budgets in KD
+            </span>
+          </div>
           {msg && <span className={`text-xs ${msg.startsWith('✓') ? 'text-emerald-600' : 'text-red-600'}`}>{msg}</span>}
           <button onClick={refresh} disabled={busy}
             className="flex items-center gap-2 bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-50 disabled:opacity-60">
