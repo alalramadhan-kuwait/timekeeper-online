@@ -79,13 +79,29 @@ Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
 
   const token = Deno.env.get("META_ADS_TOKEN");
-  if (!token) return json({ error: "META_ADS_TOKEN is not set in Edge Function secrets." }, 400);
+  if (!token) {
+    /* Names only, never values. A missing secret is nearly always a typo in the
+       name or a save against the wrong project, and guessing at that from the
+       outside wastes a round trip each time. */
+    let seen: string[] = [];
+    try { seen = Object.keys(Deno.env.toObject()).filter((k) => /^META/i.test(k)); } catch { /* ignore */ }
+    return json({
+      error: "META_ADS_TOKEN is not set in Edge Function secrets.",
+      meta_secret_names_visible: seen,
+      hint: seen.length
+        ? `Found ${seen.join(", ")} — the name must be exactly META_ADS_TOKEN.`
+        : "No secret starting with META is visible to this function.",
+    }, 400);
+  }
 
   const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 
+  /* The shared cron key lives in a table, not an env var — that is where every
+     other sync in this project reads it from, and inventing a second place for
+     it would mean two keys to rotate. */
+  const { data: auth } = await admin.from("lightspeed_auth").select("sync_key").eq("id", 1).single();
   const syncKey = req.headers.get("x-sync-key");
-  const expected = Deno.env.get("SYNC_KEY");
-  if (!(expected && syncKey && syncKey === expected)) {
+  if (!(auth?.sync_key && syncKey && syncKey === auth.sync_key)) {
     const jwt = (req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, "");
     const { data: u } = await admin.auth.getUser(jwt);
     if (!u?.user) return json({ error: "Unauthorized" }, 401);
@@ -130,55 +146,56 @@ Deno.serve(async (req: Request) => {
       if (error) throw new Error(`campaigns: ${error.message}`);
     }
 
-    // ── figures, asked of Meta per campaign ──
-    // Lifetime is what the tracker shows. The daily rows are history, fetched
-    // in the same call shape so both are Meta's own numbers for that window.
+    /* Figures for every campaign at once.
+       The obvious shape — ask Meta per campaign — is two calls each, and this
+       account has 1,200 campaigns: 2,400 round trips that no single run will
+       ever finish. The account-level insights edge returns one row per campaign
+       for the same window, so the whole account costs a handful of paged calls.
+       The numbers are identical; they are still Meta's own, just asked for in
+       one question instead of two thousand. */
     const days = Math.min(Math.max(body.days ?? 30, 1), 90);
-    let lifetime = 0, daily = 0;
-    const failures: string[] = [];
+    const since = new Date(Date.now() - days * 86400_000).toISOString().slice(0, 10);
+    const until = new Date().toISOString().slice(0, 10);
+    const known = new Set(campaigns.map((c: any) => c.id));
+    let lifetime = 0, daily = 0, orphaned = 0;
 
-    for (const c of campaigns as any[]) {
-      try {
-        const life = await graph(`${c.id}/insights`, token, {
-          fields: INSIGHT_FIELDS, date_preset: "maximum",
-        });
-        const lifeRows = (life.data ?? []).map((r: any) => insightRow(c.id, "lifetime", r));
-        if (lifeRows.length) {
-          const { error } = await admin.from("meta_ad_insights").upsert(lifeRows,
-            { onConflict: "campaign_id,period,date_start,date_stop" });
-          if (error) throw new Error(error.message);
-          lifetime += lifeRows.length;
-        }
-
-        const since = new Date(Date.now() - days * 86400_000).toISOString().slice(0, 10);
-        const until = new Date().toISOString().slice(0, 10);
-        const hist = await graph(`${c.id}/insights`, token, {
-          fields: INSIGHT_FIELDS, time_increment: "1",
-          time_range: JSON.stringify({ since, until }),
-        });
-        const histRows = (hist.data ?? []).map((r: any) => insightRow(c.id, "daily", r));
-        if (histRows.length) {
-          const { error } = await admin.from("meta_ad_insights").upsert(histRows,
-            { onConflict: "campaign_id,period,date_start,date_stop" });
-          if (error) throw new Error(error.message);
-          daily += histRows.length;
-        }
-      } catch (err) {
-        // One bad campaign must not lose the rest of the sync.
-        failures.push(`${c.name ?? c.id}: ${err instanceof Error ? err.message : String(err)}`);
+    const store = async (rows: any[], period: "lifetime" | "daily") => {
+      // A campaign can appear in insights without appearing in the campaign
+      // list (deleted since). Skip those rather than fail the whole batch on a
+      // foreign key.
+      const usable = rows.filter((r) => r.campaign_id && known.has(r.campaign_id));
+      orphaned += rows.length - usable.length;
+      for (let i = 0; i < usable.length; i += 500) {
+        const chunk = usable.slice(i, i + 500).map((r) => insightRow(r.campaign_id, period, r));
+        const { error } = await admin.from("meta_ad_insights").upsert(chunk,
+          { onConflict: "campaign_id,period,date_start,date_stop" });
+        if (error) throw new Error(`${period}: ${error.message}`);
       }
-    }
+      return usable.length;
+    };
+
+    const lifeRows = await graphAll(`${act}/insights`, token, {
+      level: "campaign", fields: `campaign_id,${INSIGHT_FIELDS}`,
+      date_preset: "maximum", time_increment: "all_days",
+    });
+    lifetime = await store(lifeRows, "lifetime");
+
+    const dayRows = await graphAll(`${act}/insights`, token, {
+      level: "campaign", fields: `campaign_id,${INSIGHT_FIELDS}`,
+      time_increment: "1", time_range: JSON.stringify({ since, until }),
+    });
+    daily = await store(dayRows, "daily");
 
     await admin.from("meta_ads_config").update({
       last_synced_at: new Date().toISOString(),
-      last_error: failures.length ? failures.slice(0, 3).join(" | ") : null,
+      last_error: null,
     }).eq("id", 1);
 
     return json({
       ok: true,
       account: { id: act, name: acc.name, currency: acc.currency },
       campaigns: campaigns.length, lifetime_rows: lifetime, daily_rows: daily,
-      failures: failures.slice(0, 5),
+      skipped_unknown_campaign: orphaned,
     });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
