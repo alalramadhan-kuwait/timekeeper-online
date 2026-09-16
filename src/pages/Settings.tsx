@@ -525,9 +525,13 @@ function ListEditor({ title, hint, items, onChange, disabled }: {
 interface GeofenceRow { id: string; name: string; lat: number; lng: number; radius_m: number; active: boolean }
 
 /** Admin: manage one geofence per location (HQ, Avenues, Time Gallery…). */
-function Geofences({ workStartTime, setWorkStartTime, onSaveHours, savedMsg }: {
+function Geofences({ workStartTime, setWorkStartTime, maxAccuracy, setMaxAccuracy, requireAccuracy, setRequireAccuracy, onSaveHours, savedMsg }: {
   workStartTime: string;
   setWorkStartTime: (v: string) => void;
+  maxAccuracy: string;
+  setMaxAccuracy: (v: string) => void;
+  requireAccuracy: boolean;
+  setRequireAccuracy: (v: boolean) => void;
   onSaveHours: () => void;
   savedMsg: string | null;
 }) {
@@ -554,6 +558,19 @@ function Geofences({ workStartTime, setWorkStartTime, onSaveHours, savedMsg }: {
     load();
   }
 
+  // The radius is the whole strictness dial: a 300 m circle round a mall takes
+  // in the car park, the food court and the road, so a clock-in inside it is no
+  // proof of standing at the counter. It has to be changeable without deleting
+  // the location and losing the coordinates.
+  async function setRadiusOf(f: GeofenceRow, radius_m: number) {
+    if (!Number.isFinite(radius_m) || radius_m === f.radius_m) return;
+    if (radius_m < 30) { setMsg('A radius under 30 m is smaller than GPS can resolve — staff would be refused while standing inside.'); return; }
+    const { error } = await supabase.from('geofences').update({ radius_m }).eq('id', f.id);
+    if (error) { setMsg(error.message); return; }
+    setMsg(`${f.name} radius set to ${radius_m} m`);
+    load();
+  }
+
   async function toggle(f: GeofenceRow) {
     await supabase.from('geofences').update({ active: !f.active }).eq('id', f.id);
     load();
@@ -572,7 +589,9 @@ function Geofences({ workStartTime, setWorkStartTime, onSaveHours, savedMsg }: {
         <h2 className="text-sm font-semibold text-slate-700">Attendance Locations (Geofences)</h2>
       </div>
       <p className="text-xs text-slate-400 mb-3">
-        One geofence per site — HQ, Avenues, Time Gallery. Staff can clock in when within any active location's radius.
+        One geofence per site — HQ, Avenues, Time Gallery. Staff can clock in when within any active location's radius,
+        and the database re-checks that distance itself, so a clock-in from elsewhere is refused rather than trusted.
+        Keep the radius as tight as the site allows — a wide circle takes in the car park and the street.
         Get coordinates by right-clicking the site on{' '}
         <a href="https://maps.google.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Google Maps</a>.
       </p>
@@ -597,7 +616,12 @@ function Geofences({ workStartTime, setWorkStartTime, onSaveHours, savedMsg }: {
                 <td className="px-2 py-2 font-medium text-slate-700 whitespace-nowrap">{f.name}</td>
                 <td className="px-2 py-2 text-slate-500 tabular-nums">{f.lat}</td>
                 <td className="px-2 py-2 text-slate-500 tabular-nums">{f.lng}</td>
-                <td className="px-2 py-2 text-right tabular-nums">{f.radius_m}m</td>
+                <td className="px-2 py-2 text-right tabular-nums">
+                  <input type="number" min={30} step={10} defaultValue={f.radius_m}
+                    onBlur={(e) => setRadiusOf(f, parseInt(e.target.value))}
+                    className="w-20 px-2 py-1 rounded-lg border border-slate-300 text-sm text-right tabular-nums" />
+                  <span className="text-slate-400 text-xs ml-1">m</span>
+                </td>
                 <td className="px-2 py-2">
                   <button onClick={() => toggle(f)}>
                     <Badge className={f.active ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-400 border-slate-200'}>
@@ -629,8 +653,23 @@ function Geofences({ workStartTime, setWorkStartTime, onSaveHours, savedMsg }: {
           <span className="block text-slate-500 mb-1">Work starts at (for late flagging)</span>
           <input type="time" value={workStartTime} onChange={(e) => setWorkStartTime(e.target.value)} className="px-3 py-1.5 rounded-lg border border-slate-300 text-sm" />
         </label>
-        <button onClick={onSaveHours} className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-slate-900 text-white text-sm font-medium hover:bg-slate-700"><Save size={13} /> Save work hours</button>
+        <label className="text-xs">
+          <span className="block text-slate-500 mb-1">Reject fixes vaguer than</span>
+          <input type="number" min={20} step={10} value={maxAccuracy} onChange={(e) => setMaxAccuracy(e.target.value)}
+            className="w-28 px-3 py-1.5 rounded-lg border border-slate-300 text-sm" />
+        </label>
+        <label className="flex items-center gap-1.5 text-xs text-slate-600 pb-2">
+          <input type="checkbox" checked={requireAccuracy} onChange={(e) => setRequireAccuracy(e.target.checked)} className="h-3.5 w-3.5" />
+          Refuse phones that report no accuracy
+        </label>
+        <button onClick={onSaveHours} className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-slate-900 text-white text-sm font-medium hover:bg-slate-700"><Save size={13} /> Save</button>
         {savedMsg && <span className="text-xs text-emerald-600">{savedMsg}</span>}
+        <p className="basis-full text-[11px] text-slate-400">
+          A phone reports how accurate its location is. A fix wider than this many metres is a wifi or cell guess rather
+          than a position, and is refused — inside a 200 m circle it would prove nothing. 200 m suits a mall; lower it if
+          staff clock in outdoors. An older, cached copy of the app reports no accuracy at all; those clock-ins are kept
+          and flagged for review until everyone has reopened the app — then tick the box to refuse them too.
+        </p>
       </div>
     </div>
   );
@@ -716,12 +755,14 @@ export default function SettingsPage() {
   const [geofenceLat, setGeofenceLat] = useState('');
   const [geofenceLng, setGeofenceLng] = useState('');
   const [geofenceRadius, setGeofenceRadius] = useState('200');
+  const [maxAccuracy, setMaxAccuracy] = useState('200');
+  const [requireAccuracy, setRequireAccuracy] = useState(false);
   const [workStartTime, setWorkStartTime] = useState('09:00');
   const [geofenceMsg, setGeofenceMsg] = useState<string | null>(null);
 
   async function load() {
     const [s, b] = await Promise.all([
-      supabase.from('settings').select('id, outlets, staff_roster, geofence_lat, geofence_lng, geofence_radius_m, work_start_time').single(),
+      supabase.from('settings').select('id, outlets, staff_roster, geofence_lat, geofence_lng, geofence_radius_m, work_start_time, geo_max_accuracy_m, geo_require_accuracy').single(),
       supabase.from('brands').select('id, name, is_active').order('sort_order').order('name'),
     ]);
     if (s.data) {
@@ -731,6 +772,8 @@ export default function SettingsPage() {
       setGeofenceLat(s.data.geofence_lat?.toString() ?? '');
       setGeofenceLng(s.data.geofence_lng?.toString() ?? '');
       setGeofenceRadius(s.data.geofence_radius_m?.toString() ?? '200');
+      setMaxAccuracy(s.data.geo_max_accuracy_m?.toString() ?? '200');
+      setRequireAccuracy(Boolean(s.data.geo_require_accuracy));
       setWorkStartTime(s.data.work_start_time ?? '09:00');
     }
     setBrands((b.data as Brand[]) ?? []);
@@ -764,9 +807,11 @@ export default function SettingsPage() {
     void geofenceLat; void geofenceLng; void geofenceRadius; // retained for legacy settings compatibility
     const { error } = await supabase.from('settings').update({
       work_start_time: workStartTime || '09:00',
+      geo_max_accuracy_m: Math.max(20, parseInt(maxAccuracy) || 200),
+      geo_require_accuracy: requireAccuracy,
     }).eq('id', settingsId);
     if (error) setError(error.message);
-    else setGeofenceMsg('Work hours saved');
+    else setGeofenceMsg('Saved');
   }
 
   async function toggleBrand(b: Brand) {
@@ -811,7 +856,10 @@ export default function SettingsPage() {
         {/* Daily Briefing parked (cleanup item 14) — <DailyBriefing /> and the edge function are kept for when it's wanted */}
 
         {isAdmin && <SalesTarget />}
-        {isAdmin && <Geofences workStartTime={workStartTime} setWorkStartTime={setWorkStartTime} onSaveHours={saveGeofence} savedMsg={geofenceMsg} />}
+        {isAdmin && <Geofences workStartTime={workStartTime} setWorkStartTime={setWorkStartTime}
+          maxAccuracy={maxAccuracy} setMaxAccuracy={setMaxAccuracy}
+          requireAccuracy={requireAccuracy} setRequireAccuracy={setRequireAccuracy}
+          onSaveHours={saveGeofence} savedMsg={geofenceMsg} />}
 
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4 lg:col-span-2">
           <h2 className="text-sm font-semibold text-slate-700">Brands</h2>
