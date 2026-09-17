@@ -33,6 +33,10 @@ Deno.serve(async (req: Request) => {
     const { data: usersData, error } = await admin.auth.admin.listUsers({ page: 1, perPage: 200 });
     if (error) return json({ error: error.message }, 400);
     const { data: profiles } = await admin.from("profiles").select("id, full_name, role, page_access, sales_name");
+    const { data: emps } = await admin.from("employees").select("user_id, dsr_staff_name").not("user_id", "is", null);
+    const rosterByUser = new Map((emps ?? [])
+      .filter((e: { dsr_staff_name: string | null }) => e.dsr_staff_name)
+      .map((e: { user_id: string; dsr_staff_name: string }) => [e.user_id, e.dsr_staff_name]));
     const profById = new Map((profiles ?? []).map((p: { id: string; full_name: string; role: string; page_access: string[] | null; sales_name: string | null }) => [p.id, p]));
     const team = usersData.users.map((u) => ({
       id: u.id,
@@ -40,7 +44,7 @@ Deno.serve(async (req: Request) => {
       full_name: profById.get(u.id)?.full_name ?? u.email ?? "Unknown",
       role: profById.get(u.id)?.role ?? "viewer",
       page_access: profById.get(u.id)?.page_access ?? null,
-      sales_name: profById.get(u.id)?.sales_name ?? null,
+      sales_name: rosterByUser.get(u.id) ?? profById.get(u.id)?.sales_name ?? null,
       last_sign_in_at: u.last_sign_in_at ?? null,
     }));
     return json({ ok: true, team });
@@ -107,15 +111,30 @@ Deno.serve(async (req: Request) => {
     }
     // DSR name: the staff-roster name this login logs sales under. Must be a
     // roster entry (analytics key on that exact string) and unique per login.
+    //
+    // It belongs on the employee record — the row that also carries their shop,
+    // their schedule and their leave — and a trigger keeps profiles.sales_name
+    // in step for callers not yet migrated. An account with no employee record
+    // linked has nowhere else to put it, so that one falls back to the profile.
     if (body.sales_name !== undefined) {
       const v = body.sales_name == null || body.sales_name.trim() === "" ? null : body.sales_name.trim();
       if (v) {
         const { data: s } = await admin.from("settings").select("staff_roster").limit(1).single();
         const roster = (s?.staff_roster as string[] | null) ?? [];
         if (!roster.includes(v)) return json({ error: `"${v}" is not in the staff roster — add it under Settings → Staff roster first` }, 400);
+        const { data: taken } = await admin.from("employees")
+          .select("id, full_name, user_id").eq("dsr_staff_name", v).maybeSingle();
+        if (taken && taken.user_id && taken.user_id !== body.user_id) {
+          return json({ error: `"${v}" is already assigned to ${taken.full_name}` }, 400);
+        }
       }
-      const { error } = await admin.from("profiles").update({ sales_name: v }).eq("id", body.user_id);
-      if (error) return json({ error: error.message.includes("profiles_sales_name_key") ? `"${v}" is already assigned to another account` : error.message }, 400);
+      const { data: linked, error: empErr } = await admin.from("employees")
+        .update({ dsr_staff_name: v }).eq("user_id", body.user_id).select("id");
+      if (empErr) return json({ error: empErr.message }, 400);
+      if (!linked || linked.length === 0) {
+        const { error } = await admin.from("profiles").update({ sales_name: v }).eq("id", body.user_id);
+        if (error) return json({ error: error.message.includes("profiles_sales_name_key") ? `"${v}" is already assigned to another account` : error.message }, 400);
+      }
     }
     return json({ ok: true });
   }
