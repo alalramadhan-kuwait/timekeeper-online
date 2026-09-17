@@ -259,6 +259,20 @@ on; `Unknown` is the correct answer when the data does not carry one.
 
 ## 13. Changelog
 
+- **2026-09-17** (later 3) — **The DSR opens on the shop for a manager.** The bottom bar carried 4 tabs for a salesperson, 6 for a manager and **8** for an owner, and the app opened on Quick Entry — so a manager's first sight each morning was a form for logging a customer. Managers and owners now get five: **Home · Entry · Team · Follow-ups · More**; salespeople keep their four. `/` renders the right page for the role, so the old once-per-sign-in redirect to `/manager` is gone.
+
+  *Home* — shop open/closed with who opened it and who is on the floor; a Needs-attention block that only appears when something is; today's takings, sales, lost, interactions and month-to-date against the outlet's target; team standings; the manager's own clock-in; one **New Entry** button. Not a dashboard — the month and the brand charts stay in `ManagerDashboard`, one tap away under More.
+
+  *Store open/close comes from attendance*, not a button somebody would forget: first clock-in opens the shop, it stays open while anyone is still clocked in, last one out closes it. `StoreDayDetail` is the same component for today, yesterday and any past day, with ← date → and Today.
+
+  *Team* is today plus the week's hours, so an unfair split is visible; tapping somebody opens `AttendanceSheet`, the Dashboard's own month calendar, now exported rather than rebuilt.
+
+  **Schema:** migration `20260917120000` adds `employees.expected_days` (dow array, default Sat–Thu), `shift_start`, `shift_end`. Nothing knew when anybody was due — the attendance calendar inferred a working day from *anyone else* clocking in, which marks a person absent on their day off whenever a colleague works. Nobody is now flagged missing before their start time has passed, or on a day they were not due. **Editing these is not in the HR form yet** — the default covers every current employee.
+
+  **`src/utils/outlet.ts` (DSR) matters beyond this page:** the same shop is spelled four ways — `cases.outlet` says `TimeGallery`, `attendance_records.location` and `employees.location` say `Time Gallery` — and a store page is exactly that join. Matched on a normalised key rather than renamed, since the strings sit in hundreds of case rows, in `settings.outlets` and in each session's chosen outlet.
+
+  New: `utils/storeDay.ts` (pure — store state, standings, `shiftHours`), `db/storeToday.ts` (one round trip per outlet-day), `components/Home.tsx`, `Team.tsx`, `StoreDayDetail.tsx`, `More.tsx`. Untouched and shared: QuickEntry, TodayLog, ManagerDashboard, the follow-up rule, the attendance queries. Verified by 29 checks on the pure logic and 30 driving the screens at 320/390 px.
+
 - **2026-09-17** (later 2) — **A blocked-location refusal now says what to do about it.** The stores manager could not clock in; the screen said *"Location is blocked. Allow location for this site in your browser settings"* while his status bar read **◀ WhatsApp**. A page opened from a link inside WhatsApp runs in WhatsApp's own browser and inherits **WhatsApp's** location permission, which is usually off — so the single instruction the app gave him was the one that could not work, and on an iPhone "your browser settings" covers three screens anyway. This was `GeolocationPositionError.code === 1`; the geofence never ran.
 
   `locationHelp.ts` (both apps, kept in step) writes the refusal for the device holding it: iPhone leads with the in-app-browser case, then Safari's per-site Location, then Location Services; Android gets the padlock; a *named* in-app browser (Instagram / Facebook / Line, which identify themselves in the user agent) is told outright. WhatsApp on iOS does not identify itself, so it is described rather than detected.
