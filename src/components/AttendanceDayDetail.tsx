@@ -244,6 +244,10 @@ export function GeoCell({ r }: { r: AttendanceRecord }) {
       {flags.includes('offsite_clock_out') && (
         <span className="ml-1 text-slate-400" title="Clocked out from outside the radius">out↗</span>
       )}
+      {flags.includes('no_clock_out_location') && (
+        <span className="ml-1 text-slate-400"
+          title="The phone could not produce a position when clocking out. The leaving time is recorded; where they were is not confirmed.">out?</span>
+      )}
     </span>
   );
 }
