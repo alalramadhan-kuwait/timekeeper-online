@@ -30,12 +30,12 @@ const EMPTY_CHARTS: Charts = { salesTrend: [], outletSales: [], stockHistory: []
 const IG_MAIN = 'timekeeperkw';
 const IG_COLOR: Record<string, string> = { timekeeperkw: '#db2777', timegallerykw: '#0ea5e9', timekeeperkwshop: '#8b5cf6' };
 
-/* The dashboard's labels and the POS's own names have never matched — the till
-   calls Eman's WhatsApp channel "Time Keeper" and the Avenues shop "Time Keeper
-   - Avenues". Matching is done through the outlet registry rather than against
-   the strings, so a renamed register is one row in one table. */
-const posRevenue = (rows: Array<{ outlet: string | null; revenue: unknown }>, code: OutletCode) =>
-  rows.filter((r) => resolveOutlet(r.outlet) === code)
+/* Revenue already resolved to a channel by the pos_channel_sales view, which
+   also splits the one till register that serves two: what Eman rings up there
+   is the WhatsApp channel, the rest is the online shop. The dashboard never
+   sees a register name. */
+const posRevenue = (rows: Array<{ channel_code: string | null; revenue: unknown }>, code: OutletCode) =>
+  rows.filter((r) => r.channel_code === code)
       .reduce((t, r) => t + Number(r.revenue ?? 0), 0);
 
 // ── Alert Action Panel ────────────────────────────────────────────────────────
@@ -364,7 +364,7 @@ export default function Dashboard() {
            not money: measured on the same month they came to barely half of
            what actually rang through. The cases still drive lost sales and
            follow-ups below, where they belong. */
-        supabase.from('lightspeed_sales_daily').select('outlet, sale_date, revenue').gte('sale_date', monthStart),
+        supabase.from('pos_channel_sales').select('channel_code, sale_date, revenue').gte('sale_date', monthStart),
         supabase.from('cases').select('amount_kd').eq('case_type', 'Lost Sale').eq('deleted', false).gte('date_logged', monthStart),
         supabase.from('cases').select('id', { count: 'exact', head: true }).eq('case_type', 'Follow-up').eq('status', 'Open').eq('deleted', false).lt('promised_callback', today),
         supabase.from('customers').select('id', { count: 'exact', head: true }).gte('created_at', monthStart),
@@ -383,7 +383,7 @@ export default function Dashboard() {
         supabase.from('repair_watches').select('status, estimated_completion, date_returned'),
         supabase.from('content_tasks').select('status, planned_date, posted_date'),
         supabase.from('instagram_daily').select('snapshot_date, followers, username, last_post_date').order('snapshot_date', { ascending: true }).limit(400),
-        supabase.from('settings').select('sales_target_month, sales_target_avenues, sales_target_timegallery, sales_target_timekeeper').single(),
+        supabase.from('settings').select('sales_target_month, sales_target_avenues, sales_target_timegallery, sales_target_online, sales_target_whatsapp').single(),
         buildAlerts(role),
         loadAlertActions(),
         supabase.from('lightspeed_stock_value_history').select('snapshot_date, retail_value, cost_value').order('snapshot_date', { ascending: true }).limit(90),
@@ -404,11 +404,15 @@ export default function Dashboard() {
       // per-outlet month sales vs their own targets
       const avenuesSales = posRevenue(posDays, 'avenues');
       const timeGallerySales = posRevenue(posDays, 'time_gallery');
-      // The till's "Time Keeper" register is the WhatsApp channel's takings.
-      const timeKeeperSales = posRevenue(posDays, 'whatsapp');
+      const whatsappSales = posRevenue(posDays, 'whatsapp');
+      const onlineSales = posRevenue(posDays, 'online');
       const avenuesTarget = setQ.data?.sales_target_avenues != null ? Number(setQ.data.sales_target_avenues) : null;
       const timeGalleryTarget = setQ.data?.sales_target_timegallery != null ? Number(setQ.data.sales_target_timegallery) : null;
-      const timeKeeperTarget = setQ.data?.sales_target_timekeeper != null ? Number(setQ.data.sales_target_timekeeper) : null;
+      /* The register's old single target moved to Online when it was split in
+         two; WhatsApp has none until somebody sets one, and a channel with no
+         target shows no target line rather than a percentage of a guess. */
+      const onlineTarget = setQ.data?.sales_target_online != null ? Number(setQ.data.sales_target_online) : null;
+      const whatsappTarget = setQ.data?.sales_target_whatsapp != null ? Number(setQ.data.sales_target_whatsapp) : null;
       const lostMonth = ((lostQ.data ?? []) as any[]).reduce((s, c) => s + Number(c.amount_kd ?? 0), 0);
 
       // vip occasions this month
@@ -481,11 +485,12 @@ export default function Dashboard() {
         salesTrend.push({ label: String(day), value: running });
       }
 
-      /* Three shops, not two: Lightspeed has always had a Time Keeper outlet
-         of its own and it is the busiest of them, so it gets its own bar and
-         its own target rather than disappearing into the total. */
+      /* Four channels, not three. The till has three registers, but the one it
+         calls "Time Keeper" carries both the online shop and Eman's WhatsApp
+         orders; the view has already split them by who rang each sale up. */
       const outletBars: Bar[] = [
-        { label: outletName('whatsapp'), value: timeKeeperSales, target: timeKeeperTarget, color: '#059669' },
+        { label: outletName('online'), value: onlineSales, target: onlineTarget, color: '#059669' },
+        { label: outletName('whatsapp'), value: whatsappSales, target: whatsappTarget, color: '#14b8a6' },
         { label: outletName('avenues'), value: avenuesSales, target: avenuesTarget, color: '#0ea5e9' },
         { label: outletName('time_gallery'), value: timeGallerySales, target: timeGalleryTarget, color: '#8b5cf6' },
       ];
@@ -556,8 +561,8 @@ export default function Dashboard() {
 
       setD({
         salesToday, salesMonth, salesTarget,
-        avenuesSales, timeGallerySales, timeKeeperSales,
-        avenuesTarget, timeGalleryTarget, timeKeeperTarget,
+        avenuesSales, timeGallerySales, onlineSales, whatsappSales,
+        avenuesTarget, timeGalleryTarget, onlineTarget, whatsappTarget,
         lostMonth, overdueFu: overdueFuQ.count ?? 0,
         newCust: newCustQ.count ?? 0, vipOcc, openWaiting: wlQ.count ?? 0, openPre: preQ.count ?? 0,
         activeProjects, delayedProjects, stockValue, deadValue, lowStock, openPOs, shipments, supplierBalance,
@@ -589,7 +594,8 @@ export default function Dashboard() {
   const pctOf = (v: number | null | undefined, t: number | null | undefined) =>
     t == null || !t ? null : Math.round((Number(v ?? 0) / Number(t)) * 100);
   const outletParts: KpiPart[] = [
-    { label: outletName('whatsapp'), value: kd(d.timeKeeperSales), pct: pctOf(d.timeKeeperSales, d.timeKeeperTarget) },
+    { label: outletName('online'), value: kd(d.onlineSales), pct: pctOf(d.onlineSales, d.onlineTarget) },
+    { label: outletName('whatsapp'), value: kd(d.whatsappSales), pct: pctOf(d.whatsappSales, d.whatsappTarget) },
     { label: outletName('avenues'), value: kd(d.avenuesSales), pct: pctOf(d.avenuesSales, d.avenuesTarget) },
     { label: outletName('time_gallery'), value: kd(d.timeGallerySales), pct: pctOf(d.timeGallerySales, d.timeGalleryTarget) },
   ];

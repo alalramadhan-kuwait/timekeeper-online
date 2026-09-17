@@ -36,6 +36,10 @@ interface LsSale {
   id: string;
   status?: string;
   outlet_id?: string;
+  /* Who rang it up. One register serves two channels — the online shop and the
+     WhatsApp orders — and the salesperson is the only thing that tells them
+     apart, so it is carried through to lightspeed_sales_by_staff. */
+  user_id?: string;
   sale_date?: string;
   created_at?: string;
   line_items?: { product_id?: string; quantity?: number; price_total?: number; price?: number }[];
@@ -146,6 +150,22 @@ Deno.serve(async (req: Request) => {
     const outlets: { id: string; name: string }[] = (await outletsRes.json()).data ?? [];
     const outletName = new Map(outlets.map((o) => [o.id, o.name]));
 
+    /* Till users, so a sale can say who rang it up. A failure here is not worth
+       failing the whole sync over: without it the day still totals correctly,
+       it just cannot be split between the channels one register serves. */
+    const userName = new Map<string, string>();
+    try {
+      const usersRes = await fetch(`${base}/api/2.0/users`, { headers: { Authorization: `Bearer ${token}` } });
+      if (usersRes.ok) {
+        const users: { id: string; display_name?: string; name?: string; username?: string }[] =
+          (await usersRes.json()).data ?? [];
+        for (const u of users) {
+          const n = (u.display_name ?? u.name ?? u.username ?? "").trim();
+          if (n) userName.set(u.id, n);
+        }
+      }
+    } catch { /* leave the map empty; the split falls back to unattributed */ }
+
     const products = await lsPageAll<LsProduct>(base, "/api/2.0/products", token);
     const productById = new Map(
       products
@@ -203,6 +223,8 @@ Deno.serve(async (req: Request) => {
     let salesNote: string | null = null;
     let outletBreakdown: Record<string, number> = {};
     let statusCounts: Record<string, number> = {};
+    let staffAttributed = 0;
+    let staffRowCount = 0;
     try {
       const now = Date.now();
       const from90 = new Date(now - 90 * 86400_000).toISOString().replace(/\.\d{3}Z$/, "Z");
@@ -227,6 +249,13 @@ Deno.serve(async (req: Request) => {
          month". Built from the pages already fetched above, so it costs no
          extra calls to Lightspeed. */
       const daily = new Map<string, { revenue: number; units: number; sales: number }>();
+      /* The same money, also totalled by salesperson. One register serves the
+         online shop and the WhatsApp orders, and this is what tells them apart.
+         A sale with no known till user is simply left out here — the day still
+         totals correctly in `daily`, and the remainder is reported as
+         unattributed rather than guessed at. */
+      const byStaff = new Map<string, { revenue: number; units: number; sales: number }>();
+      let noUser = 0;
       const statusSeen = new Map<string, number>();
       let noOutlet = 0;
       for (const s of sales) {
@@ -251,6 +280,20 @@ Deno.serve(async (req: Request) => {
             }
             e.sales += 1;
             daily.set(key, e);
+
+            const who = s.user_id ? userName.get(s.user_id) : undefined;
+            if (!who) noUser++;
+            else {
+              const sKey = `${oName}\u0000${kuwaitDay(saleDate)}\u0000${who}`;
+              const se = byStaff.get(sKey) ?? { revenue: 0, units: 0, sales: 0 };
+              for (const li of s.line_items ?? []) {
+                const q = Number(li.quantity ?? 0);
+                se.revenue += li.price_total != null ? Number(li.price_total) : Number(li.price ?? 0) * q;
+                se.units += q;
+              }
+              se.sales += 1;
+              byStaff.set(sKey, se);
+            }
           }
         }
 
@@ -306,10 +349,36 @@ Deno.serve(async (req: Request) => {
         .delete()
         .gte("sale_date", kuwaitDay(from90))
         .lt("synced_at", salesSyncedAt);
+      const staffRows = [...byStaff.entries()].map(([key, e]) => {
+        const [outlet, sale_date, salesperson] = key.split("\u0000");
+        return {
+          outlet, sale_date, salesperson,
+          revenue: Math.round(e.revenue * 1000) / 1000,
+          units: e.units,
+          sale_count: e.sales,
+          synced_at: salesSyncedAt,
+        };
+      });
+      for (let i = 0; i < staffRows.length; i += 500) {
+        const { error } = await admin.from("lightspeed_sales_by_staff").upsert(staffRows.slice(i, i + 500));
+        if (error) throw new Error(`Sales-by-staff upsert failed: ${error.message}`);
+      }
+      await admin.from("lightspeed_sales_by_staff")
+        .delete()
+        .gte("sale_date", kuwaitDay(from90))
+        .lt("synced_at", salesSyncedAt);
+
       dailyCount = dailyRows.length;
       outletBreakdown = {};
       for (const r of dailyRows) outletBreakdown[r.outlet] = Math.round(((outletBreakdown[r.outlet] ?? 0) + r.revenue) * 1000) / 1000;
-      if (noOutlet) salesNote = `${noOutlet} sale(s) carried no outlet and were left out of the daily figures`;
+      /* What the run actually attributed, so a sync that stops seeing till users
+         is visible in its own result rather than only in a report weeks later. */
+      staffAttributed = Math.round(staffRows.reduce((t, r) => t + r.revenue, 0) * 1000) / 1000;
+      staffRowCount = staffRows.length;
+      const notes: string[] = [];
+      if (noOutlet) notes.push(`${noOutlet} sale(s) carried no outlet and were left out of the daily figures`);
+      if (noUser) notes.push(`${noUser} sale(s) carried no till user, so they could not be attributed to a channel`);
+      if (notes.length) salesNote = notes.join("; ");
       statusCounts = Object.fromEntries(statusSeen);
 
       // append a daily stock-value snapshot for the trend graph
@@ -350,6 +419,7 @@ Deno.serve(async (req: Request) => {
       ok: true, products: productById.size, stock_rows: rows.length,
       sales_rows: salesRows, sales_warning: salesWarning,
       daily_rows: dailyCount, revenue_90d_by_outlet: outletBreakdown,
+      staff_rows: staffRowCount, revenue_90d_attributed_to_staff: staffAttributed,
       sale_statuses: statusCounts, sales_note: salesNote,
     });
   } catch (e) {

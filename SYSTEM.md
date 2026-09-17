@@ -151,6 +151,11 @@ Public base tables (Supabase project `ttshgrujnycapugrmyxs`):
   16), or clocked out before clocking in.
 - `attendance_day_hours` — one row per employee per Kuwait day. Split shifts are
   summed; `unusable_shifts` counts records needing a correction first.
+- `pos_channel_sales` — till revenue by canonical channel and Kuwait day. **Sums
+  back to `lightspeed_sales_daily` exactly**, so no sale is dropped or
+  double-counted. `attributed = false` marks a remainder the salesperson could
+  not be established for (days before Lightspeed's 90-day window, or a sale with
+  no till user); it still lands in the register's catch-all channel.
 
 ### DB functions (security definer, service_role/authenticated)
 - `get_my_role()` — role of the calling user, used by RLS.
@@ -163,6 +168,11 @@ Public base tables (Supabase project `ttshgrujnycapugrmyxs`):
   from a date, optionally until one. Closes the row in force, opens the new one
   and restores what a temporary change interrupted, in one transaction. HR,
   manager or admin only.
+- `resolve_channel(pos_outlet, salesperson)` — the canonical channel a till sale
+  belongs to, from the register **and** who rang it up. Falls back to
+  `resolve_outlet()` for a register serving one channel.
+- `pos_splits_by_staff(outlet)` — true when a register serves more than one
+  channel and needs the salesperson to tell them apart.
 - `store_day(outlet, date)` — when a shop opened and closed, from attendance.
   **Returns no row** for a digital channel or the office. Aggregates only, so a
   salesperson can see the shop is open without reading anybody's attendance.
@@ -282,13 +292,35 @@ part of the build.
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | `avenues` | Time Keeper - Avenues | physical | yes | yes | yes | yes | `Time Keeper - Avenues` | `Avenues` |
 | `time_gallery` | Time Gallery | physical | yes | yes | yes | yes | `Time Gallery` | `TimeGallery` |
-| `whatsapp` | Time Keeper WhatsApp | digital | yes | no | no | **no** | `Time Keeper` | `WhatsApp` |
-| `online` | Time Keeper Online | digital | yes | no | no | **no** | *(none yet)* | *(none yet)* |
+| `whatsapp` | Time Keeper WhatsApp | digital | yes | no | no | **no** | `Time Keeper`, Eman only | `WhatsApp` |
+| `online` | Time Keeper Online | digital | yes | no | no | **no** | `Time Keeper`, everyone else | *(none yet)* |
 | `hq` | Timekeeper HQ | physical | **no** | yes | yes | **no** | — | — |
 
-The till's register called **`Time Keeper`** is the WhatsApp channel's takings
-(Eman's), not a third shop. Eman's own attendance is at HQ; her *sales channel*
-being WhatsApp must never make WhatsApp behave like a shop.
+**One till register, two channels.** The POS has three registers but the shop
+sells through four channels: the register called **`Time Keeper`** carries both
+the online shop and the WhatsApp orders Eman handles. Only the salesperson tells
+them apart, so a till sale resolves from the register *and* who rang it up:
+
+```
+Time Keeper + Eman        → whatsapp
+Time Keeper + anyone else → online     (the register's catch-all)
+Time Gallery / Avenues    → themselves, whoever was serving
+```
+
+The rule is data, not code — `pos_channel_rules`, one row per case, so a second
+person selling on WhatsApp is an insert rather than a deployment. Matching is a
+case-insensitive substring, so `Eman` catches the till user `Eman Salman`.
+
+`lightspeed_sales_by_staff` carries the per-salesperson daily totals the split
+needs, written by `lightspeed-sync` from the same pages it already fetches (no
+extra API calls). `lightspeed_sales_daily` is **unchanged** and remains the
+authoritative outlet-day total; `pos_channel_sales` splits it and reconciles
+back to it exactly, carrying any remainder in the register's catch-all channel
+with `attributed = false`. Read `pos_channel_sales`, never the raw register
+names.
+
+Eman's own *attendance* is at HQ; her sales channel being WhatsApp must never
+make WhatsApp behave like a shop.
 
 **Never compare outlet text with `===`.** Four systems spell these four outlets
 four different ways. Use `resolveOutlet` / `sameOutlet`, or `resolve_outlet()`
@@ -373,6 +405,8 @@ on; `Unknown` is the correct answer when the data does not carry one.
 ---
 
 ## 13. Changelog
+
+- **2026-09-17** (later 5) — **The Time Keeper register is two channels, not one.** It carries both the online shop and the WhatsApp orders Eman handles, and the only thing telling them apart is who rang the sale up — which the sync was fetching from Lightspeed and throwing away. It now keeps it (`lightspeed_sales_by_staff`, same API calls), and `pos_channel_sales` splits the register by `pos_channel_rules`: Eman's sales are WhatsApp, everyone else's are Online. `lightspeed_sales_daily` is untouched and stays the figure everything reconciles to. The dashboard reads channels and no longer sees a register name, and the one Time Keeper monthly target became `sales_target_online` + `sales_target_whatsapp` (the old figure moved to Online, where three quarters of the money is; WhatsApp starts blank rather than inheriting a guess).
 
 - **2026-09-17** (later 4) — **One foundation under both apps.** Before redesigning anything, the two apps were made to agree on what they were looking at. `src/shared/` (§10a) is mirrored byte-for-byte between them, with a counterpart in the database for reports and exports, and the build fails if the copies drift.
 
