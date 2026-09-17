@@ -9,17 +9,10 @@ import { useAuth } from '../context/AuthContext';
 import { Spinner, Badge } from '../components/ui';
 import { locationType, LOCATION_TYPE_STYLE, LocationType } from '../lib/locationType';
 import { lateClassOf, isEarlyLeave, LATE_STYLE, LateClass } from '../lib/lateness';
+import { Modal } from '../components/ui';
+import { AttendanceDayDetail } from '../components/AttendanceDayDetail';
+import { addRecord as addAttendanceRecord, type AttendanceRecord } from '../lib/attendanceEdits';
 
-interface AttendanceRecord {
-  id: string; user_id: string; employee_name: string;
-  clock_in: string; clock_out: string | null;
-  is_late: boolean; justified: boolean; notes: string | null;
-  correction_reason: string | null; location: string | null;
-  // Written by the database when the record is stored, never by the phone.
-  clock_in_distance_m: number | null; clock_in_accuracy_m: number | null;
-  clock_out_distance_m: number | null;
-  geo_source: string | null; geo_flag: string | null;
-}
 interface EmpLite { id: string; full_name: string; location: string | null; job_title: string | null; status: string; user_id: string | null }
 interface LeaveLite { employee_id: string; leave_type: string; leave_start: string; leave_end: string; approval_status: string }
 
@@ -28,9 +21,6 @@ const fmtDate = (iso: string) => new Date(iso).toLocaleDateString('en-GB', { day
 const todayKuwait = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kuwait' });
 const kuwaitDate = (iso: string) => new Date(iso).toLocaleDateString('en-CA', { timeZone: 'Asia/Kuwait' });
 const hoursOf = (a: string, b: string | null) => (((b ? new Date(b) : new Date()).getTime() - new Date(a).getTime()) / 3600000);
-/** yyyy-MM-dd + HH:mm in Kuwait → ISO timestamp */
-const kuwaitISO = (date: string, time: string) => new Date(`${date}T${time}:00+03:00`).toISOString();
-const kuwaitHM = (iso: string) => new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Kuwait', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(iso));
 
 export default function AttendancePage() {
   const { role } = useAuth();
@@ -99,10 +89,10 @@ function ManagerDashboard() {
   const [err, setErr] = useState<string | null>(null);
   const [view, setView] = useState<'list' | 'week'>('list');
 
-  // record editor state (item 11)
-  const [editId, setEditId] = useState<string | null>(null);
-  const [eIn, setEIn] = useState(''); const [eOut, setEOut] = useState('');
-  const [eReason, setEReason] = useState(''); const [eJustified, setEJustified] = useState(false);
+  /* Which day is open in the List. Keyed by person and day rather than by
+     record id: a split shift is two rows of one day, and the detail panel
+     shows the whole day. */
+  const [openDay, setOpenDay] = useState<string | null>(null);
   const [showAdd, setShowAdd] = useState(false);
   const [aEmp, setAEmp] = useState(''); const [aDate, setADate] = useState(todayKuwait());
   const [aIn, setAIn] = useState('09:00'); const [aOut, setAOut] = useState('');
@@ -127,6 +117,10 @@ function ManagerDashboard() {
 
   const empByName = useMemo(() => new Map(employees.map((e) => [e.full_name, e])), [employees]);
   const empById = useMemo(() => new Map(employees.map((e) => [e.id, e])), [employees]);
+  const empByUser = useMemo(
+    () => new Map(employees.filter((e) => e.user_id).map((e) => [e.user_id as string, e])), [employees]);
+  /** A day of one person's attendance, which is what the detail panel shows. */
+  const dayKey = (r: AttendanceRecord) => `${r.user_id}|${kuwaitDate(r.clock_in)}`;
   const areas = useMemo(() => [...new Set(employees.map((e) => e.location).filter(Boolean) as string[])].sort(), [employees]);
   const activeEmployees = useMemo(() => employees.filter((e) => ['Active', 'On leave'].includes(e.status)), [employees]);
 
@@ -203,58 +197,19 @@ function ManagerDashboard() {
   const lateToday = filtered.filter((r) => isLateRow(r) && kuwaitDate(r.clock_in) === today);
   const unusual = filtered.filter((r) => r.clock_out && (hoursOf(r.clock_in, r.clock_out) > 12 || hoursOf(r.clock_in, r.clock_out) < 1));
 
-  // ── item 11: corrections (audited via DB trigger → History Log) ──
-  function startEdit(r: AttendanceRecord) {
-    setEditId(editId === r.id ? null : r.id);
-    setShowAdd(false);
-    setEIn(kuwaitHM(r.clock_in));
-    setEOut(r.clock_out ? kuwaitHM(r.clock_out) : '');
-    setEReason(r.correction_reason ?? '');
-    setEJustified(r.justified);
-  }
-
-  async function saveEdit(r: AttendanceRecord) {
-    if (!eReason.trim()) { setErr('Correction reason is required'); return; }
-    setErr(null);
-    const day = kuwaitDate(r.clock_in);
-    const patch: Record<string, unknown> = {
-      clock_in: kuwaitISO(day, eIn || kuwaitHM(r.clock_in)),
-      clock_out: eOut ? kuwaitISO(day, eOut) : null,
-      correction_reason: eReason.trim(),
-      justified: eJustified,
-    };
-    patch.is_late = !eJustified && lateClassOf(patch.clock_in as string, workStart) !== 'On time';
-    const { error } = await supabase.from('attendance_records').update(patch).eq('id', r.id);
-    if (error) { setErr(error.message); return; }
-    setEditId(null); setReload((x) => x + 1);
-  }
-
+  // ── corrections (audited via DB trigger → History Log) ──
+  // The writes themselves live in src/lib/attendanceEdits.ts so the calendar
+  // calls exactly the same code this page does.
   async function addRecord() {
     const emp = empById.get(aEmp);
     if (!emp) { setErr('Pick an employee'); return; }
-    if (!emp.user_id) { setErr(`${emp.full_name} has no linked account — link it in HR → Employees first`); return; }
-    if (!aReason.trim()) { setErr('Correction reason is required'); return; }
     setErr(null);
-    const clockIn = kuwaitISO(aDate, aIn);
-    const { error } = await supabase.from('attendance_records').insert({
-      user_id: emp.user_id,
-      employee_name: emp.full_name,
-      clock_in: clockIn,
-      clock_out: aOut ? kuwaitISO(aDate, aOut) : null,
-      is_late: lateClassOf(clockIn, workStart) !== 'On time',
-      correction_reason: `[added by manager] ${aReason.trim()}`,
-      location: emp.location,
-    });
-    if (error) { setErr(error.message); return; }
+    const problem = await addAttendanceRecord({
+      userId: emp.user_id ?? '', employeeName: emp.full_name, location: emp.location,
+      date: aDate, clockIn: aIn, clockOut: aOut, reason: aReason,
+    }, workStart);
+    if (problem) { setErr(problem); return; }
     setShowAdd(false); setAEmp(''); setAOut(''); setAReason(''); setReload((x) => x + 1);
-  }
-
-  async function removeRecord(r: AttendanceRecord) {
-    const reason = window.prompt(`Mark ${r.employee_name} as absent by deleting this record?\nEnter the reason (required):`);
-    if (!reason?.trim()) return;
-    await supabase.from('attendance_records').update({ correction_reason: `[deleted] ${reason.trim()}` }).eq('id', r.id);
-    const { error } = await supabase.from('attendance_records').delete().eq('id', r.id);
-    if (error) setErr(error.message); else setReload((x) => x + 1);
   }
 
   function exportCsv() {
@@ -306,7 +261,8 @@ function ManagerDashboard() {
         ))}
       </div>
 
-      {view === 'week' ? <Calendar employees={activeEmployees} today={today} workStart={workStart} /> : (<>
+      {view === 'week' ? <Calendar employees={activeEmployees} today={today} workStart={workStart}
+          onChanged={() => setReload((x) => x + 1)} /> : (<>
       {/* filters */}
       <div className="flex flex-wrap gap-2">
         <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className={input} />
@@ -441,7 +397,7 @@ function ManagerDashboard() {
       <div>
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-sm font-semibold text-slate-700">Records</h3>
-          <button onClick={() => { setShowAdd((v) => !v); setEditId(null); }}
+          <button onClick={() => { setShowAdd((v) => !v); setOpenDay(null); }}
             className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-slate-900 text-white text-xs font-medium hover:bg-slate-700">
             <Plus size={13} /> Add missing record
           </button>
@@ -507,27 +463,23 @@ function ManagerDashboard() {
                       <GeoCell r={r} />
                     </td>
                     <td className="px-4 py-2 text-right whitespace-nowrap">
-                      <button onClick={() => startEdit(r)} className={`mr-2 ${editId === r.id ? 'text-blue-600' : 'text-slate-400'} hover:text-blue-600`} title="Correct record"><Pencil size={14} /></button>
-                      <button onClick={() => removeRecord(r)} className="text-slate-400 hover:text-red-600" title="Delete (mark absent)"><X size={15} /></button>
+                      {/* Opens the whole day, not this one row: a split shift is
+                          two records and correcting one in isolation hides the
+                          other. Same panel the calendar opens. */}
+                      <button onClick={() => setOpenDay(openDay === dayKey(r) ? null : dayKey(r))}
+                        className={`${openDay === dayKey(r) ? 'text-blue-600' : 'text-slate-400'} hover:text-blue-600`}
+                        title="Open this day"><Pencil size={14} /></button>
                     </td>
                   </tr>
-                  {editId === r.id && (
+                  {openDay === dayKey(r) && (
                     <tr className="bg-blue-50/40 border-b border-slate-100">
                       <td colSpan={8} className="px-4 py-3">
-                        <div className="flex flex-wrap items-end gap-2">
-                          <label className="text-xs"><span className="block text-slate-500 mb-1">Clock in</span>
-                            <input type="time" value={eIn} onChange={(e) => setEIn(e.target.value)} className={input} /></label>
-                          <label className="text-xs"><span className="block text-slate-500 mb-1">Clock out</span>
-                            <input type="time" value={eOut} onChange={(e) => setEOut(e.target.value)} className={input} /></label>
-                          <label className="text-xs flex-1 min-w-48"><span className="block text-slate-500 mb-1">Correction reason (required)</span>
-                            <input value={eReason} onChange={(e) => setEReason(e.target.value)} placeholder="Why is this being corrected?" className={`${input} w-full`} /></label>
-                          <label className="flex items-center gap-1.5 text-xs text-slate-600 pb-2">
-                            <input type="checkbox" checked={eJustified} onChange={(e) => setEJustified(e.target.checked)} className="h-3.5 w-3.5" /> Justified late
-                          </label>
-                          <button onClick={() => saveEdit(r)} className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-medium"><Check size={12} /> Save correction</button>
-                          <button onClick={() => setEditId(null)} className="text-slate-400 hover:text-slate-600 pb-1.5"><X size={15} /></button>
-                        </div>
-                        <p className="text-[10px] text-slate-400 mt-1.5">Old and new values are recorded automatically in the History Log.</p>
+                        <AttendanceDayDetail
+                          employee={{ full_name: r.employee_name, user_id: r.user_id, location: empByUser.get(r.user_id)?.location ?? null }}
+                          date={kuwaitDate(r.clock_in)}
+                          workStart={workStart}
+                          onChanged={() => setReload((x) => x + 1)}
+                        />
                       </td>
                     </tr>
                   )}
@@ -555,12 +507,21 @@ const dowLetter = (ymd: string) => ['S', 'M', 'T', 'W', 'T', 'F', 'S'][new Date(
 const monthLabel = (ymd: string) => new Date(`${ymd}T12:00:00Z`).toLocaleDateString('en-GB', { month: 'long', year: 'numeric', timeZone: 'UTC' });
 const HIDE_KEY = 'att-cal-hidden';
 
-function Calendar({ employees, today, workStart }: { employees: EmpLite[]; today: string; workStart: string }) {
+export function Calendar({ employees, today, workStart, onChanged }: {
+  employees: EmpLite[]; today: string; workStart: string;
+  /* A correction made here also changes what the List view holds, and the two
+     sit behind one toggle — so the page is told as well. */
+  onChanged: () => void;
+}) {
   const [period, setPeriod] = useState<'month' | 'week'>('month');
   const [anchor, setAnchor] = useState(() => monthFirst(today)); // month-first or any day in the week
   const [recs, setRecs] = useState<AttendanceRecord[]>([]);
   const [leaves, setLeaves] = useState<LeaveLite[]>([]);
   const [loading, setLoading] = useState(true);
+  /* Which square is open, and a counter the detail panel bumps when it writes —
+     that is what makes a correction repaint the square behind it. */
+  const [open, setOpen] = useState<{ emp: EmpLite; day: string; note?: string } | null>(null);
+  const [reload, setReload] = useState(0);
   const [hidden, setHidden] = useState<Set<string>>(() => { try { return new Set<string>(JSON.parse(localStorage.getItem(HIDE_KEY) || '[]')); } catch { return new Set(); } });
 
   const days = useMemo(() => period === 'month' ? monthDays(anchor) : Array.from({ length: 7 }, (_, i) => ymdAdd(satOfWeek(anchor), i)), [period, anchor]);
@@ -578,7 +539,7 @@ function Calendar({ employees, today, workStart }: { employees: EmpLite[]; today
       setLeaves((l.data as LeaveLite[]) ?? []);
       setLoading(false);
     });
-  }, [rangeStart, rangeEnd]);
+  }, [rangeStart, rangeEnd, reload]);
 
   const toggleHide = (id: string) => setHidden((h) => { const n = new Set(h); n.has(id) ? n.delete(id) : n.add(id); localStorage.setItem(HIDE_KEY, JSON.stringify([...n])); return n; });
   const clearHidden = () => { setHidden(new Set()); localStorage.setItem(HIDE_KEY, '[]'); };
@@ -625,6 +586,14 @@ function Calendar({ employees, today, workStart }: { employees: EmpLite[]; today
     present: 'bg-emerald-400', late: 'bg-amber-400', leave: 'bg-sky-300',
     absent: 'bg-rose-500', off: 'bg-slate-100', future: 'bg-transparent border border-dashed border-slate-200',
   };
+  /* Why a day with no record looks the way it does, so the panel never opens
+     on a bare "nothing recorded" when there is in fact an approved reason. */
+  const noteFor = (c: { kind: Kind; label?: string }): string | undefined =>
+    c.kind === 'leave' ? `Approved ${c.label ?? 'leave'} — no clock-in expected.`
+    : c.kind === 'absent' ? 'Absent: a working day for others, with no approved leave and no clock-in.'
+    : c.kind === 'off' ? 'Not a working day — nobody clocked in.'
+    : undefined;
+
   const shift = (n: number) => setAnchor((a) => period === 'month' ? monthShift(a, n) : ymdAdd(a, n * 7));
   const goCurrent = () => setAnchor(period === 'month' ? monthFirst(today) : today);
   const switchPeriod = (p: 'month' | 'week') => { setPeriod(p); setAnchor(p === 'month' ? monthFirst(today) : today); };
@@ -677,9 +646,22 @@ function Calendar({ employees, today, workStart }: { employees: EmpLite[]; today
                   </td>
                   {days.map((d) => {
                     const c = cellFor(e, d);
+                    const what = c.label ? ` · ${c.label}`
+                      : c.kind === 'absent' ? ' · Absent (no reason)'
+                      : c.kind === 'late' ? ' · Late' : c.kind === 'present' ? ' · Present' : '';
+                    /* A day in the future was never worked, and somebody with no
+                       login cannot have a record — everything else opens, red
+                       squares above all, since those are what a manager clicks. */
+                    const openable = c.kind !== 'future' && !!e.user_id;
                     return (
                       <td key={d} className={`px-1 py-1 text-center ${d === today ? 'bg-slate-50' : ''}`}>
-                        <span className={`inline-block w-6 h-6 rounded ${CELL[c.kind]}`} title={`${e.full_name} · ${d}${c.label ? ` · ${c.label}` : c.kind === 'absent' ? ' · Absent (no reason)' : c.kind === 'late' ? ' · Late' : c.kind === 'present' ? ' · Present' : ''}`} />
+                        <button type="button" disabled={!openable}
+                          onClick={() => setOpen({ emp: e, day: d, note: noteFor(c) })}
+                          title={`${e.full_name} · ${d}${what}${openable ? ' — open' : ''}`}
+                          aria-label={`${e.full_name}, ${d}${what}`}
+                          className={`inline-block w-6 h-6 rounded ${CELL[c.kind]} ${openable
+                            ? 'cursor-pointer hover:ring-2 hover:ring-slate-400 hover:ring-offset-1 focus:outline-none focus:ring-2 focus:ring-slate-600 focus:ring-offset-1'
+                            : 'cursor-default'}`} />
                       </td>
                     );
                   })}
@@ -689,6 +671,20 @@ function Calendar({ employees, today, workStart }: { employees: EmpLite[]; today
           </table>
         </div>
       )}
+
+      {open && (
+        <Modal title="Attendance" onClose={() => setOpen(null)}>
+          <AttendanceDayDetail
+            employee={open.emp}
+            date={open.day}
+            workStart={workStart}
+            note={open.note}
+            onChanged={() => { setReload((x) => x + 1); onChanged(); }}
+          />
+        </Modal>
+      )}
+
+      <p className="text-[11px] text-slate-400">Tap a square to see or correct that person's day.</p>
 
       <div className="flex flex-wrap gap-3 text-[11px] text-slate-500">
         <span><span className="inline-block w-3 h-3 rounded bg-emerald-400 align-middle" /> Present</span>
