@@ -12,6 +12,7 @@ import { lateClassOf, isEarlyLeave, LATE_STYLE, LateClass } from '../lib/latenes
 import { Modal } from '../components/ui';
 import { AttendanceDayDetail, GeoCell } from '../components/AttendanceDayDetail';
 import { addRecord as addAttendanceRecord, type AttendanceRecord } from '../lib/attendanceEdits';
+import { rangeLabel } from '../lib/dateRange';
 
 interface EmpLite { id: string; full_name: string; location: string | null; job_title: string | null; status: string; user_id: string | null }
 interface LeaveLite { employee_id: string; leave_type: string; leave_start: string; leave_end: string; approval_status: string }
@@ -569,21 +570,33 @@ export function Calendar({ employees, today, workStart, onChanged }: {
 
   return (
     <div className="space-y-3">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="flex rounded-lg border border-slate-300 overflow-hidden text-xs">
-            {(['month', 'week'] as const).map((p) => (
-              <button key={p} onClick={() => switchPeriod(p)} className={`px-3 py-1.5 capitalize ${period === p ? 'bg-slate-800 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}>{p}</button>
-            ))}
-          </div>
-          <button onClick={() => shift(-1)} className="px-2 py-1 rounded-lg border border-slate-300 text-sm hover:bg-slate-50">←</button>
-          <span className="text-sm font-medium text-slate-700 min-w-[9rem] text-center">{period === 'month' ? monthLabel(anchor) : `${rangeStart} → ${rangeEnd}`}</span>
-          <button onClick={() => shift(1)} className="px-2 py-1 rounded-lg border border-slate-300 text-sm hover:bg-slate-50">→</button>
-          <button onClick={goCurrent} className="px-2 py-1 rounded-lg border border-slate-300 text-sm hover:bg-slate-50">This {period}</button>
+      {/* What you are looking at, then what you are looking at it through. The
+          two used to share one wrapping row, so on a phone the → arrow fell
+          onto a second line away from its ←. */}
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="flex rounded-lg border border-slate-300 overflow-hidden text-xs shrink-0">
+          {(['month', 'week'] as const).map((p) => (
+            <button key={p} onClick={() => switchPeriod(p)} className={`px-3 py-1.5 capitalize ${period === p ? 'bg-slate-800 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}>{p}</button>
+          ))}
         </div>
+        <button onClick={goCurrent} className="px-2.5 py-1.5 text-xs text-slate-500 hover:text-slate-800 shrink-0">
+          This {period}
+        </button>
         {absentCount > 0
-          ? <Badge className="bg-rose-100 text-rose-700 border-rose-200">{absentCount} unexplained absence{absentCount > 1 ? 's' : ''}</Badge>
-          : <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">No unexplained absences</Badge>}
+          ? <Badge className="bg-rose-100 text-rose-700 border-rose-200 ml-auto">{absentCount} unexplained absence{absentCount > 1 ? 's' : ''}</Badge>
+          : <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200 ml-auto">No unexplained absences</Badge>}
+      </div>
+
+      {/* One line, always: no wrap on the row, the arrows never shrink, and the
+          label truncates rather than pushing an arrow off the end. */}
+      <div className="flex items-center gap-2 w-full sm:w-auto">
+        <button onClick={() => shift(-1)} aria-label={`Previous ${period}`}
+          className="shrink-0 px-2.5 py-1 rounded-lg border border-slate-300 text-sm hover:bg-slate-50">←</button>
+        <span className="flex-1 sm:flex-none sm:min-w-[11rem] min-w-0 truncate text-center text-sm font-medium text-slate-700">
+          {period === 'month' ? monthLabel(anchor) : rangeLabel(rangeStart, rangeEnd)}
+        </span>
+        <button onClick={() => shift(1)} aria-label={`Next ${period}`}
+          className="shrink-0 px-2.5 py-1 rounded-lg border border-slate-300 text-sm hover:bg-slate-50">→</button>
       </div>
 
       {loading ? <Spinner /> : (

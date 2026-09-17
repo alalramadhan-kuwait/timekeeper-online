@@ -259,6 +259,12 @@ on; `Unknown` is the correct answer when the data does not carry one.
 
 ## 13. Changelog
 
+- **2026-09-17** (later) — **The attendance calendar's week reads like a date, and its arrows stay on one line.** The header said `2026-09-12 → 2026-09-18`: eight digits twice to work out that it is one week in September. `rangeLabel()` (`src/lib/dateRange.ts`) says the shared parts once — `12–18 Sep 2026` within a month, `28 Sep – 4 Oct 2026` across two, `28 Dec 2026 – 3 Jan 2027` across two years. Display only: `anchor`, `days` and every query still use the same yyyy-mm-dd strings, which is why the formatter takes those strings and never builds a `Date` — no parsing, so no timezone to get wrong.
+
+  The controls were one wrapping row of five things, so on a phone the **→ arrow fell onto a second line, away from its ←**. They are two rows now: Month/Week with **This week** beside it as a secondary action, then `←  label  →` on a row that cannot wrap — no `flex-wrap`, `shrink-0` on both arrows, and a label that truncates rather than pushing an arrow off the end. Arrows gained aria-labels.
+
+  Verified: 9 ranges against the spec as a unit test (both boundaries, a whole month, a year end), and the layout driven at 320 / 390 / 768 / 1280 px — the three controls share a row, in order, with the next arrow on screen and no horizontal overflow at any width.
+
 - **2026-09-17** — **The attendance calendar's squares open the day.** A red square was the one thing a manager wanted to click and the only thing that did nothing: corrections lived in the List view as an inline row welded to that table's state, so the calendar beside it could show an unexplained absence and offer no way to fix it.
 
   Rather than build a second editor, the existing one was **extracted once and used twice**. `src/lib/attendanceEdits.ts` holds the three writes — correct, add, delete — that were previously closures inside the List; `src/components/AttendanceDayDetail.tsx` is the panel; the List's pencil and the calendar's squares both open it. Nothing was duplicated and no new path to the data was created: the same table, the same geofence trigger, the same History Log audit.
