@@ -39,6 +39,14 @@ export interface RequestApproval {
   proposed_clock_in: string | null;
   proposed_clock_out: string | null;
   attendance_record_id: string | null;
+  /** What the record says today, so the approver can see what would change
+   *  rather than only what is being asked for. Null when nothing is recorded
+   *  for that day at all — which is the usual reason somebody asks. */
+  current_clock_in: string | null;
+  current_clock_out: string | null;
+  /** More than one shift that day, so a correction touches a day the record
+   *  already describes in two rows. */
+  current_shifts: number;
   /** The person whose attendance it is — the record is theirs, not the
    *  requester's login, and the two are different rows. */
   employee_id: string | null;
@@ -212,8 +220,40 @@ export async function loadInbox(user: User, profile: Profile | null, role: Role 
     awaitingManager = isStoreManager ? []
       : mine.filter((l) => l.manager_status === 'Pending').map(asApproval);
     const empByUserRow = new Map(empRows.filter((e) => e.user_id).map((e) => [e.user_id, e]));
+
+    /* What is on the record today for every day somebody has asked about. An
+       approver was being shown the requested times alone, which reads as a
+       statement rather than a change: "arrived 14:12" with nothing beside it
+       gives no way to tell a missing clock-in from one being moved by an hour.
+       One query covers every pending correction. */
+    const askedAbout = req
+      .filter((r: any) => r.request_type === 'Attendance correction' && r.attendance_date)
+      .map((r: any) => r.attendance_date as string)
+      .sort();
+    const current = new Map<string, { clock_in: string | null; clock_out: string | null; shifts: number }>();
+    if (askedAbout.length) {
+      const rows = await safe<any>(supabase.from('attendance_records')
+        .select('user_id, clock_in, clock_out')
+        .gte('clock_in', `${askedAbout[0]}T00:00:00+03:00`)
+        .lte('clock_in', `${askedAbout[askedAbout.length - 1]}T23:59:59+03:00`));
+      for (const row of rows) {
+        const day = new Date(row.clock_in).toLocaleDateString('en-CA', { timeZone: 'Asia/Kuwait' });
+        const key = `${row.user_id}|${day}`;
+        const seen = current.get(key);
+        current.set(key, {
+          // the day opens at the first clock-in and closes at the last clock-out
+          clock_in: seen && seen.clock_in && seen.clock_in < row.clock_in ? seen.clock_in : row.clock_in,
+          clock_out: [seen?.clock_out, row.clock_out].filter(Boolean).sort().pop() ?? null,
+          shifts: (seen?.shifts ?? 0) + 1,
+        });
+      }
+    }
+
     requestApprovals = req.map((r) => {
       const emp = (r.employee_id && empRows.find((e) => e.id === r.employee_id)) || empByUserRow.get(r.user_id) || null;
+      const onRecord = r.attendance_date
+        ? current.get(`${emp?.user_id ?? r.user_id}|${r.attendance_date}`) ?? null
+        : null;
       return {
         id: r.id, request_type: r.request_type, details: r.details, created_at: r.created_at,
         requester: (r.employee_id && empById.get(r.employee_id)) || empByUser.get(r.user_id) || profById.get(r.user_id) || 'Someone',
@@ -223,6 +263,9 @@ export async function loadInbox(user: User, profile: Profile | null, role: Role 
         attendance_record_id: r.attendance_record_id ?? null,
         employee_id: r.employee_id ?? null,
         user_id: r.user_id ?? null,
+        current_clock_in: onRecord?.clock_in ?? null,
+        current_clock_out: onRecord?.clock_out ?? null,
+        current_shifts: onRecord?.shifts ?? 0,
         employee_name: emp?.full_name ?? null,
         employee_location: emp?.location ?? null,
       };

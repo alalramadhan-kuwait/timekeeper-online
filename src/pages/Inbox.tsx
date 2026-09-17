@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Inbox as InboxIcon, CheckCircle, Clock, CalendarRange, FileText, Check, X, ChevronRight, ClipboardList, Info } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { Spinner, Badge } from '../components/ui';
 import { loadInbox, InboxData, type RequestApproval } from '../lib/inbox';
+import { MONTHS } from '../lib/dateRange';
 import { applyCorrection, isApplicable } from '../lib/attendanceCorrection';
 
 const todayKuwait = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kuwait' });
@@ -272,7 +273,13 @@ export default function InboxPage() {
                   <span className="text-xs text-slate-400 ml-auto">{(r.created_at ?? '').slice(0, 10)}</span>
                 </div>
                 <CorrectionAsk r={r} />
-                <p className="text-sm text-slate-600">{r.details}</p>
+                {r.request_type === 'Attendance correction' && r.attendance_date ? (
+                  <p className="text-sm text-slate-600">
+                    <span className="text-slate-400">Reason: </span>{reasonOnly(r)}
+                  </p>
+                ) : (
+                  <p className="text-sm text-slate-600">{r.details}</p>
+                )}
                 <div className="flex flex-wrap items-center gap-2">
                   <input value={remarks[r.id] ?? ''} onChange={(e) => setRemarks((m) => ({ ...m, [r.id]: e.target.value }))}
                     placeholder="Remarks (optional)" className="flex-1 min-w-[10rem] px-3 py-1.5 rounded-lg border border-slate-300 text-sm bg-white" />
@@ -291,30 +298,107 @@ export default function InboxPage() {
 }
 
 /**
- * The times a correction proposes, said as times rather than left in prose.
+ * What a correction would change, as a before and an after.
  *
- * Approving writes these onto the record, so they are shown as the thing being
- * agreed to — a blank end means "leave that one as it is", which has to be
- * visible or an approver will read a missing time as a missing answer.
+ * This used to say "Arrived 14:12 · Left unchanged", which is the request
+ * without the thing it is a request about. An approver could not tell a missing
+ * clock-in from one being moved by two hours, and "unchanged" read as a gap in
+ * the form rather than as "leave that one alone" — so the decision was being
+ * made on half the facts.
+ *
+ * Now each half of the day gets a row: what the record says, what is being
+ * asked for, and whether that is actually a change.
  */
 function CorrectionAsk({ r }: { r: RequestApproval }) {
   if (r.request_type !== 'Attendance correction' || !r.attendance_date) return null;
-  const inAt = kuwaitHM(r.proposed_clock_in);
-  const outAt = kuwaitHM(r.proposed_clock_out);
-  if (!inAt && !outAt) return null;
+  const askIn = kuwaitHM(r.proposed_clock_in);
+  const askOut = kuwaitHM(r.proposed_clock_out);
+  if (!askIn && !askOut) return null;
+
+  const nowIn = kuwaitHM(r.current_clock_in);
+  const nowOut = kuwaitHM(r.current_clock_out);
+  const nothingRecorded = r.current_shifts === 0;
+
+  /* Still on the floor: the day has a clock-in and no clock-out yet, which is
+     not the same as a missing one and must not read like it. */
+  const stillIn = r.current_shifts > 0 && !nowOut;
+  const rows: Array<{ label: string; now: string | null; nowWord?: string; ask: string | null }> = [
+    { label: 'Check-in', now: nowIn, ask: askIn },
+    { label: 'Check-out', now: nowOut, nowWord: stillIn ? 'Still clocked in' : undefined, ask: askOut },
+  ];
+
+  /* A request that asks for the times already on the record. Worth saying
+     outright: it looks like a correction, and approving it does nothing. */
+  const changesNothing = rows.every((row) => row.ask === null || row.ask === row.now);
+
+  // "Sep", not en-GB's "Sept" — the same three letters the rest of the app uses.
+  const day = new Date(`${r.attendance_date}T12:00:00+03:00`);
+  const dayLabel = `${day.toLocaleDateString('en-GB', { weekday: 'long', timeZone: 'Asia/Kuwait' })} `
+    + `${Number(r.attendance_date.slice(8))} ${MONTHS[Number(r.attendance_date.slice(5, 7)) - 1]} `
+    + r.attendance_date.slice(0, 4);
+
   return (
-    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-lg bg-slate-50 border border-slate-200 px-3 py-2 text-xs">
-      <span className="font-semibold text-slate-600">{kuwaitDay(r.attendance_date)}</span>
-      <span className="text-slate-500">
-        Arrived <span className="font-semibold text-slate-800 tabular-nums">{inAt ?? 'unchanged'}</span>
-      </span>
-      <span className="text-slate-500">
-        Left <span className="font-semibold text-slate-800 tabular-nums">{outAt ?? 'unchanged'}</span>
-      </span>
-      {!r.attendance_record_id && (
-        <span className="text-amber-700">no record for that day — approving creates one</span>
+    <div className="rounded-lg bg-slate-50 border border-slate-200 px-3 py-2.5 text-xs space-y-2">
+      <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+        <span className="font-semibold text-slate-700">{dayLabel}</span>
+        {nothingRecorded && (
+          <span className="text-amber-700">nothing recorded that day — approving creates the record</span>
+        )}
+        {r.current_shifts > 1 && (
+          <span className="text-amber-700">
+            {r.current_shifts} shifts that day — the times below are its first in and last out
+          </span>
+        )}
+      </div>
+
+      <div className="grid grid-cols-[auto_auto_auto_1fr] items-center gap-x-3 gap-y-1">
+        <span className="text-[10px] uppercase tracking-wide text-slate-400">Field</span>
+        <span className="text-[10px] uppercase tracking-wide text-slate-400">Now</span>
+        <span aria-hidden="true" />
+        <span className="text-[10px] uppercase tracking-wide text-slate-400">Requested</span>
+
+        {rows.map((row) => {
+          const changes = row.ask !== null && row.ask !== row.now;
+          return (
+            <Fragment key={row.label}>
+              <span className="text-slate-500 whitespace-nowrap">{row.label}</span>
+              <span className={`tabular-nums ${row.now ? 'text-slate-700' : 'text-slate-400 italic'}`}>
+                {row.now ?? row.nowWord ?? 'Not recorded'}
+              </span>
+              <span className={changes ? 'text-slate-400' : 'text-transparent'} aria-hidden="true">→</span>
+              <span className={
+                row.ask === null ? 'text-slate-400'
+                  : changes ? 'tabular-nums font-semibold text-slate-900'
+                  : 'tabular-nums text-slate-400'
+              }>
+                {row.ask === null ? 'No change' : changes ? row.ask : `${row.ask} (same)`}
+              </span>
+            </Fragment>
+          );
+        })}
+      </div>
+
+      {changesNothing ? (
+        <p className="text-amber-700">
+          This asks for the times already on the record — approving it would change nothing.
+        </p>
+      ) : (
+        <p className="text-slate-400">Approving writes the requested times onto the record.</p>
       )}
-      <span className="text-slate-400 ml-auto">Approving writes this to the record</span>
     </div>
   );
+}
+
+/**
+ * The reason somebody gave, without the times repeated back.
+ *
+ * `details` is built for the places that have no structured fields, so it
+ * carries the date and the asked-for times as prose. Printed under a table that
+ * already says both, it reads as the same sentence twice.
+ */
+function reasonOnly(r: RequestApproval): string {
+  if (r.request_type !== 'Attendance correction' || !r.attendance_date) return r.details;
+  const at = r.details.indexOf(': ');
+  const reason = at === -1 ? r.details : r.details.slice(at + 2).trim();
+  return reason && reason.toLowerCase() !== 'no comment' ? reason : 'No reason given';
 }
