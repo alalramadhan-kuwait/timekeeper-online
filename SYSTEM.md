@@ -78,7 +78,43 @@ Two access layers, both enforced:
 1. **UI** — nav `roles` + `canAccessPath` (with per-user `profiles.page_access` override) gate page visibility; `CrudConfig.canWrite(role)` gates the edit/add controls.
 2. **Database RLS** — the real guard. Typical pattern: read = `auth.role() = 'authenticated'`; write = `get_my_role() = any(array[...])`.
 
-`profiles` columns: `id, full_name, role, page_access (text[]|null), sales_name (text|null), created_at, updated_at`. There is **no username column** — login identity is the auth email. `page_access = null` means default role-based access; **`page_access = '{}'` (empty list) means the always-on pages only** (Dashboard, My Portal, Inbox, Notifications) — used for salespeople. **`sales_name`** is the DSR staff-roster name this login logs sales under (`cases.staff`); it must equal an entry of `settings.staff_roster`, is unique per login (`profiles_sales_name_key`), and is set in Settings → Team Access ("DSR name", via `admin-users` `update`). `null` = shared login / not a salesperson.
+### Effective permissions
+
+What each role can actually do, after both layers. The UI can only ever be
+*stricter* than RLS — anything in this table is what the database allows, so a
+page hidden from somebody is not a security boundary on its own.
+
+| | admin (Owner) | manager | hr | sales / staff | operations / marketing | viewer |
+| --- | --- | --- | --- | --- | --- | --- |
+| Every page | yes | all but admin-only bits | HR pages | portal only, by default | their own module | read-only pages |
+| Settings → Team Access | yes | yes, but cannot touch an admin | no | no | no | no |
+| See all employees | yes | yes | yes | own record only | own record only | own record only |
+| Edit an employee / schedule | yes | yes | yes | no | no | no |
+| See all attendance | yes | yes | yes | own only | own only | own only |
+| Correct an attendance record | yes | yes | yes | request it | request it | no |
+| Approve leave | yes | first approval, in their `manager_scopes` locations, not their own | final approval | apply and cancel own | apply and cancel own | no |
+| Log a DSR sale | yes | yes | no | yes | no | no |
+| Edit a DSR case | any | any | no | own, same day, unlocked; or any open follow-up | no | no |
+| Change an outlet in the registry | yes | yes | no | no | no | no |
+| Financials on the Dashboard | yes | yes | no | no | no | no |
+
+Notes that are easy to get wrong:
+
+- **`page_access = null`** means role defaults; **`page_access = '{}'`** (an
+  explicit empty list) means the always-on pages only — Dashboard, My Portal,
+  Inbox, Notifications. An empty list is a real answer, not "unset".
+- **`/settings` is never grantable through `page_access`.** It stays role-gated
+  to admin and manager, because it is where accounts are made.
+- **Leave approval is two steps** and a manager cannot give the first approval
+  on their own leave (`can_give_first_approval` excludes `e.user_id = auth.uid()`).
+- **Five tables have RLS on and no policy at all** — `app_config`,
+  `apify_config`, `push_config`, `instagram_auth`, `lightspeed_auth`. That is
+  deliberate: they hold credentials and are reachable only by the service role,
+  from edge functions and cron.
+- **Realtime respects RLS**, so a salesperson subscribed to `attendance_records`
+  receives their own rows and nobody else's.
+
+`profiles` columns: `id, full_name, role, page_access (text[]|null), sales_name (text|null), created_at, updated_at`. There is **no username column** — login identity is the auth email. `page_access = null` means default role-based access; **`page_access = '{}'` (empty list) means the always-on pages only** (Dashboard, My Portal, Inbox, Notifications) — used for salespeople. **The DSR roster name** — the name this login's sales are logged under (`cases.staff`) — lives on **`employees.dsr_staff_name`**, not on the profile. `profiles.sales_name` is a deprecated mirror kept in step by the `employees_sync_sales_name` trigger, read only for an account with no employee record linked. `get_my_sales_name()` prefers the employee record and falls back to the mirror. It must equal an entry of `settings.staff_roster` and is set in Settings → Team Access ("DSR name", via `admin-users` `update`), which writes the employee record. `null` = shared login / not a salesperson. It was stored in two places with nothing syncing them, which locked a salesperson out of the DSR when only one was filled.
 
 **Floor roles: `staff` and `sales` are interchangeable** (since 2026-09-13). `staff` is the shared shop login, `sales` a personal one; both may insert cases and close a day (`cases` INSERT/UPDATE + `day_closes` INSERT admit `admin|staff|sales`, migration `20260913180000_sales_role_can_log_cases.sql`), and the DSR gates on `isFloorRole()` / `useAuth().onFloor`, never on the literal `'staff'`. Before that, an account created with the obvious role `sales` could open the app and be refused on save — and, because the outlet gate also keyed on `'staff'`, it was never asked for an outlet and wrote `outlet = null`.
 
@@ -94,7 +130,9 @@ Public base tables (Supabase project `ttshgrujnycapugrmyxs`):
 
 **Purchasing & stock:** `purchase_orders`, `purchase_order_items`, `consignments`, `limited_projects`, `waiting_list`, `pre_orders`, `repair_watches`, `lightspeed_auth`, `lightspeed_stock`, `lightspeed_stock_cost`, `lightspeed_product_sales`, `lightspeed_stock_value_history`, `lightspeed_sync_log`.
 
-**HR:** `employees`, `attendance_records`, `leave_records`, `employee_requests`, `geofences`, `company_documents`.
+**HR:** `employees`, `attendance_records`, `leave_records`, `employee_requests`, `geofences`, `company_documents`, **`employee_schedules`** (2026-09-17: dated working days and shift times — `effective_from`/`effective_to`, `working_days smallint[]` in Postgres dow numbering, no-overlap exclusion constraint; `employees.expected_days`/`shift_start`/`shift_end` are a mirror of whichever row is in force *today*, kept by trigger, and must not be used to judge a past date).
+
+**Outlets:** **`outlets`** (2026-09-17: the canonical registry — `code`, `display_name`, `kind physical|digital`, `sells`, `has_attendance`, `has_geofence`, `tracks_store_day`, `geofence_name`, `pos_names[]`, `dsr_names[]`, `aliases[]`). See §10a.
 
 **Marketing:** `content_tasks`, `paid_ads`, **`influencers`** (permanent profile: name, handle, platform, tier, country, followers, followers_updated, contact, photo_url, status [Active/Prospect/Paused/Inactive], rating, notes) + **`influencer_collaborations`** (one row per collab, FK influencer_id: campaign, product_brand, product, collab_type [Paid/Gift/Affiliate/Event], platform, coverage, deliverables, agreed/posted dates, fee, amount_paid, gift_value, attributed_revenue, payment_status, status, engagement, owner, notes) + **`influencer_follower_snapshots`** (influencer_id, snapshot_date, followers — for the growth graph & 30/90d deltas). `influencer_campaigns` = **legacy** flat table, migrated into the above (1 row → 1 influencer + 1 collab), kept for rollback. `instagram_auth`, `instagram_daily` (**multi-account**: PK `(snapshot_date, username)`, cols incl. `followers`, `follows_count`, `last_post_date`, `media_count`; `reach`/`impressions`/`profile_views` only fillable by the Meta path, null from the scraper), `instagram_posts` (per-post engagement: PK `shortcode`, cols `username, posted_at, type, likes, comments, video_views, caption, hashtags[], url`; last ~12 posts/account refreshed daily, accumulates history), `instagram_media`, `instagram_sync_log`. **Meta Ads (2026-09-16):** `meta_ads_config` (one row: account id, currency, `last_synced_at`, `last_error`, `kwd_per_usd` + `rate_updated_at`), `meta_ad_campaigns` (Meta's campaign records, PK = Meta's id), `meta_ad_insights` (PK `(campaign_id, period, date_start, date_stop)`, `period` in `lifetime`/`daily`). **Every figure column there is TEXT on purpose** — spend/impressions/reach/clicks/ctr/cpc/cpm are the exact strings Meta sent, and a numeric column would invite the database to round them. `actions` keeps Meta's whole array so "Results" can be picked per objective at display time. `paid_ads.meta_campaign_id` links a tracker row to a campaign; null = not linked. Nothing writes a Meta figure into `paid_ads`. **`meta_campaign_brands`** (2026-09-16) holds the brand a campaign was for, stated by a person: one row per `(campaign_id, brand_id)` so a campaign may carry several brands, or a single row with `brand_id` null and `kind` `whole_shop`/`unknown` meaning it has none. No row at all = nobody has said, which falls back to name-reading. Two partial unique indexes plus a trigger stop a campaign holding both brands and a "no brand" marker — that combination would make the brand split add up to more than the spend.
 
@@ -106,8 +144,28 @@ Public base tables (Supabase project `ttshgrujnycapugrmyxs`):
 ### `purchase_orders` — see §6.1 for the full lifecycle. Key columns:
 `ls_consignment_id` (unique; null = manual/legacy), `source` ('lightspeed' | 'manual'), `po_number` (= Lightspeed **reference**, e.g. `MAI-1234`), `supplier_invoice_no`, `supplier`, `brand`, `outlet`, `created_date`, `expected_arrival`, `status`, `item_count`, `ordered_qty`, `received_qty`, `total_cost` (all NOT NULL with defaults), `amount_paid`, `payment_status` (Unpaid|Partial|Paid), `payment_date`, `payment_method`, `invoice_received`, `team_notified`, `notes`, `linked_project`, `merged_into` (self-FK → the synced PO a legacy row folded into), `match_candidate_id` (uuid FK → suggested match), `ls_synced_at`.
 
+### Views (2026-09-17, `security_invoker = true`)
+- `attendance_shifts` — one row per attendance record with its worked hours and
+  its canonical `outlet_code`. `hours` is **null** when the record cannot answer
+  the question: never clocked out (open more than `attendance_abandon_hours()`,
+  16), or clocked out before clocking in.
+- `attendance_day_hours` — one row per employee per Kuwait day. Split shifts are
+  summed; `unusable_shifts` counts records needing a correction first.
+
 ### DB functions (security definer, service_role/authenticated)
 - `get_my_role()` — role of the calling user, used by RLS.
+- `get_my_sales_name()` — the DSR roster name, from `employees.dsr_staff_name`,
+  falling back to the deprecated `profiles.sales_name` mirror.
+- `outlet_key(text)` / `resolve_outlet(text)` — any historical outlet spelling to
+  its canonical code, or null. **Compare outlets through this, never with `=`.**
+- `schedule_on(employee, date)` — the schedule in force on that date.
+- `set_schedule(employee, from, to, days, start, end, note)` — change a schedule
+  from a date, optionally until one. Closes the row in force, opens the new one
+  and restores what a temporary change interrupted, in one transaction. HR,
+  manager or admin only.
+- `store_day(outlet, date)` — when a shop opened and closed, from attendance.
+  **Returns no row** for a digital channel or the office. Aggregates only, so a
+  salesperson can see the shop is open without reading anybody's attendance.
 - `po_match_legacy()` — auto-merges legacy POs onto their Lightspeed twin on exact `po_number` match (carries payment history, sets `merged_into`); records weaker matches as `match_candidate_id`. Returns `(auto_linked, suggested)`.
 - `po_fill_brands()` — fills a synced PO's `brand` from the dominant-value product on it (leaves hand-set brands alone).
 - `po_summary()` — JSON for the PO dashboard cards: `owed_kd, owed_count, receipt_count, receipt_kd, invoice_count` (excludes merged/cancelled; live obligations only).
@@ -195,6 +253,63 @@ Cron calls use `net.http_post` with the `x-sync-key` header and `timeout_millise
 
 ---
 
+## 10a. The shared foundation (`src/shared/`)
+
+Mirrored **byte-for-byte** between `timekeeper-online` and `watch-store-crm`.
+`npm run build` runs `shared:check`, which fails if a file no longer matches
+`src/shared/MANIFEST.json`; the two repos are in step when both print the same
+`foundation` hash. To change a rule: edit it in one repo, `npm run shared:hash`,
+copy `src/shared/` into the other.
+
+| File | Answers | Database counterpart |
+| --- | --- | --- |
+| `outlets.ts` | Which outlet is this, shop or channel? | `outlets`, `resolve_outlet()`, `outlet_key()` |
+| `workedHours.ts` | How many hours did this person work? | `attendance_shifts`, `attendance_day_hours` |
+| `schedule.ts` | When were they expected to work, **on that date**? | `employee_schedules`, `schedule_on()` |
+| `attendanceStatus.ts` | Where do they stand today? | — |
+| `storeDay.ts` | When did the shop open and close? | `store_day()` |
+| `workload.ts` | Over a period, who carried how much, and is it fair? | — |
+| `portalRules.ts` | Kuwait dates, distance, leave balance. | — |
+| `portal.ts` | What My Portal asks the database. | — |
+| `live.ts` | Keeping a current-day screen up to date. | `supabase_realtime` publication |
+
+`npm test` runs `src/shared/__tests__` (47 checks, no database needed) and is
+part of the build.
+
+### The four outlets
+
+| code | display | kind | sells | attendance | geofence | opens/closes | POS name | DSR name |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `avenues` | Time Keeper - Avenues | physical | yes | yes | yes | yes | `Time Keeper - Avenues` | `Avenues` |
+| `time_gallery` | Time Gallery | physical | yes | yes | yes | yes | `Time Gallery` | `TimeGallery` |
+| `whatsapp` | Time Keeper WhatsApp | digital | yes | no | no | **no** | `Time Keeper` | `WhatsApp` |
+| `online` | Time Keeper Online | digital | yes | no | no | **no** | *(none yet)* | *(none yet)* |
+| `hq` | Timekeeper HQ | physical | **no** | yes | yes | **no** | — | — |
+
+The till's register called **`Time Keeper`** is the WhatsApp channel's takings
+(Eman's), not a third shop. Eman's own attendance is at HQ; her *sales channel*
+being WhatsApp must never make WhatsApp behave like a shop.
+
+**Never compare outlet text with `===`.** Four systems spell these four outlets
+four different ways. Use `resolveOutlet` / `sameOutlet`, or `resolve_outlet()`
+in SQL.
+
+### Rules worth not rediscovering
+
+- **An open shift is the hours so far, never zero.** Three screens reported 0.
+- **A shift open more than 16 hours was never clocked out.** Its length is
+  `null` — unknown, not enormous — and it shows as needing a correction. Ten such
+  records existed when this was written, the oldest running since 6 August.
+- **Nobody is absent just because they are not here.** Only flag a person on a
+  day the schedule *in force on that date* expected them. An unknown schedule is
+  `no_schedule`, never `missing`.
+- **Schedules are dated.** Changing a shift next month must not re-judge last
+  month. `set_schedule()` does the splitting in one transaction.
+- **Realtime is for today only**, and a table delivers nothing unless it is in
+  the `supabase_realtime` publication.
+
+---
+
 ## 11. DSR (watch-store-crm) notes
 
 - `src/utils/report.ts` — `buildDailyStats`; **follow-up conversions are separated** from the normal daily report (`followUpWins`, `followUpWinRevenue`, `dayCases`). Brand and product-type revenue are attributed **per line item** via `utils/saleItems.ts#getEffectiveItems` (same as the manager dashboard) — never read `case.brand` for money, it only names the first item. Brand Analytics PDF has **no Lost column**. The PDF paginates itself: header + footer on every page, section headings never orphaned from their table (`heading()`/`ensureSpace()`), tables carry `TABLE_MARGIN` so continuation pages clear the header. `shareReport` → `'shared'|'downloaded'|'cancelled'`.
@@ -258,6 +373,22 @@ on; `Unknown` is the correct answer when the data does not carry one.
 ---
 
 ## 13. Changelog
+
+- **2026-09-17** (later 4) — **One foundation under both apps.** Before redesigning anything, the two apps were made to agree on what they were looking at. `src/shared/` (§10a) is mirrored byte-for-byte between them, with a counterpart in the database for reports and exports, and the build fails if the copies drift.
+
+  *Outlets* got a registry. The same four outlets were spelled four ways across `cases`, `employees`, `geofences` and the till, and every join between sales, staffing and revenue went through an ad-hoc normaliser written slightly differently each time. Nothing was renamed: `resolve_outlet()` and `resolveOutlet` map every historical spelling to one of five codes. The two shops are separated from the two digital channels — Online and WhatsApp sell but have no attendance, no geofence and no opening time — and the office sells nothing but has both. The till's `Time Keeper` register turned out to be the WhatsApp channel's takings, and the dashboard now says so instead of showing a fourth shop.
+
+  *Worked hours* had six implementations. Three reported an open shift as **0 hours**, so somebody on the floor since nine had worked nothing at four in the afternoon. Worse, counting an open shift up to now would have credited one person with a thousand hours: ten shifts were still open, the oldest since 6 August. A shift open past 16 hours is now **unknown** (`null`), flagged as needing a correction, and left out of every total.
+
+  *Attendance status* was decided separately on every screen, so a person could read as present on one and absent on another. One engine, one vocabulary. Nobody is absent merely for not being here — only for a day the schedule *in force on that date* expected them, and an unknown schedule says so rather than accusing anybody.
+
+  *Schedules* became dated (`employee_schedules`, `set_schedule()`), so moving somebody to afternoons next month no longer turns last month's on-time mornings into late arrivals — and are editable from **HR → Employees → Schedule**, which previously meant writing SQL.
+
+  *The roster name* stopped being stored twice. `employees.dsr_staff_name` is the source of truth; `profiles.sales_name` is a trigger-kept mirror. Having two and syncing neither is what locked a salesperson out of the DSR.
+
+  *My Portal's rules* — clocking in and out, leave, the balance, corrections, geofence matching — moved to `src/shared/portal.ts`, used by both screens. The shop floor had never recorded how accurate the phone's fix was on clock-out, so half of them could not be checked against the geofence afterwards.
+
+  *Realtime* was switched on for the first time. No table was in the `supabase_realtime` publication, so the DSR's Today's Log and follow-up board had been subscribed for months and receiving nothing. Five operational tables now publish; historical reports do not.
 
 - **2026-09-17** (later 3) — **The DSR opens on the shop for a manager.** The bottom bar carried 4 tabs for a salesperson, 6 for a manager and **8** for an owner, and the app opened on Quick Entry — so a manager's first sight each morning was a form for logging a customer. Managers and owners now get five: **Home · Entry · Team · Follow-ups · More**; salespeople keep their four. `/` renders the right page for the role, so the old once-per-sign-in redirect to `/manager` is gone.
 

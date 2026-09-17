@@ -5,14 +5,15 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npm run shared:check && tsc && vite build",
+    "build": "npm run shared:check && npm test && tsc && vite build",
     "shared:check": "node scripts/shared-check.mjs",
     "shared:hash": "node scripts/shared-check.mjs --write",
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\"",
     "typecheck": "tsc --noEmit",
-    "deploy": "echo 'Deploys are automatic: push to main and GitHub Actions builds and publishes it. Deploying from a laptop once overwrote the live site with an older build, so this is disabled on purpose.' && exit 1"
+    "deploy": "echo 'Deploys are automatic: push to main and GitHub Actions builds and publishes it. Deploying from a laptop once overwrote the live site with an older build, so this is disabled on purpose.' && exit 1",
+    "test": "tsx src/shared/__tests__/run.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.106.0",
@@ -37,6 +38,7 @@
     "postcss": "^8.4.35",
     "prettier": "^3.9.6",
     "tailwindcss": "^3.4.1",
+    "tsx": "^4.23.13",
     "typescript": "^5.2.2",
     "typescript-eslint": "^8.70.0",
     "vite": "^5.1.4"
