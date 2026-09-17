@@ -17,6 +17,7 @@ import {
   fencesNear, clockIn as portalClockIn, clockOut as portalClockOut,
   applyForLeave, reviseLeave, cancelLeave as portalCancelLeave, leaveDocumentUrl,
 } from '../shared/portal';
+import { useLive } from '../shared/live';
 
 interface EmpRecord {
   id: string; full_name: string; user_id: string | null; job_title: string | null; location: string | null;
@@ -236,6 +237,15 @@ export default function MyPortalPage() {
     setLoading(false);
   }
   useEffect(() => { load(); }, [user?.id]);
+
+  /* Their own day, kept current: a correction approved by HR or a shift closed
+     from another device shows up without them reloading the page. RLS means
+     only their own rows reach this subscription. */
+  useLive('my-portal', [
+    { table: 'attendance_records', filter: user ? `user_id=eq.${user.id}` : undefined },
+    { table: 'employee_requests', filter: user ? `user_id=eq.${user.id}` : undefined },
+    { table: 'leave_records' },
+  ], () => { void load(); }, { enabled: !!user });
 
   // ── clock in / out ──
   // The checks below are the courteous half: they explain the problem before a

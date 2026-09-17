@@ -14,6 +14,7 @@ import { AttendanceDayDetail, GeoCell } from '../components/AttendanceDayDetail'
 import { addRecord as addAttendanceRecord, hoursOf, type AttendanceRecord } from '../lib/attendanceEdits';
 import { dayHours, formatHours } from '../shared/workedHours';
 import { workload } from '../shared/workload';
+import { useLive } from '../shared/live';
 import { rangeLabel } from '../lib/dateRange';
 
 interface EmpLite { id: string; full_name: string; location: string | null; job_title: string | null; status: string; user_id: string | null }
@@ -85,6 +86,13 @@ function ManagerDashboard() {
       .eq('approval_status', 'Approved').lte('leave_start', to).gte('leave_end', from)
       .then(({ data }) => setLeaves((data as LeaveLite[]) ?? []));
   }, [from, to, reload]);
+
+  /* Live only while the range includes today — a manager looking at last
+     month's sheet has nothing to be kept up to date about, and a subscription
+     they cannot see is just traffic. */
+  useLive('attendance-today', [{ table: 'attendance_records' }],
+    () => setReload((n) => n + 1),
+    { enabled: from <= today && to >= today });
 
   const empByName = useMemo(() => new Map(employees.map((e) => [e.full_name, e])), [employees]);
   const empById = useMemo(() => new Map(employees.map((e) => [e.id, e])), [employees]);
