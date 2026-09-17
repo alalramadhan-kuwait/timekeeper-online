@@ -12,6 +12,7 @@ import { workingDaysBetween } from './Leave';
 import { lateClassOf, isEarlyLeave, LATE_STYLE } from '../lib/lateness';
 import { Bell } from 'lucide-react';
 import { pushSupported, pushEnabled, enablePush, isIosNotInstalled } from '../lib/push';
+import { dayHours, totalHours, type DayHours } from '../shared/workedHours';
 
 interface EmpRecord {
   id: string; full_name: string; user_id: string | null; job_title: string | null; location: string | null;
@@ -39,7 +40,6 @@ const kuwaitHM = (iso: string) => new Intl.DateTimeFormat('en-GB',
   { timeZone: 'Asia/Kuwait', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(iso));
 const kwDate = (iso: string) => new Date(iso).toLocaleDateString('en-CA', { timeZone: 'Asia/Kuwait' });
 const satOfWeek = (ymd: string) => { const d = new Date(`${ymd}T12:00:00Z`); d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 1) % 7)); return d.toISOString().slice(0, 10); }; // Kuwait week starts Saturday
-const hoursBetween = (a: string, b: string | null) => (b ? (new Date(b).getTime() - new Date(a).getTime()) / 3600000 : 0);
 const durationStr = (a: string, b: string | null) => {
   const mins = Math.floor(((b ? new Date(b) : new Date()).getTime() - new Date(a).getTime()) / 60000);
   return mins >= 60 ? `${Math.floor(mins / 60)}h ${mins % 60}m` : `${mins}m`;
@@ -59,6 +59,19 @@ const fmtDate = (iso?: string | null) => (iso ? new Date(`${iso}`).toLocaleDateS
 // minutes-since-midnight of an instant in Kuwait time (for lateness maths)
 const kwMinutes = (iso: string) => { const [h, m] = new Date(iso).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Kuwait' }).split(':').map(Number); return h * 60 + m; };
 const STANDARD_DAY_HOURS = 8; // expected hours per working day
+
+/** A month of records folded into one entry per Kuwait day, hours and all. */
+const groupByDay = (records: Array<{ clock_in: string; clock_out: string | null }>) => {
+  const raw = new Map<string, Array<{ clockIn: string; clockOut: string | null }>>();
+  for (const r of records) {
+    const d = kwDate(r.clock_in);
+    if (!raw.has(d)) raw.set(d, []);
+    raw.get(d)!.push({ clockIn: r.clock_in, clockOut: r.clock_out });
+  }
+  const out = new Map<string, DayHours>();
+  for (const [d, shifts] of raw) out.set(d, dayHours(shifts));
+  return out;
+};
 const dayLabel = (ymd?: string | null) => (ymd ? new Date(`${ymd}T12:00:00Z`).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' }) : '');
 const weekdayLabel = (iso: string) => new Date(iso).toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', timeZone: 'Asia/Kuwait' });
 const monthLabel = (ym: string) => new Date(`${ym}-01T12:00:00Z`).toLocaleDateString('en-GB', { month: 'long', year: 'numeric', timeZone: 'UTC' });
@@ -510,40 +523,41 @@ export default function MyPortalPage() {
     // Group by day first. A day worked in two shifts is one day, its hours add
     // up, and only the clock-in that opened it can be late — counting per
     // record would call it two days and charge a shortfall against each half.
-    const byDay = new Map<string, number>();
+    const byDay = groupByDay(monthRecs);
     const firstOfDay = new Map<string, AttRec>();
     for (const r of monthRecs) {
       const d = kwDate(r.clock_in);
-      byDay.set(d, (byDay.get(d) ?? 0) + hoursBetween(r.clock_in, r.clock_out));
       const seen = firstOfDay.get(d);
       if (!seen || r.clock_in < seen.clock_in) firstOfDay.set(d, r);
     }
     let lateHours = 0;   // cumulative hours arrived past the grace window
-    let missingHours = 0; // cumulative shortfall below 8h on completed days
+    let missingHours = 0; // cumulative shortfall below 8h on days that are finished
     for (const r of firstOfDay.values()) {
       if (!r.justified) { const a = kwMinutes(r.clock_in); if (a > graceMin) lateHours += (a - graceMin) / 60; }
     }
-    for (const worked of byDay.values()) {
-      if (worked > 0 && worked < STANDARD_DAY_HOURS) missingHours += STANDARD_DAY_HOURS - worked;
+    for (const day of byDay.values()) {
+      // A day still being worked is not short of anything yet, and a day nobody
+      // clocked out of is a correction to make rather than a shortfall to charge.
+      if (day.onTheFloor || day.unusableShifts > 0 || day.hours === null) continue;
+      if (day.hours > 0 && day.hours < STANDARD_DAY_HOURS) missingHours += STANDARD_DAY_HOURS - day.hours;
     }
     const days = byDay.size;
-    const hours = [...byDay.values()].reduce((s, h) => s + h, 0);
+    const hours = totalHours([...byDay.values()]);
     const late = [...firstOfDay.values()].filter((r) => r.is_late && !r.justified).length;
     return { days, hours, onTime: Math.max(0, days - late), late, lateHours, missingHours };
   }, [monthRecs, workStart]);
 
   // selected-month attendance summary for the history panel
   const histStats = useMemo(() => {
-    const byDay = new Map<string, number>();
+    const byDay = groupByDay(histRecs);
     const firstOfDay = new Map<string, AttRec>();
     for (const r of histRecs) {
       const d = kwDate(r.clock_in);
-      byDay.set(d, (byDay.get(d) ?? 0) + hoursBetween(r.clock_in, r.clock_out));
       const seen = firstOfDay.get(d);
       if (!seen || r.clock_in < seen.clock_in) firstOfDay.set(d, r);
     }
     const days = byDay.size;
-    const hours = [...byDay.values()].reduce((s, h) => s + h, 0);
+    const hours = totalHours([...byDay.values()]);
     const late = [...firstOfDay.values()].filter((r) => r.is_late && !r.justified).length;
     return { days, hours, onTime: Math.max(0, days - late), late };
   }, [histRecs]);

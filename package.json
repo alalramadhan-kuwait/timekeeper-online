@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "npm run shared:check && tsc && vite build",
+    "shared:check": "node scripts/shared-check.mjs",
+    "shared:hash": "node scripts/shared-check.mjs --write",
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\"",

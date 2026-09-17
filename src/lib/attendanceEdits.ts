@@ -11,6 +11,7 @@
  * audited into the History Log by the database — none of that moved.
  */
 import { supabase } from './supabase';
+import { shiftHours } from '../shared/workedHours';
 import { lateClassOf } from './lateness';
 
 export interface AttendanceRecord {
@@ -34,8 +35,13 @@ export const kuwaitDate = (iso: string) =>
   new Date(iso).toLocaleDateString('en-CA', { timeZone: 'Asia/Kuwait' });
 export const fmtTime = (iso: string) => new Date(iso)
   .toLocaleTimeString('en-KW', { hour: '2-digit', minute: '2-digit', hour12: true, timeZone: 'Asia/Kuwait' });
-export const hoursOf = (a: string, b: string | null) =>
-  (((b ? new Date(b) : new Date()).getTime() - new Date(a).getTime()) / 3600000);
+/**
+ * Hours for one record. null when the record cannot answer the question — a
+ * shift nobody clocked out of, or one clocked out before it began. The rule
+ * lives in src/shared/workedHours.ts so every screen and the database agree.
+ */
+export const hoursOf = (a: string, b: string | null): number | null =>
+  shiftHours({ clockIn: a, clockOut: b }).hours;
 
 /** Every record a person has on one Kuwait day — not the first one. A split
  *  shift is two rows, and a detail view that showed one of them would be

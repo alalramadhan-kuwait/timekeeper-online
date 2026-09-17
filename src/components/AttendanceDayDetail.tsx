@@ -6,6 +6,7 @@ import {
   loadDay, saveCorrection, addRecord, deleteRecord,
   kuwaitHM, fmtTime, hoursOf, type AttendanceRecord,
 } from '../lib/attendanceEdits';
+import { dayHours, formatHours } from '../shared/workedHours';
 
 /**
  * One person's attendance on one day, with everything a manager can do to it.
@@ -82,7 +83,9 @@ export function AttendanceDayDetail({ employee, date, workStart, note, onChanged
 
   if (recs === null) return <div className="py-6"><Spinner /></div>;
 
-  const totalHours = recs.reduce((t, r) => t + (r.clock_out ? hoursOf(r.clock_in, r.clock_out) : 0), 0);
+  // An open shift counts the hours so far; a record nobody clocked out of is
+  // reported as needing a correction rather than folded in as zero.
+  const day = dayHours(recs.map((r) => ({ clockIn: r.clock_in, clockOut: r.clock_out })));
 
   return (
     <div className="space-y-3">
@@ -94,7 +97,10 @@ export function AttendanceDayDetail({ employee, date, workStart, note, onChanged
         {recs.length > 0 && (
           <p className="text-xs text-slate-500">
             {recs.length} shift{recs.length === 1 ? '' : 's'} ·{' '}
-            <span className="font-semibold tabular-nums text-slate-700">{totalHours.toFixed(1)}h</span>
+            <span className="font-semibold tabular-nums text-slate-700">{formatHours(day.hours)}</span>
+            {day.unusableShifts > 0 && (
+              <span className="text-amber-600"> · {day.unusableShifts} needs a clock-out</span>
+            )}
           </p>
         )}
       </div>
@@ -124,9 +130,7 @@ export function AttendanceDayDetail({ employee, date, workStart, note, onChanged
               <span className="tabular-nums font-medium text-slate-800">
                 {r.clock_out ? fmtTime(r.clock_out) : <span className="text-slate-400 font-normal">still open</span>}
               </span>
-              {r.clock_out && (
-                <span className="text-xs text-slate-400 tabular-nums">{hoursOf(r.clock_in, r.clock_out).toFixed(1)}h</span>
-              )}
+              <span className="text-xs text-slate-400 tabular-nums">{formatHours(hoursOf(r.clock_in, r.clock_out))}</span>
               {r.justified
                 ? <Badge className="bg-slate-100 text-slate-600 border-slate-200">Late — excused</Badge>
                 : late !== 'On time' && <Badge className="bg-amber-100 text-amber-700 border-amber-200">{late}</Badge>}

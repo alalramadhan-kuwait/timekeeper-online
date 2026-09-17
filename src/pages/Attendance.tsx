@@ -11,7 +11,8 @@ import { locationType, LOCATION_TYPE_STYLE, LocationType } from '../lib/location
 import { lateClassOf, isEarlyLeave, LATE_STYLE, LateClass } from '../lib/lateness';
 import { Modal } from '../components/ui';
 import { AttendanceDayDetail, GeoCell } from '../components/AttendanceDayDetail';
-import { addRecord as addAttendanceRecord, type AttendanceRecord } from '../lib/attendanceEdits';
+import { addRecord as addAttendanceRecord, hoursOf, type AttendanceRecord } from '../lib/attendanceEdits';
+import { dayHours, formatHours } from '../shared/workedHours';
 import { rangeLabel } from '../lib/dateRange';
 
 interface EmpLite { id: string; full_name: string; location: string | null; job_title: string | null; status: string; user_id: string | null }
@@ -21,7 +22,6 @@ const fmtTime = (iso: string) => new Date(iso).toLocaleTimeString('en-KW', { hou
 const fmtDate = (iso: string) => new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', timeZone: 'Asia/Kuwait' });
 const todayKuwait = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kuwait' });
 const kuwaitDate = (iso: string) => new Date(iso).toLocaleDateString('en-CA', { timeZone: 'Asia/Kuwait' });
-const hoursOf = (a: string, b: string | null) => (((b ? new Date(b) : new Date()).getTime() - new Date(a).getTime()) / 3600000);
 
 export default function AttendancePage() {
   const { role } = useAuth();
@@ -125,7 +125,9 @@ function ManagerDashboard() {
     const late = filtered.filter(isLateRow).length;
     const stillIn = filtered.filter((r) => !r.clock_out && kuwaitDate(r.clock_in) === today).length;
     const missed = filtered.filter((r) => !r.clock_out && kuwaitDate(r.clock_in) < today).length;
-    const totalHours = filtered.reduce((s, r) => s + hoursOf(r.clock_in, r.clock_out), 0);
+    const span = dayHours(filtered.map((r) => ({ clockIn: r.clock_in, clockOut: r.clock_out })));
+    const totalHours = span.hours ?? 0;
+    const needCorrection = span.unusableShifts;
     const presentToday = new Set(filtered.filter((r) => kuwaitDate(r.clock_in) === today).map((r) => r.employee_name));
     const inRangeToday = to >= today && from <= today;
     const absentToday = inRangeToday
@@ -137,7 +139,7 @@ function ManagerDashboard() {
     const excusedToday = inRangeToday
       ? activeEmployees.filter((e) => onLeaveToday.has(e.id)).map((e) => ({ name: e.full_name, type: onLeaveToday.get(e.id)! }))
       : [];
-    return { late, stillIn, missed, totalHours, records: filtered.length, absentToday, excusedToday };
+    return { late, stillIn, missed, totalHours, needCorrection, records: filtered.length, absentToday, excusedToday };
   }, [filtered, activeEmployees, today, from, to, teamFilter, typeFilter, empFilter, onLeaveToday, workStart]);
 
   const report = useMemo(() => {
@@ -147,7 +149,7 @@ function ManagerDashboard() {
       e.days.add(kuwaitDate(r.clock_in));
       if (isLateRow(r)) e.late++;
       if (r.justified) e.justified++;
-      e.hours += hoursOf(r.clock_in, r.clock_out);
+      e.hours += hoursOf(r.clock_in, r.clock_out) ?? 0;
       if (!r.clock_out && kuwaitDate(r.clock_in) < today) e.missed++;
       if (isEarlyLeave(r.clock_out)) e.early++;
       map.set(r.employee_name, e);
@@ -165,7 +167,10 @@ function ManagerDashboard() {
   const maxTrend = Math.max(1, ...trend.map((t) => t.count));
 
   const lateToday = filtered.filter((r) => isLateRow(r) && kuwaitDate(r.clock_in) === today);
-  const unusual = filtered.filter((r) => r.clock_out && (hoursOf(r.clock_in, r.clock_out) > 12 || hoursOf(r.clock_in, r.clock_out) < 1));
+  const unusual = filtered.filter((r) => {
+    const h = hoursOf(r.clock_in, r.clock_out);
+    return r.clock_out !== null && h !== null && (h > 12 || h < 1);
+  });
 
   // ── corrections (audited via DB trigger → History Log) ──
   // The writes themselves live in src/lib/attendanceEdits.ts so the calendar
@@ -424,7 +429,7 @@ function ManagerDashboard() {
                     <td className="px-4 py-2 tabular-nums whitespace-nowrap">
                       {r.clock_out ? <>{fmtTime(r.clock_out)}{isEarlyLeave(r.clock_out) && <span className="text-amber-500 text-xs ml-1">early</span>}</> : '—'}
                     </td>
-                    <td className="px-4 py-2 text-right tabular-nums hidden sm:table-cell">{r.clock_out ? hoursOf(r.clock_in, r.clock_out).toFixed(1) : '—'}</td>
+                    <td className="px-4 py-2 text-right tabular-nums hidden sm:table-cell">{formatHours(hoursOf(r.clock_in, r.clock_out))}</td>
                     <td className="px-4 py-2">
                       <Badge className={statusBadge(st)}>{st}</Badge>
                       {r.correction_reason && <span className="block text-[10px] text-blue-500 mt-0.5" title={r.correction_reason}>corrected</span>}
