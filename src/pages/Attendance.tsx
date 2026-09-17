@@ -13,6 +13,7 @@ import { Modal } from '../components/ui';
 import { AttendanceDayDetail, GeoCell } from '../components/AttendanceDayDetail';
 import { addRecord as addAttendanceRecord, hoursOf, type AttendanceRecord } from '../lib/attendanceEdits';
 import { dayHours, formatHours } from '../shared/workedHours';
+import { workload } from '../shared/workload';
 import { rangeLabel } from '../lib/dateRange';
 
 interface EmpLite { id: string; full_name: string; location: string | null; job_title: string | null; status: string; user_id: string | null }
@@ -142,19 +143,32 @@ function ManagerDashboard() {
     return { late, stillIn, missed, totalHours, needCorrection, records: filtered.length, absentToday, excusedToday };
   }, [filtered, activeEmployees, today, from, to, teamFilter, typeFilter, empFilter, onLeaveToday, workStart]);
 
+  /* Hours and days come from src/shared/workload.ts — the same counting the
+     shop-floor team list uses, so the two cannot disagree about a week. The
+     lateness and early-leaving tallies stay here; they are this page's own. */
   const report = useMemo(() => {
-    const map = new Map<string, { name: string; area: string; days: Set<string>; late: number; justified: number; hours: number; missed: number; early: number }>();
+    const loads = workload(filtered.map((r) => ({
+      who: r.employee_name, date: kuwaitDate(r.clock_in), outlet: r.location,
+      clockIn: r.clock_in, clockOut: r.clock_out,
+    })));
+    const marks = new Map<string, { late: number; justified: number; missed: number; early: number }>();
     for (const r of filtered) {
-      const e = map.get(r.employee_name) ?? { name: r.employee_name, area: empByName.get(r.employee_name)?.location ?? '—', days: new Set<string>(), late: 0, justified: 0, hours: 0, missed: 0, early: 0 };
-      e.days.add(kuwaitDate(r.clock_in));
+      const e = marks.get(r.employee_name) ?? { late: 0, justified: 0, missed: 0, early: 0 };
       if (isLateRow(r)) e.late++;
       if (r.justified) e.justified++;
-      e.hours += hoursOf(r.clock_in, r.clock_out) ?? 0;
       if (!r.clock_out && kuwaitDate(r.clock_in) < today) e.missed++;
       if (isEarlyLeave(r.clock_out)) e.early++;
-      map.set(r.employee_name, e);
+      marks.set(r.employee_name, e);
     }
-    return [...map.values()].map((e) => ({ ...e, daysPresent: e.days.size, avg: e.days.size ? e.hours / e.days.size : 0 })).sort((a, b) => b.hours - a.hours);
+    return loads.map((l) => ({
+      name: l.who,
+      area: empByName.get(l.who)?.location ?? '—',
+      hours: l.hours ?? 0,
+      daysPresent: l.daysWorked,
+      avg: l.perDay ?? 0,
+      needsCorrection: l.unusableShifts,
+      ...(marks.get(l.who) ?? { late: 0, justified: 0, missed: 0, early: 0 }),
+    }));
   }, [filtered, empByName, today, workStart]);
 
   const trend = useMemo(() => {
