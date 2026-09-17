@@ -525,9 +525,13 @@ function ListEditor({ title, hint, items, onChange, disabled }: {
 interface GeofenceRow { id: string; name: string; lat: number; lng: number; radius_m: number; active: boolean }
 
 /** Admin: manage one geofence per location (HQ, Avenues, Time Gallery…). */
-function Geofences({ workStartTime, setWorkStartTime, maxAccuracy, setMaxAccuracy, requireAccuracy, setRequireAccuracy, onSaveHours, savedMsg }: {
+function Geofences({ workStartTime, setWorkStartTime, workEndTime, setWorkEndTime, graceMinutes, setGraceMinutes, maxAccuracy, setMaxAccuracy, requireAccuracy, setRequireAccuracy, onSaveHours, savedMsg }: {
   workStartTime: string;
   setWorkStartTime: (v: string) => void;
+  workEndTime: string;
+  setWorkEndTime: (v: string) => void;
+  graceMinutes: string;
+  setGraceMinutes: (v: string) => void;
   maxAccuracy: string;
   setMaxAccuracy: (v: string) => void;
   requireAccuracy: boolean;
@@ -650,9 +654,23 @@ function Geofences({ workStartTime, setWorkStartTime, maxAccuracy, setMaxAccurac
 
       <div className="border-t border-slate-100 pt-3 flex flex-wrap items-end gap-3">
         <label className="text-xs">
-          <span className="block text-slate-500 mb-1">Work starts at (for late flagging)</span>
+          <span className="block text-slate-500 mb-1">Day starts at</span>
           <input type="time" value={workStartTime} onChange={(e) => setWorkStartTime(e.target.value)} className="px-3 py-1.5 rounded-lg border border-slate-300 text-sm" />
         </label>
+        <label className="text-xs">
+          <span className="block text-slate-500 mb-1">Day ends at</span>
+          <input type="time" value={workEndTime} onChange={(e) => setWorkEndTime(e.target.value)} className="px-3 py-1.5 rounded-lg border border-slate-300 text-sm" />
+        </label>
+        <label className="text-xs">
+          <span className="block text-slate-500 mb-1">Grace (minutes)</span>
+          <input type="number" min={0} step={5} value={graceMinutes} onChange={(e) => setGraceMinutes(e.target.value)}
+            className="w-24 px-3 py-1.5 rounded-lg border border-slate-300 text-sm" />
+        </label>
+        <p className="w-full text-[11px] text-slate-400 -mt-1">
+          Only a fallback, for anyone with no shift of their own. Somebody with hours set under
+          HR → Employees → Schedule is judged against those, so an afternoon shift is not late for
+          starting in the afternoon.
+        </p>
         <label className="text-xs">
           <span className="block text-slate-500 mb-1">Reject fixes vaguer than</span>
           <input type="number" min={20} step={10} value={maxAccuracy} onChange={(e) => setMaxAccuracy(e.target.value)}
@@ -842,11 +860,13 @@ export default function SettingsPage() {
   const [maxAccuracy, setMaxAccuracy] = useState('200');
   const [requireAccuracy, setRequireAccuracy] = useState(false);
   const [workStartTime, setWorkStartTime] = useState('09:00');
+  const [workEndTime, setWorkEndTime] = useState('17:00');
+  const [graceMinutes, setGraceMinutes] = useState('60');
   const [geofenceMsg, setGeofenceMsg] = useState<string | null>(null);
 
   async function load() {
     const [s, b] = await Promise.all([
-      supabase.from('settings').select('id, outlets, staff_roster, geofence_lat, geofence_lng, geofence_radius_m, work_start_time, geo_max_accuracy_m, geo_require_accuracy').single(),
+      supabase.from('settings').select('id, outlets, staff_roster, geofence_lat, geofence_lng, geofence_radius_m, work_start_time, work_end_time, late_grace_minutes, geo_max_accuracy_m, geo_require_accuracy').single(),
       supabase.from('brands').select('id, name, is_active').order('sort_order').order('name'),
     ]);
     if (s.data) {
@@ -859,6 +879,8 @@ export default function SettingsPage() {
       setMaxAccuracy(s.data.geo_max_accuracy_m?.toString() ?? '200');
       setRequireAccuracy(Boolean(s.data.geo_require_accuracy));
       setWorkStartTime(s.data.work_start_time ?? '09:00');
+      setWorkEndTime(s.data.work_end_time ?? '17:00');
+      setGraceMinutes(String(s.data.late_grace_minutes ?? 60));
     }
     setBrands((b.data as Brand[]) ?? []);
     setLoading(false);
@@ -891,6 +913,8 @@ export default function SettingsPage() {
     void geofenceLat; void geofenceLng; void geofenceRadius; // retained for legacy settings compatibility
     const { error } = await supabase.from('settings').update({
       work_start_time: workStartTime || '09:00',
+      work_end_time: workEndTime || '17:00',
+      late_grace_minutes: Number(graceMinutes) || 0,
       geo_max_accuracy_m: Math.max(20, parseInt(maxAccuracy) || 200),
       geo_require_accuracy: requireAccuracy,
     }).eq('id', settingsId);
@@ -942,6 +966,8 @@ export default function SettingsPage() {
         {isAdmin && <SalesTarget />}
         {isAdmin && <AdCurrency />}
         {isAdmin && <Geofences workStartTime={workStartTime} setWorkStartTime={setWorkStartTime}
+          workEndTime={workEndTime} setWorkEndTime={setWorkEndTime}
+          graceMinutes={graceMinutes} setGraceMinutes={setGraceMinutes}
           maxAccuracy={maxAccuracy} setMaxAccuracy={setMaxAccuracy}
           requireAccuracy={requireAccuracy} setRequireAccuracy={setRequireAccuracy}
           onSaveHours={saveGeofence} savedMsg={geofenceMsg} />}

@@ -1,29 +1,38 @@
 /**
- * Work-hour rules: official 9:00–17:00 (Kuwait), 1-hour grace on arrival.
- *   ≤ 10:00 On time · 10:01–10:15 Minor late · 10:16–10:30 Late · after Serious late
- * Clock-out before 17:00 counts as early leave (unless approved).
+ * Work-hour wording, over the shared punctuality engine.
+ *
+ * The rules themselves — how late is late, what counts as leaving early, and
+ * crucially *whose* hours a person is measured against — live in
+ * src/shared/punctuality.ts, so the back office, the shop floor and the reports
+ * all agree. This file is the back office's shorthand over it.
+ *
+ * Both functions take the shift they are judging against. They used to default
+ * to the office's 09:00–17:00 for everybody, which scored an afternoon shop
+ * shift as hours late every day somebody turned up on time.
  */
-export type LateClass = 'On time' | 'Minor late' | 'Late' | 'Serious late';
+import { dayPunctuality, lateClassOf as classOf, type LateClass } from '../shared/punctuality';
 
-function kuwaitMinutes(iso: string): number {
-  const parts = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Kuwait', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(iso));
-  const [h, m] = parts.split(':').map(Number);
-  return h * 60 + m;
-}
+export type { LateClass };
 
+const kuwaitDate = (iso: string) => new Date(iso).toLocaleDateString('en-CA', { timeZone: 'Asia/Kuwait' });
+
+/** How late an arrival was, in words, against a shift start. */
 export function lateClassOf(clockInIso: string, workStart = '09:00', graceMin = 60): LateClass {
-  const [wh, wm] = workStart.split(':').map(Number);
-  const mins = kuwaitMinutes(clockInIso) - (wh * 60 + wm + graceMin); // minutes past the grace deadline
-  if (mins <= 0) return 'On time';
-  if (mins <= 15) return 'Minor late';
-  if (mins <= 30) return 'Late';
-  return 'Serious late';
+  const d = dayPunctuality(
+    { date: kuwaitDate(clockInIso), schedules: [], records: [{ clockIn: clockInIso, clockOut: null }] },
+    { defaultStart: workStart, graceMinutes: graceMin },
+  );
+  return d.lateClass ?? classOf(0);
 }
 
-export function isEarlyLeave(clockOutIso: string | null, workEnd = '17:00'): boolean {
-  if (!clockOutIso) return false;
-  const [eh, em] = workEnd.split(':').map(Number);
-  return kuwaitMinutes(clockOutIso) < eh * 60 + em;
+/** Did they leave before their shift ended? False when nobody has said when it ends. */
+export function isEarlyLeave(clockOutIso: string | null, workEnd: string | null = '17:00'): boolean {
+  if (!clockOutIso || !workEnd) return false;
+  const d = dayPunctuality(
+    { date: kuwaitDate(clockOutIso), schedules: [], records: [{ clockIn: clockOutIso, clockOut: clockOutIso }] },
+    { defaultEnd: workEnd },
+  );
+  return (d.hoursEarly ?? 0) > 0;
 }
 
 export const LATE_STYLE: Record<LateClass, string> = {

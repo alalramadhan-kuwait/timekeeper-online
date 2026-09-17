@@ -24,6 +24,8 @@ interface EmpRecord {
   civil_id: string | null; passport_number: string | null; residency_expiry: string | null;
   work_permit_expiry: string | null; joining_date: string | null; annual_leave_entitlement: number | null;
   status: string | null; portal_enabled: boolean | null; phone: string | null;
+  /** Mirrors whichever dated schedule is in force today. */
+  shift_start: string | null; shift_end: string | null;
 }
 interface LeaveRec { id: string; employee_id: string; leave_type: string; leave_start: string; leave_end: string; days: number; approval_status: string; manager_status?: string; notes: string | null; created_at: string; document_url: string | null }
 interface AttRec { id: string; clock_in: string; clock_out: string | null; is_late: boolean; justified: boolean; location: string | null; correction_reason: string | null }
@@ -131,6 +133,7 @@ export default function MyPortalPage() {
   const [monthRecs, setMonthRecs] = useState<AttRec[]>([]);
   const [geofences, setGeofences] = useState<Geofence[]>([]);
   const [workStart, setWorkStart] = useState('09:00');
+  const [workEnd, setWorkEnd] = useState('17:00');
   // How vague a GPS fix may be and still count as proof of being on site.
   const [maxAccuracy, setMaxAccuracy] = useState(200);
   const [loading, setLoading] = useState(true);
@@ -212,7 +215,7 @@ export default function MyPortalPage() {
     const [empQ, geoQ, setQ, attQ, reqQ, monthQ] = await Promise.all([
       supabase.from('employees').select('*'),
       supabase.from('geofences').select('*').eq('active', true),
-      supabase.from('settings').select('work_start_time, geo_max_accuracy_m').single(),
+      supabase.from('settings').select('work_start_time, work_end_time, geo_max_accuracy_m').single(),
       supabase.from('attendance_records').select('id, clock_in, clock_out, is_late, justified, location, correction_reason')
         .eq('user_id', user.id).gte('clock_in', `${today}T00:00:00+03:00`).lte('clock_in', `${today}T23:59:59+03:00`)
         .order('clock_in', { ascending: true }),
@@ -226,6 +229,7 @@ export default function MyPortalPage() {
     setEmp(mine);
     setGeofences((geoQ.data as Geofence[]) ?? []);
     if (setQ.data?.work_start_time) setWorkStart(setQ.data.work_start_time);
+    if (setQ.data?.work_end_time) setWorkEnd(setQ.data.work_end_time);
     if (setQ.data?.geo_max_accuracy_m) setMaxAccuracy(Number(setQ.data.geo_max_accuracy_m));
     setTodayRecs((attQ.data as AttRec[]) ?? []);
     setRequests((reqQ.data as EmpRequest[]) ?? []);
@@ -337,6 +341,11 @@ export default function MyPortalPage() {
   }
 
   // ── leave application ──
+  /* Their own shift end if HR has set one, otherwise the shop default. Telling
+     somebody who finishes at 15:30 that they left early at 15:30 every day is
+     how a warning stops being read. */
+  const myShiftEnd = emp?.shift_end?.slice(0, 5) ?? workEnd;
+
   const lvDays = useMemo(() => (lvStart && lvEnd && lvEnd >= lvStart ? workingDaysBetween(lvStart, lvEnd) : 0), [lvStart, lvEnd]);
 
   async function submitLeave() {
@@ -681,7 +690,9 @@ export default function MyPortalPage() {
 
         <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
           <span className="text-slate-400">Expected by {graceEnd}</span>
-          {!clockedIn && lastRec?.clock_out && isEarlyLeave(lastRec.clock_out) && <span className="text-amber-600">Clock-out before 5:00 PM — counts as early leave unless approved.</span>}
+          {!clockedIn && lastRec?.clock_out && isEarlyLeave(lastRec.clock_out, myShiftEnd) && (
+            <span className="text-amber-600">Clocked out before {myShiftEnd} — counts as early leave unless approved.</span>
+          )}
           {firstRec?.correction_reason && <span className="text-blue-600">Corrected by manager: {firstRec.correction_reason}</span>}
         </div>
 

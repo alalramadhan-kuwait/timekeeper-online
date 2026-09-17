@@ -14,6 +14,8 @@ import { AttendanceDayDetail, GeoCell } from '../components/AttendanceDayDetail'
 import { addRecord as addAttendanceRecord, hoursOf, type AttendanceRecord } from '../lib/attendanceEdits';
 import { dayHours, formatHours } from '../shared/workedHours';
 import { workload } from '../shared/workload';
+import { dayPunctuality, punctualityTotals, shiftTimesOn } from '../shared/punctuality';
+import { scheduleFromRow, type Schedule, type ScheduleRow } from '../shared/schedule';
 import { useLive } from '../shared/live';
 import { rangeLabel } from '../lib/dateRange';
 
@@ -53,6 +55,13 @@ function ManagerDashboard() {
   const [employees, setEmployees] = useState<EmpLite[]>([]);
   const [leaves, setLeaves] = useState<LeaveLite[]>([]);
   const [workStart, setWorkStart] = useState('09:00');
+  const [workEnd, setWorkEnd] = useState('17:00');
+  const [grace, setGrace] = useState(60);
+  /* Each person's dated shifts, so lateness is judged against the hours they
+     actually work. Before this the whole company was measured against the
+     office's 09:00–17:00, which scored an afternoon shop shift as six hours
+     late every day somebody turned up on time. */
+  const [schedules, setSchedules] = useState<Map<string, Schedule[]>>(new Map());
   const [empFilter, setEmpFilter] = useState('All');
   const [teamFilter, setTeamFilter] = useState('All');
   const [typeFilter, setTypeFilter] = useState<'All' | LocationType>('All');
@@ -73,8 +82,23 @@ function ManagerDashboard() {
   useEffect(() => {
     supabase.from('employees').select('id, full_name, location, job_title, status, user_id')
       .then(({ data }) => setEmployees((data as EmpLite[]) ?? []));
-    supabase.from('settings').select('work_start_time').single()
-      .then(({ data }) => { if (data?.work_start_time) setWorkStart(data.work_start_time); });
+    supabase.from('settings').select('work_start_time, work_end_time, late_grace_minutes').single()
+      .then(({ data }) => {
+        if (data?.work_start_time) setWorkStart(data.work_start_time);
+        if (data?.work_end_time) setWorkEnd(data.work_end_time);
+        if (data?.late_grace_minutes != null) setGrace(Number(data.late_grace_minutes));
+      });
+    supabase.from('employee_schedules')
+      .select('id, employee_id, effective_from, effective_to, working_days, shift_start, shift_end, note')
+      .then(({ data }) => {
+        const by = new Map<string, Schedule[]>();
+        for (const row of ((data ?? []) as ScheduleRow[])) {
+          const list = by.get(row.employee_id) ?? [];
+          list.push(scheduleFromRow(row));
+          by.set(row.employee_id, list);
+        }
+        setSchedules(by);
+      });
   }, []);
 
   useEffect(() => {
@@ -110,7 +134,25 @@ function ManagerDashboard() {
     if (r.justified) return 'Justified';
     return lateClassOf(r.clock_in, workStart);
   };
-  const isLateRow = (r: AttendanceRecord) => !r.justified && lateClassOf(r.clock_in, workStart) !== 'On time';
+  /** When this person's day ended, on that date — their own shift if they have
+   *  one, otherwise the shop default. */
+  const shiftEndFor = (name: string, date: string): string | null => {
+    const emp = empByName.get(name);
+    return shiftTimesOn(schedules.get(emp?.id ?? '') ?? [], date,
+      { defaultStart: workStart, defaultEnd: workEnd }).end;
+  };
+
+  /** Late against this person's own shift, not the office's. */
+  const isLateRow = (r: AttendanceRecord) => {
+    if (r.justified) return false;
+    const emp = empByName.get(r.employee_name);
+    const mine = schedules.get(emp?.id ?? '') ?? [];
+    const d = dayPunctuality(
+      { date: kuwaitDate(r.clock_in), schedules: mine, records: [{ clockIn: r.clock_in, clockOut: r.clock_out }] },
+      { defaultStart: workStart, defaultEnd: workEnd, graceMinutes: grace },
+    );
+    return (d.hoursLate ?? 0) > 0;
+  };
 
   const filtered = useMemo(() => records.filter((r) => {
     if (empFilter !== 'All' && r.employee_name !== empFilter) return false;
@@ -152,32 +194,63 @@ function ManagerDashboard() {
   }, [filtered, activeEmployees, today, from, to, teamFilter, typeFilter, empFilter, onLeaveToday, workStart]);
 
   /* Hours and days come from src/shared/workload.ts — the same counting the
-     shop-floor team list uses, so the two cannot disagree about a week. The
-     lateness and early-leaving tallies stay here; they are this page's own. */
+     shop-floor team list uses, so the two cannot disagree about a week.
+     Lateness and leaving early come from src/shared/punctuality.ts, judged
+     against each person's own dated shift and only falling back to the shop
+     default when nobody has set one. */
   const report = useMemo(() => {
     const loads = workload(filtered.map((r) => ({
       who: r.employee_name, date: kuwaitDate(r.clock_in), outlet: r.location,
       clockIn: r.clock_in, clockOut: r.clock_out,
     })));
-    const marks = new Map<string, { late: number; justified: number; missed: number; early: number }>();
+
+    // one entry per person per day — a split shift is one day, not two
+    const byPersonDay = new Map<string, Map<string, AttendanceRecord[]>>();
     for (const r of filtered) {
-      const e = marks.get(r.employee_name) ?? { late: 0, justified: 0, missed: 0, early: 0 };
-      if (isLateRow(r)) e.late++;
-      if (r.justified) e.justified++;
+      const day = kuwaitDate(r.clock_in);
+      let days = byPersonDay.get(r.employee_name);
+      if (!days) { days = new Map(); byPersonDay.set(r.employee_name, days); }
+      days.set(day, [...(days.get(day) ?? []), r]);
+    }
+
+    const opts = { defaultStart: workStart, defaultEnd: workEnd, graceMinutes: grace };
+    const marks = new Map<string, { missed: number }>();
+    for (const r of filtered) {
+      const e = marks.get(r.employee_name) ?? { missed: 0 };
       if (!r.clock_out && kuwaitDate(r.clock_in) < today) e.missed++;
-      if (isEarlyLeave(r.clock_out)) e.early++;
       marks.set(r.employee_name, e);
     }
-    return loads.map((l) => ({
-      name: l.who,
-      area: empByName.get(l.who)?.location ?? '—',
-      hours: l.hours ?? 0,
-      daysPresent: l.daysWorked,
-      avg: l.perDay ?? 0,
-      needsCorrection: l.unusableShifts,
-      ...(marks.get(l.who) ?? { late: 0, justified: 0, missed: 0, early: 0 }),
-    }));
-  }, [filtered, empByName, today, workStart]);
+
+    return loads.map((l) => {
+      const emp = empByName.get(l.who);
+      const mine = schedules.get(emp?.id ?? '') ?? [];
+      const days = [...(byPersonDay.get(l.who) ?? new Map<string, AttendanceRecord[]>()).entries()]
+        .map(([date, recs]) => dayPunctuality({
+          date,
+          schedules: mine,
+          records: recs.map((r) => ({ clockIn: r.clock_in, clockOut: r.clock_out, justified: r.justified })),
+        }, opts));
+      const punct = punctualityTotals(days);
+      return {
+        name: l.who,
+        area: emp?.location ?? '—',
+        hours: l.hours ?? 0,
+        daysPresent: l.daysWorked,
+        avg: l.perDay ?? 0,
+        needsCorrection: l.unusableShifts,
+        missed: marks.get(l.who)?.missed ?? 0,
+        late: punct.timesLate,
+        hoursLate: punct.hoursLate,
+        early: punct.timesEarly,
+        hoursEarly: punct.hoursEarly,
+        justified: punct.excusedDays,
+        /* True when nobody has given this person a shift, so the figures beside
+           their name were measured against the shop default. Worth saying out
+           loud before somebody acts on them. */
+        assumedShift: punct.usedDefaultOnly,
+      };
+    });
+  }, [filtered, empByName, today, workStart, workEnd, grace, schedules]);
 
   const trend = useMemo(() => {
     const days = eachDayOfInterval({ start: parseISO(from), end: parseISO(to) });
@@ -262,6 +335,17 @@ function ManagerDashboard() {
           onChanged={() => setReload((x) => x + 1)} /> : (<>
       {/* filters */}
       <div className="flex flex-wrap gap-2">
+        {/* A whole month is what somebody almost always wants, and typing two
+            dates to get one is a small tax paid every time. */}
+        <input type="month" value={from.slice(0, 7)} className={input}
+          title="Jump to a whole month"
+          onChange={(e) => {
+            const m = e.target.value;
+            if (!m) return;
+            const [y, mo] = m.split('-').map(Number);
+            setFrom(`${m}-01`);
+            setTo(format(endOfMonth(new Date(Date.UTC(y, mo - 1, 1))), 'yyyy-MM-dd'));
+          }} />
         <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className={input} />
         <span className="self-center text-slate-400 text-sm">→</span>
         <input type="date" value={to} onChange={(e) => setTo(e.target.value)} className={input} />
@@ -358,28 +442,42 @@ function ManagerDashboard() {
                 <th className="px-4 py-2.5 hidden sm:table-cell">Area</th>
                 <th className="px-4 py-2.5 text-right">Days</th>
                 <th className="px-4 py-2.5 text-right">Late</th>
-                <th className="px-4 py-2.5 text-right hidden md:table-cell">Justified</th>
-                <th className="px-4 py-2.5 text-right hidden md:table-cell">Early leave</th>
+                <th className="px-4 py-2.5 text-right">Hrs late</th>
+                <th className="px-4 py-2.5 text-right hidden md:table-cell">Excused</th>
+                <th className="px-4 py-2.5 text-right hidden md:table-cell">Left early</th>
+                <th className="px-4 py-2.5 text-right">Hrs early</th>
                 <th className="px-4 py-2.5 text-right hidden sm:table-cell">Missed out</th>
                 <th className="px-4 py-2.5 text-right">Total hrs</th>
                 <th className="px-4 py-2.5 text-right hidden sm:table-cell">Avg/day</th>
               </tr>
             </thead>
             <tbody>
-              {report.length === 0 && <tr><td colSpan={9} className="px-4 py-6 text-center text-slate-400">No attendance in this range</td></tr>}
+              {report.length === 0 && <tr><td colSpan={11} className="px-4 py-6 text-center text-slate-400">No attendance in this range</td></tr>}
               {report.map((r) => (
                 <tr key={r.name} className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
                   <td className="px-4 py-2.5 font-medium text-slate-700 whitespace-nowrap">
                     <span className="flex items-center gap-1.5">
                       {(() => { const lt = locationType(empByName.get(r.name)?.location); return lt ? <span className={`h-2 w-2 rounded-full shrink-0 ${LOCATION_TYPE_STYLE[lt].dot}`} /> : null; })()}
                       {r.name}
+                      {r.assumedShift && (
+                        <span title={`No shift set — measured against the default ${workStart}–${workEnd}`}
+                          className="text-[10px] font-medium text-slate-400 border border-slate-200 rounded px-1 py-px whitespace-nowrap">
+                          default hrs
+                        </span>
+                      )}
                     </span>
                   </td>
                   <td className="px-4 py-2.5 text-slate-500 hidden sm:table-cell">{r.area}</td>
                   <td className="px-4 py-2.5 text-right">{r.daysPresent}</td>
                   <td className={`px-4 py-2.5 text-right ${r.late ? 'text-amber-600 font-medium' : 'text-slate-400'}`}>{r.late || '—'}</td>
+                  <td className={`px-4 py-2.5 text-right tabular-nums ${r.hoursLate ? 'text-amber-600 font-medium' : 'text-slate-400'}`}>
+                    {formatHours(r.hoursLate, '—')}
+                  </td>
                   <td className="px-4 py-2.5 text-right text-slate-400 hidden md:table-cell">{r.justified || '—'}</td>
                   <td className={`px-4 py-2.5 text-right hidden md:table-cell ${r.early ? 'text-amber-600' : 'text-slate-400'}`}>{r.early || '—'}</td>
+                  <td className={`px-4 py-2.5 text-right tabular-nums ${r.hoursEarly ? 'text-amber-600 font-medium' : 'text-slate-400'}`}>
+                    {formatHours(r.hoursEarly, '—')}
+                  </td>
                   <td className={`px-4 py-2.5 text-right hidden sm:table-cell ${r.missed ? 'text-rose-600 font-medium' : 'text-slate-400'}`}>{r.missed || '—'}</td>
                   <td className="px-4 py-2.5 text-right font-semibold tabular-nums">{r.hours.toFixed(1)}</td>
                   <td className="px-4 py-2.5 text-right tabular-nums hidden sm:table-cell">{r.avg.toFixed(1)}</td>
@@ -449,7 +547,7 @@ function ManagerDashboard() {
                     <td className="px-4 py-2 font-medium text-slate-700 whitespace-nowrap">{r.employee_name}</td>
                     <td className="px-4 py-2 tabular-nums whitespace-nowrap">{fmtTime(r.clock_in)}</td>
                     <td className="px-4 py-2 tabular-nums whitespace-nowrap">
-                      {r.clock_out ? <>{fmtTime(r.clock_out)}{isEarlyLeave(r.clock_out) && <span className="text-amber-500 text-xs ml-1">early</span>}</> : '—'}
+                      {r.clock_out ? <>{fmtTime(r.clock_out)}{isEarlyLeave(r.clock_out, shiftEndFor(r.employee_name, kuwaitDate(r.clock_in))) && <span className="text-amber-500 text-xs ml-1">early</span>}</> : '—'}
                     </td>
                     <td className="px-4 py-2 text-right tabular-nums hidden sm:table-cell">{formatHours(hoursOf(r.clock_in, r.clock_out))}</td>
                     <td className="px-4 py-2">
