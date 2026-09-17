@@ -259,6 +259,14 @@ on; `Unknown` is the correct answer when the data does not carry one.
 
 ## 13. Changelog
 
+- **2026-09-17** (later 2) — **A blocked-location refusal now says what to do about it.** The stores manager could not clock in; the screen said *"Location is blocked. Allow location for this site in your browser settings"* while his status bar read **◀ WhatsApp**. A page opened from a link inside WhatsApp runs in WhatsApp's own browser and inherits **WhatsApp's** location permission, which is usually off — so the single instruction the app gave him was the one that could not work, and on an iPhone "your browser settings" covers three screens anyway. This was `GeolocationPositionError.code === 1`; the geofence never ran.
+
+  `locationHelp.ts` (both apps, kept in step) writes the refusal for the device holding it: iPhone leads with the in-app-browser case, then Safari's per-site Location, then Location Services; Android gets the padlock; a *named* in-app browser (Instagram / Facebook / Line, which identify themselves in the user agent) is told outright. WhatsApp on iOS does not identify itself, so it is described rather than detected.
+
+  Two things beyond wording. The refusal now shows **before** the button is tapped when the Permissions API reports `denied` — somebody standing in the shop at nine should not discover this by failing. And every version ends with the way out: ask for a correction, which since earlier today carries the times and applies them on approval.
+
+  Verified across four user agents (iPhone Safari, Android Chrome, an Instagram in-app browser, desktop): each gets its own advice, the numbered steps survive as separate lines, the correction fallback is always offered, and nothing overflows 390 px.
+
 - **2026-09-17** (later) — **The attendance calendar's week reads like a date, and its arrows stay on one line.** The header said `2026-09-12 → 2026-09-18`: eight digits twice to work out that it is one week in September. `rangeLabel()` (`src/lib/dateRange.ts`) says the shared parts once — `12–18 Sep 2026` within a month, `28 Sep – 4 Oct 2026` across two, `28 Dec 2026 – 3 Jan 2027` across two years. Display only: `anchor`, `days` and every query still use the same yyyy-mm-dd strings, which is why the formatter takes those strings and never builds a `Date` — no parsing, so no timezone to get wrong.
 
   The controls were one wrapping row of five things, so on a phone the **→ arrow fell onto a second line, away from its ←**. They are two rows now: Month/Week with **This week** beside it as a secondary action, then `←  label  →` on a row that cannot wrap — no `flex-wrap`, `shrink-0` on both arrows, and a label that truncates rather than pushing an arrow off the end. Arrows gained aria-labels.

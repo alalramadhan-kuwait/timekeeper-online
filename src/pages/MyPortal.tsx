@@ -5,6 +5,7 @@ import {
   Plus, Send, X, Inbox, Pencil,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { locationBlockedMessage, locationAlreadyDenied, CORRECTION_FALLBACK } from '../lib/locationHelp';
 import { useAuth } from '../context/AuthContext';
 import { Spinner, Badge } from '../components/ui';
 import { workingDaysBetween } from './Leave';
@@ -299,7 +300,7 @@ export default function MyPortalPage() {
       });
       if (error) setGeoError(error.message); else await load();
     } catch (err: any) {
-      if (err.code === 1) setGeoError('Location access denied. Please allow location in your browser settings and try again.');
+      if (err.code === 1) setGeoError(`${locationBlockedMessage()}\n${CORRECTION_FALLBACK}`);
       else if (err.code === 3) setGeoError('Location request timed out. Please try again.');
       else setGeoError(err.message ?? 'Unable to get location.');
     }
@@ -318,7 +319,7 @@ export default function MyPortalPage() {
       }).eq('id', open.id);
       if (error) setGeoError(error.message); else await load();
     } catch (err: any) {
-      if (err.code === 1) setGeoError('Location access denied. Please allow location in your browser settings.');
+      if (err.code === 1) setGeoError(`${locationBlockedMessage()}\n${CORRECTION_FALLBACK}`);
       else setGeoError(err.message ?? 'Unable to get location.');
     }
     setGeoLoading(false);
@@ -387,6 +388,16 @@ export default function MyPortalPage() {
     setCorDate(todayKuwait());
     load();
   }
+
+  /* If the browser has already refused location, say so before the button is
+     tapped rather than after. */
+  useEffect(() => {
+    let live = true;
+    void locationAlreadyDenied().then((denied) => {
+      if (live && denied) setGeoError(`${locationBlockedMessage()}\n${CORRECTION_FALLBACK}`);
+    });
+    return () => { live = false; };
+  }, []);
 
   /* What the chosen day currently says, so the employee changes one end rather
      than retyping both. */
@@ -677,7 +688,8 @@ export default function MyPortalPage() {
 
         {geoError && (
           <div role="alert" className="mt-3 flex items-start gap-2 px-3 py-2.5 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
-            <AlertCircle size={15} className="mt-0.5 shrink-0" aria-hidden /><span>{geoError}</span>
+            <AlertCircle size={15} className="mt-0.5 shrink-0" aria-hidden />
+            <span className="whitespace-pre-line leading-relaxed">{geoError}</span>
           </div>
         )}
 
