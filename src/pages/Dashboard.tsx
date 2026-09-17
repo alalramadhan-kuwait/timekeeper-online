@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { format, startOfWeek, startOfMonth } from 'date-fns';
 import { supabase } from '../lib/supabase';
+import { resolveOutlet, outletName, type OutletCode } from '../shared/outlets';
 import { Badge, Spinner } from '../components/ui';
 import { formatKDCompact } from '../lib/format';
 import { buildAlerts, loadAlertActions, saveAlertAction, Alert, AlertAction } from '../lib/alerts';
@@ -29,14 +30,13 @@ const EMPTY_CHARTS: Charts = { salesTrend: [], outletSales: [], stockHistory: []
 const IG_MAIN = 'timekeeperkw';
 const IG_COLOR: Record<string, string> = { timekeeperkw: '#db2777', timegallerykw: '#0ea5e9', timekeeperkwshop: '#8b5cf6' };
 
-/* What Lightspeed calls each shop. The dashboard's labels and the POS's own
-   names have never matched, so the mapping is written down once here rather
-   than guessed at each call site. */
-const LS_OUTLET = {
-  timekeeper: 'Time Keeper',
-  avenues: 'Time Keeper - Avenues',
-  gallery: 'Time Gallery',
-} as const;
+/* The dashboard's labels and the POS's own names have never matched — the till
+   calls Eman's WhatsApp channel "Time Keeper" and the Avenues shop "Time Keeper
+   - Avenues". Matching is done through the outlet registry rather than against
+   the strings, so a renamed register is one row in one table. */
+const posRevenue = (rows: Array<{ outlet: string | null; revenue: unknown }>, code: OutletCode) =>
+  rows.filter((r) => resolveOutlet(r.outlet) === code)
+      .reduce((t, r) => t + Number(r.revenue ?? 0), 0);
 
 // ── Alert Action Panel ────────────────────────────────────────────────────────
 function AlertActionPanel({ alert, existing, onSave, onClose, onReopen }: {
@@ -402,10 +402,10 @@ export default function Dashboard() {
          read as live when it is not. */
       setTillSyncedAt(((syncQ.data?.[0] as any)?.finished_at as string | undefined) ?? null);
       // per-outlet month sales vs their own targets
-      const outletSales = (lsName: string) => sumRev(posDays.filter((r) => r.outlet === lsName));
-      const avenuesSales = outletSales(LS_OUTLET.avenues);
-      const timeGallerySales = outletSales(LS_OUTLET.gallery);
-      const timeKeeperSales = outletSales(LS_OUTLET.timekeeper);
+      const avenuesSales = posRevenue(posDays, 'avenues');
+      const timeGallerySales = posRevenue(posDays, 'time_gallery');
+      // The till's "Time Keeper" register is the WhatsApp channel's takings.
+      const timeKeeperSales = posRevenue(posDays, 'whatsapp');
       const avenuesTarget = setQ.data?.sales_target_avenues != null ? Number(setQ.data.sales_target_avenues) : null;
       const timeGalleryTarget = setQ.data?.sales_target_timegallery != null ? Number(setQ.data.sales_target_timegallery) : null;
       const timeKeeperTarget = setQ.data?.sales_target_timekeeper != null ? Number(setQ.data.sales_target_timekeeper) : null;
@@ -485,9 +485,9 @@ export default function Dashboard() {
          of its own and it is the busiest of them, so it gets its own bar and
          its own target rather than disappearing into the total. */
       const outletBars: Bar[] = [
-        { label: 'Time Keeper', value: timeKeeperSales, target: timeKeeperTarget, color: '#059669' },
-        { label: 'Avenues', value: avenuesSales, target: avenuesTarget, color: '#0ea5e9' },
-        { label: 'Time Gallery', value: timeGallerySales, target: timeGalleryTarget, color: '#8b5cf6' },
+        { label: outletName('whatsapp'), value: timeKeeperSales, target: timeKeeperTarget, color: '#059669' },
+        { label: outletName('avenues'), value: avenuesSales, target: avenuesTarget, color: '#0ea5e9' },
+        { label: outletName('time_gallery'), value: timeGallerySales, target: timeGalleryTarget, color: '#8b5cf6' },
       ];
 
       // Show cost to managers/admin (cost is manager-only across the app); staff see retail.
@@ -589,9 +589,9 @@ export default function Dashboard() {
   const pctOf = (v: number | null | undefined, t: number | null | undefined) =>
     t == null || !t ? null : Math.round((Number(v ?? 0) / Number(t)) * 100);
   const outletParts: KpiPart[] = [
-    { label: 'Time Keeper', value: kd(d.timeKeeperSales), pct: pctOf(d.timeKeeperSales, d.timeKeeperTarget) },
-    { label: 'Avenues', value: kd(d.avenuesSales), pct: pctOf(d.avenuesSales, d.avenuesTarget) },
-    { label: 'Time Gallery', value: kd(d.timeGallerySales), pct: pctOf(d.timeGallerySales, d.timeGalleryTarget) },
+    { label: outletName('whatsapp'), value: kd(d.timeKeeperSales), pct: pctOf(d.timeKeeperSales, d.timeKeeperTarget) },
+    { label: outletName('avenues'), value: kd(d.avenuesSales), pct: pctOf(d.avenuesSales, d.avenuesTarget) },
+    { label: outletName('time_gallery'), value: kd(d.timeGallerySales), pct: pctOf(d.timeGallerySales, d.timeGalleryTarget) },
   ];
   const tillAsOf = tillSyncedAt
     ? `from the tills, as of ${format(new Date(tillSyncedAt), 'HH:mm')}`

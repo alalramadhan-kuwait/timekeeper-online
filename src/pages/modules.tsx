@@ -1,6 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { X, Upload, Trash2 as TrashIcon, RefreshCw } from 'lucide-react';
 import { CrudModule, CrudConfig } from '../components/CrudModule';
+import { WorkScheduleModal } from '../components/WorkSchedule';
+import { describeDays, KUWAIT_WEEK, type Weekday } from '../shared/schedule';
+import { OUTLETS } from '../shared/outlets';
+
+/* Somewhere a person can be clocked in: the two shops and the office, never a
+   digital channel. Spelled as the geofences and HR records spell them. */
+const WORKPLACES = OUTLETS.filter((o) => o.hasAttendance).map((o) => o.geofenceName ?? o.displayName);
 import { StatusBadge, Badge } from '../components/ui';
 import { formatKD } from '../lib/format';
 import { expiryTier, tierClass, tierLabel } from '../lib/expiry';
@@ -751,7 +758,7 @@ const employees: CrudConfig = {
     { key: 'phone', label: 'Phone', type: 'text' },
     { key: 'job_title', label: 'Job title', type: 'text' },
     { key: 'joining_date', label: 'Joining date', type: 'date' },
-    { key: 'location', label: 'Location', type: 'select', options: ['Timekeeper HQ', 'Avenues', 'Time Gallery'] },
+    { key: 'location', label: 'Location', type: 'select', options: WORKPLACES },
     { key: 'status', label: 'Status', type: 'select', options: ['Active', 'On leave', 'Resigned', 'Terminated'], defaultValue: 'Active', required: true },
     { key: 'annual_leave_entitlement', label: 'Annual leave days', type: 'number', defaultValue: 30 },
     { key: 'user_id', label: 'Linked user account (for My Portal)', type: 'select', options: [] }, // filled at runtime
@@ -764,6 +771,7 @@ const employees: CrudConfig = {
 /** HR Employees is the master list — accounts are linked manually here, never by name matching. */
 export function EmployeesPage() {
   const [profiles, setProfiles] = useState<{ id: string; full_name: string; role: string }[]>([]);
+  const [scheduleFor, setScheduleFor] = useState<{ id: string; name: string } | null>(null);
   useEffect(() => {
     supabase.from('profiles').select('id, full_name, role').order('full_name')
       .then(({ data }) => setProfiles((data as { id: string; full_name: string; role: string }[]) ?? []));
@@ -796,6 +804,19 @@ export function EmployeesPage() {
           );
         },
       },
+      {
+        key: 'schedule', label: 'Schedule', hideBelow: 'md',
+        render: (r) => (
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); setScheduleFor({ id: r.id as string, name: r.full_name as string }); }}
+            className="text-xs font-medium text-slate-600 underline decoration-slate-300 underline-offset-2 hover:text-slate-900 whitespace-nowrap"
+          >
+            {describeDays(((r.expected_days as number[]) ?? KUWAIT_WEEK) as Weekday[])}
+            {r.shift_start ? ` · ${String(r.shift_start).slice(0, 5)}` : ''}
+          </button>
+        ),
+      },
       { key: 'residency_expiry', label: 'Residency', sortable: true, hideBelow: 'lg', render: (r) => <ExpiryCell date={r.residency_expiry} /> },
       { key: 'work_permit_expiry', label: 'Work permit', sortable: true, hideBelow: 'lg', render: (r) => <ExpiryCell date={r.work_permit_expiry} /> },
       { key: 'civil_id', label: 'Civil ID', hideBelow: 'xl' },
@@ -806,7 +827,18 @@ export function EmployeesPage() {
     rowClickToEdit: true,
   }), [profiles, profById]);
 
-  return <CrudModule config={config} />;
+  return (
+    <>
+      <CrudModule config={config} />
+      {scheduleFor && (
+        <WorkScheduleModal
+          employeeId={scheduleFor.id}
+          employeeName={scheduleFor.name}
+          onClose={() => setScheduleFor(null)}
+        />
+      )}
+    </>
+  );
 }
 
 /* ---------------- Company documents ---------------- */
