@@ -10,7 +10,7 @@ import { Spinner, Badge } from '../components/ui';
 import { locationType, LOCATION_TYPE_STYLE, LocationType } from '../lib/locationType';
 import { lateClassOf, isEarlyLeave, LATE_STYLE, LateClass } from '../lib/lateness';
 import { Modal } from '../components/ui';
-import { AttendanceDayDetail } from '../components/AttendanceDayDetail';
+import { AttendanceDayDetail, GeoCell } from '../components/AttendanceDayDetail';
 import { addRecord as addAttendanceRecord, type AttendanceRecord } from '../lib/attendanceEdits';
 
 interface EmpLite { id: string; full_name: string; location: string | null; job_title: string | null; status: string; user_id: string | null }
@@ -40,37 +40,6 @@ export default function AttendancePage() {
     );
   }
   return <ManagerDashboard />;
-}
-
-/**
- * Where a clock-in actually happened, as the database measured it.
- *
- * A site name on its own never showed whether someone was at the counter or in
- * the car park 200 m away — the radius is generous by necessity. The metres do
- * show it, so they are on the row: a column of single-digit distances with one
- * 190 m in it tells an owner in a glance what to ask about.
- */
-function GeoCell({ r }: { r: AttendanceRecord }) {
-  const flags = (r.geo_flag ?? '').split(',').filter(Boolean);
-  if (r.geo_source === 'manager' || (r.clock_in_distance_m == null && !r.location)) {
-    return <span title="Entered by a manager — no device location">{r.location ?? '—'}{r.geo_source === 'manager' && <span className="text-slate-300"> · by hand</span>}</span>;
-  }
-  return (
-    <span className="whitespace-nowrap">
-      {r.location ?? '—'}
-      {r.clock_in_distance_m != null && (
-        <span className="text-slate-500 tabular-nums" title={r.clock_in_accuracy_m != null ? `GPS accurate to ±${Math.round(r.clock_in_accuracy_m)} m` : undefined}>
-          {' · '}{Math.round(r.clock_in_distance_m)} m
-        </span>
-      )}
-      {flags.includes('repeat_fix') && (
-        <span className="ml-1 text-amber-600" title="Exactly the same coordinates as an earlier clock-in — a live GPS fix never repeats to the last decimal, so this was a saved or mocked position">⚑</span>
-      )}
-      {flags.includes('offsite_clock_out') && (
-        <span className="ml-1 text-slate-400" title="Clocked out from outside the radius">out↗</span>
-      )}
-    </span>
-  );
 }
 
 function ManagerDashboard() {
