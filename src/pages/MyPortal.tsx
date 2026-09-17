@@ -13,6 +13,10 @@ import { lateClassOf, isEarlyLeave, LATE_STYLE } from '../lib/lateness';
 import { Bell } from 'lucide-react';
 import { pushSupported, pushEnabled, enablePush, isIosNotInstalled } from '../lib/push';
 import { dayHours, totalHours, type DayHours } from '../shared/workedHours';
+import {
+  fencesNear, clockIn as portalClockIn, clockOut as portalClockOut,
+  applyForLeave, reviseLeave, cancelLeave as portalCancelLeave, leaveDocumentUrl,
+} from '../shared/portal';
 
 interface EmpRecord {
   id: string; full_name: string; user_id: string | null; job_title: string | null; location: string | null;
@@ -25,13 +29,6 @@ interface AttRec { id: string; clock_in: string; clock_out: string | null; is_la
 interface EmpRequest { id: string; request_type: string; details: string; status: string; manager_remarks: string | null; created_at: string }
 interface Geofence { id: string; name: string; lat: number; lng: number; radius_m: number; active: boolean }
 
-function haversineMeters(lat1: number, lng1: number, lat2: number, lng2: number): number {
-  const R = 6371000;
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLng = (lng2 - lng1) * Math.PI / 180;
-  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
 const fmtTime = (iso: string) => new Date(iso).toLocaleTimeString('en-KW', { hour: '2-digit', minute: '2-digit', hour12: true, timeZone: 'Asia/Kuwait' });
 const todayKuwait = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kuwait' });
 /** A Kuwait wall-clock time on a day, as an instant. Kuwait is UTC+3 all year. */
@@ -285,19 +282,13 @@ export default function MyPortalPage() {
         setGeoError(`Your phone only placed you within ${Math.round(accuracy)}m — too vague to show you are on site. Turn on precise location and wifi, step near a window or door, and try again.`);
         setGeoLoading(false); return;
       }
-      let matched: Geofence | null = null;
-      for (const f of geofences) {
-        const d = haversineMeters(latitude, longitude, Number(f.lat), Number(f.lng));
-        if (d <= f.radius_m && (!matched || d < haversineMeters(latitude, longitude, Number(matched.lat), Number(matched.lng)))) matched = f;
-      }
+      const near = fencesNear(geofences, { latitude, longitude, accuracy });
+      const matched = near.find((n) => n.inside)?.fence ?? null;
       if (!matched) {
         /* Every workplace, not just the closest. Naming one place makes it read
            like the account is tied to that place, which is not the rule: you
            may clock in at whichever site you are standing in. */
-        const all = geofences
-          .map((f) => ({ name: f.name, d: Math.round(haversineMeters(latitude, longitude, Number(f.lat), Number(f.lng))) }))
-          .sort((a, b) => a.d - b.d)
-          .map((f) => `${f.name} ${f.d}m`).join(', ');
+        const all = near.map((n) => `${n.fence.name} ${Math.round(n.metres)}m`).join(', ');
         setGeoError(`You are not at any workplace, so there is nothing to clock in to. You can clock in at whichever one you are standing in — right now you are ${all} away.`);
         setGeoLoading(false); return;
       }
@@ -305,13 +296,11 @@ export default function MyPortalPage() {
       // Lateness belongs to the clock-in that opened the day; an evening shift
       // starting after the morning one is not late.
       const isLate = todayRecs.length === 0 && lateClassOf(now.toISOString(), workStart) !== 'On time';
-      const { error } = await supabase.from('attendance_records').insert({
-        user_id: user!.id, employee_name: profile!.full_name,
-        clock_in: now.toISOString(), clock_in_lat: latitude, clock_in_lng: longitude,
-        clock_in_accuracy_m: Math.round(accuracy),
-        is_late: isLate, location: matched.name,
+      const err = await portalClockIn({
+        userId: user!.id, employeeName: profile!.full_name, fenceName: matched.name,
+        position: { latitude, longitude, accuracy }, isLate,
       });
-      if (error) setGeoError(error.message); else await load();
+      if (err) setGeoError(err); else await load();
     } catch (err: any) {
       if (err.code === 1) setGeoError(`${locationBlockedMessage()}\n${CORRECTION_FALLBACK}`);
       else if (err.code === 3) setGeoError('Location request timed out. Please try again.');
@@ -326,11 +315,10 @@ export default function MyPortalPage() {
     setGeoError(null); setGeoLoading(true);
     try {
       const pos = await getPosition();
-      const { error } = await supabase.from('attendance_records').update({
-        clock_out: new Date().toISOString(), clock_out_lat: pos.coords.latitude, clock_out_lng: pos.coords.longitude,
-        clock_out_accuracy_m: Math.round(pos.coords.accuracy),
-      }).eq('id', open.id);
-      if (error) setGeoError(error.message); else await load();
+      const err = await portalClockOut(open.id, {
+        latitude: pos.coords.latitude, longitude: pos.coords.longitude, accuracy: pos.coords.accuracy,
+      });
+      if (err) setGeoError(err); else await load();
     } catch (err: any) {
       if (err.code === 1) setGeoError(`${locationBlockedMessage()}\n${CORRECTION_FALLBACK}`);
       else setGeoError(err.message ?? 'Unable to get location.');
@@ -345,33 +333,22 @@ export default function MyPortalPage() {
     if (!emp) return;
     if (!lvStart || !lvEnd || lvEnd < lvStart) { setMsg('Pick a valid start and end date'); return; }
     setBusy(true); setMsg(null);
-
-    // sick-note document goes to the private leave-docs bucket (own folder)
-    let documentPath: string | null = null;
-    if (lvFile) {
-      if (lvFile.size > 10 * 1024 * 1024) { setMsg('Could not submit: document is larger than 10 MB'); setBusy(false); return; }
-      const safeName = lvFile.name.replace(/[^\w.\-]+/g, '_');
-      const path = `${user!.id}/${Date.now()}-${safeName}`;
-      const { error: upErr } = await supabase.storage.from('leave-docs').upload(path, lvFile);
-      if (upErr) { setMsg(`Could not upload document: ${upErr.message}`); setBusy(false); return; }
-      documentPath = path;
-    }
-
-    const { error } = await supabase.from('leave_records').insert({
-      employee_id: emp.id, leave_type: lvType, leave_start: lvStart, leave_end: lvEnd,
-      days: lvDays, approval_status: 'Pending', notes: lvNotes || null, document_url: documentPath,
+    // the sick note goes to the private leave-docs bucket, in their own folder
+    const problem = await applyForLeave({
+      employeeId: emp.id, userId: user!.id, type: lvType, start: lvStart, end: lvEnd,
+      days: lvDays, notes: lvNotes, document: lvFile,
     });
     setBusy(false);
-    if (error) { setMsg(`Could not submit: ${error.message}`); return; }
+    if (problem) { setMsg(problem); return; }
     setMsg(`${lvType} request submitted — awaiting approval`);
     setShowLeaveForm(false); setLvStart(''); setLvEnd(''); setLvNotes(''); setLvFile(null);
     load();
   }
 
   async function openDocument(path: string) {
-    const { data, error } = await supabase.storage.from('leave-docs').createSignedUrl(path, 300);
-    if (error || !data?.signedUrl) { setMsg('Could not open document'); return; }
-    window.open(data.signedUrl, '_blank', 'noopener');
+    const url = await leaveDocumentUrl(path);
+    if (!url) { setMsg('Could not open document'); return; }
+    window.open(url, '_blank', 'noopener');
   }
 
   async function submitRequest() {
@@ -446,11 +423,9 @@ export default function MyPortalPage() {
     if (!edStart || !edEnd || edEnd < edStart) { setMsg('Pick a valid start and end date'); return; }
     setBusy(true); setMsg(null);
     // editing dates always lands the request back in Pending — HR (re-)approves the final dates
-    const { error } = await supabase.from('leave_records')
-      .update({ leave_start: edStart, leave_end: edEnd, days: edDays, approval_status: 'Pending' })
-      .eq('id', rawId);
+    const problem = await reviseLeave(rawId, edStart, edEnd, edDays);
     setBusy(false);
-    if (error) { setMsg(`Could not update: ${error.message}`); return; }
+    if (problem) { setMsg(problem); return; }
     setMsg(wasApproved ? 'Dates changed — sent back to HR for re-approval' : 'Leave dates updated');
     setEditLeaveId(null);
     load();
@@ -459,9 +434,9 @@ export default function MyPortalPage() {
   async function cancelLeave(rawId: string) {
     if (!window.confirm('Cancel this leave request? This cannot be undone — you would need to apply again.')) return;
     setBusy(true); setMsg(null);
-    const { error } = await supabase.from('leave_records').update({ approval_status: 'Cancelled' }).eq('id', rawId);
+    const problem = await portalCancelLeave(rawId);
     setBusy(false);
-    if (error) { setMsg(`Could not cancel: ${error.message}`); return; }
+    if (problem) { setMsg(problem); return; }
     setMsg('Leave request cancelled');
     load();
   }
