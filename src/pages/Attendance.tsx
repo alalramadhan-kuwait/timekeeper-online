@@ -248,6 +248,10 @@ function ManagerDashboard() {
            their name were measured against the shop default. Worth saying out
            loud before somebody acts on them. */
         assumedShift: punct.usedDefaultOnly,
+        /* True when their schedule sets no hours on purpose — Avenues, where the
+           manager assigns mornings and nights by the day. There is nothing to be
+           late against, so late and early read "—" rather than a wrong number. */
+        variesShift: punct.hoursVary,
       };
     });
   }, [filtered, empByName, today, workStart, workEnd, grace, schedules]);
@@ -463,6 +467,12 @@ function ManagerDashboard() {
                         <span title={`No shift set — measured against the default ${workStart}–${workEnd}`}
                           className="text-[10px] font-medium text-slate-400 border border-slate-200 rounded px-1 py-px whitespace-nowrap">
                           default hrs
+                        </span>
+                      )}
+                      {r.variesShift && (
+                        <span title="Their schedule sets no fixed hours, so late and early cannot be measured. Set hours on the schedule — temporarily if it is only for a stretch — to start measuring them."
+                          className="text-[10px] font-medium text-slate-400 border border-slate-200 rounded px-1 py-px whitespace-nowrap">
+                          hours vary
                         </span>
                       )}
                     </span>
