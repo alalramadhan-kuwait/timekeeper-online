@@ -12,11 +12,12 @@
  * shop and a laptop in an office are different places. They cannot disagree.
  */
 import { useEffect, useMemo, useState } from 'react';
-import { Check, X, AlertTriangle, ShieldAlert, Clock, ChevronRight } from 'lucide-react';
+import { Check, X, AlertTriangle, ShieldAlert, Clock, ChevronRight, BellRing } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Spinner, Badge } from './ui';
 import {
-  loadRequests, decide, tabOf, counts, stageOf, standingLine, waitedFor, fieldChanges,
+  loadRequests, decide, remind, applyScheduleChange, tabOf, counts, stageOf, standingLine,
+  waitedFor, fieldChanges, reminderState,
   type RequestRow, type Tab, type MyStage,
 } from '../shared/requests';
 import { applyCorrection, isApplicable, type CorrectionRequest } from '../lib/attendanceCorrection';
@@ -75,6 +76,16 @@ export default function RequestQueue({ role, userId, focusId, initialTab }: {
     if (hit) setTab(tabOf(hit, mine));
   }, [focusId, rows, mine]);
 
+  /* Chasing whoever is holding it up. The cooldown and the recipient are the
+     database's business — the same function the nightly job calls — so a refusal
+     comes back as a sentence rather than being second-guessed here. */
+  async function nudge(r: RequestRow) {
+    setBusy(r.id); setErr(null);
+    const refused = await remind(r);
+    if (refused) setErr(refused);
+    await reload(); setBusy(null);
+  }
+
   async function act(r: RequestRow, verdict: 'Approved' | 'Rejected', overrideReason?: string) {
     setBusy(r.id); setErr(null);
 
@@ -90,6 +101,13 @@ export default function RequestQueue({ role, userId, focusId, initialTab }: {
         if (problem) { setErr(problem); setBusy(null); return; }
         applied = true;
       }
+    }
+
+    /* Same rule as a correction: approving a schedule change that never reaches
+       the schedule is two words for one state. */
+    if (verdict === 'Approved' && finalStage && r.kind === 'Schedule change') {
+      const problem = await applyScheduleChange(r);
+      if (problem) { setErr(problem); setBusy(null); return; }
     }
 
     const message = await decide(r, verdict, { stage: mine, remarks: remarks[r.id], overrideReason });
@@ -148,6 +166,7 @@ export default function RequestQueue({ role, userId, focusId, initialTab }: {
                 remark={remarks[r.id] ?? ''}
                 onRemark={(v) => setRemarks((s) => ({ ...s, [r.id]: v }))}
                 onDecide={(v) => act(r, v)}
+                onRemind={() => nudge(r)}
                 onOverride={() => { setOverriding(r); setOverrideWhy(''); }}
               />
             </li>
@@ -169,13 +188,15 @@ export default function RequestQueue({ role, userId, focusId, initialTab }: {
 
 /* ------------------------------------------------------------------ one row */
 
-function RequestCard({ r, mine, busy, remark, onRemark, onDecide, onOverride }: {
+function RequestCard({ r, mine, busy, remark, onRemark, onDecide, onRemind, onOverride }: {
   r: RequestRow; mine: MyStage; busy: boolean; remark: string;
   onRemark: (v: string) => void;
   onDecide: (v: 'Approved' | 'Rejected') => void;
+  onRemind: () => void;
   onOverride: () => void;
 }) {
   const changes = fieldChanges(r);
+  const nudge = reminderState(r, mine);
   const canDecideNow = r.stage_owner === mine;
   /* The owner looking at something still with the manager. Deciding it is
      allowed and sometimes necessary — a manager on leave should not freeze the
@@ -266,6 +287,14 @@ function RequestCard({ r, mine, busy, remark, onRemark, onDecide, onOverride }: 
         </p>
       )}
 
+      {(nudge.lastLine || r.reminder_count > 0) && (
+        <p className="mt-1.5 text-xs text-slate-500">
+          {nudge.lastLine}
+          {r.reminder_count > 1 && ` · ${r.reminder_count} sent`}
+          {!nudge.can && nudge.blocked && r.stage_owner !== mine && ` · ${nudge.blocked}`}
+        </p>
+      )}
+
       {r.manager_remarks && (
         <p className="mt-2 text-sm text-slate-600">
           <span className="text-slate-400">Remarks: </span>{r.manager_remarks}
@@ -293,12 +322,22 @@ function RequestCard({ r, mine, busy, remark, onRemark, onDecide, onOverride }: 
               </button>
             </>
           ) : (
-            <button type="button" onClick={onOverride}
-              className="inline-flex items-center gap-1 text-sm px-3 py-1.5 rounded-lg
-                         border border-slate-200 text-slate-500 hover:bg-slate-50">
-              <ShieldAlert className="w-4 h-4" /> Decide without the manager
-              <ChevronRight className="w-3.5 h-3.5" />
-            </button>
+            <>
+              <button type="button" disabled={!nudge.can || busy} onClick={onRemind}
+                title={nudge.blocked ?? undefined}
+                className="inline-flex items-center gap-1 text-sm font-medium px-3 py-1.5 rounded-lg
+                           border border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100
+                           disabled:opacity-40 disabled:hover:bg-amber-50">
+                <BellRing className="w-4 h-4" />
+                Remind {r.first_approver_name?.split(' ')[0] ?? 'the manager'}
+              </button>
+              <button type="button" onClick={onOverride}
+                className="inline-flex items-center gap-1 text-sm px-3 py-1.5 rounded-lg
+                           border border-slate-200 text-slate-500 hover:bg-slate-50">
+                <ShieldAlert className="w-4 h-4" /> Decide without them
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </>
           )}
         </div>
       )}

@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import MyRequests from '../components/MyRequests';
+import AskForSchedule from '../components/AskForSchedule';
 import {
   UserRound, CalendarDays, Clock, LogIn, LogOut, MapPin, AlertCircle, CheckCircle, Home,
   Plus, Send, X, Inbox, Pencil,
@@ -1117,6 +1119,18 @@ export default function MyPortalPage() {
           </div>
         )}
       </section>
+
+      {/* ── Everything I have asked for ──
+           They could raise a request and then only watch it: no policy let them
+           touch their own row, so a mistaken one waited for a manager to clear.
+           Editing and withdrawing are open while it is still Pending. */}
+      <MyRequests userId={user?.id ?? null} />
+
+      {/* Asking for different hours, which had no route at all before: schedules
+          moved only through set_schedule(), which an employee cannot call. */}
+      <div>
+        <AskForSchedule employeeId={emp?.id ?? null} userId={user?.id ?? null} onSent={load} />
+      </div>
     </div>
   );
 }
