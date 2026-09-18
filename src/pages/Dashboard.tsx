@@ -376,7 +376,7 @@ export default function Dashboard() {
         supabase.from('lightspeed_low_stock').select('product_id', { count: 'exact', head: true }),
         supabase.from('lightspeed_stock').select('product_id', { count: 'exact', head: true }),
         supabase.from('purchase_orders').select('status, total_cost, amount_paid, brand').not('status', 'in', '("Cancelled")').is('merged_into', null),
-        supabase.from('attendance_records').select('employee_name').gte('clock_in', `${today}T00:00:00+03:00`).lte('clock_in', `${today}T23:59:59+03:00`),
+        supabase.from('attendance_records').select('user_id, employee_name').gte('clock_in', `${today}T00:00:00+03:00`).lte('clock_in', `${today}T23:59:59+03:00`),
         supabase.from('attendance_records').select('id', { count: 'exact', head: true }).eq('is_late', true).eq('justified', false).gte('clock_in', `${monthStart}T00:00:00+03:00`),
         supabase.from('leave_records').select('leave_type').eq('approval_status', 'Pending'),
         /* Requests of every kind, already staged by the database. The cards
@@ -444,7 +444,11 @@ export default function Dashboard() {
       const supplierBalance = poRows.reduce((s, p) => s + Number(p.total_cost ?? 0) - Number(p.amount_paid ?? 0), 0);
 
       // HR
-      const presentToday = new Set(((attTodayQ.data ?? []) as any[]).map((r) => r.employee_name)).size;
+      /* Counted by login, not by spelling. The name on a record is a copy from
+         when it was written, so a corrected name would count one person twice
+         and a shared one would count two people once. */
+      const presentToday = new Set(((attTodayQ.data ?? []) as any[])
+        .map((r) => r.user_id ?? `name:${r.employee_name}`)).size;
       const lateMonth = attLateQ.count ?? 0;
       const leaveRows = (leaveQ.data ?? []) as any[];
       const pendingLeave = leaveRows.filter((l) => (l.leave_type ?? 'Annual') === 'Annual').length;
