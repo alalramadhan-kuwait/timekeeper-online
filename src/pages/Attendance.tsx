@@ -1,9 +1,9 @@
 import { Fragment, useEffect, useMemo, useState } from 'react';
 import {
-  Clock, AlertTriangle, Users, LogIn, LogOut, CalendarDays, Download, Pencil, Plus, X, Check, UserRound, ArrowRight,
+  Clock, AlertTriangle, Users, LogIn, LogOut, CalendarDays, Download, Pencil, Plus, X, Check, UserRound, ArrowRight, ChevronRight,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { format, parseISO, eachDayOfInterval, startOfMonth, endOfMonth } from 'date-fns';
+import { format, parseISO, eachDayOfInterval, startOfMonth, endOfMonth, subMonths } from 'date-fns';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { Spinner, Badge } from '../components/ui';
@@ -49,6 +49,9 @@ export default function AttendancePage() {
 
 function ManagerDashboard() {
   const today = todayKuwait();
+  /* Whose days are open. A total answers "how much"; only the days answer
+     "which", and that is the question that follows every time. */
+  const [openName, setOpenName] = useState<string | null>(null);
   const [from, setFrom] = useState(format(startOfMonth(new Date()), 'yyyy-MM-dd'));
   const [to, setTo] = useState(format(endOfMonth(new Date()), 'yyyy-MM-dd'));
   const [records, setRecords] = useState<AttendanceRecord[]>([]);
@@ -252,6 +255,13 @@ function ManagerDashboard() {
            manager assigns mornings and nights by the day. There is nothing to be
            late against, so late and early read "—" rather than a wrong number. */
         variesShift: punct.hoursVary,
+        /* The days behind the totals. A number with no days behind it is
+           something to argue with rather than act on: "two hours late" invites
+           "when?", and the answer used to mean opening the calendar and
+           counting. Only the days that actually cost something are kept. */
+        offDays: days
+          .filter((d) => (d.hoursLate ?? 0) > 0 || (d.hoursEarly ?? 0) > 0)
+          .sort((a, b) => b.date.localeCompare(a.date)),
       };
     });
   }, [filtered, empByName, today, workStart, workEnd, grace, schedules]);
@@ -339,6 +349,35 @@ function ManagerDashboard() {
           onChanged={() => setReload((x) => x + 1)} /> : (<>
       {/* filters */}
       <div className="flex flex-wrap gap-2">
+        {/* The two ranges people actually ask for out loud — "this month" and
+            "the last thirty days" — were both reachable only by typing two
+            dates, so the question "how late has he been lately" took more
+            effort to ask than it was worth. */}
+        <div className="flex rounded-lg overflow-hidden border border-slate-200 text-sm">
+          {([
+            ['This month', () => {
+              setFrom(format(startOfMonth(new Date()), 'yyyy-MM-dd'));
+              setTo(format(endOfMonth(new Date()), 'yyyy-MM-dd'));
+            }],
+            ['Last 30 days', () => {
+              const end = new Date();
+              const start = new Date(end.getTime() - 29 * 86400000);
+              setFrom(format(start, 'yyyy-MM-dd'));
+              setTo(format(end, 'yyyy-MM-dd'));
+            }],
+            ['Last month', () => {
+              const m = subMonths(new Date(), 1);
+              setFrom(format(startOfMonth(m), 'yyyy-MM-dd'));
+              setTo(format(endOfMonth(m), 'yyyy-MM-dd'));
+            }],
+          ] as [string, () => void][]).map(([label, apply]) => (
+            <button key={label} type="button" onClick={apply}
+              className="px-3 py-1.5 bg-white text-slate-600 hover:bg-slate-50 border-r border-slate-200 last:border-r-0">
+              {label}
+            </button>
+          ))}
+        </div>
+
         {/* A whole month is what somebody almost always wants, and typing two
             dates to get one is a small tax paid every time. */}
         <input type="month" value={from.slice(0, 7)} className={input}
@@ -435,7 +474,7 @@ function ManagerDashboard() {
       {/* payroll report */}
       <div>
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-sm font-semibold text-slate-700">Report by employee (payroll)</h3>
+          <h3 className="text-sm font-semibold text-slate-700">Hours, lateness and leaving early — by employee</h3>
           <button onClick={exportCsv} className="flex items-center gap-1 text-xs text-blue-600 hover:underline"><Download size={13} /> Export CSV</button>
         </div>
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
@@ -458,9 +497,17 @@ function ManagerDashboard() {
             <tbody>
               {report.length === 0 && <tr><td colSpan={11} className="px-4 py-6 text-center text-slate-400">No attendance in this range</td></tr>}
               {report.map((r) => (
-                <tr key={r.name} className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
+                <Fragment key={r.name}>
+                <tr className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
                   <td className="px-4 py-2.5 font-medium text-slate-700 whitespace-nowrap">
-                    <span className="flex items-center gap-1.5">
+                    <button type="button"
+                      onClick={() => setOpenName((n) => (n === r.name ? null : r.name))}
+                      disabled={r.offDays.length === 0}
+                      title={r.offDays.length ? 'Show the days behind these figures' : undefined}
+                      className="flex items-center gap-1.5 text-left disabled:cursor-default">
+                      {r.offDays.length > 0 && (
+                        <ChevronRight size={13} className={`shrink-0 text-slate-400 transition-transform ${openName === r.name ? 'rotate-90' : ''}`} />
+                      )}
                       {(() => { const lt = locationType(empByName.get(r.name)?.location); return lt ? <span className={`h-2 w-2 rounded-full shrink-0 ${LOCATION_TYPE_STYLE[lt].dot}`} /> : null; })()}
                       {r.name}
                       {r.assumedShift && (
@@ -475,7 +522,7 @@ function ManagerDashboard() {
                           hours vary
                         </span>
                       )}
-                    </span>
+                    </button>
                   </td>
                   <td className="px-4 py-2.5 text-slate-500 hidden sm:table-cell">{r.area}</td>
                   <td className="px-4 py-2.5 text-right">{r.daysPresent}</td>
@@ -492,6 +539,43 @@ function ManagerDashboard() {
                   <td className="px-4 py-2.5 text-right font-semibold tabular-nums">{r.hours.toFixed(1)}</td>
                   <td className="px-4 py-2.5 text-right tabular-nums hidden sm:table-cell">{r.avg.toFixed(1)}</td>
                 </tr>
+
+                {/* The days behind the figures, so a number is something to act
+                    on rather than something to go and verify. */}
+                {openName === r.name && r.offDays.length > 0 && (
+                  <tr className="border-b border-slate-100 bg-slate-50/70">
+                    <td colSpan={11} className="px-4 py-3">
+                      <table className="text-sm">
+                        <thead>
+                          <tr className="text-[11px] uppercase tracking-wide text-slate-400">
+                            <th className="text-left font-medium pr-8 pb-1">Day</th>
+                            <th className="text-left font-medium pr-8 pb-1">Due</th>
+                            <th className="text-right font-medium pr-8 pb-1">Late</th>
+                            <th className="text-right font-medium pb-1">Left early</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {r.offDays.map((d) => (
+                            <tr key={d.date}>
+                              <td className="pr-8 py-0.5 text-slate-600 whitespace-nowrap">{fmtDate(`${d.date}T12:00:00+03:00`)}</td>
+                              <td className="pr-8 py-0.5 text-slate-400 tabular-nums whitespace-nowrap">
+                                {d.shift.start ?? '—'}{d.shift.end ? `–${d.shift.end}` : ''}
+                              </td>
+                              <td className={`pr-8 py-0.5 text-right tabular-nums ${d.hoursLate ? 'text-amber-700 font-medium' : 'text-slate-300'}`}>
+                                {d.hoursLate ? formatHours(d.hoursLate, '—') : '—'}
+                                {d.excused && <span className="ml-1 text-[10px] text-slate-400">excused</span>}
+                              </td>
+                              <td className={`py-0.5 text-right tabular-nums ${d.hoursEarly ? 'text-amber-700 font-medium' : 'text-slate-300'}`}>
+                                {d.hoursEarly ? formatHours(d.hoursEarly, '—') : '—'}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </td>
+                  </tr>
+                )}
+                </Fragment>
               ))}
             </tbody>
           </table>
