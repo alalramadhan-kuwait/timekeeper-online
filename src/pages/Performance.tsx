@@ -1,4 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { dayPunctuality, punctualityTotals } from '../shared/punctuality';
+import { scheduleFromRow, type ScheduleRow } from '../shared/schedule';
+import { formatHours } from '../shared/workedHours';
 import { Link } from 'react-router-dom';
 import { UserRound, Clock, Activity as ActivityIcon, Pencil, CalendarDays, MapPin, Briefcase, Trophy, Medal } from 'lucide-react';
 import { supabase } from '../lib/supabase';
@@ -112,21 +115,54 @@ export default function PerformancePage() {
     const days = RANGES.find((r) => r.key === range)?.days ?? null;
     const sinceIso = days ? new Date(Date.now() - days * 86400_000).toISOString() : '1970-01-01T00:00:00Z';
 
-    const [att, act, edits, lv] = await Promise.all([
+    const [att, act, edits, lv, sch, st] = await Promise.all([
       supabase.from('attendance_records').select('clock_in, clock_out, is_late, justified, location').eq('user_id', person.id).gte('clock_in', sinceIso).order('clock_in', { ascending: false }),
       supabase.from('user_activity').select('path, occurred_at').eq('user_id', person.id).gte('occurred_at', sinceIso),
       supabase.from('audit_log').select('table_name, action, changed_at').eq('changed_by', person.id).gte('changed_at', sinceIso).order('changed_at', { ascending: false }).limit(1000),
       person.employee_id
         ? supabase.from('leave_records').select('leave_type, leave_start, leave_end, days, approval_status, manager_status').eq('employee_id', person.employee_id)
         : Promise.resolve({ data: [] as any[] }),
+      /* This page used to read the stored is_late flag, written at clock-in
+         against whatever rule was in force that morning. It disagreed with HR →
+         Attendance for the same person on the same days — Avenues staff showed
+         "3 late" here and "—" there. Both now ask the same engine. */
+      person.employee_id
+        ? supabase.from('employee_schedules')
+            .select('id, employee_id, effective_from, effective_to, working_days, shift_start, shift_end, grace_minutes, note')
+            .eq('employee_id', person.employee_id)
+        : Promise.resolve({ data: [] as any[] }),
+      supabase.from('settings').select('work_start_time, work_end_time, late_grace_minutes').maybeSingle(),
     ]);
 
     // attendance
     const arows = (att.data ?? []) as any[];
     const dayset = new Set(arows.map((r) => kdate(r.clock_in)));
-    const lateCount = arows.filter((r) => r.is_late && !r.justified).length;
     const daysPresent = dayset.size;
-    const onTimePct = daysPresent ? Math.round(((daysPresent - lateCount) / daysPresent) * 100) : null;
+
+    /* Lateness, from the one engine, against this person's own shift. */
+    const schedules = ((sch.data ?? []) as ScheduleRow[]).map(scheduleFromRow);
+    const setting = (st.data ?? null) as { work_start_time?: string; work_end_time?: string; late_grace_minutes?: number } | null;
+    const byDay = new Map<string, any[]>();
+    for (const r of arows) {
+      const k = kdate(r.clock_in);
+      byDay.set(k, [...(byDay.get(k) ?? []), r]);
+    }
+    const punctDays = [...byDay.entries()].map(([date, recs]) => dayPunctuality({
+      date, schedules,
+      records: recs.map((r) => ({ clockIn: r.clock_in, clockOut: r.clock_out, justified: r.justified })),
+    }, {
+      defaultStart: setting?.work_start_time ?? '09:00',
+      defaultEnd: setting?.work_end_time ?? '17:00',
+      graceMinutes: setting?.late_grace_minutes ?? 60,
+    }));
+    const punct = punctualityTotals(punctDays);
+    const lateCount = punct.timesLate;
+    const hoursLate = punct.hoursLate;
+    const hoursEarly = punct.hoursEarly;
+    /* "Hours vary" people have no shift to be late against, so an on-time rate
+       would be a number invented out of nothing. */
+    const judged = punctDays.filter((d) => d.hoursLate !== null).length;
+    const onTimePct = judged ? Math.round(((judged - lateCount) / judged) * 100) : null;
     const totalHours = arows.reduce((s, r) => s + hoursBetween(r.clock_in, r.clock_out), 0);
     const hoursByDay = new Map<string, number>();
     for (const r of arows) if (r.clock_out) hoursByDay.set(kdate(r.clock_in), (hoursByDay.get(kdate(r.clock_in)) ?? 0) + hoursBetween(r.clock_in, r.clock_out));
@@ -185,7 +221,7 @@ export default function PerformancePage() {
       .sort((a, b) => b[1].days - a[1].days);
 
     setData({
-      daysPresent, lateCount, fullDays, overtimeDays, shortDays, onTimePct, avgHours: daysPresent ? totalHours / daysPresent : 0, avgArrStr, lastClock, missedOut,
+      daysPresent, lateCount, hoursLate, hoursEarly, judged, fullDays, overtimeDays, shortDays, onTimePct, avgHours: daysPresent ? totalHours / daysPresent : 0, avgArrStr, lastClock, missedOut,
       views: acts.length, activeDays: actDays.size, lastActive, topPages,
       editTotal: erows.length, byAction, topTables, recentEdits,
       leaveDays, pendingReq, leaveByType,
@@ -324,6 +360,17 @@ export default function PerformancePage() {
             <Kpi icon={<Clock size={13} />} label="Overtime days (8:10+)" value={String(data.overtimeDays)} accent={data.overtimeDays ? 'text-emerald-600' : undefined} link="/attendance" />
             <Kpi icon={<Clock size={13} />} label="On-time rate" value={data.onTimePct != null ? `${data.onTimePct}%` : '—'} accent={data.onTimePct == null ? undefined : data.onTimePct >= 90 ? 'text-emerald-600' : data.onTimePct >= 70 ? 'text-amber-600' : 'text-rose-600'} sub={`${data.lateCount} late`} link="/attendance" />
             <Kpi icon={<Clock size={13} />} label="Avg hours / day" value={data.avgHours ? data.avgHours.toFixed(1) : '—'} link="/attendance" />
+            {/* The figure somebody actually asks for out loud. A count of late
+                days does not separate five minutes from two hours. */}
+            <Kpi icon={<Clock size={13} />} label="Hours late"
+              value={data.judged ? formatHours(data.hoursLate, '0') : '—'}
+              accent={data.hoursLate ? 'text-amber-600' : undefined}
+              sub={data.judged ? `over ${data.lateCount} ${data.lateCount === 1 ? 'day' : 'days'}` : 'hours vary — nothing to judge'}
+              link="/attendance" />
+            <Kpi icon={<Clock size={13} />} label="Hours left early"
+              value={data.judged ? formatHours(data.hoursEarly, '0') : '—'}
+              accent={data.hoursEarly ? 'text-amber-600' : undefined}
+              link="/attendance" />
             <Kpi icon={<Clock size={13} />} label="Avg arrival" value={data.avgArrStr} link="/attendance" />
             <Kpi icon={<Clock size={13} />} label="Missed clock-outs" value={String(data.missedOut)} accent={data.missedOut ? 'text-amber-600' : undefined} link="/attendance" />
             <Kpi icon={<Clock size={13} />} label="Last clock-in" value={data.lastClock ? kdate(data.lastClock) : '—'} sub={data.lastClock ? hm(data.lastClock) : undefined} link="/attendance" />

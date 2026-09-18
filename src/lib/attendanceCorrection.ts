@@ -31,7 +31,7 @@ async function arrivedLate(
   let schedules: ReturnType<typeof scheduleFromRow>[] = [];
   if (r.employee_id) {
     const { data } = await supabase.from('employee_schedules')
-      .select('id, employee_id, effective_from, effective_to, working_days, shift_start, shift_end, note')
+      .select('id, employee_id, effective_from, effective_to, working_days, shift_start, shift_end, grace_minutes, note')
       .eq('employee_id', r.employee_id);
     schedules = ((data ?? []) as ScheduleRow[]).map(scheduleFromRow);
   }

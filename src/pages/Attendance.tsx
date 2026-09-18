@@ -92,7 +92,7 @@ function ManagerDashboard() {
         if (data?.late_grace_minutes != null) setGrace(Number(data.late_grace_minutes));
       });
     supabase.from('employee_schedules')
-      .select('id, employee_id, effective_from, effective_to, working_days, shift_start, shift_end, note')
+      .select('id, employee_id, effective_from, effective_to, working_days, shift_start, shift_end, grace_minutes, note')
       .then(({ data }) => {
         const by = new Map<string, Schedule[]>();
         for (const row of ((data ?? []) as ScheduleRow[])) {
@@ -307,11 +307,23 @@ function ManagerDashboard() {
   }
 
   const [wh, wm] = workStart.split(':').map(Number);
-  const graceEnd = `${String(Math.floor((wh * 60 + wm + 60) / 60)).padStart(2, '0')}:${String((wh * 60 + wm + 60) % 60).padStart(2, '0')}`;
+  /* The default deadline. It was computed from a hard-coded 60 while the real
+     figure sat in settings, so changing the grace there moved every judgement
+     and left this sentence claiming the old one. */
+  const graceEndMins = wh * 60 + wm + grace;
+  const graceEnd = `${String(Math.floor(graceEndMins / 60)).padStart(2, '0')}:${String(graceEndMins % 60).padStart(2, '0')}`;
+
+  /* Lateness in hours across everybody the filters have left on screen. The
+     count beside it answers "how many times"; this answers "how much", which is
+     the one people ask out loud and the one a count cannot give: five minutes
+     and two hours are both "1 late". */
+  const hoursLateShown = report.reduce((t, r) => t + (r.hoursLate ?? 0), 0);
+  const judgedPeople = report.filter((r) => r.hoursLate !== null).length;
 
   const cards = [
     { label: 'Clock-ins', value: summary.records, icon: Clock, accent: 'text-slate-800' },
     { label: 'Late (unjustified)', value: summary.late, icon: AlertTriangle, accent: summary.late ? 'text-amber-600' : 'text-slate-400' },
+    { label: 'Hours late', value: judgedPeople ? formatHours(hoursLateShown, '0') : '—', icon: Clock, accent: hoursLateShown ? 'text-amber-600' : 'text-slate-400' },
     { label: 'Absent today', value: summary.absentToday.length, icon: Users, accent: summary.absentToday.length ? 'text-rose-600' : 'text-emerald-600' },
     { label: 'Still clocked in', value: summary.stillIn, icon: LogIn, accent: 'text-blue-600' },
     { label: 'Missed clock-out', value: summary.missed, icon: LogOut, accent: summary.missed ? 'text-rose-600' : 'text-slate-400' },
@@ -330,7 +342,9 @@ function ManagerDashboard() {
       <div>
         <h1 className="text-xl font-bold text-slate-900">Team Attendance</h1>
         <p className="text-sm text-slate-500">
-          Work 9:00–17:00 with 1h grace — on time until {graceEnd}. Staff clock in from My Portal; corrections here are saved to the History Log.
+          Default {workStart}–{workEnd} with {grace}m grace — on time until {graceEnd}. Anybody with
+          their own shift is judged against that instead, and against their own grace where one is
+          set. Staff clock in from My Portal; corrections here are saved to the History Log.
         </p>
       </div>
 

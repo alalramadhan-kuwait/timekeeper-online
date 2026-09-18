@@ -74,7 +74,7 @@ export function WorkScheduleModal({
   const load = useCallback(async () => {
     const { data, error } = await supabase
       .from('employee_schedules')
-      .select('id, employee_id, effective_from, effective_to, working_days, shift_start, shift_end, note')
+      .select('id, employee_id, effective_from, effective_to, working_days, shift_start, shift_end, grace_minutes, note')
       .eq('employee_id', employeeId)
       .order('effective_from', { ascending: false });
     if (error) { setErr(error.message); setRows([]); return; }
