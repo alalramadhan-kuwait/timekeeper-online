@@ -356,7 +356,7 @@ export default function Dashboard() {
     async function load() {
       const [
         posQ, lostQ, overdueFuQ, newCustQ, vipQ, wlQ, preQ, projQ,
-        stockSumQ, lowQ, stockCntQ, poQ, attTodayQ, attLateQ, leaveQ, empQ,
+        stockSumQ, lowQ, stockCntQ, poQ, attTodayQ, attLateQ, leaveQ, reqQ, empQ,
         repairsQ, contentQ, igQ, setQ, alertList, actMap, stockHistQ, syncQ,
       ] = await Promise.all([
         /* Till revenue from Lightspeed, refreshed by the 05:00 UTC sync every
@@ -379,6 +379,10 @@ export default function Dashboard() {
         supabase.from('attendance_records').select('employee_name').gte('clock_in', `${today}T00:00:00+03:00`).lte('clock_in', `${today}T23:59:59+03:00`),
         supabase.from('attendance_records').select('id', { count: 'exact', head: true }).eq('is_late', true).eq('justified', false).gte('clock_in', `${monthStart}T00:00:00+03:00`),
         supabase.from('leave_records').select('leave_type').eq('approval_status', 'Pending'),
+        /* Requests of every kind, already staged by the database. The cards
+           below count what the Inbox tabs hold — one source, so a card and the
+           tab it opens can never disagree. */
+        supabase.from('v_requests').select('stage_owner, is_overdue'),
         canHR ? supabase.from('employees').select('residency_expiry, work_permit_expiry, status').in('status', ['Active', 'On leave']) : Promise.resolve({ data: [] as any[] }),
         supabase.from('repair_watches').select('status, estimated_completion, date_returned'),
         supabase.from('content_tasks').select('status, planned_date, posted_date'),
@@ -446,6 +450,13 @@ export default function Dashboard() {
       const pendingLeave = leaveRows.filter((l) => (l.leave_type ?? 'Annual') === 'Annual').length;
       const sickReq = leaveRows.filter((l) => l.leave_type === 'Sick').length;
       const wfhReq = leaveRows.filter((l) => l.leave_type === 'WFH').length;
+
+      /* Requests, counted the way the Inbox tabs count them. The owner's stage
+         is 'owner', so what needs them is what the database says is theirs. */
+      const reqRows = (reqQ.data ?? []) as any[];
+      const needsMe = reqRows.filter((r) => r.stage_owner === 'owner').length;
+      const withManager = reqRows.filter((r) => r.stage_owner === 'manager').length;
+      const overdueReq = reqRows.filter((r) => r.is_overdue).length;
       const empDocs = ((empQ as any).data ?? []).filter((e: any) => (e.residency_expiry && e.residency_expiry <= in60) || (e.work_permit_expiry && e.work_permit_expiry <= in60)).length;
 
       // repairs
@@ -567,6 +578,7 @@ export default function Dashboard() {
         newCust: newCustQ.count ?? 0, vipOcc, openWaiting: wlQ.count ?? 0, openPre: preQ.count ?? 0,
         activeProjects, delayedProjects, stockValue, deadValue, lowStock, openPOs, shipments, supplierBalance,
         presentToday, lateMonth, pendingLeave, sickReq, wfhReq, empDocs,
+        needsMe, withManager, overdueReq,
         openRepairs, waitingApproval, sentSupplier, readyPickup, overdueRepairs,
         contentPending, scheduledMonth, postedMonth, igFollowers, igAvgEng, igEngRate,
       });
@@ -630,6 +642,15 @@ export default function Dashboard() {
     ...(d.deadValue != null ? [{ label: 'Not-moving stock', value: kd(d.deadValue), accent: Number(d.deadValue) ? 'text-rose-600' : 'text-emerald-600', link: '/stock' } as Kpi] : []),
     ...(d.lowStock != null ? [{ label: 'Low stock items', value: d.lowStock, accent: Number(d.lowStock) ? 'text-amber-600' : undefined, link: '/stock' } as Kpi] : []),
     { label: 'Open POs', value: d.openPOs ?? 0, link: '/purchase-orders' },
+  ];
+
+  /* The three cards that open the Inbox. They are a summary and nothing more —
+     the full list lives in one place, and duplicating it here is how two
+     screens start disagreeing about what is outstanding. */
+  const requestCards: Kpi[] = [
+    { label: 'Needs my approval', value: d.needsMe ?? 0, accent: Number(d.needsMe) ? 'text-amber-600' : undefined, link: '/inbox' },
+    { label: 'Waiting on managers', value: d.withManager ?? 0, link: '/inbox?tab=waiting' },
+    { label: 'Overdue', value: d.overdueReq ?? 0, accent: Number(d.overdueReq) ? 'text-rose-600' : undefined, link: '/inbox' },
   ];
 
   const hrCards: Kpi[] = [
@@ -698,6 +719,7 @@ export default function Dashboard() {
         </>
       } />}
       {can('/attendance') && <WhoAtWork />}
+      {can('/inbox') && <Section title="Requests" detailLink="/inbox" cards={requestCards} />}
       {(can('/hr') || can('/attendance')) && <Section title="HR & Attendance" detailLink={can('/attendance') ? '/attendance' : '/hr'} cards={hrCards} />}
       {can('/repairs') && <Section title="Repair Watches" detailLink="/repairs" cards={repairCards} charts={
         <ChartCard title="Repairs by status" hint="open cases" link="/repairs">

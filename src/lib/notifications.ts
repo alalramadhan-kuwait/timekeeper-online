@@ -1,43 +1,28 @@
-import { supabase } from './supabase';
+/**
+ * The back office's notification feed.
+ *
+ * The reading itself moved to src/shared/notifications when the shop floor app
+ * needed the same feed — it had none at all, so the store manager was told
+ * nothing about requests waiting on him. This file is the thin adapter between
+ * this app's auth types and that shared reader, so there is one implementation
+ * rather than two that drift.
+ */
 import type { User } from '@supabase/supabase-js';
 import type { Profile, Role } from '../context/AuthContext';
+import {
+  loadMyNotifications as loadShared, unreadCount, markRead, type FeedNotif,
+} from '../shared/notifications';
 
-// The signed-in person's notification feed (in-app notification centre).
-export interface FeedNotif {
-  id: string;
-  created_at: string;
-  event_type: string;
-  title: string;
-  body: string;
-  url: string | null;
-  read: boolean;
-}
+export type { FeedNotif };
 
 /** Notifications addressed to this account (person-targeted or their role), newest first. */
-export async function loadMyNotifications(user: User, _profile: Profile | null, role: Role | null, limit = 100): Promise<FeedNotif[]> {
-  const orFilter = role
-    ? `person_user_id.eq.${user.id},audience_roles.cs.{${role}}`
-    : `person_user_id.eq.${user.id}`;
-  const [{ data: rows }, { data: reads }] = await Promise.all([
-    supabase.from('notifications')
-      .select('id, created_at, event_type, title, body, url, exclude_user, person_user_id')
-      .or(orFilter)
-      .order('created_at', { ascending: false })
-      .limit(limit),
-    supabase.from('notification_reads').select('notification_id').eq('user_id', user.id),
-  ]);
-  const readSet = new Set((reads ?? []).map((r: { notification_id: string }) => r.notification_id));
-  return (rows ?? [])
-    .filter((n: any) => n.exclude_user !== user.id && n.event_type !== 'po_summary')
-    .map((n: any) => ({ id: n.id, created_at: n.created_at, event_type: n.event_type, title: n.title, body: n.body, url: n.url, read: readSet.has(n.id) }));
-}
+export const loadMyNotifications = (
+  user: User, _profile: Profile | null, role: Role | null, limit = 100,
+): Promise<FeedNotif[]> => loadShared(user.id, role, limit);
 
-export async function unreadNotificationCount(user: User, profile: Profile | null, role: Role | null): Promise<number> {
-  const list = await loadMyNotifications(user, profile, role, 100);
-  return list.filter((n) => !n.read).length;
-}
+export const unreadNotificationCount = (
+  user: User, _profile: Profile | null, role: Role | null,
+): Promise<number> => unreadCount(user.id, role);
 
-export async function markNotificationsRead(userId: string, ids: string[]): Promise<void> {
-  if (ids.length === 0) return;
-  await supabase.from('notification_reads').upsert(ids.map((id) => ({ user_id: userId, notification_id: id })), { onConflict: 'user_id,notification_id' });
-}
+export const markNotificationsRead = (userId: string, ids: string[]): Promise<void> =>
+  markRead(userId, ids);

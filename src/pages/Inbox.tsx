@@ -4,7 +4,8 @@ import { Inbox as InboxIcon, CheckCircle, Clock, CalendarRange, FileText, Check,
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { Spinner, Badge } from '../components/ui';
-import { loadInbox, InboxData, type RequestApproval } from '../lib/inbox';
+import { loadInbox, InboxData } from '../lib/inbox';
+import RequestQueue from '../components/RequestQueue';
 import { MONTHS } from '../lib/dateRange';
 import { applyCorrection, isApplicable } from '../lib/attendanceCorrection';
 
@@ -36,6 +37,9 @@ export default function InboxPage() {
   // may sign off which half of a leave request.
   const [err, setErr] = useState<string | null>(null);
   const focusId = sp.get('focus');
+  // a dashboard card links straight to the tab it counted
+  const urlTab = sp.get('tab');
+  const initialTab = urlTab === 'waiting' || urlTab === 'done' ? urlTab : undefined;
   // scroll to and highlight the record a notification pointed at
   useEffect(() => {
     if (!focusId || loading) return;
@@ -51,35 +55,6 @@ export default function InboxPage() {
   }
   useEffect(() => { reload(); /* eslint-disable-next-line */ }, [user?.id, role]);
 
-  /**
-   * The store manager writes the first approval, the owners the final one.
-   * Writing the wrong column is refused by the database, so the error is
-   * shown rather than swallowed.
-   */
-  async function decideLeave(id: string, status: 'Approved' | 'Rejected', stage: 'manager' | 'final') {
-    setBusy(`lv-${id}`);
-    const patch = stage === 'manager' ? { manager_status: status } : { approval_status: status };
-    const { error } = await supabase.from('leave_records').update(patch).eq('id', id);
-    setErr(error ? error.message : null);
-    await reload(); setBusy(null);
-  }
-  async function decideRequest(r: RequestApproval, status: 'Approved' | 'Rejected') {
-    setBusy(`rq-${r.id}`);
-    setErr(null);
-    let applied = false;
-    if (status === 'Approved') {
-      const problem = await applyCorrection(r, remarks[r.id]);
-      if (problem) { setErr(problem); setBusy(null); return; }
-      applied = isApplicable(r);
-    }
-    const { error } = await supabase.from('employee_requests').update({
-      status,
-      manager_remarks: remarks[r.id]?.trim() || null,
-      ...(applied ? { applied_at: new Date().toISOString(), applied_by: user?.id ?? null } : {}),
-    }).eq('id', r.id);
-    if (error) setErr(error.message);
-    await reload(); setBusy(null);
-  }
   async function markTaskDone(id: string) {
     setBusy(`tk-${id}`);
     await supabase.from('assigned_tasks').update({ status: 'Done' }).eq('id', id);
@@ -190,215 +165,11 @@ export default function InboxPage() {
         </section>
       )}
 
-      {/* ── Leave approvals ── */}
-      {data.isApprover && data.leaveApprovals.length > 0 && (
-        <section className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-          <div className="flex items-center gap-2 px-5 py-3 border-b border-slate-100">
-            <CalendarRange size={16} className="text-slate-500" />
-            <h2 className="text-sm font-semibold text-slate-700">
-              {data.isStoreManager ? 'Leave requests — your approval (1st of 2)' : 'Leave requests awaiting approval'}
-            </h2>
-            <Badge className="bg-amber-100 text-amber-700 border-amber-200">{data.leaveApprovals.length}</Badge>
-          </div>
-          <ul className="divide-y divide-slate-100">
-            {data.leaveApprovals.map((l) => (
-              <li key={l.id} id={`nid-${l.id}`} className={`px-5 py-3 flex flex-wrap items-center gap-3 ${hl(l.id)}`}>
-                <div className="min-w-0 flex-1">
-                  <div className="text-sm font-medium text-slate-800">{l.employee_name} · <span className="text-slate-500">{l.leave_type}</span></div>
-                  <div className="text-xs text-slate-400">{l.leave_start} → {l.leave_end} ({l.days}d){l.notes ? ` · ${l.notes}` : ''}</div>
-                  {/* An owner needs to know whether the manager has seen it yet. */}
-                  {l.stage === 'final' && l.managerStatus !== 'Not required' && (
-                    <div className="text-[11px] mt-0.5">
-                      {l.managerStatus === 'Approved'
-                        ? <span className="text-emerald-600">✓ {l.withManager ?? 'Manager'} approved</span>
-                        : l.managerStatus === 'Skipped'
-                        ? <span className="text-slate-500">Decided without the manager's step</span>
-                        : <span className="text-amber-600">Waiting on {l.withManager ?? 'the manager'}</span>}
-                    </div>
-                  )}
-                </div>
-                <div className="flex items-center gap-2">
-                  <button disabled={busy === `lv-${l.id}`} onClick={() => decideLeave(l.id, 'Approved', l.stage)}
-                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-medium hover:bg-emerald-700 disabled:opacity-50"><Check size={13} /> {l.stage === 'manager' ? 'Approve (1st)' : 'Approve'}</button>
-                  <button disabled={busy === `lv-${l.id}`} onClick={() => decideLeave(l.id, 'Rejected', l.stage)}
-                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-rose-300 text-rose-600 text-xs font-medium hover:bg-rose-50 disabled:opacity-50"><X size={13} /> Reject</button>
-                  <button onClick={() => navigate('/leave')} className="text-xs text-blue-600 hover:underline">Open</button>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-
-      {/* ── With a manager: for the owners' information, not their action ── */}
-      {data.awaitingManager.length > 0 && (
-        <section className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-          <div className="flex items-center gap-2 px-5 py-3 border-b border-slate-100">
-            <Info size={16} className="text-slate-400" />
-            <h2 className="text-sm font-semibold text-slate-600">With the manager — for your information</h2>
-            <Badge className="bg-slate-100 text-slate-500 border-slate-200">{data.awaitingManager.length}</Badge>
-          </div>
-          <ul className="divide-y divide-slate-100">
-            {data.awaitingManager.map((l) => (
-              <li key={l.id} id={`nid-${l.id}`} className={`px-5 py-3 flex flex-wrap items-center gap-3 ${hl(l.id)}`}>
-                <div className="min-w-0 flex-1">
-                  <div className="text-sm text-slate-700">{l.employee_name} · <span className="text-slate-500">{l.leave_type}</span></div>
-                  <div className="text-xs text-slate-400">{l.leave_start} → {l.leave_end} ({l.days}d){l.notes ? ` · ${l.notes}` : ''}</div>
-                  <div className="text-[11px] mt-0.5 text-amber-600">Waiting on {l.withManager ?? 'the manager'} for the first approval</div>
-                </div>
-                {/* No buttons here on purpose: it is not the owners' turn. They
-                    keep the power to decide outright — that lives on Leave
-                    Tracking, where the manager's step is recorded as Skipped. */}
-                <button onClick={() => navigate('/leave')} className="text-xs text-blue-600 hover:underline">Open</button>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-
-      {/* ── Employee requests (HR update / attendance correction) ── */}
-      {data.isApprover && data.requestApprovals.length > 0 && (
-        <section className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-          <div className="flex items-center gap-2 px-5 py-3 border-b border-slate-100">
-            <FileText size={16} className="text-slate-500" />
-            <h2 className="text-sm font-semibold text-slate-700">Employee requests</h2>
-            <Badge className="bg-amber-100 text-amber-700 border-amber-200">{data.requestApprovals.length}</Badge>
-          </div>
-          <ul className="divide-y divide-slate-100">
-            {data.requestApprovals.map((r) => (
-              <li key={r.id} id={`nid-${r.id}`} className={`px-5 py-3 space-y-2 ${hl(r.id)}`}>
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-sm font-medium text-slate-800">{r.requester}</span>
-                  <Badge className="bg-slate-100 text-slate-600 border-slate-200">{r.request_type}</Badge>
-                  <span className="text-xs text-slate-400 ml-auto">{(r.created_at ?? '').slice(0, 10)}</span>
-                </div>
-                <CorrectionAsk r={r} />
-                {r.request_type === 'Attendance correction' && r.attendance_date ? (
-                  <p className="text-sm text-slate-600">
-                    <span className="text-slate-400">Reason: </span>{reasonOnly(r)}
-                  </p>
-                ) : (
-                  <p className="text-sm text-slate-600">{r.details}</p>
-                )}
-                <div className="flex flex-wrap items-center gap-2">
-                  <input value={remarks[r.id] ?? ''} onChange={(e) => setRemarks((m) => ({ ...m, [r.id]: e.target.value }))}
-                    placeholder="Remarks (optional)" className="flex-1 min-w-[10rem] px-3 py-1.5 rounded-lg border border-slate-300 text-sm bg-white" />
-                  <button disabled={busy === `rq-${r.id}`} onClick={() => decideRequest(r, 'Approved')}
-                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-medium hover:bg-emerald-700 disabled:opacity-50"><Check size={13} /> Approve</button>
-                  <button disabled={busy === `rq-${r.id}`} onClick={() => decideRequest(r, 'Rejected')}
-                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-rose-300 text-rose-600 text-xs font-medium hover:bg-rose-50 disabled:opacity-50"><X size={13} /> Reject</button>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
+      {/* ── Every request, in three tabs ──
+           Leave, corrections, HR updates and schedule changes were three
+           separate lists with three ideas of what a request was. One queue now,
+           and which tab a row sits in is decided in the database. */}
+      {data.isApprover && <RequestQueue role={role} userId={user?.id ?? null} focusId={focusId} initialTab={initialTab} />}
     </div>
   );
-}
-
-/**
- * What a correction would change, as a before and an after.
- *
- * This used to say "Arrived 14:12 · Left unchanged", which is the request
- * without the thing it is a request about. An approver could not tell a missing
- * clock-in from one being moved by two hours, and "unchanged" read as a gap in
- * the form rather than as "leave that one alone" — so the decision was being
- * made on half the facts.
- *
- * Now each half of the day gets a row: what the record says, what is being
- * asked for, and whether that is actually a change.
- */
-function CorrectionAsk({ r }: { r: RequestApproval }) {
-  if (r.request_type !== 'Attendance correction' || !r.attendance_date) return null;
-  const askIn = kuwaitHM(r.proposed_clock_in);
-  const askOut = kuwaitHM(r.proposed_clock_out);
-  if (!askIn && !askOut) return null;
-
-  const nowIn = kuwaitHM(r.current_clock_in);
-  const nowOut = kuwaitHM(r.current_clock_out);
-  const nothingRecorded = r.current_shifts === 0;
-
-  /* Still on the floor: the day has a clock-in and no clock-out yet, which is
-     not the same as a missing one and must not read like it. */
-  const stillIn = r.current_shifts > 0 && !nowOut;
-  const rows: Array<{ label: string; now: string | null; nowWord?: string; ask: string | null }> = [
-    { label: 'Check-in', now: nowIn, ask: askIn },
-    { label: 'Check-out', now: nowOut, nowWord: stillIn ? 'Still clocked in' : undefined, ask: askOut },
-  ];
-
-  /* A request that asks for the times already on the record. Worth saying
-     outright: it looks like a correction, and approving it does nothing. */
-  const changesNothing = rows.every((row) => row.ask === null || row.ask === row.now);
-
-  // "Sep", not en-GB's "Sept" — the same three letters the rest of the app uses.
-  const day = new Date(`${r.attendance_date}T12:00:00+03:00`);
-  const dayLabel = `${day.toLocaleDateString('en-GB', { weekday: 'long', timeZone: 'Asia/Kuwait' })} `
-    + `${Number(r.attendance_date.slice(8))} ${MONTHS[Number(r.attendance_date.slice(5, 7)) - 1]} `
-    + r.attendance_date.slice(0, 4);
-
-  return (
-    <div className="rounded-lg bg-slate-50 border border-slate-200 px-3 py-2.5 text-xs space-y-2">
-      <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-        <span className="font-semibold text-slate-700">{dayLabel}</span>
-        {nothingRecorded && (
-          <span className="text-amber-700">nothing recorded that day — approving creates the record</span>
-        )}
-        {r.current_shifts > 1 && (
-          <span className="text-amber-700">
-            {r.current_shifts} shifts that day — the times below are its first in and last out
-          </span>
-        )}
-      </div>
-
-      <div className="grid grid-cols-[auto_auto_auto_1fr] items-center gap-x-3 gap-y-1">
-        <span className="text-[10px] uppercase tracking-wide text-slate-400">Field</span>
-        <span className="text-[10px] uppercase tracking-wide text-slate-400">Now</span>
-        <span aria-hidden="true" />
-        <span className="text-[10px] uppercase tracking-wide text-slate-400">Requested</span>
-
-        {rows.map((row) => {
-          const changes = row.ask !== null && row.ask !== row.now;
-          return (
-            <Fragment key={row.label}>
-              <span className="text-slate-500 whitespace-nowrap">{row.label}</span>
-              <span className={`tabular-nums ${row.now ? 'text-slate-700' : 'text-slate-400 italic'}`}>
-                {row.now ?? row.nowWord ?? 'Not recorded'}
-              </span>
-              <span className={changes ? 'text-slate-400' : 'text-transparent'} aria-hidden="true">→</span>
-              <span className={
-                row.ask === null ? 'text-slate-400'
-                  : changes ? 'tabular-nums font-semibold text-slate-900'
-                  : 'tabular-nums text-slate-400'
-              }>
-                {row.ask === null ? 'No change' : changes ? row.ask : `${row.ask} (same)`}
-              </span>
-            </Fragment>
-          );
-        })}
-      </div>
-
-      {changesNothing ? (
-        <p className="text-amber-700">
-          This asks for the times already on the record — approving it would change nothing.
-        </p>
-      ) : (
-        <p className="text-slate-400">Approving writes the requested times onto the record.</p>
-      )}
-    </div>
-  );
-}
-
-/**
- * The reason somebody gave, without the times repeated back.
- *
- * `details` is built for the places that have no structured fields, so it
- * carries the date and the asked-for times as prose. Printed under a table that
- * already says both, it reads as the same sentence twice.
- */
-function reasonOnly(r: RequestApproval): string {
-  if (r.request_type !== 'Attendance correction' || !r.attendance_date) return r.details;
-  const at = r.details.indexOf(': ');
-  const reason = at === -1 ? r.details : r.details.slice(at + 2).trim();
-  return reason && reason.toLowerCase() !== 'no comment' ? reason : 'No reason given';
 }
