@@ -18,7 +18,7 @@ export type { FeedNotif };
 /** Notifications addressed to this account (person-targeted or their role), newest first. */
 export const loadMyNotifications = (
   user: User, _profile: Profile | null, role: Role | null, limit = 100,
-): Promise<FeedNotif[]> => loadShared(user.id, role, limit);
+): Promise<FeedNotif[]> => loadShared(user.id, role, { limit });
 
 export const unreadNotificationCount = (
   user: User, _profile: Profile | null, role: Role | null,
