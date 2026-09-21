@@ -76,7 +76,11 @@ activity, managers see their outlets, admins see everything.
 - **Same-day phone correction**: a personal login sees the number on its own
   entry from today; the shared Staff login never sees a number in a list and
   reaches one only through `case_contact_for_edit()` on an unlocked entry it
-  made today.
+  made today. **Known limitation:** the shared account cannot identify which
+  individual is holding the phone, so that same-day correction is granted to
+  whoever has the shop's device. This is a temporary compromise until personal
+  employee logins replace the shared account, and it is the reason the shared
+  account gets no CRM or history access at all.
 - **Phone is identity**: `customers_guard_identity` normalises on the way in,
   refuses a non-number, refuses a number another customer holds, refuses to
   change a number Lightspeed holds (correct it at the till), and writes every
