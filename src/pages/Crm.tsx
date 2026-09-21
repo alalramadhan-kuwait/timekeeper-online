@@ -114,7 +114,7 @@ export default function CrmPage() {
   async function load() {
     const [casesRes, vipRes] = await Promise.all([
       supabase
-        .from('cases')
+        .from('cases_visible')
         .select('id, case_id, date_logged, staff, customer_name, contact, case_type, product, brand, amount_kd, status, promised_callback, outlet, notes')
         .eq('deleted', false)
         .order('date_logged', { ascending: false }),

@@ -110,7 +110,7 @@ export async function loadInbox(user: User, profile: Profile | null, role: Role 
     safe<any>(supabase.from('paid_ads').select('id, ad_name, owner, status, end_date')),
     safe<any>(supabase.from('repair_watches').select('id, repair_id, customer_name, assigned_to, status, estimated_completion')),
     safe<any>(supabase.from('influencer_collaborations').select('id, campaign, product_brand, owner, status, posted_date, agreed_date, influencer_id')),
-    safe<any>(supabase.from('cases').select('id, case_id, customer_name, staff, status, promised_callback').eq('status', 'Open')),
+    safe<any>(supabase.from('cases_visible').select('id, case_id, customer_name, staff, status, promised_callback').eq('status', 'Open')),
     safe<any>(supabase.from('waiting_list').select('id, customer_name, staff_responsible, status, list_type, follow_up_date, expected_arrival')),
   ]);
   const { names, empIds } = ident;

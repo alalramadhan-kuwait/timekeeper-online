@@ -74,7 +74,7 @@ export default function SalesPage() {
   useEffect(() => {
     setLoading(true);
     supabase
-      .from('cases')
+      .from('cases_visible')
       .select('id, date_logged, staff, brand, product_type, product, amount_kd, outlet, channel, sale_items(brand, product_type, product, quantity, amount_kd)')
       .eq('case_type', 'Sale')
       .eq('deleted', false)
@@ -86,7 +86,7 @@ export default function SalesPage() {
         setLoading(false);
       });
     supabase
-      .from('cases')
+      .from('cases_visible')
       .select('id, date_logged, staff, customer_name, brand, product, amount_kd, outlet, notes, lost_reason')
       .eq('case_type', 'Lost Sale')
       .eq('deleted', false)
@@ -100,7 +100,7 @@ export default function SalesPage() {
   // fetched for the last 12 months once so the "By month" view always has a full year.
   useEffect(() => {
     supabase
-      .from('cases')
+      .from('cases_visible')
       .select('date_logged, time_logged, visitor_count, outlet')
       .eq('deleted', false)
       .gte('date_logged', format(subMonths(new Date(), 12), 'yyyy-MM-dd'))

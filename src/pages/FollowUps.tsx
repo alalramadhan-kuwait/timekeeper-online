@@ -47,7 +47,7 @@ export default function FollowUpsPage() {
   async function load() {
     setLoading(true);
     const { data, error } = await supabase
-      .from('cases')
+      .from('cases_visible')
       .select('id, case_id, date_logged, staff, customer_name, contact, case_type, product, brand, status, promised_callback, outlet, notes')
       .eq('case_type', 'Follow-up')
       .eq('status', 'Open')

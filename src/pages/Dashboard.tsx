@@ -365,8 +365,8 @@ export default function Dashboard() {
            what actually rang through. The cases still drive lost sales and
            follow-ups below, where they belong. */
         supabase.from('pos_channel_sales').select('channel_code, sale_date, revenue').gte('sale_date', monthStart),
-        supabase.from('cases').select('amount_kd').eq('case_type', 'Lost Sale').eq('deleted', false).gte('date_logged', monthStart),
-        supabase.from('cases').select('id', { count: 'exact', head: true }).eq('case_type', 'Follow-up').eq('status', 'Open').eq('deleted', false).lt('promised_callback', today),
+        supabase.from('cases_visible').select('amount_kd').eq('case_type', 'Lost Sale').eq('deleted', false).gte('date_logged', monthStart),
+        supabase.from('cases_visible').select('id', { count: 'exact', head: true }).eq('case_type', 'Follow-up').eq('status', 'Open').eq('deleted', false).lt('promised_callback', today),
         supabase.from('customers').select('id', { count: 'exact', head: true }).gte('created_at', monthStart),
         supabase.from('customers').select('birthday, occasions'),
         supabase.from('waiting_list').select('id', { count: 'exact', head: true }).eq('list_type', 'Waiting List').in('status', ['Open', 'Contacted']),

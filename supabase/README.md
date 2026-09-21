@@ -52,3 +52,35 @@ supabase functions deploy notify-flush
   service-role only) — not in source. Rotate it by updating that row; the flush cron reads it live.
 - Never hardcode secrets in migrations or function source. VAPID keys live in `push_config`;
   the Apify token in `apify_config`; Lightspeed tokens in `lightspeed_auth`.
+
+## Who may see whom (Stage B, 2026-09-21)
+
+Customer visibility is decided in the database, not the screens. In one line:
+you see the customers you have dealt with, the floor sees today's store
+activity, managers see their outlets, admins see everything.
+
+- **Relationship** (employee ↔ customer) is *derived* from records and cached in
+  `customer_relationships`: a Customer Visit / Follow-up / Lost Opportunity /
+  Manual Sale where you are the named salesperson (whichever login saved it);
+  a Lightspeed sale line credited to you — line-item salesperson first, till
+  user as fallback; a manager assignment (`customers.responsible_employee_id`).
+  It is recomputed by triggers on every change and rebuilt nightly, so a
+  corrected or deleted entry takes its access away with it.
+- **Today** (`cases_visibility`): floor roles see entries from today and
+  yesterday at every selling outlet, with colleagues' phone numbers blanked by
+  the `cases_visible` view. **Outlet isolation inside that window is enforced
+  by the app's selected outlet, not the database**, because the database cannot
+  know which shop a shared phone is in. This is temporary until personal
+  employee logins make the outlet knowable; do not describe it as
+  database-level outlet isolation.
+- **Same-day phone correction**: a personal login sees the number on its own
+  entry from today; the shared Staff login never sees a number in a list and
+  reaches one only through `case_contact_for_edit()` on an unlocked entry it
+  made today.
+- **Phone is identity**: `customers_guard_identity` normalises on the way in,
+  refuses a non-number, refuses a number another customer holds, refuses to
+  change a number Lightspeed holds (correct it at the till), and writes every
+  change to `customer_contact_changes`.
+- **Managers**: `manager_scopes` → outlet codes via the registry; Eman's scope
+  is HQ + WhatsApp + Online explicitly. Manager edit rights are scoped too.
+- The apps read entries through `cases_visible` and write to `cases`.
