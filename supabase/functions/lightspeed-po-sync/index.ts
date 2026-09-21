@@ -3,6 +3,7 @@
 // fields overwritten by a sync.
 // Callers: pg_cron (x-sync-key) or admin/manager JWT ("Sync POs now").
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import { lightspeedToken } from "../_shared/lightspeedAuth.ts";
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -89,33 +90,10 @@ Deno.serve(async (req: Request) => {
   };
 
   try {
-    const base = `https://${auth.domain_prefix}.retail.lightspeed.app`;
-    let token: string = auth.access_token;
-
-    // refresh the long-lived token when it is close to expiring
-    if (!auth.expires_at || new Date(auth.expires_at).getTime() < Date.now() + 300_000) {
-      const clientId = Deno.env.get("LS_CLIENT_ID"); const clientSecret = Deno.env.get("LS_CLIENT_SECRET");
-      if (clientId && clientSecret && auth.refresh_token) {
-        const r = await fetch(`${base}/api/1.0/token`, {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: new URLSearchParams({
-            refresh_token: auth.refresh_token, client_id: clientId,
-            client_secret: clientSecret, grant_type: "refresh_token",
-          }),
-        });
-        const b = await r.json().catch(() => ({}));
-        if (r.ok && b.access_token) {
-          token = b.access_token;
-          await admin.from("lightspeed_auth").update({
-            access_token: token,
-            refresh_token: b.refresh_token ?? auth.refresh_token,
-            expires_at: b.expires ? new Date(b.expires * 1000).toISOString() : new Date(Date.now() + 55 * 86400_000).toISOString(),
-            updated_at: new Date().toISOString(),
-          }).eq("id", 1);
-        }
-      }
-    }
+    /* The token comes through the lease in _shared/lightspeedAuth.ts, so this
+       run and the ten-minute sales sync can never refresh it at the same
+       moment and invalidate each other. */
+    const { base, token } = await lightspeedToken(admin);
 
     // supplier + outlet name lookups (consignments only carry ids)
     const supMap = new Map<string, string>();

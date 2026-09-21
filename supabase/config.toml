@@ -9,3 +9,8 @@ verify_jwt = true
 
 [functions.admin-users]
 verify_jwt = true
+
+# Lightspeed functions authorise themselves (cron's x-sync-key, or an
+# admin/manager JWT checked in code), so the gateway must not require a JWT.
+[functions.lightspeed-sales-sync]
+verify_jwt = false

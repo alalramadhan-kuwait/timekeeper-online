@@ -1,6 +1,7 @@
 // Syncs Lightspeed X-Series inventory into lightspeed_stock.
 // Callers: pg_cron (x-sync-key header) or the app's "Sync now" button (user JWT, admin/manager only).
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import { lightspeedToken } from "../_shared/lightspeedAuth.ts";
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -115,34 +116,10 @@ Deno.serve(async (req: Request) => {
   };
 
   try {
-    const base = `https://${auth.domain_prefix}.retail.lightspeed.app`;
-    let token: string = auth.access_token;
-
-    // refresh the access token if it expires within 5 minutes
-    if (!auth.expires_at || new Date(auth.expires_at).getTime() < Date.now() + 300_000) {
-      const clientId = Deno.env.get("LS_CLIENT_ID");
-      const clientSecret = Deno.env.get("LS_CLIENT_SECRET");
-      if (!clientId || !clientSecret) return await fail("LS_CLIENT_ID / LS_CLIENT_SECRET secrets not set");
-      const r = await fetch(`${base}/api/1.0/token`, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({
-          refresh_token: auth.refresh_token,
-          client_id: clientId,
-          client_secret: clientSecret,
-          grant_type: "refresh_token",
-        }),
-      });
-      const body = await r.json().catch(() => ({}));
-      if (!r.ok || !body.access_token) return await fail(`Token refresh failed (${r.status}): ${JSON.stringify(body).slice(0, 200)}`);
-      token = body.access_token;
-      await admin.from("lightspeed_auth").update({
-        access_token: token,
-        refresh_token: body.refresh_token ?? auth.refresh_token,
-        expires_at: body.expires ? new Date(body.expires * 1000).toISOString() : new Date(Date.now() + 6 * 3600_000).toISOString(),
-        updated_at: new Date().toISOString(),
-      }).eq("id", 1);
-    }
+    /* The token comes through the lease in _shared/lightspeedAuth.ts, so this
+       run and the ten-minute sales sync can never refresh it at the same
+       moment and invalidate each other. */
+    const { base, token } = await lightspeedToken(admin);
 
     // outlets → id → name
     const outletsRes = await fetch(`${base}/api/2.0/outlets`, { headers: { Authorization: `Bearer ${token}` } });
