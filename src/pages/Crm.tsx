@@ -177,7 +177,7 @@ export default function CrmPage() {
         {filtered.length > 300 && <p className="px-4 py-3 text-xs text-slate-400">Showing the first 300 of {filtered.length}. Search to narrow it down.</p>}
       </div>
 
-      {openId && <CustomerModal id={openId} canAssign={canAssign} onClose={() => open(null)} onChanged={load} />}
+      {openId && <CustomerModal id={openId} canAssign={canAssign} onClose={() => open(null)} onChanged={load} openWith={params.get('wa') as TemplateKey | null} />}
     </div>
   );
 }
@@ -187,7 +187,7 @@ type TimelineItem =
   | { kind: 'purchase'; at: string; p: ProfilePurchase }
   | { kind: 'handoff'; at: string; h: ProfileHandoff };
 
-function CustomerModal({ id, canAssign, onClose, onChanged }: { id: string; canAssign: boolean; onClose: () => void; onChanged: () => void }) {
+function CustomerModal({ id, canAssign, onClose, onChanged, openWith }: { id: string; canAssign: boolean; onClose: () => void; onChanged: () => void; openWith?: TemplateKey | null }) {
   const [p, setP] = useState<CustomerProfile | null | undefined>(undefined);
   const [err, setErr] = useState<string | null>(null);
   const [wa, setWa] = useState<{ template: TemplateKey; caseId?: string; product?: string } | null>(null);
@@ -198,6 +198,12 @@ function CustomerModal({ id, canAssign, onClose, onChanged }: { id: string; canA
     catch (e) { setErr(e instanceof Error ? e.message : 'Could not open the customer.'); setP(null); }
   }, [id]);
   useEffect(() => { void load(); }, [load]);
+
+  /* A reminder's link names the template, so the page opens with WhatsApp ready, once. */
+  const [autoOpened, setAutoOpened] = useState(false);
+  useEffect(() => {
+    if (p && openWith && !autoOpened && p.customer.phone_e164) { setWa({ template: openWith }); setAutoOpened(true); }
+  }, [p, openWith, autoOpened]);
 
   const timeline = useMemo<TimelineItem[]>(() => !p ? [] : [
     ...p.visits.map(v => ({ kind: 'visit' as const, at: v.at, v })),
