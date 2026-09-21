@@ -25,7 +25,10 @@ function urlB64ToUint8Array(base64: string) {
 
 export async function registerSW(): Promise<ServiceWorkerRegistration | null> {
   if (!('serviceWorker' in navigator)) return null;
-  try { return await navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`); } catch { return null; }
+  /* updateViaCache:'none' so the browser fetches sw.js from the server rather
+     than its own HTTP cache. Without it Safari can keep handing back the worker
+     it already has, and a device never finds out a new build exists. */
+  try { return await navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`, { updateViaCache: 'none' }); } catch { return null; }
 }
 
 export async function enablePush(): Promise<{ ok: boolean; error?: string }> {
