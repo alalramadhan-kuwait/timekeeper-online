@@ -88,3 +88,50 @@ activity, managers see their outlets, admins see everything.
 - **Managers**: `manager_scopes` → outlet codes via the registry; Eman's scope
   is HQ + WhatsApp + Online explicitly. Manager edit rights are scoped too.
 - The apps read entries through `cases_visible` and write to `cases`.
+
+## The customer and the follow-up (Stage C, 2026-09-21)
+
+Stage C put screens on the Stage A/B foundation. Nothing here loosens "who
+may see whom"; every function below runs under the caller's own rules or
+checks them first.
+
+- **Customer Visit** (`customer_by_phone`, `lightspeed_today`): while a number
+  is typed, the form asks whether it is known. Your own customer comes back
+  with a name and a line of history; somebody else's comes back as
+  "recognised" and nothing more; the shared phone only ever hears
+  "recognised". A new number becomes a `customers` row when the visit is
+  saved. `lightspeed_today` is the till's count for an outlet, limited by the
+  `ls_sales` policy, so a salesperson sees only sales credited to them.
+- **Labels, not types**: the stored `case_type` values are unchanged
+  (`No Interaction`, `Follow-up`, `Lost Sale`, `Sale`). What people read is
+  Browsing, Interested, Lost Opportunity, Manual Sale — `src/shared/caseLabels.ts`.
+- **The roster** (`roster_employees()`): the one thing every login may ask about
+  the team — which employee id goes with which roster name. The shared phone
+  needs it to say *who* moved shops or sent a message; nothing else about the
+  person leaves `employees`.
+- **Outlet changes** (`log_outlet_change`, `outlet_changes`): a mid-day move is
+  recorded against the open shift. The shared phone must name the salesperson.
+  A manager flipping between shops to read figures is not a move and is not
+  logged. Clocking out never closes the day; Close Day is its own action.
+- **Customers** (`customer_list`, `customer_profile`, `customer_known_by`): the
+  list and the page, answered by the database. `SECURITY INVOKER`, so the
+  `customers` and `ls_sales` policies decide what is in them. The shared phone
+  sees no customers here, and the page says so. Purchases are matched to a
+  customer by number (`lightspeed_customers.phone_e164`), never merged.
+- **WhatsApp** (`log_whatsapp_handoff`, `whatsapp_handoffs`, `message_templates`):
+  a template (admin-only edit, English and Arabic, `render_template` ↔
+  `src/shared/messageRules.ts`) is filled in and shown to read; WhatsApp opens
+  with it typed. Nothing is sent by the system, and a handoff never marks a
+  follow-up as contacted. The database refuses a handoff without a
+  relationship. On the shared phone it is attributed to the salesperson named
+  (`via_shared_device = true`, `created_by` = the shared account).
+- **Occasions** (`customer_occasions`, `customers.anniversary`,
+  `upcoming_occasions`, `occasion_recipients`, `occasion_reminders_due`,
+  `raise_occasion_reminders`): birthdays, anniversaries and anything else with
+  a date. At 06:00 Kuwait, `occasion-reminders` raises one `occasion_due`
+  notification per occasion, seven days before and on the day, to one person:
+  the responsible salesperson, else whoever served the customer last, else the
+  shop's manager. The link opens the customer with the matching template ready.
+- **Still true**: Today's outlet isolation is app-enforced (see Stage B); the
+  shared login keeps its same-day-only phone access and gets no CRM; Stage D
+  (till ↔ visit matching) has not started.
