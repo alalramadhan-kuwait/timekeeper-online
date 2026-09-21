@@ -1,56 +1,22 @@
-import { useEffect, useMemo, useState } from 'react';
-import { format, parseISO } from 'date-fns';
-import { Search, Phone, Pencil, Check, X, Star, ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react';
-import { supabase } from '../lib/supabase';
-import { Modal, Spinner, StatusBadge, Badge } from '../components/ui';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { format } from 'date-fns';
+import { Search, Star, Phone, MessageCircle, Pencil, Gift, ShoppingBag, Clock, Trash2, Plus, ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react';
+import { Modal, Spinner, Badge, StatusBadge } from '../components/ui';
+import { WhatsAppSheet } from '../components/WhatsAppSheet';
 import { formatKD } from '../lib/format';
 import { useAuth } from '../context/AuthContext';
+import {
+  getCustomerList, getCustomerProfile, updateCustomerDetails, updateCustomerPhone, assignResponsible,
+  addOccasion, removeOccasion, getRosterEmployees,
+  type CustomerListRow, type CustomerProfile, type ProfileVisit, type ProfilePurchase, type ProfileHandoff,
+} from '../lib/customers';
+import { caseLabel } from '../shared/caseLabels';
+import { displayPhone } from '../shared/phoneRules';
+import type { TemplateKey } from '../shared/messageRules';
 
-interface CaseRow {
-  id: string;
-  case_id: string;
-  date_logged: string;
-  staff: string;
-  customer_name: string | null;
-  contact: string | null;
-  case_type: string;
-  product: string;
-  brand: string | null;
-  amount_kd: number | null;
-  status: string;
-  promised_callback: string | null;
-  outlet: string | null;
-  notes: string | null;
-}
-
-interface VipRecord {
-  id: string;
-  display_name: string;
-  contact: string;
-  is_vip: boolean;
-  customer_type: string | null;
-  preferred_brands: string[] | null;
-  birthday: string | null;
-  email: string | null;
-  instagram: string | null;
-  staff_responsible: string | null;
-  personal_notes: string | null;
-  occasions: { date: string; label: string }[] | null;
-}
-
-interface CustomerProfile {
-  key: string;
-  displayName: string;
-  contact?: string;
-  cases: CaseRow[];
-  totalRevenue: number;
-  visitCount: number;
-  lastActivity: string;
-  openFollowUps: number;
-  brands: string[];
-}
-
-type SortKey = 'displayName' | 'visitCount' | 'totalRevenue' | 'openFollowUps' | 'lastActivity';
+type SortKey = 'name' | 'visits' | 'purchasesKD' | 'openFollowups' | 'last';
+type Filter = 'all' | 'followups' | 'occasions' | 'vip' | 'unassigned';
 
 const caseTypeColors: Record<string, string> = {
   Sale: 'bg-emerald-100 text-emerald-700 border-emerald-200',
@@ -58,467 +24,402 @@ const caseTypeColors: Record<string, string> = {
   'Lost Sale': 'bg-rose-100 text-rose-700 border-rose-200',
   'No Interaction': 'bg-slate-100 text-slate-500 border-slate-200',
 };
-
-function buildProfiles(cases: CaseRow[]): CustomerProfile[] {
-  const map = new Map<string, CustomerProfile>();
-  for (const c of cases) {
-    const key = c.contact?.trim() || c.customer_name?.trim() || '';
-    if (!key) continue;
-    if (!map.has(key)) {
-      map.set(key, {
-        key,
-        displayName: c.customer_name?.trim() || c.contact?.trim() || key,
-        contact: c.contact?.trim() || undefined,
-        cases: [], totalRevenue: 0, visitCount: 0,
-        lastActivity: c.date_logged, openFollowUps: 0, brands: [],
-      });
-    }
-    const p = map.get(key)!;
-    p.cases.push(c);
-    p.visitCount++;
-    if (c.customer_name?.trim()) p.displayName = p.displayName.startsWith('+') ? c.customer_name.trim() : p.displayName;
-    if (c.contact?.trim()) p.contact = c.contact.trim();
-    if (c.date_logged > p.lastActivity) p.lastActivity = c.date_logged;
-    if (c.case_type === 'Sale') p.totalRevenue += Number(c.amount_kd ?? 0);
-    if (c.case_type === 'Follow-up' && c.status === 'Open') p.openFollowUps++;
-    if (c.brand && !p.brands.includes(c.brand)) p.brands.push(c.brand);
-  }
-  return [...map.values()];
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const day = (iso: string | null | undefined) => iso ? format(new Date(iso), 'd MMM yyyy') : '—';
+const last = (r: CustomerListRow) => [r.lastVisit, r.lastPurchase].filter(Boolean).sort().pop() ?? '';
+function daysUntil(month: number, dd: number): number {
+  const now = new Date(new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kuwait' }) + 'T00:00:00');
+  let d = new Date(now.getFullYear(), month - 1, dd);
+  if (d < now) d = new Date(now.getFullYear() + 1, month - 1, dd);
+  return Math.round((d.getTime() - now.getTime()) / 86400000);
 }
+const when = (d: number) => d === 0 ? 'today' : d === 1 ? 'tomorrow' : d <= 30 ? `in ${d} days` : `in ${Math.round(d / 30)} months`;
 
 function SortIcon({ active, dir }: { active: boolean; dir: 'asc' | 'desc' }) {
   if (!active) return <ChevronsUpDown size={12} className="inline ml-1 text-slate-300" />;
-  return dir === 'asc'
-    ? <ChevronUp size={12} className="inline ml-1 text-slate-600" />
-    : <ChevronDown size={12} className="inline ml-1 text-slate-600" />;
+  return dir === 'asc' ? <ChevronUp size={12} className="inline ml-1 text-slate-600" /> : <ChevronDown size={12} className="inline ml-1 text-slate-600" />;
 }
 
+/**
+ * CRM Customers.
+ *
+ * The same page the shop app shows, at a desk. Who is listed is decided by
+ * the database (customer_list runs under the caller's rules): the owner sees
+ * everyone, a manager the shops in their scope, a salesperson their own.
+ * A customer is a record now, not a phone string gathered from visits, and
+ * their Lightspeed purchases sit next to their visits on one timeline.
+ */
 export default function CrmPage() {
   const { role } = useAuth();
-  const canEdit = ['admin', 'manager'].includes(role ?? '');
-  const [cases, setCases] = useState<CaseRow[]>([]);
-  const [vipMap, setVipMap] = useState<Map<string, VipRecord>>(new Map());
+  const canAssign = role === 'admin' || role === 'manager';
+  const [params, setParams] = useSearchParams();
+  const [rows, setRows] = useState<CustomerListRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [selected, setSelected] = useState<CustomerProfile | null>(null);
-  const [onlyFollowUps, setOnlyFollowUps] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [sortKey, setSortKey] = useState<SortKey>('lastActivity');
+  const [search, setSearch] = useState('');
+  const [filter, setFilter] = useState<Filter>(params.get('tab') === 'occasions' ? 'occasions' : 'all');
+  const [sortKey, setSortKey] = useState<SortKey>('last');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
+  const openId = params.get('customer');
+
+  const load = useCallback(async () => {
+    try { setRows(await getCustomerList()); setError(null); }
+    catch (e) { setError(e instanceof Error ? e.message : 'Could not load customers.'); }
+    finally { setLoading(false); }
+  }, []);
+  useEffect(() => { void load(); }, [load]);
 
   function toggleSort(key: SortKey) {
-    if (sortKey === key) setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
-    else { setSortKey(key); setSortDir('desc'); }
+    if (sortKey === key) setSortDir(d => (d === 'asc' ? 'desc' : 'asc'));
+    else { setSortKey(key); setSortDir(key === 'name' ? 'asc' : 'desc'); }
   }
-
-  async function load() {
-    const [casesRes, vipRes] = await Promise.all([
-      supabase
-        .from('cases_visible')
-        .select('id, case_id, date_logged, staff, customer_name, contact, case_type, product, brand, amount_kd, status, promised_callback, outlet, notes')
-        .eq('deleted', false)
-        .order('date_logged', { ascending: false }),
-      supabase.from('customers').select('*'),
-    ]);
-    setCases((casesRes.data as CaseRow[]) ?? []);
-    const map = new Map<string, VipRecord>();
-    for (const r of (vipRes.data ?? []) as VipRecord[]) {
-      if (r.contact) map.set(r.contact.trim(), r);
-    }
-    setVipMap(map);
-    setLoading(false);
-  }
-
-  useEffect(() => { load(); }, []);
-
-  async function saveCustomer(p: CustomerProfile, name: string, phone: string) {
-    setError(null);
-    let q = supabase.from('cases').update({ customer_name: name.trim() || null, contact: phone.trim() || null });
-    q = p.contact ? q.eq('contact', p.contact) : q.eq('customer_name', p.displayName);
-    const { error } = await q;
-    if (error) { setError(error.message); return false; }
-    await load();
-    setSelected(null);
-    return true;
-  }
-
-  async function saveCase(id: string, fields: Partial<CaseRow>) {
-    setError(null);
-    const { error } = await supabase.from('cases').update(fields).eq('id', id);
-    if (error) { setError(error.message); return false; }
-    const updated = cases.map((c) => (c.id === id ? { ...c, ...fields } : c));
-    setCases(updated as CaseRow[]);
-    if (selected) {
-      setSelected({ ...selected, cases: selected.cases.map((c) => (c.id === id ? { ...c, ...fields } as CaseRow : c)) });
-    }
-    return true;
-  }
-
-  async function upsertVipRecord(contact: string, patch: Partial<VipRecord>) {
-    setError(null);
-    const existing = vipMap.get(contact);
-    if (existing) {
-      const { error } = await supabase.from('customers').update(patch).eq('id', existing.id);
-      if (error) { setError(error.message); return false; }
-    } else {
-      const { error } = await supabase.from('customers').insert({ ...patch, contact });
-      if (error) { setError(error.message); return false; }
-    }
-    await load();
-    return true;
-  }
-
-  const profiles = useMemo(() => buildProfiles(cases), [cases]);
 
   const filtered = useMemo(() => {
-    let p = profiles;
-    if (onlyFollowUps) p = p.filter((x) => x.openFollowUps > 0);
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      p = p.filter((x) =>
-        x.displayName.toLowerCase().includes(q) ||
-        (x.contact ?? '').toLowerCase().includes(q) ||
-        x.brands.some((b) => b.toLowerCase().includes(q)));
-    }
-    p = [...p].sort((a, b) => {
+    const q = search.trim().toLowerCase();
+    const digits = q.replace(/\D/g, '');
+    const p = rows.filter(r => {
+      if (filter === 'followups' && r.openFollowups === 0) return false;
+      if (filter === 'occasions' && (r.nextOccasionDays == null || r.nextOccasionDays > 30)) return false;
+      if (filter === 'vip' && !r.isVip) return false;
+      if (filter === 'unassigned' && r.responsibleEmployeeId) return false;
+      if (!q) return true;
+      return r.name.toLowerCase().includes(q) || (r.responsible ?? '').toLowerCase().includes(q)
+        || (digits.length >= 3 && ((r.phoneE164 ?? '').includes(digits) || r.contact.replace(/\D/g, '').includes(digits)));
+    });
+    return p.sort((a, b) => {
       let cmp = 0;
-      if (sortKey === 'displayName') cmp = a.displayName.localeCompare(b.displayName);
-      else if (sortKey === 'visitCount') cmp = a.visitCount - b.visitCount;
-      else if (sortKey === 'totalRevenue') cmp = a.totalRevenue - b.totalRevenue;
-      else if (sortKey === 'openFollowUps') cmp = a.openFollowUps - b.openFollowUps;
-      else if (sortKey === 'lastActivity') cmp = a.lastActivity.localeCompare(b.lastActivity);
+      if (sortKey === 'name') cmp = a.name.localeCompare(b.name);
+      else if (sortKey === 'visits') cmp = a.visits - b.visits;
+      else if (sortKey === 'purchasesKD') cmp = a.purchasesKD - b.purchasesKD;
+      else if (sortKey === 'openFollowups') cmp = a.openFollowups - b.openFollowups;
+      else cmp = last(a).localeCompare(last(b));
       return sortDir === 'asc' ? cmp : -cmp;
     });
-    return p;
-  }, [profiles, search, onlyFollowUps, sortKey, sortDir]);
+  }, [rows, search, filter, sortKey, sortDir]);
+
+  const open = (id: string | null) => {
+    const next = new URLSearchParams(params);
+    if (id) next.set('customer', id); else next.delete('customer');
+    setParams(next, { replace: !id });
+  };
+
+  const totals = useMemo(() => ({
+    kd: rows.reduce((t, r) => t + r.purchasesKD, 0),
+    followups: rows.reduce((t, r) => t + r.openFollowups, 0),
+    soon: rows.filter(r => r.nextOccasionDays != null && r.nextOccasionDays <= 7).length,
+  }), [rows]);
 
   if (loading) return <Spinner />;
 
   const SortTh = ({ label, col, className = '' }: { label: string; col: SortKey; className?: string }) => (
-    <th
-      className={`px-4 py-3 cursor-pointer select-none whitespace-nowrap hover:text-slate-700 ${className}`}
-      onClick={() => toggleSort(col)}
-    >
+    <th className={`px-4 py-3 cursor-pointer select-none whitespace-nowrap hover:text-slate-700 ${className}`} onClick={() => toggleSort(col)}>
       {label}<SortIcon active={sortKey === col} dir={sortDir} />
     </th>
   );
+  const chips: { key: Filter; label: string }[] = [
+    { key: 'all', label: 'All' }, { key: 'followups', label: 'Open follow-ups' }, { key: 'occasions', label: 'Occasions (30 days)' },
+    { key: 'vip', label: 'VIP' }, ...(canAssign ? [{ key: 'unassigned' as Filter, label: 'No responsible salesperson' }] : []),
+  ];
 
   return (
-    <div>
-      <div className="mb-4">
-        <h1 className="text-xl font-bold text-slate-900">CRM — Customer List</h1>
-        <p className="text-sm text-slate-500">
-          Built live from Daily Sales Report cases — revenue, visits and open follow-ups per customer.
-          {canEdit && ' Click a customer to edit their info, case statuses and notes.'}
-        </p>
-      </div>
-
-      <div className="flex flex-wrap gap-2 mb-3">
-        <div className="relative">
-          <Search size={14} className="absolute left-3 top-2.5 text-slate-400" />
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search name, phone, brand…"
-            className="pl-8 pr-3 py-1.5 rounded-lg border border-slate-300 text-sm bg-white w-64"
-          />
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="text-xl font-bold text-slate-900">CRM Customers</h1>
+          <p className="text-sm text-slate-500">{rows.length.toLocaleString()} customers · {formatKD(totals.kd)} KD in Lightspeed · {totals.followups} open follow-ups · {totals.soon} occasions this week</p>
         </div>
-        <label className="flex items-center gap-2 text-sm text-slate-600 px-3 py-1.5 rounded-lg border border-slate-300 bg-white cursor-pointer">
-          <input type="checkbox" checked={onlyFollowUps} onChange={(e) => setOnlyFollowUps(e.target.checked)} />
-          Open follow-ups only
-        </label>
-        <div className="ml-auto text-sm text-slate-500 self-center">{filtered.length} customers</div>
+        <div className="relative">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Name, number or salesperson"
+            className="pl-8 pr-3 py-2 border border-slate-300 rounded-lg text-sm w-72" />
+        </div>
       </div>
+      <div className="flex flex-wrap gap-1.5">
+        {chips.map(c => (
+          <button key={c.key} onClick={() => setFilter(c.key)}
+            className={`px-3 py-1.5 rounded-full text-xs font-semibold border ${filter === c.key ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-600 border-slate-200'}`}>{c.label}</button>
+        ))}
+      </div>
+      {error && <p className="text-sm text-rose-600">{error}</p>}
 
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
+      <div className="bg-white rounded-xl border border-slate-200 overflow-x-auto">
         <table className="w-full text-sm">
-          <thead>
-            <tr className="text-left text-xs text-slate-500 uppercase tracking-wide border-b border-slate-200">
-              <SortTh label="Customer" col="displayName" />
-              <th className="px-4 py-3 whitespace-nowrap">Phone</th>
-              <SortTh label="Visits" col="visitCount" />
-              <SortTh label="Total spent" col="totalRevenue" />
-              <SortTh label="Open follow-ups" col="openFollowUps" />
-              <th className="px-4 py-3 whitespace-nowrap">Brands</th>
-              <SortTh label="Last activity" col="lastActivity" />
+          <thead className="text-xs text-slate-500 uppercase tracking-wide border-b border-slate-200 text-left">
+            <tr>
+              <SortTh label="Customer" col="name" />
+              <th className="px-4 py-3">Number</th>
+              <SortTh label="Last seen" col="last" />
+              <SortTh label="Visits" col="visits" className="text-right" />
+              <SortTh label="Purchases" col="purchasesKD" className="text-right" />
+              <SortTh label="Open" col="openFollowups" className="text-right" />
+              <th className="px-4 py-3">Responsible</th>
+              <th className="px-4 py-3">Coming up</th>
             </tr>
           </thead>
-          <tbody>
-            {filtered.length === 0 && (
-              <tr><td colSpan={7} className="px-4 py-8 text-center text-slate-400">No customers found</td></tr>
-            )}
-            {filtered.map((p) => {
-              const vip = p.contact ? vipMap.get(p.contact) : undefined;
-              return (
-                <tr key={p.key} className="border-b border-slate-100 last:border-0 hover:bg-slate-50 cursor-pointer" onClick={() => setSelected(p)}>
-                  <td className="px-4 py-2.5 font-medium whitespace-nowrap">
-                    <span className="flex items-center gap-1.5">
-                      {vip?.is_vip && <Star size={13} className="text-amber-400 fill-amber-400 shrink-0" />}
-                      {p.displayName}
-                    </span>
-                  </td>
-                  <td className="px-4 py-2.5 whitespace-nowrap">
-                    {p.contact ? <span className="flex items-center gap-1.5"><Phone size={12} className="text-slate-400" />{p.contact}</span> : '—'}
-                  </td>
-                  <td className="px-4 py-2.5">{p.visitCount}</td>
-                  <td className="px-4 py-2.5 font-medium">{p.totalRevenue ? `${formatKD(p.totalRevenue)} KD` : '—'}</td>
-                  <td className="px-4 py-2.5">
-                    {p.openFollowUps > 0
-                      ? <Badge className="bg-amber-100 text-amber-700 border-amber-200">{p.openFollowUps} open</Badge>
-                      : <span className="text-slate-400">—</span>}
-                  </td>
-                  <td className="px-4 py-2.5 max-w-[220px] truncate">{p.brands.join(', ') || '—'}</td>
-                  <td className="px-4 py-2.5 whitespace-nowrap">{p.lastActivity}</td>
-                </tr>
-              );
-            })}
+          <tbody className="divide-y divide-slate-100">
+            {filtered.slice(0, 300).map(r => (
+              <tr key={r.id} onClick={() => open(r.id)} className="hover:bg-slate-50 cursor-pointer">
+                <td className="px-4 py-2.5 font-medium text-slate-900">
+                  <span className="flex items-center gap-1.5">{r.isVip && <Star size={13} className="text-amber-500 fill-amber-400" />}{r.name}</span>
+                </td>
+                <td className="px-4 py-2.5 text-slate-600 whitespace-nowrap">{displayPhone(r.phoneE164) ?? r.contact}</td>
+                <td className="px-4 py-2.5 text-slate-600 whitespace-nowrap">{day(last(r) || null)}</td>
+                <td className="px-4 py-2.5 text-right tabular-nums">{r.visits}</td>
+                <td className="px-4 py-2.5 text-right tabular-nums">{r.purchases > 0 ? <>{r.purchases} · {formatKD(r.purchasesKD)} KD</> : '—'}</td>
+                <td className="px-4 py-2.5 text-right tabular-nums">{r.openFollowups > 0 ? <Badge className="bg-amber-100 text-amber-700 border-amber-200">{r.openFollowups}</Badge> : '—'}</td>
+                <td className="px-4 py-2.5 text-slate-600">{r.responsible ?? <span className="text-slate-300">—</span>}</td>
+                <td className="px-4 py-2.5 text-slate-600 whitespace-nowrap">{r.nextOccasionDays != null && r.nextOccasionDays <= 30 ? `${r.nextOccasionLabel} ${when(r.nextOccasionDays)}` : ''}</td>
+              </tr>
+            ))}
+            {filtered.length === 0 && <tr><td colSpan={8} className="px-4 py-10 text-center text-slate-400">Nobody matches.</td></tr>}
           </tbody>
         </table>
+        {filtered.length > 300 && <p className="px-4 py-3 text-xs text-slate-400">Showing the first 300 of {filtered.length}. Search to narrow it down.</p>}
       </div>
 
-      {selected && (
-        <CustomerModal
-          profile={selected}
-          vipRecord={selected.contact ? vipMap.get(selected.contact) : undefined}
-          canEdit={canEdit}
-          error={error}
-          onClose={() => { setSelected(null); setError(null); }}
-          onSaveCustomer={saveCustomer}
-          onSaveCase={saveCase}
-          onUpsertVip={upsertVipRecord}
-        />
-      )}
+      {openId && <CustomerModal id={openId} canAssign={canAssign} onClose={() => open(null)} onChanged={load} />}
     </div>
   );
 }
 
-const CASE_STATUSES = ['Open', 'Won', 'Lost', 'No Response', 'Closed'];
+type TimelineItem =
+  | { kind: 'visit'; at: string; v: ProfileVisit }
+  | { kind: 'purchase'; at: string; p: ProfilePurchase }
+  | { kind: 'handoff'; at: string; h: ProfileHandoff };
 
-function CustomerModal({ profile, vipRecord, canEdit, error, onClose, onSaveCustomer, onSaveCase, onUpsertVip }: {
-  profile: CustomerProfile;
-  vipRecord?: VipRecord;
-  canEdit: boolean;
-  error: string | null;
-  onClose: () => void;
-  onSaveCustomer: (p: CustomerProfile, name: string, phone: string) => Promise<boolean>;
-  onSaveCase: (id: string, fields: Partial<CaseRow>) => Promise<boolean>;
-  onUpsertVip: (contact: string, patch: Partial<VipRecord>) => Promise<boolean>;
-}) {
-  const [editingInfo, setEditingInfo] = useState(false);
-  const [name, setName] = useState(profile.displayName);
-  const [phone, setPhone] = useState(profile.contact ?? '');
-  const [editingCase, setEditingCase] = useState<string | null>(null);
-  const [caseNotes, setCaseNotes] = useState('');
+function CustomerModal({ id, canAssign, onClose, onChanged }: { id: string; canAssign: boolean; onClose: () => void; onChanged: () => void }) {
+  const [p, setP] = useState<CustomerProfile | null | undefined>(undefined);
+  const [err, setErr] = useState<string | null>(null);
+  const [wa, setWa] = useState<{ template: TemplateKey; caseId?: string; product?: string } | null>(null);
+  const [mode, setMode] = useState<'view' | 'edit' | 'phone' | 'occasion' | 'assign'>('view');
 
-  // Full profile state
-  const [editingProfile, setEditingProfile] = useState(false);
-  const [profBrands, setProfBrands] = useState(vipRecord?.preferred_brands?.join(', ') ?? '');
-  const [profBirthday, setProfBirthday] = useState(vipRecord?.birthday ?? '');
-  const [profEmail, setProfEmail] = useState(vipRecord?.email ?? '');
-  const [profInstagram, setProfInstagram] = useState(vipRecord?.instagram ?? '');
-  const [profNotes, setProfNotes] = useState(vipRecord?.personal_notes ?? '');
-  const [profStaff, setProfStaff] = useState(vipRecord?.staff_responsible ?? '');
-  const [isVip, setIsVip] = useState(vipRecord?.is_vip ?? false);
-  const [savingProfile, setSavingProfile] = useState(false);
+  const load = useCallback(async () => {
+    try { setP(await getCustomerProfile(id)); }
+    catch (e) { setErr(e instanceof Error ? e.message : 'Could not open the customer.'); setP(null); }
+  }, [id]);
+  useEffect(() => { void load(); }, [load]);
 
-  const contact = profile.contact ?? phone;
+  const timeline = useMemo<TimelineItem[]>(() => !p ? [] : [
+    ...p.visits.map(v => ({ kind: 'visit' as const, at: v.at, v })),
+    ...p.purchases.map(pu => ({ kind: 'purchase' as const, at: pu.at, p: pu })),
+    ...p.handoffs.map(h => ({ kind: 'handoff' as const, at: h.at, h })),
+  ].sort((a, b) => b.at.localeCompare(a.at)), [p]);
 
-  async function saveProfile() {
-    if (!contact) return;
-    setSavingProfile(true);
-    const brands = profBrands.split(',').map((s) => s.trim()).filter(Boolean);
-    await onUpsertVip(contact, {
-      display_name: profile.displayName,
-      is_vip: isVip,
-      preferred_brands: brands.length ? brands : null,
-      birthday: profBirthday || null,
-      email: profEmail || null,
-      instagram: profInstagram || null,
-      personal_notes: profNotes || null,
-      staff_responsible: profStaff || null,
-    });
-    setSavingProfile(false);
-    setEditingProfile(false);
-  }
+  const c = p?.customer;
+  const name = c ? (c.display_name?.trim() || c.contact) : 'Customer';
+  const store = p?.visits.find(v => v.outlet)?.outlet ?? p?.purchases.find(x => x.outlet)?.outlet ?? null;
+  const openFollowUps = p?.visits.filter(v => v.case_type === 'Follow-up' && v.status === 'Open') ?? [];
+  const lastProduct = p?.visits.find(v => v.product)?.product ?? null;
+  const spent = p?.purchases.reduce((t, x) => t + Number(x.total ?? 0), 0) ?? 0;
 
   return (
-    <Modal title={`${profile.displayName} — history (${profile.cases.length})`} onClose={onClose}>
-      {error && <div className="mb-3 px-3 py-2 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">{error}</div>}
-
-      {/* ── Basic info ── */}
-      {editingInfo ? (
-        <div className="flex flex-wrap items-end gap-2 mb-4">
-          <label className="text-sm">
-            <span className="block text-slate-600 mb-1">Customer name</span>
-            <input value={name} onChange={(e) => setName(e.target.value)} className="px-3 py-1.5 rounded-lg border border-slate-300" />
-          </label>
-          <label className="text-sm">
-            <span className="block text-slate-600 mb-1">Phone</span>
-            <input value={phone} onChange={(e) => setPhone(e.target.value)} className="px-3 py-1.5 rounded-lg border border-slate-300" />
-          </label>
-          <button onClick={() => onSaveCustomer(profile, name, phone)} className="flex items-center gap-1 px-3 py-2 rounded-lg bg-slate-900 text-white text-sm">
-            <Check size={14} /> Save
-          </button>
-          <button onClick={() => setEditingInfo(false)} className="flex items-center gap-1 px-3 py-2 rounded-lg border border-slate-300 text-sm">
-            <X size={14} /> Cancel
-          </button>
-        </div>
-      ) : (
-        <div className="flex flex-wrap gap-4 mb-4 text-sm items-center">
-          {vipRecord?.is_vip && (
-            <Badge className="bg-amber-100 text-amber-700 border-amber-200">
-              <Star size={11} className="inline mr-1 fill-amber-500" />VIP Customer
-            </Badge>
-          )}
-          <div><span className="text-slate-500">Total spent:</span> <b>{formatKD(profile.totalRevenue)} KD</b></div>
-          <div><span className="text-slate-500">Visits:</span> <b>{profile.visitCount}</b></div>
-          <div><span className="text-slate-500">Phone:</span> <b>{profile.contact ?? '—'}</b></div>
-          {canEdit && (
-            <button onClick={() => setEditingInfo(true)} className="flex items-center gap-1 text-blue-600 hover:text-blue-800 text-sm">
-              <Pencil size={13} /> Edit name/phone
-            </button>
-          )}
-        </div>
-      )}
-
-      {/* ── Customer profile (full info) ── */}
-      {canEdit && contact && (
-        <div className="mb-4 rounded-xl border border-slate-200 bg-slate-50 p-3">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Customer Profile</span>
-            {!editingProfile && (
-              <button onClick={() => setEditingProfile(true)} className="flex items-center gap-1 text-blue-600 hover:text-blue-800 text-xs">
-                <Pencil size={12} /> {vipRecord ? 'Edit profile' : 'Add profile'}
-              </button>
-            )}
+    <Modal title={name} onClose={onClose}>
+      {p === undefined && <Spinner />}
+      {p === null && <p className="text-sm text-slate-600">{err ?? 'This customer is not yours to see.'}</p>}
+      {p && c && mode === 'view' && (
+        <div className="space-y-5">
+          <div className="flex flex-wrap items-start gap-4">
+            <div className="flex-1 min-w-[200px]">
+              <p className="text-lg font-semibold text-slate-900 flex items-center gap-2">{c.is_vip && <Star size={16} className="text-amber-500 fill-amber-400" />}{name}</p>
+              <p className="text-slate-600">{displayPhone(c.phone_e164) ?? c.contact}</p>
+              <p className="text-xs text-slate-400 mt-1">
+                {p.responsible ? <>Responsible: <span className="text-slate-600">{p.responsible}</span></> : 'No responsible salesperson'}
+                {p.knownBy.length > 0 && <> · Known by {p.knownBy.map(k => k.name).filter(Boolean).join(', ')}</>}
+                {' · '}Customer since {day(c.created_at)}
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <button onClick={() => setWa({ template: openFollowUps.length ? 'interested_followup' : p.purchases.length ? 'post_sale_checkin' : 'general_followup', product: lastProduct ?? undefined, caseId: openFollowUps[0]?.id })}
+                disabled={!c.phone_e164} className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-emerald-600 text-white text-sm font-medium disabled:opacity-40"><MessageCircle size={16} /> WhatsApp</button>
+              <a href={c.phone_e164 ? `tel:${c.phone_e164}` : undefined} className={`flex items-center gap-1.5 px-3 py-2 rounded-lg border border-slate-300 text-sm font-medium ${c.phone_e164 ? '' : 'opacity-40 pointer-events-none'}`}><Phone size={16} /> Call</a>
+              <button onClick={() => setMode('edit')} className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-slate-300 text-sm font-medium"><Pencil size={16} /> Edit</button>
+            </div>
           </div>
-          {editingProfile ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <label className="text-xs sm:col-span-2 flex items-center gap-2">
-                <input type="checkbox" checked={isVip} onChange={(e) => setIsVip(e.target.checked)} className="h-4 w-4" />
-                <span className="font-medium text-amber-600">Mark as VIP Customer</span>
-              </label>
-              <label className="text-xs">
-                <span className="block text-slate-500 mb-1">Preferred brands (comma separated)</span>
-                <input value={profBrands} onChange={(e) => setProfBrands(e.target.value)} className="w-full px-2 py-1.5 rounded-lg border border-slate-300 bg-white text-sm" placeholder="Rolex, Patek, AP…" />
-              </label>
-              <label className="text-xs">
-                <span className="block text-slate-500 mb-1">Birthday</span>
-                <input type="date" value={profBirthday} onChange={(e) => setProfBirthday(e.target.value)} className="w-full px-2 py-1.5 rounded-lg border border-slate-300 bg-white text-sm" />
-              </label>
-              <label className="text-xs">
-                <span className="block text-slate-500 mb-1">Email</span>
-                <input value={profEmail} onChange={(e) => setProfEmail(e.target.value)} className="w-full px-2 py-1.5 rounded-lg border border-slate-300 bg-white text-sm" />
-              </label>
-              <label className="text-xs">
-                <span className="block text-slate-500 mb-1">Instagram</span>
-                <input value={profInstagram} onChange={(e) => setProfInstagram(e.target.value)} placeholder="@handle" className="w-full px-2 py-1.5 rounded-lg border border-slate-300 bg-white text-sm" />
-              </label>
-              <label className="text-xs">
-                <span className="block text-slate-500 mb-1">Staff responsible</span>
-                <input value={profStaff} onChange={(e) => setProfStaff(e.target.value)} className="w-full px-2 py-1.5 rounded-lg border border-slate-300 bg-white text-sm" />
-              </label>
-              <label className="text-xs sm:col-span-2">
-                <span className="block text-slate-500 mb-1">Personal notes</span>
-                <textarea value={profNotes} onChange={(e) => setProfNotes(e.target.value)} rows={2} className="w-full px-2 py-1.5 rounded-lg border border-slate-300 bg-white text-sm" />
-              </label>
-              <div className="sm:col-span-2 flex gap-2">
-                <button onClick={saveProfile} disabled={savingProfile} className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-slate-900 text-white text-xs">
-                  <Check size={12} /> {savingProfile ? 'Saving…' : 'Save profile'}
-                </button>
-                <button onClick={() => setEditingProfile(false)} className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-300 text-xs">
-                  <X size={12} /> Cancel
-                </button>
-              </div>
-            </div>
-          ) : vipRecord ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1 text-xs text-slate-600">
-              {vipRecord.preferred_brands?.length ? <div><span className="text-slate-400">Brands:</span> {vipRecord.preferred_brands.join(', ')}</div> : null}
-              {vipRecord.birthday ? <div><span className="text-slate-400">Birthday:</span> {vipRecord.birthday}</div> : null}
-              {vipRecord.email ? <div><span className="text-slate-400">Email:</span> {vipRecord.email}</div> : null}
-              {vipRecord.instagram ? <div><span className="text-slate-400">Instagram:</span> {vipRecord.instagram}</div> : null}
-              {vipRecord.staff_responsible ? <div><span className="text-slate-400">Staff:</span> {vipRecord.staff_responsible}</div> : null}
-              {vipRecord.personal_notes ? <div className="col-span-full"><span className="text-slate-400">Notes:</span> {vipRecord.personal_notes}</div> : null}
-              {!vipRecord.preferred_brands?.length && !vipRecord.birthday && !vipRecord.email && !vipRecord.instagram && !vipRecord.personal_notes && (
-                <span className="text-slate-400 col-span-full">No profile details yet — click Edit profile to add.</span>
-              )}
-            </div>
-          ) : (
-            <p className="text-xs text-slate-400">No profile saved yet. Click "Add profile" to enter birthday, preferred brands, email, Instagram and more.</p>
-          )}
+
+          <div className="grid grid-cols-3 gap-3">
+            {[['Visits', String(p.visits.length)], ['Purchases', String(p.purchases.filter(x => !x.is_return).length)], ['Spent', `${formatKD(spent)} KD`]].map(([l, v]) => (
+              <div key={l} className="bg-slate-50 rounded-lg p-3 text-center"><p className="text-lg font-bold text-slate-900">{v}</p><p className="text-xs text-slate-500">{l}</p></div>
+            ))}
+          </div>
+
+          <section className="text-sm space-y-1.5">
+            <div className="flex items-center justify-between"><h3 className="font-semibold text-slate-800">Details</h3>
+              {canAssign && <button onClick={() => setMode('assign')} className="text-xs font-medium text-blue-700">{p.responsible ? 'Change responsible' : 'Assign responsible'}</button>}</div>
+            <Row label="Birthday" value={c.birthday ? `${day(c.birthday)} · ${when(daysUntil(Number(c.birthday.slice(5, 7)), Number(c.birthday.slice(8, 10))))}` : null} />
+            <Row label="Anniversary" value={c.anniversary ? `${day(c.anniversary)} · ${when(daysUntil(Number(c.anniversary.slice(5, 7)), Number(c.anniversary.slice(8, 10))))}` : null} />
+            <Row label="Email" value={c.email} /><Row label="Instagram" value={c.instagram} />
+            <Row label="Likes" value={c.preferred_brands?.length ? c.preferred_brands.join(', ') : null} />
+            <Row label="Notes" value={c.personal_notes} />
+            {p.contactChanges.length > 0 && <p className="text-xs text-slate-400">Number changed {p.contactChanges.length}×, last {day(p.contactChanges[0].at)} from {p.contactChanges[0].from}.</p>}
+          </section>
+
+          <section className="text-sm">
+            <div className="flex items-center justify-between mb-1"><h3 className="font-semibold text-slate-800">Occasions</h3>
+              <button onClick={() => setMode('occasion')} className="flex items-center gap-1 text-xs font-medium text-blue-700"><Plus size={12} /> Add</button></div>
+            {p.occasions.length === 0 ? <p className="text-slate-400">Birthday and anniversary live under Details. Anything else goes here.</p> : (
+              <ul className="divide-y divide-slate-100">
+                {p.occasions.map(o => (
+                  <li key={o.id} className="flex items-center gap-3 py-1.5">
+                    <Gift size={14} className="text-violet-500" />
+                    <span className="flex-1">{o.label} <span className="text-slate-400">· {o.day} {MONTHS[o.month - 1]}{o.year ? ` ${o.year}` : ''}</span></span>
+                    <span className="text-xs text-slate-500">{when(daysUntil(o.month, o.day))}</span>
+                    <button onClick={async () => { try { await removeOccasion(o.id); await load(); } catch (e) { setErr(e instanceof Error ? e.message : 'Could not remove it.'); } }} className="text-slate-300 hover:text-rose-500"><Trash2 size={13} /></button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+
+          <section className="text-sm">
+            <h3 className="font-semibold text-slate-800 mb-1">History</h3>
+            {timeline.length === 0 ? <p className="text-slate-400">No visits or purchases recorded yet.</p> : (
+              <ul className="divide-y divide-slate-100">
+                {timeline.map((t, i) => (
+                  <li key={i} className="py-2.5 flex gap-3">
+                    <span className="mt-0.5 shrink-0">{t.kind === 'visit' ? <Clock size={14} className="text-slate-400" /> : t.kind === 'purchase' ? <ShoppingBag size={14} className="text-emerald-600" /> : <MessageCircle size={14} className="text-emerald-500" />}</span>
+                    <div className="flex-1 min-w-0">
+                      {t.kind === 'visit' && (<>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Badge className={caseTypeColors[t.v.case_type]}>{caseLabel(t.v.case_type)}</Badge>
+                          {t.v.case_type === 'Follow-up' && <StatusBadge value={t.v.status} />}
+                          <span className="text-xs text-slate-400">{format(new Date(t.v.at), 'd MMM yyyy · HH:mm')} · {t.v.staff}{t.v.outlet ? ` · ${t.v.outlet}` : ''}</span>
+                        </div>
+                        <p className="text-slate-800 mt-0.5">{[t.v.brand, t.v.product].filter(Boolean).join(' · ') || '—'}{t.v.amount_kd ? ` · ${formatKD(t.v.amount_kd)} KD` : ''}</p>
+                        {t.v.lost_reason && <p className="text-xs text-rose-600">{t.v.lost_reason}</p>}
+                        {t.v.notes && <p className="text-xs text-slate-500 italic">"{t.v.notes}"</p>}
+                        {t.v.case_type === 'Follow-up' && t.v.status === 'Open' && c.phone_e164 && (
+                          <button onClick={() => setWa({ template: 'interested_followup', caseId: t.v.id, product: t.v.product })} className="mt-1 text-xs font-medium text-emerald-700 flex items-center gap-1"><MessageCircle size={12} /> WhatsApp about this</button>
+                        )}
+                      </>)}
+                      {t.kind === 'purchase' && (<>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Badge className={t.p.is_return ? 'bg-rose-100 text-rose-700 border-rose-200' : 'bg-emerald-100 text-emerald-700 border-emerald-200'}>{t.p.is_return ? 'Return' : 'Purchase'}</Badge>
+                          <span className="text-xs text-slate-400">{format(new Date(t.p.at), 'd MMM yyyy · HH:mm')}{t.p.salesperson ? ` · ${t.p.salesperson}` : ''}{t.p.outlet ? ` · ${t.p.outlet}` : ''}{t.p.receipt ? ` · #${t.p.receipt}` : ''}</span>
+                        </div>
+                        <p className="text-slate-800 font-medium mt-0.5">{formatKD(Number(t.p.total))} KD</p>
+                        {t.p.items?.map((it, j) => <p key={j} className="text-xs text-slate-500">{it.qty > 1 ? `${it.qty} × ` : ''}{[it.brand, it.name].filter(Boolean).join(' ') || it.sku || 'Item'}</p>)}
+                      </>)}
+                      {t.kind === 'handoff' && <p className="text-slate-600">WhatsApp opened{t.h.by ? ` by ${t.h.by}` : ''} · {t.h.template.replace(/_/g, ' ')} ({t.h.lang}) <span className="text-xs text-slate-400">· {format(new Date(t.h.at), 'd MMM yyyy · HH:mm')}</span></p>}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+          {err && <p className="text-sm text-rose-600">{err}</p>}
         </div>
       )}
 
-      {/* ── Case history timeline ── */}
-      <div className="max-h-96 overflow-y-auto pr-1">
-        {(() => {
-          const groups: [string, CaseRow[]][] = [];
-          for (const c of profile.cases) {
-            const key = c.date_logged?.slice(0, 7) ?? 'Unknown';
-            const last = groups[groups.length - 1];
-            if (last && last[0] === key) last[1].push(c);
-            else groups.push([key, [c]]);
-          }
-          return groups.map(([month, list]) => (
-            <div key={month}>
-              <div className="sticky top-0 z-10 bg-white py-1 text-xs font-semibold text-slate-400 uppercase tracking-wide">
-                {month === 'Unknown' ? 'Unknown date' : format(parseISO(`${month}-01`), 'MMMM yyyy')}
-              </div>
-              <div className="border-l-2 border-slate-100 ml-1.5 pl-4">
-                {list.map((c) => renderCase(c))}
-              </div>
-            </div>
-          ));
-        })()}
-      </div>
+      {p && c && mode === 'edit' && <EditDetails c={c} onCancel={() => setMode('view')} onPhone={() => setMode('phone')} onSaved={async () => { setMode('view'); await load(); onChanged(); }} />}
+      {p && c && mode === 'phone' && <EditPhone c={c} onCancel={() => setMode('view')} onSaved={async () => { setMode('view'); await load(); onChanged(); }} />}
+      {p && c && mode === 'occasion' && <AddOccasion customerId={c.id} onCancel={() => setMode('view')} onSaved={async () => { setMode('view'); await load(); onChanged(); }} />}
+      {p && c && mode === 'assign' && <Assign c={c} current={p.responsible} onCancel={() => setMode('view')} onSaved={async () => { setMode('view'); await load(); onChanged(); }} />}
+
+      {wa && c && <WhatsAppSheet target={{ customerId: c.id, name: c.display_name, phone: c.phone_e164 }} caseId={wa.caseId} product={wa.product} store={store} defaultTemplate={wa.template} onClose={() => setWa(null)} onOpened={load} />}
     </Modal>
   );
+}
 
-  function renderCase(c: CaseRow) {
-    const dotColor: Record<string, string> = {
-      Sale: 'bg-emerald-500', 'Follow-up': 'bg-blue-500', 'Lost Sale': 'bg-rose-500', 'No Interaction': 'bg-slate-300',
-    };
-    return (
-          <div key={c.id} className="py-2.5 text-sm relative">
-            <span className={`absolute -left-[22.5px] top-4 h-2.5 w-2.5 rounded-full ring-2 ring-white ${dotColor[c.case_type] ?? 'bg-slate-300'}`} />
-            <div className="flex items-center gap-2 flex-wrap">
-              <Badge className={caseTypeColors[c.case_type]}>{c.case_type}</Badge>
-              {canEdit ? (
-                <select
-                  value={c.status}
-                  onChange={(e) => onSaveCase(c.id, { status: e.target.value })}
-                  className="px-2 py-0.5 rounded-lg border border-slate-300 text-xs bg-white"
-                >
-                  {CASE_STATUSES.map((s) => <option key={s}>{s}</option>)}
-                </select>
-              ) : (
-                <StatusBadge value={c.status} />
-              )}
-              <span className="text-slate-500">{c.date_logged}</span>
-              <span className="text-slate-400 text-xs">{c.outlet} · {c.staff}</span>
-              {canEdit && editingCase !== c.id && (
-                <button onClick={() => { setEditingCase(c.id); setCaseNotes(c.notes ?? ''); }} className="text-slate-400 hover:text-blue-600" title="Edit notes">
-                  <Pencil size={13} />
-                </button>
-              )}
-            </div>
-            <div className="mt-1 text-slate-700">
-              {c.brand ? `${c.brand} — ` : ''}{c.product}
-              {c.amount_kd ? <span className="font-medium"> · {formatKD(Number(c.amount_kd))} KD</span> : ''}
-            </div>
-            {c.promised_callback && <div className="text-xs text-amber-600 mt-0.5">Callback promised: {c.promised_callback}</div>}
-            {editingCase === c.id ? (
-              <div className="mt-1.5 flex gap-2">
-                <textarea value={caseNotes} onChange={(e) => setCaseNotes(e.target.value)} rows={2} className="flex-1 px-2 py-1 rounded-lg border border-slate-300 text-xs" />
-                <div className="flex flex-col gap-1">
-                  <button onClick={async () => { if (await onSaveCase(c.id, { notes: caseNotes || null })) setEditingCase(null); }} className="px-2 py-1 rounded bg-slate-900 text-white text-xs">Save</button>
-                  <button onClick={() => setEditingCase(null)} className="px-2 py-1 rounded border border-slate-300 text-xs">Cancel</button>
-                </div>
-              </div>
-            ) : (
-              c.notes && <div className="text-xs text-slate-500 mt-0.5">{c.notes}</div>
-            )}
-          </div>
-    );
+function Row({ label, value }: { label: string; value: string | null | undefined }) {
+  if (!value) return null;
+  return <div className="flex gap-3"><span className="w-28 shrink-0 text-slate-500">{label}</span><span className="flex-1 text-slate-800 break-words">{value}</span></div>;
+}
+const input = 'mt-1 w-full border border-slate-300 rounded-lg px-3 py-2 text-sm';
+const Field = ({ label, children }: { label: string; children: React.ReactNode }) => <label className="block text-sm"><span className="text-xs font-medium text-slate-600">{label}</span>{children}</label>;
+const Buttons = ({ onCancel, onSave, saving, label = 'Save', disabled = false }: { onCancel: () => void; onSave: () => void; saving: boolean; label?: string; disabled?: boolean }) => (
+  <div className="flex justify-end gap-2 pt-2">
+    <button onClick={onCancel} disabled={saving} className="px-4 py-2 rounded-lg text-sm text-slate-500 hover:text-slate-700">Cancel</button>
+    <button onClick={onSave} disabled={saving || disabled} className="px-4 py-2 rounded-lg text-sm bg-slate-900 text-white font-medium disabled:opacity-40">{saving ? 'Saving…' : label}</button>
+  </div>
+);
+
+function EditDetails({ c, onCancel, onSaved, onPhone }: { c: CustomerProfile['customer']; onCancel: () => void; onSaved: () => void; onPhone: () => void }) {
+  const [f, setF] = useState({ displayName: c.display_name ?? '', email: c.email ?? '', birthday: c.birthday ?? '', anniversary: c.anniversary ?? '', personalNotes: c.personal_notes ?? '', isVip: !!c.is_vip, instagram: c.instagram ?? '', preferredBrands: (c.preferred_brands ?? []).join(', ') });
+  const [saving, setSaving] = useState(false); const [err, setErr] = useState('');
+  async function save() {
+    setSaving(true); setErr('');
+    try { await updateCustomerDetails(c.id, { ...f, birthday: f.birthday || null, anniversary: f.anniversary || null, preferredBrands: f.preferredBrands.split(',').map(s => s.trim()).filter(Boolean) }); onSaved(); }
+    catch (e) { setErr(e instanceof Error ? e.message : 'Could not save.'); } finally { setSaving(false); }
   }
+  return (
+    <div className="space-y-3">
+      <h3 className="font-semibold text-slate-800">Customer details</h3>
+      <Field label="Name"><input value={f.displayName} onChange={e => setF({ ...f, displayName: e.target.value })} className={input} /></Field>
+      <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-slate-50 text-sm"><span>Number: <span className="font-medium">{displayPhone(c.phone_e164) ?? c.contact}</span></span><button type="button" onClick={onPhone} className="text-xs font-medium text-blue-700">Change</button></div>
+      <div className="grid grid-cols-2 gap-3">
+        <Field label="Birthday"><input type="date" value={f.birthday} onChange={e => setF({ ...f, birthday: e.target.value })} className={input} /></Field>
+        <Field label="Anniversary"><input type="date" value={f.anniversary} onChange={e => setF({ ...f, anniversary: e.target.value })} className={input} /></Field>
+      </div>
+      <Field label="Email"><input type="email" value={f.email} onChange={e => setF({ ...f, email: e.target.value })} className={input} /></Field>
+      <Field label="Instagram"><input value={f.instagram} onChange={e => setF({ ...f, instagram: e.target.value })} className={input} /></Field>
+      <Field label="Likes (brands, comma-separated)"><input value={f.preferredBrands} onChange={e => setF({ ...f, preferredBrands: e.target.value })} className={input} /></Field>
+      <Field label="Notes"><textarea value={f.personalNotes} onChange={e => setF({ ...f, personalNotes: e.target.value })} rows={3} className={`${input} resize-none`} /></Field>
+      <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={f.isVip} onChange={e => setF({ ...f, isVip: e.target.checked })} /> VIP customer</label>
+      {err && <p className="text-sm text-rose-600">{err}</p>}
+      <Buttons onCancel={onCancel} onSave={() => void save()} saving={saving} />
+    </div>
+  );
+}
+
+function EditPhone({ c, onCancel, onSaved }: { c: CustomerProfile['customer']; onCancel: () => void; onSaved: () => void }) {
+  const [contact, setContact] = useState(c.contact); const [saving, setSaving] = useState(false); const [err, setErr] = useState('');
+  async function save() {
+    setSaving(true); setErr('');
+    try { await updateCustomerPhone(c.id, contact); onSaved(); }
+    catch (e) { setErr(e instanceof Error ? e.message : 'Could not change the number.'); } finally { setSaving(false); }
+  }
+  return (
+    <div className="space-y-3">
+      <h3 className="font-semibold text-slate-800">Change the number</h3>
+      <p className="text-sm text-slate-600">Their visits and history move with the number. A number Lightspeed holds must be corrected in Lightspeed; a number another customer already has is refused. Every change is recorded.</p>
+      <Field label="New number"><input type="tel" value={contact} onChange={e => { setContact(e.target.value); setErr(''); }} className={input} /></Field>
+      {err && <p className="text-sm text-rose-600">{err}</p>}
+      <Buttons onCancel={onCancel} onSave={() => void save()} saving={saving} label="Change" disabled={contact.trim() === c.contact} />
+    </div>
+  );
+}
+
+function AddOccasion({ customerId, onCancel, onSaved }: { customerId: string; onCancel: () => void; onSaved: () => void }) {
+  const [label, setLabel] = useState(''); const [date, setDate] = useState(''); const [knownYear, setKnownYear] = useState(false);
+  const [saving, setSaving] = useState(false); const [err, setErr] = useState('');
+  async function save() {
+    if (!label.trim() || !date) { setErr('Give it a name and a date.'); return; }
+    setSaving(true); setErr('');
+    try { const [y, m, d] = date.split('-').map(Number); await addOccasion(customerId, label, m, d, knownYear ? y : null); onSaved(); }
+    catch (e) { setErr(e instanceof Error ? e.message : 'Could not add it.'); } finally { setSaving(false); }
+  }
+  return (
+    <div className="space-y-3">
+      <h3 className="font-semibold text-slate-800">Add an occasion</h3>
+      <Field label="What is it?"><input value={label} onChange={e => setLabel(e.target.value)} className={input} placeholder="e.g. Daughter's birthday" /></Field>
+      <Field label="Date"><input type="date" value={date} onChange={e => setDate(e.target.value)} className={input} /></Field>
+      <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={knownYear} onChange={e => setKnownYear(e.target.checked)} /> The year matters</label>
+      <p className="text-xs text-slate-400">A reminder goes to the responsible salesperson a week before and on the day.</p>
+      {err && <p className="text-sm text-rose-600">{err}</p>}
+      <Buttons onCancel={onCancel} onSave={() => void save()} saving={saving} label="Add" />
+    </div>
+  );
+}
+
+function Assign({ c, current, onCancel, onSaved }: { c: CustomerProfile['customer']; current: string | null; onCancel: () => void; onSaved: () => void }) {
+  const [roster, setRoster] = useState<Map<string, string>>(new Map()); const [pick, setPick] = useState(current ?? '');
+  const [saving, setSaving] = useState(false); const [err, setErr] = useState('');
+  useEffect(() => { void getRosterEmployees().then(setRoster).catch(() => setRoster(new Map())); }, []);
+  async function save() {
+    setSaving(true); setErr('');
+    try { await assignResponsible(c.id, pick ? (roster.get(pick) ?? null) : null); onSaved(); }
+    catch (e) { setErr(e instanceof Error ? e.message : 'Could not assign.'); } finally { setSaving(false); }
+  }
+  return (
+    <div className="space-y-3">
+      <h3 className="font-semibold text-slate-800">Responsible salesperson</h3>
+      <p className="text-sm text-slate-600">Gets this customer's reminders and may see and message them whoever served them last. Can be changed or removed at any time.</p>
+      <select value={pick} onChange={e => setPick(e.target.value)} className={input}>
+        <option value="">— Nobody —</option>
+        {Array.from(roster.keys()).map(n => <option key={n} value={n}>{n}</option>)}
+      </select>
+      {err && <p className="text-sm text-rose-600">{err}</p>}
+      <Buttons onCancel={onCancel} onSave={() => void save()} saving={saving} />
+    </div>
+  );
 }

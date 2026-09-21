@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState, type ChangeEvent } from 'react';
-import { Phone, AlertTriangle, CalendarClock, CalendarDays, HelpCircle, Pencil, X } from 'lucide-react';
+import { Phone, AlertTriangle, CalendarClock, CalendarDays, HelpCircle, Pencil, X, MessageCircle } from 'lucide-react';
+import { WhatsAppSheet } from '../components/WhatsAppSheet';
+import { normalizePhone } from '../shared/phoneRules';
 import { format } from 'date-fns';
 import { supabase } from '../lib/supabase';
 import { Badge, Spinner } from '../components/ui';
@@ -19,6 +21,7 @@ interface FollowUpCase {
   promised_callback: string | null;
   outlet: string | null;
   notes: string | null;
+  customer_id: string | null;
 }
 
 const CASE_STATUSES = ['Open', 'Won', 'Lost', 'No Response', 'Closed'];
@@ -42,13 +45,16 @@ export default function FollowUpsPage() {
   const [outletFilter, setOutletFilter] = useState('All');
   const [saving, setSaving] = useState<string | null>(null);
   const [editing, setEditing] = useState<FollowUpCase | null>(null);
+  /* WhatsApp from the board records the handoff and nothing else: the status
+     dropdown is still where "contacted" is decided, by a person. */
+  const [wa, setWa] = useState<FollowUpCase | null>(null);
   const [groupBy, setGroupBy] = useState<'urgency' | 'brand'>('urgency');
 
   async function load() {
     setLoading(true);
     const { data, error } = await supabase
       .from('cases_visible')
-      .select('id, case_id, date_logged, staff, customer_name, contact, case_type, product, brand, status, promised_callback, outlet, notes')
+      .select('id, case_id, date_logged, staff, customer_name, contact, case_type, product, brand, status, promised_callback, outlet, notes, customer_id')
       .eq('case_type', 'Follow-up')
       .eq('status', 'Open')
       .eq('deleted', false)
@@ -136,6 +142,11 @@ export default function FollowUpsPage() {
             <a href={`tel:${c.contact}`} className="text-blue-500 hover:text-blue-700 shrink-0" title={`Call ${c.contact}`}>
               <Phone size={13} />
             </a>
+          )}
+          {c.customer_id && c.contact && (
+            <button onClick={() => setWa(c)} className="text-emerald-600 hover:text-emerald-800 shrink-0" title="WhatsApp">
+              <MessageCircle size={13} />
+            </button>
           )}
         </div>
         <p className="text-xs text-slate-500 truncate">
@@ -243,6 +254,12 @@ export default function FollowUpsPage() {
         </div>
       )}
 
+      {wa && wa.customer_id && (
+        <WhatsAppSheet
+          target={{ customerId: wa.customer_id, name: wa.customer_name, phone: wa.contact ? (normalizePhone(wa.contact) ?? null) : null }}
+          caseId={wa.id} product={wa.product} store={wa.outlet} defaultTemplate="interested_followup"
+          onClose={() => setWa(null)} />
+      )}
       {editing && (
         <EditModal
           record={editing}
