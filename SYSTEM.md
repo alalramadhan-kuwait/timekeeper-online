@@ -4,7 +4,7 @@
 >
 > **This is a mirror.** The same file lives in both repos (`timekeeper-online/SYSTEM.md` and `watch-store-crm/SYSTEM.md`) because the two apps share one system — keep the two copies identical when you update either.
 >
-> Last updated: **2026-09-14**
+> Last updated: **2026-09-23**
 
 ---
 
@@ -15,15 +15,17 @@ Timekeeper is a Kuwait watch retailer. Two connected web apps run the business, 
 | App | Repo | Role | Hosting |
 |-----|------|------|---------|
 | **Timekeeper Online** | `timekeeper-online` | Operations control: purchasing, stock, HR, marketing, dashboards | GitHub Pages |
-| **Daily Sales Report (DSR)** | `watch-store-crm` (`../watch-store-crm`) | Point-of-day sales logging, follow-ups, per-outlet daily reports (PDF) | GitHub Pages |
+| **Daily Store Report (DSR)** | `watch-store-crm` (`../watch-store-crm`) | The shop floor's app: customer visits, follow-ups, customers and WhatsApp, per-outlet daily reports, and each person's own portal and requests | GitHub Pages |
 
 **Boundary rule (memorise this):**
-- Sales entry, follow-ups, closing the day → **DSR**.
+- Customer visits, follow-ups, a salesperson's customers, closing the day → **DSR**. The customer record itself is shared: both apps show it, under the same rules (§4).
 - Everything operational — purchasing, stock, HR, marketing, targets, dashboards → **Timekeeper Online**.
 - Anything that scans at the register or changes stock count → **Lightspeed** (POS, source of truth for stock and POs).
 - A promise, a payment owed, a person, or an expiry date → **Timekeeper Online**.
 
-**Outlets:** Timekeeper HQ, **Avenues**, **Time Gallery** (stored in `cases.outlet` as `Avenues` / `TimeGallery`).
+**Outlets:** Timekeeper HQ, **Avenues**, **Time Gallery** (stored in `cases.outlet` as `Avenues` / `TimeGallery`), plus two channels that sell but have no premises, **Online** and **WhatsApp**. Every spelling of every one of them resolves through the registry (§10a).
+
+**Versions:** each app carries one, shown under its title with the build; see CLAUDE.md → Releases. Tags `vX.Y.Z` mark where each first shipped.
 
 ---
 
@@ -32,7 +34,7 @@ Timekeeper is a Kuwait watch retailer. Two connected web apps run the business, 
 - **Frontend:** React 18 + TypeScript + Vite + TailwindCSS, **HashRouter** (required for GitHub Pages).
 - **Backend:** Supabase — PostgreSQL + RLS, Edge Functions (Deno), pg_cron + pg_net, Storage buckets, Auth.
 - **Supabase project ref:** `ttshgrujnycapugrmyxs` (shared by both apps).
-- **Integrations:** Lightspeed X-Series (POS), Instagram Graph API, Resend (email, parked).
+- **Integrations:** Lightspeed X-Series (POS: stock, POs, and since 2026-09-21 every sale and customer), Meta Graph API (ads), Apify (Instagram, active; the Graph API path is dormant), Resend (email, parked). WhatsApp is reached only through `wa.me` links a person sends from their own phone — there is no WhatsApp API.
 - **Locale:** `Asia/Kuwait` (UTC+3); week starts Saturday; currency KD, 3 decimals.
 - **Deploy:** automatic. Every push to `main` is typechecked and built by GitHub Actions (`.github/workflows/ci.yml`) and, only if that passes, published to the `gh-pages` branch that Pages serves. **Nothing is deployed from a laptop** — `npm run deploy` now refuses, on purpose: a stale checkout once overwrote the live site with an older build. To ship, commit and `git push origin main`; the site follows in ~1–2 minutes. The DSR shows `v{version} · {short sha}` so staff can tell which build reached their phone; bump `package.json` version by hand only when it means something to people. Commit messages end with the Co-Authored-By trailer.
 
@@ -45,18 +47,19 @@ Timekeeper is a Kuwait watch retailer. Two connected web apps run the business, 
 - **`src/context/AuthContext.tsx`** — `useAuth()` → `{ user, profile, role, pageAccess, loading, signIn, signOut }`.
 - **`src/components/CrudModule.tsx`** — the generic CRUD engine most pages are built on. See §7.
 - **`src/components/ui.tsx`** — `Card`, `Badge`, `StatusBadge`, `Modal`, `Spinner`, `statusColors`.
-- **`src/lib/`** — `supabase.ts`, `format.ts` (`formatKD`, `formatKDCompact`), `expiry.ts` (`expiryTier`/`tierClass`/`tierLabel`), `lateness.ts`, `locationType.ts`, `activity.ts`, `alerts.ts` (`buildAlerts`).
+- **`src/lib/`** — `supabase.ts`, `format.ts` (`formatKD`, `formatKDCompact`), `expiry.ts` (`expiryTier`/`tierClass`/`tierLabel`), `lateness.ts`, `locationType.ts`, `activity.ts`, `alerts.ts` (`buildAlerts`), `customers.ts` (the CRM's calls).
+- **`src/shared/`** — rules both apps must agree on, mirrored byte for byte. See §10a.
 
 ### Nav groups (Layout.tsx) & routes
 
 | Group | Pages (route → label) |
 |-------|-----------------------|
-| Dashboard / My Portal | `/` Dashboard · `/me` My Portal |
-| Sales & Customers | `/sales` · `/crm` · `/follow-ups` · `/waiting-list` · `/pre-orders` · `/vip` |
+| (top) | `/` Dashboard · `/me` My Portal · `/inbox` Inbox · `/notifications` Notifications |
+| Sales & Customers | `/sales` · `/crm` CRM Customers · `/follow-ups` Follow-up Board · `/vip` · `/waiting-list` Demand List (waiting list and pre-orders on one page; `/pre-orders` is an alias kept so old links resolve) |
 | Purchasing & Stock | `/purchase-orders` Supplier Payments · `/stock` Stock (Lightspeed) · `/consignments` · `/limited-projects` · `/repairs` |
 | HR & Team | `/attendance` · `/hr` Employees · `/leave` |
-| Media & Marketing | `/instagram` · `/content` Content Planner · `/paid-ads` · `/influencers` (+ `/influencers/:id` profile) |
-| Admin | `/activity` User Activity · `/performance` Employee Performance · `/history` History Log · `/settings` |
+| Media & Marketing | `/instagram` · `/content` Content Planner · `/paid-ads` · `/meta-campaigns` · `/influencers` (+ `/influencers/:id` profile) |
+| Admin | `/tasks` Assign Tasks · `/activity` User Activity · `/performance` Employee Performance · `/history` History Log · `/notification-settings` · `/settings` |
 
 `/company-documents` exists (module + data) but is hidden from the menu; direct URL works.
 
@@ -92,9 +95,15 @@ page hidden from somebody is not a security boundary on its own.
 | Edit an employee / schedule | yes | yes | yes | no | no | no |
 | See all attendance | yes | yes | yes | own only | own only | own only |
 | Correct an attendance record | yes | yes | yes | request it | request it | no |
-| Approve leave | yes | first approval, in their `manager_scopes` locations, not their own | final approval | apply and cancel own | apply and cancel own | no |
-| Log a DSR sale | yes | yes | no | yes | no | no |
-| Edit a DSR case | any | any | no | own, same day, unlocked; or any open follow-up | no | no |
+| Decide a request (leave, correction, schedule change) | final approval; may override a waiting manager with a written reason | first approval, in their `manager_scopes` locations, not their own | final approval | raise; edit or withdraw own while Pending | raise; edit or withdraw own while Pending | no |
+| Log a DSR visit | yes | yes | no | yes | no | no |
+| Edit a DSR entry | any | in their scope's outlets | no | own, unlocked; an open follow-up that is theirs (the shared login: any open follow-up) | no | no |
+| Read DSR entries | all | their scope's outlets | no | every outlet's today and yesterday, plus any entry for a customer of theirs | no | no |
+| See a customer's number on an entry | yes | their scope's outlets | no | their customers', and a personal login's own entry today | no | no |
+| See a customer and their history | everyone | customers of their scope's outlets | no | customers they have served (the shared login: none) | no | no |
+| Assign a customer's responsible salesperson | yes | their scope | no | no | no | no |
+| Send a WhatsApp handoff | yes | their scope | no | their customers (the shared login: as the salesperson it names) | no | no |
+| Edit message templates | yes | no | no | no | no | no |
 | Change an outlet in the registry | yes | yes | no | no | no | no |
 | Financials on the Dashboard | yes | yes | no | no | no | no |
 
@@ -113,6 +122,22 @@ Notes that are easy to get wrong:
   from edge functions and cron.
 - **Realtime respects RLS**, so a salesperson subscribed to `attendance_records`
   receives their own rows and nobody else's.
+- **Who may see which customer** is decided by a relationship, not a role
+  (2026-09-21). `customer_relationships` holds one row per salesperson and
+  customer they have served — a DSR entry under their roster name, a Lightspeed
+  sale credited to them, a manager's assignment, a WhatsApp handoff — rebuilt by
+  triggers on every change and again nightly, so a corrected entry takes its
+  access away with it. The rules and their reasoning are in
+  `supabase/README.md` → *Who may see whom*; the helpers are listed in §5.
+- **Today's outlet isolation is the app's, not the database's.** A floor login
+  may read every outlet's entries from today and yesterday; the DSR filters to
+  the outlet chosen at sign-in, because a shared phone cannot tell the database
+  which shop it is standing in. Temporary until every salesperson has a
+  personal login; do not describe it as database-enforced.
+- **The shared shop login is nobody.** It sees no customers, cannot send a
+  WhatsApp handoff or record an outlet change in its own name, and must name
+  the salesperson (`attributed_employee()`); `via_shared_device` records that it
+  did.
 
 `profiles` columns: `id, full_name, role, page_access (text[]|null), sales_name (text|null), created_at, updated_at`. There is **no username column** — login identity is the auth email. `page_access = null` means default role-based access; **`page_access = '{}'` (empty list) means the always-on pages only** (Dashboard, My Portal, Inbox, Notifications) — used for salespeople. **The DSR roster name** — the name this login's sales are logged under (`cases.staff`) — lives on **`employees.dsr_staff_name`**, not on the profile. `profiles.sales_name` is a deprecated mirror kept in step by the `employees_sync_sales_name` trigger, read only for an account with no employee record linked. `get_my_sales_name()` prefers the employee record and falls back to the mirror. It must equal an entry of `settings.staff_roster` and is set in Settings → Team Access ("DSR name", via `admin-users` `update`), which writes the employee record. `null` = shared login / not a salesperson. It was stored in two places with nothing syncing them, which locked a salesperson out of the DSR when only one was filled.
 
@@ -126,25 +151,33 @@ Notes that are easy to get wrong:
 
 Public base tables (Supabase project `ttshgrujnycapugrmyxs`):
 
-**Sales / CRM (shared with DSR):** `cases` (has `outlet`, `case_type`, `amount_kd`, `date_logged`, `deleted`, `sale_items(amount_kd)`), `sale_items`, `customers`, `day_closes`, `brands`, `settings`.
+**Sales / CRM (shared with DSR):** `cases` (has `outlet`, `case_type`, `amount_kd`, `date_logged`, `deleted`, `sale_items(amount_kd)`; since 2026-09-21 also `customer_id` → `customers`, set by the `cases_link_customer` trigger from the number; `interaction_at`, when the customer was actually there, which the DSR lets somebody correct — `created_at` is when it was saved; and `contact_declined`, a Lost Opportunity whose customer would not give a number), `sale_items`, `customers`, `day_closes`, `brands`, `settings`. **Read `cases` through the `cases_visible` view**, never the table: it applies who may see which entry and blanks a customer's number where the reader may not see it (`contact_masked`).
+
+**Customers (2026-09-21):** `customers` is the customer record, one per number. `phone_e164` is generated from `contact` by `normalize_phone()` and unique; `contact` is kept in the local form people type. The `customers_guard_identity` trigger normalises on the way in, refuses a non-number, refuses a number another customer holds, refuses to change a number Lightspeed holds (correct it at the till; it syncs within ten minutes) and writes every change to **`customer_contact_changes`**. Also `responsible_employee_id` (+ `_assigned_by`, `_assigned_at`; only a manager or admin may set it), `anniversary`, `lightspeed_customer_id`. **`customer_occasions`** (label, month, day, optional year) holds dates beyond birthday and anniversary. Three caches decide visibility and are rebuilt by triggers on every relevant change and nightly by `customer-caches-rebuild`: **`sale_credits`** (which employee a Lightspeed sale counts for: line-item salesperson first, then the till user), **`customer_relationships`** (employee ↔ customer, with `source` entry / lightspeed / assignment / crm_action) and **`customer_outlets`** (which outlets a customer has been seen at, for manager scope). All three are admin-read only; everything else reaches them through definer functions (§5 functions). **`message_templates`** (key × `en`/`ar`, admin-edited, everyone reads) and **`whatsapp_handoffs`** (that an employee opened WhatsApp to a customer with a template — never the conversation; `via_shared_device` and `created_by` keep which login did it). **`outlet_changes`** records a salesperson moving shop mid-shift, linked to the open attendance record.
 
 **Purchasing & stock:** `purchase_orders`, `purchase_order_items`, `consignments`, `limited_projects`, `waiting_list`, `pre_orders`, `repair_watches`, `lightspeed_auth`, `lightspeed_stock`, `lightspeed_stock_cost`, `lightspeed_product_sales`, `lightspeed_stock_value_history`, `lightspeed_sync_log`.
 
+**Lightspeed transactions (2026-09-21):** every till sale, not just daily totals. **`lightspeed_sales`** (one row per sale: outlet, register, till `user_id`, `customer_id`, status, `return_for`, totals incl. tax, `sale_date`/`sale_day` in Kuwait time, `version`, `payments` jsonb, and `scope_code`, the canonical outlet or channel the sale belongs to, set by the `lightspeed_sales_scope` trigger), **`lightspeed_sale_items`** (line items, with `salesperson_id` — Lightspeed's per-line salesperson, which is preferred over the till user), **`lightspeed_customers`** (Lightspeed's customer records, `phone_e164` generated the same way as ours, matched to `customers` by number and never merged into it), **`lightspeed_users`** (every till login mapped to `kind` employee / channel / unassigned — `employee_id` or `channel_code` — so a sale can be credited to a person), **`lightspeed_sync_state`** (the incremental sync's cursor per kind, `caught_up`, `last_error`). `lightspeed_sync_log` gained `kind` (stock / sales / reconcile). Statuses that count as a sale are `lightspeed_sale_counts()`: VOIDED and SAVED are not sales. The aggregate tables (`lightspeed_sales_daily`, `lightspeed_sales_by_staff`) are untouched and remain what reporting reconciles to.
+
 **HR:** `employees`, `attendance_records`, `leave_records`, `employee_requests`, `geofences`, `company_documents`, **`employee_schedules`** (2026-09-17: dated working days and shift times — `effective_from`/`effective_to`, `working_days smallint[]` in Postgres dow numbering, no-overlap exclusion constraint; `employees.expected_days`/`shift_start`/`shift_end` are a mirror of whichever row is in force *today*, kept by trigger, and must not be used to judge a past date).
 
-**Outlets:** **`outlets`** (2026-09-17: the canonical registry — `code`, `display_name`, `kind physical|digital`, `sells`, `has_attendance`, `has_geofence`, `tracks_store_day`, `geofence_name`, `pos_names[]`, `dsr_names[]`, `aliases[]`). See §10a.
+**Requests (2026-09-18):** `leave_records` and `employee_requests` share one approval spine — `manager_status` + `manager_decided_by/_at`, `final_decided_by/_at`, `override_by/_at/_reason/_stage` (an owner settling something a manager has not, which needs a written reason and says which stage it skipped), `on_behalf_by`, `withdrawn_at`. `employee_requests` also carries the times a correction proposes (`attendance_date`, `proposed_clock_in/_out`, `attendance_record_id`, `applied_at/_by`) and a schedule change's (`proposed_from/_until/_days/_shift_start/_shift_end`). Nothing is hard-deleted: a withdrawn or rejected request stays. `workflow_guard()` decides every transition and the stage is read, never computed, through **`v_requests`**. **`request_reminders`** records every nudge, manual or automatic, which is what enforces the four-hour cooldown. `employee_schedules.grace_minutes`: null = the company default (`settings.late_grace_minutes`), 0 = the shift start is the deadline.
+
+**Outlets:** **`outlets`** (2026-09-17: the canonical registry — `code`, `display_name`, `kind physical|digital`, `sells`, `has_attendance`, `has_geofence`, `tracks_store_day`, `geofence_name`, `pos_names[]`, `dsr_names[]`, `aliases[]`). See §10a. Since 2026-09-18 also `opens_at` / `closes_at` for the two shops — the one thing true for everyone on the floor however their shifts are assigned, used to close a shift nobody clocked out of.
 
 **Marketing:** `content_tasks`, `paid_ads`, **`influencers`** (permanent profile: name, handle, platform, tier, country, followers, followers_updated, contact, photo_url, status [Active/Prospect/Paused/Inactive], rating, notes) + **`influencer_collaborations`** (one row per collab, FK influencer_id: campaign, product_brand, product, collab_type [Paid/Gift/Affiliate/Event], platform, coverage, deliverables, agreed/posted dates, fee, amount_paid, gift_value, attributed_revenue, payment_status, status, engagement, owner, notes) + **`influencer_follower_snapshots`** (influencer_id, snapshot_date, followers — for the growth graph & 30/90d deltas). `influencer_campaigns` = **legacy** flat table, migrated into the above (1 row → 1 influencer + 1 collab), kept for rollback. `instagram_auth`, `instagram_daily` (**multi-account**: PK `(snapshot_date, username)`, cols incl. `followers`, `follows_count`, `last_post_date`, `media_count`; `reach`/`impressions`/`profile_views` only fillable by the Meta path, null from the scraper), `instagram_posts` (per-post engagement: PK `shortcode`, cols `username, posted_at, type, likes, comments, video_views, caption, hashtags[], url`; last ~12 posts/account refreshed daily, accumulates history), `instagram_media`, `instagram_sync_log`. **Meta Ads (2026-09-16):** `meta_ads_config` (one row: account id, currency, `last_synced_at`, `last_error`, `kwd_per_usd` + `rate_updated_at`), `meta_ad_campaigns` (Meta's campaign records, PK = Meta's id), `meta_ad_insights` (PK `(campaign_id, period, date_start, date_stop)`, `period` in `lifetime`/`daily`). **Every figure column there is TEXT on purpose** — spend/impressions/reach/clicks/ctr/cpc/cpm are the exact strings Meta sent, and a numeric column would invite the database to round them. `actions` keeps Meta's whole array so "Results" can be picked per objective at display time. `paid_ads.meta_campaign_id` links a tracker row to a campaign; null = not linked. Nothing writes a Meta figure into `paid_ads`. **`meta_campaign_brands`** (2026-09-16) holds the brand a campaign was for, stated by a person: one row per `(campaign_id, brand_id)` so a campaign may carry several brands, or a single row with `brand_id` null and `kind` `whole_shop`/`unknown` meaning it has none. No row at all = nobody has said, which falls back to name-reading. Two partial unique indexes plus a trigger stop a campaign holding both brands and a "no brand" marker — that combination would make the brand split add up to more than the spend.
 
-**Platform:** `profiles`, `user_activity`, `audit_log`, `alert_actions`, `apify_config` (single row, RLS-locked to service role, holds the Apify API token — same posture as `lightspeed_auth`).
+**Platform:** `profiles`, `user_activity`, `audit_log`, `alert_actions`, `apify_config` (single row, RLS-locked to service role, holds the Apify API token — same posture as `lightspeed_auth`). `audit_log.actor_kind` (2026-09-18) says whether a row was written by a person or by the system, so a change with no `changed_by` reads as "system" rather than as an unknown person. `notifications.audience_outlet` and `notification_settings.shop_floor` / `.outlet_scoped` (2026-09-18/19) — see *Notifications* at the end of this section.
+
+**Watch Design Studio (separate repository, same database):** `watch_designs` (named designs per person, `deleted_at` as a tombstone so a delete propagates across devices), `watch_design_versions` (earlier states: `auto`, `milestone` which is never thinned, `pre-restore`), `watch_design_assets` (uploaded files; the bytes live in the `watch-assets` storage bucket). Every policy is own-rows only. The studio moved out of this repo on 2026-09-12. **Its four migrations (20260920094846 – 20260921102836) are in neither this repo's `supabase/migrations/` nor the DSR's**, so these folders alone cannot rebuild those tables.
 
 ### `settings` (single row) — dashboard config
-`sales_target_month`, `sales_target_avenues`, `sales_target_timegallery` (per-outlet monthly targets), plus brand list, work-start time, etc.
+`sales_target_month`, `sales_target_avenues`, `sales_target_timegallery` (per-outlet monthly targets), `sales_target_online` / `sales_target_whatsapp`, plus brand list, `work_start_time` / `work_end_time` (the office's day and the fallback for anybody with no schedule) and `late_grace_minutes` (the company grace, one hour), etc.
 
 ### `purchase_orders` — see §6.1 for the full lifecycle. Key columns:
 `ls_consignment_id` (unique; null = manual/legacy), `source` ('lightspeed' | 'manual'), `po_number` (= Lightspeed **reference**, e.g. `MAI-1234`), `supplier_invoice_no`, `supplier`, `brand`, `outlet`, `created_date`, `expected_arrival`, `status`, `item_count`, `ordered_qty`, `received_qty`, `total_cost` (all NOT NULL with defaults), `amount_paid`, `payment_status` (Unpaid|Partial|Paid), `payment_date`, `payment_method`, `invoice_received`, `team_notified`, `notes`, `linked_project`, `merged_into` (self-FK → the synced PO a legacy row folded into), `match_candidate_id` (uuid FK → suggested match), `ls_synced_at`.
 
-### Views (2026-09-17, `security_invoker = true`)
+### Views (`security_invoker = true` unless noted)
 - `attendance_shifts` — one row per attendance record with its worked hours and
   its canonical `outlet_code`. `hours` is **null** when the record cannot answer
   the question: never clocked out (open more than `attendance_abandon_hours()`,
@@ -156,6 +189,28 @@ Public base tables (Supabase project `ttshgrujnycapugrmyxs`):
   double-counted. `attributed = false` marks a remainder the salesperson could
   not be established for (days before Lightspeed's 90-day window, or a sale with
   no till user); it still lands in the register's catch-all channel.
+- `cases_visible` (2026-09-21) — `cases` as the reader may see it: the rows
+  `cases_visibility` admits, with `contact` blanked and `contact_masked = true`
+  where `can_see_case_contact()` says no. **Both apps read entries through this
+  and write to `cases`.** A blanked number on your own entry from today is
+  fetched for editing through `case_contact_for_edit()`.
+- `v_requests` (2026-09-18) — every leave record and employee request in one
+  shape, with everything either inbox needs already resolved: `stage_owner`
+  (who it is waiting on), names, the attendance on record beside the proposed
+  times, `changes_nothing` (a correction asking for what is already recorded),
+  and reminder state. Neither app computes a stage of its own.
+- `lightspeed_sales_reconciliation` (2026-09-21) — per Kuwait day, the sum of
+  transactions against `lightspeed_sales_daily`. `lightspeed_reconcile(days)`
+  summarises it; the nightly job logs the result.
+- `customer_relationship_sources`, `customer_outlet_sources` (2026-09-21) —
+  what the relationship and outlet caches are rebuilt from. **Owner-rights views
+  with no grant to signed-in or anonymous users**; only the definer rebuild
+  functions read them.
+- `lightspeed_low_stock` (stock at or under its reorder point),
+  `lightspeed_stock_summary` (stock by product with 90-day sales),
+  `purchase_order_items_view` (PO lines with name, SKU and brand filled from
+  stock when the line lacks them), `user_activity_summary` (last active and
+  7/30-day page views per user).
 
 ### DB functions (security definer, service_role/authenticated)
 - `get_my_role()` — role of the calling user, used by RLS.
@@ -179,6 +234,92 @@ Public base tables (Supabase project `ttshgrujnycapugrmyxs`):
 - `po_match_legacy()` — auto-merges legacy POs onto their Lightspeed twin on exact `po_number` match (carries payment history, sets `merged_into`); records weaker matches as `match_candidate_id`. Returns `(auto_linked, suggested)`.
 - `po_fill_brands()` — fills a synced PO's `brand` from the dominant-value product on it (leaves hand-set brands alone).
 - `po_summary()` — JSON for the PO dashboard cards: `owed_kd, owed_count, receipt_count, receipt_kd, invoice_count` (excludes merged/cancelled; live obligations only).
+- `kuwait_today()`, `kuwait_day_of(ts)` — the calendar day in Kuwait. Use these,
+  never `current_date`: the server runs in UTC, so between 21:00 and midnight
+  UTC it is already tomorrow in Kuwait.
+- `next_case_id(date)` — the next `YYYYMMDD-NNN` DSR entry id.
+- `admin_update_case(id, updates)`, `admin_soft_delete_case(id, audit)` — the
+  owner's edits to a DSR entry, including on a closed day.
+
+**Requests (2026-09-18).** `workflow_guard(...)` decides every transition on
+both request tables — staging on every insert whoever makes it, who may decide
+which stage, the owner's override needing a reason — and is called by the
+`leave_two_step_guard` / `emp_request_two_step_guard` triggers. `stage_owner()`
+names who a request is waiting on. `request_needs_manager(employee)` /
+`leave_needs_manager()` say whether a first approval applies (not for the
+managers themselves). `request_in_my_scope()` / `req_row_in_my_scope()` scope a
+manager's reads and decisions. `apply_schedule_change(request)` applies an
+approved schedule change through `set_schedule`, so it cannot read Approved
+beside an unchanged rota. `remind_request(source, id, automatic)` sends one
+nudge to whoever is holding a request up, refusing another inside four hours;
+`remind_overdue_requests()` runs it for anything waiting over a day.
+`attendance_on_day(user, date)` is what a correction is compared against.
+
+**Customers and who may see them (2026-09-21).** Identity: `normalize_phone(text)`
+(E.164, Kuwait by default, international numbers kept, anything else null —
+mirrored by `src/shared/phoneRules.ts`), `customers_guard_identity` (trigger).
+Who is who: `my_employee_id()`, `my_scope_codes()` (a manager's outlets and
+channels, from `manager_scopes` through the registry). Visibility, all
+set-returning definer functions so a policy evaluates them once per query:
+`my_related_customers()`, `my_scope_customers()`, `my_credited_sales()`, and
+the per-row tests `is_related_to()`, `customer_in_my_scope()`,
+`can_see_case_contact()`, `ls_customer_visible()`. Caches: `refresh_sale_credits()`,
+`refresh_customer_caches()`, and the `trg_*_refresh` triggers on `cases`,
+`customers`, `lightspeed_sales`, `lightspeed_sale_items`, `lightspeed_customers`
+and `whatsapp_handoffs`. `cases_link_customer` (trigger) links an entry to its
+customer by number. One-off imports, safe to re-run: `customers_from_lightspeed()`,
+`customers_birthdays_from_lightspeed()`.
+
+**The shop floor's questions (2026-09-21).** Each answers under the caller's own
+rules. `customer_by_phone(phone)` — as a number is typed: invalid / new / known
+and yours (name and a line of history) / known and somebody else's (only
+"recognised"). `customer_list()`, `customer_profile(id)`, `customer_known_by(id)`
+— the Customers list and page. `lightspeed_today(outlet)` — the till's count
+for an outlet today, limited to the sales the caller may see.
+`roster_employees()` — roster name → employee id, the one thing about the team
+every login may ask (the shared phone needs it to name a salesperson).
+`log_outlet_change(to, from, employee)`, `log_whatsapp_handoff(customer,
+template, lang, employee, case)` — record those actions; `attributed_employee()`
+decides whose name goes on them and refuses the shared login unless it names
+somebody. Templates: `render_template(body, vars)` / `message_for(key, lang,
+vars)`, mirrored by `src/shared/messageRules.ts`.
+
+**Occasions (2026-09-21).** `next_occurrence(month, day)`,
+`upcoming_occasions(days)` (invoker), `occasion_recipients(customer)` (one
+person: the responsible salesperson, else whoever served them last, else the
+shop's manager), `occasion_reminders_due(lead_days)`,
+`raise_occasion_reminders()` (the daily job; once per occasion per lead day).
+
+**Lightspeed (2026-09-21).** `lightspeed_token_lease()` / `lightspeed_token_store()` /
+`lightspeed_token_release()` — one job at a time may refresh the access token
+(`lightspeed_auth.refresh_lock_until`); see §6.3. `lightspeed_sale_counts()`,
+`lightspeed_reconcile(days)`, `lightspeed_reconcile_log()`.
+
+Trigger functions not named above (`trg_*_notify`, `set_updated_at`,
+`tko_set_updated_at`, `set_row_updated_meta`, `handle_new_user`,
+`sync_sales_name_to_profile`, `sync_employee_schedule_columns`, the
+`*_guard` triggers, `lp_*`, `watch_design*`) do what their names say; read
+their definitions before changing the tables they sit on.
+
+### Notifications
+
+`notify_event(event, title, body, url, roles, person, exclude, dedupe, outlet)`
+writes a row to `notifications`, which is both the history and the send queue.
+`notify-flush` runs every 30 seconds and delivers what is due; batching and
+quiet hours come from `notification_config` (08:00–22:00 Kuwait, 30-second
+batches). Per event type, `notification_settings` holds whether it is enabled,
+its audience roles, whether it goes to a named person, and two flags added in
+September: **`shop_floor`** — the types a store manager can act on from a shop,
+which is all the DSR's bell shows (leave and request events, `task_new`,
+`occasion_due`); and **`outlet_scoped`** — types that must carry an
+`audience_outlet`. For those, a manager sees only their own outlets, and a
+missing outlet reaches **no** manager rather than all of them
+(`notification_in_my_scope()`). Reads are per user in `notification_reads`.
+
+**`notify_event` must never be given a second signature.** Adding a defaulted
+parameter with `CREATE OR REPLACE` creates an overload, not a replacement, and
+every existing eight-argument call then matches both and fails. That is how
+clocking in broke on 2026-09-18. Drop the old signature in the same migration.
 
 ---
 
@@ -199,6 +340,41 @@ Lightspeed models POs as **SUPPLIER consignments** (`OPEN → SENT → DISPATCHE
 
 ### 6.2 Stock (`lightspeed-sync`)
 Daily import of products, inventory, sales, outlets, cost → `lightspeed_stock`, `lightspeed_stock_cost` (RLS: admin/manager only), `lightspeed_product_sales`, `lightspeed_stock_value_history`. Cost/margin are manager-visible only, everywhere.
+
+
+### 6.3 Every sale, and who the customer is (`lightspeed-sales-sync`, 2026-09-21)
+Every ten minutes the sync pulls what changed since its last cursor from
+Lightspeed's versioned endpoints (`/api/2.0/sales?after=`, `/customers?after=`)
+into `lightspeed_sales`, `lightspeed_sale_items` and `lightspeed_customers`
+(§5). `lightspeed_sync_state` holds each cursor and whether it has caught up.
+
+- **One job refreshes the token.** Lightspeed rotates the refresh token on every
+  refresh, so two jobs refreshing at once lock the system out. All three
+  Lightspeed functions get their token through
+  `supabase/functions/_shared/lightspeedAuth.ts` (`lightspeedToken`, `lsGet`,
+  `callerAllowed`): the first to find it expired takes a lease
+  (`lightspeed_token_lease()`, `lightspeed_auth.refresh_lock_until`), refreshes
+  and stores it; the others wait and use the new token. Proved in production on
+  2026-09-23, when the stock and sales jobs started in the same minute on an
+  expired token.
+- **Lightspeed dates year zero.** Unset dates arrive as `0000-12-30`; the sync
+  turns them into null (`validDate` / `validTs`) rather than failing the batch,
+  which is what the only three failed runs so far were.
+- **Who a sale counts for** (`sale_credits`): the line item's salesperson first,
+  then the till user, mapped to an employee or a channel through
+  `lightspeed_users`; otherwise unassigned. A register that serves two channels
+  is split the same way §10a describes.
+- **Customers are matched, not merged.** A Lightspeed customer and ours are the
+  same person when their `phone_e164` agree. `customers_from_lightspeed()`
+  created a customer record for every Lightspeed customer with a usable number;
+  foreign numbers without a country code are left unmatched rather than guessed.
+- **Reconciliation.** `lightspeed_reconcile(days)` compares the transactions
+  with `lightspeed_sales_daily` day by day; `lightspeed-reconcile` logs it every
+  morning. On 2026-09-23: 140 of 140 days matching, to the fils. A day that
+  stops matching means the transaction sync has lost or double-counted a sale.
+- **`lightspeed-probe`** is a disabled stub (it answers 410) left from the
+  read-only probe that preceded this. It cannot be removed through the tools;
+  delete it from the Supabase dashboard under Edge Functions.
 
 ---
 
@@ -223,7 +399,13 @@ Behaviour worth knowing:
 - **`src/pages/PurchaseOrders.tsx`** — the PO page. Three clickable summary cards (Outstanding balance / Awaiting receipt / Awaiting invoice from `po_summary()`), a "Sync POs now" button, read-only synced fields + editable payment block, line-items viewer (`formExtra`), legacy-match review panel, brand grouping + collapsible Completed section. Project-linked POs show a violet flag on the Order # cell. `allowCreate:false` (no manual POs).
 - **`src/pages/Stock.tsx`** — 8 clickable KPI cards, product & brand views, stock-value history chart. Product view shows **Avg cost / Retail / Margin** (cost & margin manager-only). Brand view shows Cost value + Margin.
 - **`src/pages/Settings.tsx`** — user/role admin (via `admin-users` fn), page-access editor, **Monthly sales targets** (overall + Avenues + Time Gallery), brands, geofences, work-start time, Daily Briefing email.
-- **`src/pages/MyPortal.tsx`, `Attendance.tsx`, `Leave.tsx`** — employee portal, clock-in/out, lateness bands (9–5, grace to 10:00, Minor/Late/Serious late, early-leave before 17:00), leave/sick/WFH requests.
+- **`src/pages/MyPortal.tsx`, `Attendance.tsx`, `Leave.tsx`** — employee portal, clock-in/out, leave/sick/WFH requests. **Lateness and leaving early are judged against the schedule in force on that date** (`src/shared/punctuality.ts`), not a fixed 9-to-5: the person's own shift, with the shift's own grace if it sets one, else the company grace (`settings.late_grace_minutes`, one hour); a schedule with no hours means *hours vary* and nothing is claimed; only somebody with no schedule at all falls back to the office day, marked "default hrs". HR → Attendance shows hours late and hours left early, with This month / Last 30 days / Last month, and a name opens into the days behind its totals.
+- **`src/pages/Inbox.tsx`** (2026-09-18) — every request in one queue with three tabs, **Action required / Waiting on manager / Completed**, the tab decided by `v_requests.stage_owner` (`tabOf()` in `src/shared/requests.ts`); the same request is Action for the store manager and Waiting for the owner at once. A correction shows what is on record beside what is asked for. **Remind** nudges whoever it is waiting on; the owner's **override** of a waiting manager opens a dialog that will not submit without a reason.
+- **`src/pages/Performance.tsx`** — per-employee cards, including hours late and hours left early from the same engine as HR → Attendance, so the two cannot disagree; on-time rate counts only days that could be judged.
+- **`src/pages/Crm.tsx`** (2026-09-21) — **CRM Customers**: the list from `customer_list()` and each customer's page from `customer_profile()` — visits, Lightspeed purchases and WhatsApp handoffs on one timeline, details, occasions, number changes (refused in the database's own words when not allowed), the responsible salesperson for managers and owners, and WhatsApp. What each login sees is the database's decision (§4). `src/lib/customers.ts` holds the calls, shaped like the DSR's.
+- **`src/pages/FollowUps.tsx`** — the follow-up board; a WhatsApp button per row (2026-09-21). Opening WhatsApp records a handoff and never marks a follow-up contacted — the status dropdown is still where that is decided.
+- **`src/components/WhatsAppSheet.tsx`** — the template picker used by both of the above: English or Arabic, filled in and editable before WhatsApp opens with it typed. The owner must name the salesperson the message is from.
+- **`src/components/WhatsNew.tsx`** (2026-09-23) — the version and build line in the menu and the phone header; tapping it opens the release notes from `src/releases.json`. See CLAUDE.md → Releases.
 - **`src/pages/Instagram.tsx`** — Instagram performance, wired to the **Apify** pipeline (was originally built for the dead Meta path). Account switcher across the 3 tracked handles; reads `instagram_daily` (filtered to the selected account — do NOT mix accounts or the follower line zigzags) + `instagram_posts`. Cards: Followers (+30d), Following/posts, Avg engagement/post, Engagement rate. "Sync now" calls **`instagram-apify-sync`**. Top posts sortable by Engagement/Likes/Comments/Newest. Reach/impressions/saves intentionally absent (Meta-only).
 - **`src/components/AttendanceDayDetail.tsx`** — one person's attendance on one day, with every correction a manager can make. **The single detail view**, behind both the Attendance List's pencil and the calendar's squares; the write operations live in `src/lib/attendanceEdits.ts` (`saveCorrection` / `addRecord` / `deleteRecord` / `loadDay`) so there is one implementation, not one per view. It fetches the day itself rather than taking a slice from the caller: the calendar keeps one record per cell, so a split shift would otherwise show half the day's hours, and after a correction the caller's copy is stale by definition. Every write still goes through `attendance_records`, still passes the geofence trigger, and is still audited into the History Log by the database.
 - **`src/pages/MetaCampaigns.tsx`** — **Meta Campaigns** (Media). Read-only; Meta's own records, shown unchanged. Its own page rather than a CrudConfig because it must load a *small* default set out of 1,200 and its search has to reach the ones it deliberately did not load. Default scope = spent something in the last 90 days; "All campaigns that spent" is the archive. **A campaign that has never spent is listed nowhere and offered nowhere** — Meta reports nearly every old campaign on this account as ACTIVE or PAUSED regardless of when it last ran, so status cannot separate the live board from the archive; only spend can. Figures per campaign come from `src/lib/metaAds.ts`; brand attribution from `src/lib/metaBrands.ts`. The top of the page is `src/components/MetaSummary.tsx`: five KPI cards, then a brand card (three-way spend split + top-ten table with cost per purchase), with all methodology behind an Info modal rather than on the page. A third scope, **"Needs a brand"**, is the same universe as the archive filtered to campaigns nobody has tagged and ordered by spend — tagging is a short job in that order and a hopeless one in any other. The campaign sheet carries `src/components/CampaignBrandPicker.tsx` (admin/manager/marketing).
@@ -245,6 +427,11 @@ Behaviour worth knowing:
 | `instagram-connect` | true | Settings UI | Instagram OAuth connect (Meta path, dormant) |
 | `instagram-sync` | false | cron + manual | Instagram insights via Meta Graph API (dormant — token never finished) |
 | `influencer-followers-sync` | false | cron (weekly, all) + admin/manager/marketing JWT ("Refresh followers", per influencer via `{influencer_id}`) | Scrapes fresh follower counts for influencers via Apify → updates `influencers.followers`/`followers_updated` + records `influencer_follower_snapshots`. Extracts the IG username from @handle / profile URL / bare handle. **Fast-return + background**: the ~45s scrape runs via `EdgeRuntime.waitUntil`, the request returns `{started:true}` immediately, and the client polls `influencers.updated_at` for completion (a synchronous hold made the browser report "Failed to send a request"). |
+| `lightspeed-sales-sync` | false | cron (every 10 min) + `x-sync-key` or admin/manager JWT | Incremental sales and customers from Lightspeed's versioned endpoints, with the token lease (§6.3) |
+| `lightspeed-probe` | false | none | **Disabled stub** (answers 410) left from the 2026-09-21 read-only probe. Delete it from the Supabase dashboard; the tools cannot |
+| `notify-flush` | false | cron (every 30 s), `x-notify-key` from `app_config` | Delivers due `notifications` rows by Web Push, collapsing a burst of PO events into one summary |
+| `notify-test` | true | Notification Settings → Send test | Pushes a test to the calling admin |
+| `notify-dispatch`, `push-notify` | false / true | none | **Deprecated**, superseded by `notify-flush`; still deployed, source not in this repo |
 | `instagram-apify-sync` | false | cron + admin/manager/marketing JWT | **Active IG tracker.** Scrapes 3 public accounts (timekeeperkw, timegallerykw, timekeeperkwshop) via Apify Instagram Profile Scraper → `instagram_daily` (followers, follows, last-post) **and `instagram_posts`** (per-post likes/comments/type/caption/hashtags). No login. Token from `apify_config`/`APIFY_TOKEN`. Async start-poll-fetch. Newest post = `max(timestamp)` (pinned posts float to top — never trust the first item). |
 
 Auth for cron-callable syncs: `x-sync-key` header = `lightspeed_auth.sync_key`, OR an admin/manager JWT. Edge functions get **~150s wall clock** and PostgREST caps selects at 1000 rows — heavy syncs must batch/paginate and respect the deadline.
@@ -258,8 +445,16 @@ Auth for cron-callable syncs: `x-sync-key` header = `lightspeed_auth.sync_key`, 
 | `instagram-daily-sync` | `15 5 * * *` | 08:15 | `instagram-sync` (Meta, dormant) |
 | `instagram-apify-sync` | `20 5 * * *` | 08:20 | `instagram-apify-sync` (active) |
 | `influencer-followers-weekly` | `0 6 * * 1` | Mon 09:00 | `influencer-followers-sync` (all influencers) |
+| `meta-ads-daily-sync` | `30 5 * * *` | 08:30 | `meta-ads-sync` |
+| `lightspeed-sales-sync` | `*/10 * * * *` | every 10 min | `lightspeed-sales-sync` (§6.3) |
+| `lightspeed-reconcile` | `20 5 * * *` | 08:20 | `lightspeed_reconcile_log()` — transactions against the daily totals |
+| `customer-caches-rebuild` | `30 0 * * *` | 03:30 | `refresh_sale_credits()`, `refresh_customer_caches()` — rebuilds who may see which customer |
+| `occasion-reminders` | `0 3 * * *` | 06:00 | `raise_occasion_reminders()` — birthdays and anniversaries, 7 days before and on the day |
+| `remind-overdue-requests` | `0 4 * * *` | 07:00 | `remind_overdue_requests()` — chases anything waiting over a day |
+| `lp-generate-tasks` | `0 6 * * *` | 09:00 | `lp_generate_tasks()` — Limited Projects role tasks |
+| `notify-flush` | every 30 s | — | `notify-flush` |
 
-Cron calls use `net.http_post` with the `x-sync-key` header and `timeout_milliseconds := 150000`.
+Jobs that call an edge function use `net.http_post` with the `x-sync-key` header (`x-notify-key` for `notify-flush`) and `timeout_milliseconds := 150000`; the others call a database function directly. **At 08:00 Kuwait the stock sync and the 10-minute sales sync start together**; the token lease (§6.3) is what makes that safe.
 
 ---
 
@@ -282,9 +477,18 @@ copy `src/shared/` into the other.
 | `portalRules.ts` | Kuwait dates, distance, leave balance. | — |
 | `portal.ts` | What My Portal asks the database. | — |
 | `live.ts` | Keeping a current-day screen up to date. | `supabase_realtime` publication |
+| `punctuality.ts` | Was this day late, or did they leave early — against which shift and which grace? `DayPunctuality` carries its date. | `employee_schedules.grace_minutes`, `settings.late_grace_minutes` |
+| `requestRules.ts` | What a correction is actually asking for (`planCorrection`), and whether it changes anything. | `v_requests.changes_nothing` |
+| `requests.ts` | Which tab a request sits in for this reader (`tabOf()`), what may still be edited, when a reminder is allowed. | `v_requests`, `workflow_guard()`, `remind_request()` |
+| `notifications.ts` | Reading the feed, unread counts, mapping a notification's link to this app's page. | `notifications`, `notification_settings.shop_floor` |
+| `phoneRules.ts` | Is this a phone number, and what is its one true form (E.164, Kuwait by default)? | `normalize_phone()` |
+| `caseLabels.ts` | What a stored entry type is called on screen: Browsing, Interested, Lost Opportunity, Manual Sale. | `cases.case_type` (values unchanged) |
+| `messageRules.ts` | A WhatsApp template filled in, the greeting name, the `wa.me` link. | `render_template()`, `message_for()` |
 
-`npm test` runs `src/shared/__tests__` (47 checks, no database needed) and is
-part of the build.
+`npm test` runs `src/shared/__tests__` (137 checks on 2026-09-23, no database
+needed) and is part of the build. Where a rule also lives in SQL, its fixtures
+were produced by running the SQL, so the two cannot drift without a test
+failing.
 
 ### The four outlets
 
@@ -346,15 +550,22 @@ in SQL.
 
 - `src/utils/report.ts` — `buildDailyStats`; **follow-up conversions are separated** from the normal daily report (`followUpWins`, `followUpWinRevenue`, `dayCases`). Brand and product-type revenue are attributed **per line item** via `utils/saleItems.ts#getEffectiveItems` (same as the manager dashboard) — never read `case.brand` for money, it only names the first item. Brand Analytics PDF has **no Lost column**. The PDF paginates itself: header + footer on every page, section headings never orphaned from their table (`heading()`/`ensureSpace()`), tables carry `TABLE_MARGIN` so continuation pages clear the header. `shareReport` → `'shared'|'downloaded'|'cancelled'`.
 - **Three "conversion" formulas coexist** (known, not yet unified): PDF + TodayLog = `sales ÷ (sales + lost)`; `closeDay`/`rebuildDaySummary` stored summary = `sales ÷ (sales + follow-ups + lost)` plus a visitors variant. Same day can show different percentages in the PDF and in the stored WhatsApp text.
-- `src/components/TodayLog.tsx` — close day, PDF share; staff can pull only **yesterday's** report, admin any past day.
+- **Navigation (2026-09-21):** salespeople get **Home · Today · Follow-ups · Customers · Me**; managers and owners **Home · Today · Follow-ups · Customers · More**, with Team under More and a Team card on Home. Logging a visit is the big button on Home and Today, not a tab. `/` renders `SalesHome.tsx` for the floor and `Home.tsx` for managers.
+- **`SalesHome.tsx`:** where you are and whether you are clocked in, what is waiting (overdue and due follow-ups, occasions this week), your day's visits by outcome, and Lightspeed's figure for you. On the shared phone it speaks for the outlet instead, with no clock and no till figure. **Switch** records a mid-day move with `log_outlet_change()` before changing the outlet, so a refusal leaves the phone where it was; the shared phone must name who is moving.
+- **Customer Visit (`QuickEntry.tsx`, 2026-09-21):** the three outcomes and a smaller Manual Sale, labelled through `caseLabels.ts`. **Visit time** is set when logging late and editable afterwards (`QuickEntryEdit.tsx`); it moves `date_logged`/`time_logged` with it. As a number is typed, `customer_by_phone()` says new / yours / recognised; a new valid number becomes a `customers` row on save. A Lost Opportunity may be saved as declined, with no number. `/entry?contact=&name=` opens the form pre-filled (used from a customer's page). **Outcome button classes are written out in full** — Tailwind strips any component class whose name is assembled at runtime (§12).
+- `src/components/TodayLog.tsx` — close day, PDF share; staff can pull only **yesterday's** report, admin any past day. **One `reportOutlet` drives everything on it** (2026-09-21): the list, the figures, the day-close row, the summary and the PDF, and the confirmation names the outlet being closed. The owner's outlet filter used to change only the list, so closing while filtered to one shop closed the company. Since the same day it also shows **Lightspeed today** for the outlet (not for the shared login), and after closing offers **Send summary on WhatsApp**, the Report Preview text rebuilt fresh.
+- **The day report PDF** (`src/utils/report.ts`, 2026-09-21) is **100 mm wide and exactly as tall as its content**: rendered once on a very tall page to measure, then again at the height used. Headline figures three across, breakdowns stacked, each visit's customer and note under its item. A day past 1,400 mm paginates, with a header on every page.
+- **Customers (`CRM.tsx`) and WhatsApp (`WhatsAppSheet.tsx`, 2026-09-21):** the list, filters and each customer's page, from `customer_list()` / `customer_profile()`. The shared phone sees none and says why. WhatsApp opens from a customer, a follow-up and an occasion; on the shared phone the sender must be named. A reminder's link `/crm?customer=…&wa=…` opens the customer with that template ready.
+- **Team → Requests and the bell (2026-09-18):** `TeamRequests.tsx` gives a store manager the request queue on the device he carries; `MyRequests.tsx` lists a person's own, editable or withdrawable while Pending; `AskForSchedule.tsx` asks for different hours. The top-bar bell and `Notifications.tsx` show only shop-floor event types (§5 Notifications) and translate the back office's links to this app's pages.
+- **Version (2026-09-23):** `WhatsNew.tsx` — the version and build under the title, and What's new under More.
 - `src/components/Reports.tsx` — admin "report for any day + outlet" builder (`day_closes` are per-outlet).
-- **Personal logins** (2026-09-13): `AuthContext` exposes `salesName` (= `profiles.sales_name`). When it is set: Quick Entry's Staff field is read-only and logs as that name (`lastStaff` ignored), Edit keeps the case owner and forbids reassignment, Close Day's closer defaults to it, and audit `by:` records the actor (`salesName ?? owner`). **The outlet picker stays for every staff login** — the day's report is per-outlet and people cover between the two shops, so nobody is pinned to one. `outletChosen` is derived (`role !== 'staff' || !!activeOutlet`), and `signOut` clears `activeOutlet` + `lastStaff` (now keyed `lastStaff:<uid>`) so the next login on the same phone starts clean. `db.updateCase` **throws** on error (it used to swallow it): with personal `created_by`, a colleague's edit of your same-day Sale is refused by RLS and now shows as an error toast.
+- **Personal logins** (2026-09-13): `AuthContext` exposes `salesName` (= `employees.dsr_staff_name`, falling back to the deprecated `profiles.sales_name` mirror). When it is set: Quick Entry's Staff field is read-only and logs as that name (`lastStaff` ignored), Edit keeps the case owner and forbids reassignment, Close Day's closer defaults to it, and audit `by:` records the actor (`salesName ?? owner`). **The outlet picker stays for every staff login** — the day's report is per-outlet and people cover between the two shops, so nobody is pinned to one. `outletChosen` is derived (`role !== 'staff' || !!activeOutlet`), and `signOut` clears `activeOutlet` + `lastStaff` (now keyed `lastStaff:<uid>`) so the next login on the same phone starts clean. `db.updateCase` **throws** on error (it used to swallow it): with personal `created_by`, a colleague's edit of your same-day Sale is refused by RLS and now shows as an error toast.
 - **`/portal` — My Portal, inside the DSR** (`src/components/MyPortal.tsx`, tab "Me" on mobile / "My Portal" on desktop): a salesperson's own page — clock in/out (geofenced), month attendance summary, attendance history by month, annual/sick balance, apply for leave or WFH, edit or cancel their own pending request, ask for an HR update or attendance correction, and their HR record. It reads the same tables as Timekeeper Online's `/me`; RLS already limits each to the signed-in person's own rows, so **a salesperson never has to open the other app**. Shared helpers in `src/utils/attendance.ts` (`lateClassOf`, `isEarlyLeave`, `workingDaysBetween` — Fridays never consume leave — and `haversineMeters`). Needs the HR link (`employees.user_id`) and a geofence named like `employees.location`; without the link the page says so instead of failing.
 - **Today's Log header names the scope** (2026-09-13): under the date, a location chip and an account chip say which outlet's day is on screen and which login is looking at it (`Fadi Hussain · Fadi` when the roster name differs; `Staff` on the shared login). The outlet chip is hidden for admin, whose outlet dropdown sits beside it and already says `All Outlets`. Several people share one phone and the report is per-outlet, so neither fact should need a menu.
 - **Follow-ups can be created and edited from their own page** (2026-09-13): a **New** button in the header opens a modal asking the same required fields Quick Entry does (brand, action, contact, callback date, notes) so both doors produce follow-ups the shop can act on; Staff is asked only on the shared login (a personal login files under its own roster name) and Outlet only when the session has not pinned one — an entry with no outlet is invisible to every per-outlet report. **Edit Details** in each row's Actions menu reuses `QuickEntryEdit`, the same editor Today's Log opens, so a case is corrected identically wherever it is reached from; it stays available after the day is closed because a follow-up outlives the day it was logged on, and the RLS UPDATE branch for open follow-ups has no `day_locked` test. Field errors clear as each field is filled.
 - **Own follow-ups only, enforced in the database** (2026-09-13): the `cases` UPDATE policy used to let any floor login change *any* open follow-up with no ownership test — the restriction was the screen, not the rule. It now matches on the roster name, like the app: `get_my_sales_name() is null` (the shared shop login, deliberately unchanged — its board shows everything, so its reach must too) `or staff = get_my_sales_name() or created_by = auth.uid()`. The `with check` half drops the `status = 'Open'` test (closing one as Won/Lost writes a new status) but keeps the ownership test, so a personal login cannot hand a follow-up to a colleague. Migration `20260913200000_own_follow_ups_only.sql`; helper `get_my_sales_name()` mirrors `get_my_role()`.
 - **Follow-ups are scoped to the person** (2026-09-13): with `salesName` set, `FollowUps.tsx` derives everything from one `scoped` memo (`followUps.filter(c => c.staff === salesName)`) — KPI tiles, overdue/due-today, brand and product-type counts, the filters, Analytics, Group-by-brand and the list — and the staff filter dropdown is hidden. Matched on the **roster name, not `created_by`**, so rows logged under the shared login before the person had their own account still reach them. A manager (no `salesName`) sees the whole board, unchanged. **Today's Log and the day's PDF stay whole-outlet** on purpose: whoever sends the report has to be able to check the day first.
-- **Day closes are per-outlet, and `outlet = ''` means "all outlets"** — `getDayClose(date, outlet)` matches `outlet in (outlet, '')` and prefers the exact row, so a blank-outlet close covers every shop that has not closed its own day. That is right for a finished day and catastrophic for a live one: it locks both shops' logs with no way to switch out of it. The auto-close safety net writes blank rows, so it may **only ever run on a day that is over** — `utils/dayClose.ts#dayIsOver` guards every call, and `App.tsx` polls every 10 min for the *previous* day rather than aiming a `setTimeout` at midnight (a sleeping phone defers that timer, and it decided which day to close when it fired).
+- **Day closes are per-outlet, and `outlet = ''` means "all outlets"** (closing from the owner's "All outlets" view writes `''` and locks every shop's entries) — `getDayClose(date, outlet)` matches `outlet in (outlet, '')` and prefers the exact row, so a blank-outlet close covers every shop that has not closed its own day. That is right for a finished day and catastrophic for a live one: it locks both shops' logs with no way to switch out of it. The auto-close safety net writes blank rows, so it may **only ever run on a day that is over** — `utils/dayClose.ts#dayIsOver` guards every call, and `App.tsx` polls every 10 min for the *previous* day rather than aiming a `setTimeout` at midnight (a sleeping phone defers that timer, and it decided which day to close when it fired).
 - `src/db/index.ts` — `closeDay` does NOT lock open follow-ups (`day_locked = !isOpenFollowUp`), so staff can keep updating them (RLS: `day_locked=false AND created_by=auth.uid()`).
 
 ---
@@ -371,6 +582,12 @@ in SQL.
 - **Meta figures are never computed.** Spend, impressions, reach, clicks, CTR, CPC, CPM and Results are shown as the strings Meta returned — not rounded, not converted, not re-derived. CTR/CPC/CPM are *Meta's own fields*, never spend÷impressions arithmetic. Meta bills this account in **USD**. Since 2026-09-16 spend is **displayed** in KD at `meta_ads_config.kwd_per_usd`, a fixed rate an owner sets in Settings → Ad spend currency — a display conversion only: the stored strings are never touched, only USD is converted (`inDisplayCurrency` refuses any other account currency, so moving the account to KD cannot triple every figure), every converted number prints the rate beside it, and the **campaign sheet still shows Meta's own USD figures verbatim** because that is what somebody checks against Ads Manager. A null rate falls back to showing Meta's currency rather than inventing one. Impressions, clicks, CTR, CPC, CPM and Results are never converted — only money is. The only numbers the app produces itself are the page totals and the brand rollups, which are **sums** of Meta's per-campaign figures and are labelled as ours. **Reach is never totalled** — Meta counts it as people, once per campaign, so a sum double-counts by an unknowable factor. **Ratios are never averaged** — the mean of per-campaign CTRs is not the account's CTR.
 - **A brand set on a campaign always beats its name.** `attribute()` in `src/lib/metaBrands.ts` reads `meta_campaign_brands` first and only falls back to the name-reader; never reverse that order, and never write a tag from a script — "set by hand" is the page's one signal that a human confirmed it, and a seeded row would claim a check nobody made. A campaign tagged with several brands is counted under **Several brands**, not under each: Meta reports one figure for the campaign, so adding it to both would make the bars exceed the spend and splitting it evenly would invent a number.
 - **The name-reader is the fallback only** (`brandOf()`), and it is a best-effort read, not a link. Meta does not know our brands. Three traps live in the real data: **"YOKO" in `CPN - YOKO x Time Keeper …` is the agency, not a brand** (and it is the largest campaign on the account, so a naive extractor puts the agency top of every chart); the `brands` table contains **"Timekeeper"**, which substring-matches every campaign name; and most campaigns are boosted Instagram posts whose Meta name is the post caption, **truncated mid-word by Meta**, often before the brand appears. Anything not confidently identified is `Unknown`; campaigns that were never for one brand (retargeting, catalogue, app, straps, seasonal sales) are `Whole shop` — a separate answer from `Unknown`, and on this account the larger one.
+
+- **The service worker serves the network first for pages** (both apps, 2026-09-21). A navigation waits `SHELL_TIMEOUT_MS` (3.5 s) for the server and falls back to the cached shell only when offline or stalled; install fails unless every essential file fetched OK; a 404 on a hashed asset empties the stale cache and posts `stale-shell` so the page starts again. `index.html` carries an inline boot failsafe: if React has not set `window.__booted`, it reloads once (`tk:recovering` / `dsr:recovering` in sessionStorage) and then shows a Reload panel instead of white. `scripts/sw-check.mjs` (11 checks) runs in the build. Cache-first navigation is what served iPhone Safari a shell pointing at assets a deploy had deleted — the white page; Chrome on iOS does not run service workers, which is why switching browser appeared to fix it.
+- **Never assemble a Tailwind class name at runtime.** Tailwind reads the source as text and emits a class only if it finds that exact name, and that applies to classes defined in `@layer components` too. `` `type-btn-${cls}` `` shipped with no styles at all, so three of the four DSR outcome buttons never showed a selected state. Write every name out in full, in a lookup if need be.
+- **Both apps are served from one origin** (`alalramadhan-kuwait.github.io`), so they share `localStorage` and `sessionStorage`. Prefix every key with `tk:` or `dsr:`, or one app's value silences the other's.
+- **`CREATE OR REPLACE FUNCTION` with a new parameter creates an overload, not a replacement** — see §5 *Notifications* for how that stopped clock-ins.
+- **Judge a Kuwait day with `kuwait_today()` / `kuwait_day_of()`**, never `current_date`; the database runs in UTC.
 
 ### 12.1 A better way to link a campaign to a brand
 
@@ -406,7 +623,49 @@ on; `Unknown` is the correct answer when the data does not carry one.
 
 ## 13. Changelog
 
-- **2026-09-23** — **Both apps carry a real version.** The shop app said 1.2.14 for ten days and 69 changes; the back office said 0.1.0 from June onward and showed no version at all. Each app now keeps plain-language notes in `src/releases.json` beside `package.json`'s version, and `scripts/release-check.mjs` (mirrored, run by `npm run build`) fails the build unless the newest notes are for that version, well-formed, newest first. Tapping the version line opens What's new (`src/components/WhatsNew.tsx`), with a dot until this device has opened the notes for the running version — `localStorage` `dsr:whatsNewSeen` / `tk:whatsNewSeen`, prefixed because both apps are served from one origin. The back office gained the `__BUILD_SHA__` build stamp the shop app already had. CI tags `vX.Y.Z` at the deployed commit the first time a version ships (GitHub refs API; 422 means already tagged; any other failure warns and never fails the deploy). Starting points: **shop app 2.0.0, back office 1.0.0.** Routine: CLAUDE.md → Releases. *This changelog has no entries for 18–21 Sep* — the request workflow and the Lightspeed/customer Stages A–C — which are recorded in the commits and in `supabase/README.md` for now.
+- **2026-09-23** — **Both apps carry a real version.** The shop app said 1.2.14 for ten days and 69 changes; the back office said 0.1.0 from June onward and showed no version at all. Each app now keeps plain-language notes in `src/releases.json` beside `package.json`'s version, and `scripts/release-check.mjs` (mirrored, run by `npm run build`) fails the build unless the newest notes are for that version, well-formed, newest first. Tapping the version line opens What's new (`src/components/WhatsNew.tsx`), with a dot until this device has opened the notes for the running version — `localStorage` `dsr:whatsNewSeen` / `tk:whatsNewSeen`, prefixed because both apps are served from one origin. The back office gained the `__BUILD_SHA__` build stamp the shop app already had. CI tags `vX.Y.Z` at the deployed commit the first time a version ships (GitHub refs API; 422 means already tagged; any other failure warns and never fails the deploy). Starting points: **shop app 2.0.0, back office 1.0.0.** Routine: CLAUDE.md → Releases.
+
+- **2026-09-21** (later 4) — **The day report belongs to one shop, and reads on a phone.** On the owner's screen the outlet filter changed the list and nothing else: the Close Day preview counted every outlet, and `closeDay` was called with an empty outlet — which locks every shop's entries and files one combined report. Filtered to Avenues (8 sales, 2,338 KD) the preview showed the company (13, 3,302) and closed it. One `reportOutlet` now drives the list, the figures, the close row, the summary and the PDF, and the confirmation names what is being closed (§11). Closing offers the Report Preview on WhatsApp. The PDF moved from A4 to a 100 mm page cut to the height of its content. Also: three of the four DSR outcome buttons had never shown a selected state, because their Tailwind class names were assembled at runtime and stripped from the build (§12).
+
+- **2026-09-21** (later 3) — **Customers and follow-ups on the shop floor (Stage C).** Built on Stages A and B; the full rules are in `supabase/README.md` → *The customer and the follow-up*.
+
+  *Customer Visit* replaces Quick Entry. The stored `case_type` values are unchanged; what people read is Browsing, Interested, Lost Opportunity and Manual Sale (`src/shared/caseLabels.ts`). The visit has its own time, correctable afterwards. As a number is typed, `customer_by_phone()` says new, yours (with a line of history) or only "recognised" when the customer is somebody else's — the shared phone only ever hears "recognised". A Lost Opportunity may be saved with the number declined rather than invented.
+
+  *Home and navigation.* Salespeople open on their own day (`SalesHome.tsx`); both roles get five tabs with Customers among them; logging a visit is the big button, not a tab. A mid-day move between shops is recorded against the open shift (`outlet_changes`); the shared phone names who is moving, using `roster_employees()` because it may not read `employees`.
+
+  *Customers* in both apps come from `customer_list()` / `customer_profile()`, which run under the caller's rules. *WhatsApp* opens from a customer, a follow-up or an occasion with an admin-edited template in English or Arabic, filled in and editable; the handoff is recorded, never marks a follow-up contacted, and is refused without a relationship. *Occasions*: birthdays, anniversaries and other dated occasions, 59 birthdays imported from Lightspeed; at 06:00 Kuwait `raise_occasion_reminders()` sends one person a reminder seven days before and on the day.
+
+  *Afterwards*, the security advisor showed the anonymous role could still call the new definer functions through Postgres's default grant to PUBLIC. Revoked from `anon` and `PUBLIC`, granted to signed-in users; the reminder job is the cron's alone (migrations `20260921143217`, `20260921143826`).
+
+- **2026-09-21** (later 2) — **Who may see whom (Stage B).** Until now any signed-in login could read every entry and every customer's number. Access now follows a *relationship* between a salesperson and a customer — an entry under their roster name, a Lightspeed sale credited to them, a manager's assignment, a WhatsApp handoff — held in `customer_relationships` and rebuilt by triggers and nightly, so a corrected entry takes its access away with it. Managers see their `manager_scopes` outlets and channels through the registry. The apps read entries through `cases_visible`, which blanks numbers the reader may not see. Customer identity is guarded in the database: normalised on the way in, a duplicate or non-number refused, a number Lightspeed holds corrected at the till, every change audited. Policies call set-returning definer helpers inside `(select …)` so they evaluate once per query — the first version evaluated per row and timed out. `customers_from_lightspeed()` created 8,713 customer records. Verified as each real login in turn; the rules, and the shared-login limitation, are in `supabase/README.md` → *Who may see whom* and §4.
+
+- **2026-09-21** (later) — **Every sale kept, and who the customer is (Stage A).** The daily sync read every sale and kept only totals. `lightspeed-sales-sync` now stores every sale, line and customer every ten minutes (§6.3): the first run caught up 18,047 sales back to November 2021 and 14,330 customers. The token refresh is leased so the three Lightspeed jobs cannot lock each other out. `lightspeed_users` maps till logins to employees or channels by id, not name — three of seven salespeople are spelt differently in Lightspeed. `normalize_phone()` and `src/shared/phoneRules.ts` define a phone number once. `cases` gained `customer_id`, `interaction_at` and `contact_declined`, backfilled (125 customers from numbers already logged, 151 entries linked). `lightspeed_reconcile()` compares the new rows with the old totals: 137 of 137 days and 277 of 277 salesperson-days agreed to the fils. Invisible to users; nothing existing changed.
+
+- **2026-09-21** — **The app stopped going white on iPhone Safari.** Safari's service worker answered every navigation from cache and never checked again, while each deploy deletes the previous build's hashed files; a phone holding an older shell asked for JavaScript that no longer existed and drew nothing. Install also cached error responses and did not wait for its writes. Staff were told to use Chrome, which worked only because Chrome on iOS runs no service worker. Now network-first with a 3.5 s deadline, strict install, self-recovery on a 404, and a boot failsafe in `index.html`; `sw-check` runs in the build. Both apps. See §12.
+
+- **2026-09-20** — **Watch Design Studio tables.** `watch_designs`, `watch_design_versions`, `watch_design_assets` and the `watch-assets` storage bucket were added to this database by the studio, which lives in its own repository (§5). Own-rows policies throughout. Their migrations are not in either of these repos' folders.
+
+- **2026-09-19** (later) — **An outlet-scoped alert with no outlet belongs to nobody.** `audience_outlet` was a day old, so every older notification carried null, and null meant company-wide: a shop's manager was still shown head office's requests. `notification_settings.outlet_scoped` now marks the types that must carry an outlet, and for those a missing one reaches no manager (`notification_in_my_scope()`). Ten of fourteen untagged rows were recovered from the request each points at; the rule stops the other four. Admins and HR are unaffected.
+
+- **2026-09-19** — **The shop floor's bell carries only what a store manager can act on.** He was addressed by fifteen of twenty-six event types, and four fifths of what reached him was purchase orders, account changes and geofence edits he cannot act on from a shop. `notification_settings.shop_floor` now marks the types that belong on a phone; the back office still shows everything. On the real feed, 101 notifications become 21. `repair_status` and `preorder_arrived` are deliberately left off: their tables carry no outlet, so there is no way yet to send them to the right shop.
+
+- **2026-09-18** (later 5) — **Clocking in broke, and why.** Adding an outlet parameter to `notify_event` with `CREATE OR REPLACE` created a second, nine-argument function beside the old one instead of replacing it. Because the new parameter had a default, every existing eight-argument call matched both, Postgres refused to guess, and every trigger calling it failed — including the one on clock-in. Fixed by keeping one signature (§5 *Notifications*).
+
+- **2026-09-18** (later 4) — **Lateness is findable, and grace belongs to the shift.** HR → Attendance gained This month / Last 30 days / Last month, a heading that says it holds hours late and early, and a name that opens into the days behind its totals (`DayPunctuality` now carries its date). Employee Performance counted lateness from the stored `is_late` flag while HR asked the shared engine, so one person could read "3 late" on one page and "–" on the other; both now ask the engine. The company's hour of grace was written for a 09:00 start and moved a 10:00 shift's deadline to 11:00; `employee_schedules.grace_minutes` now lets a shift carry its own (null = company default, 0 = the start is the deadline). Head office's schedules had been set from when people actually arrived — typically 10:00 — which, with the grace hour, forgave everything until 11:00; all five are now on 09:00 with the ordinary hour.
+
+- **2026-09-18** (later 3) — **Reminders, scoped alerts, and asking for different hours.** Request notifications went to every manager regardless of shop; they now carry `audience_outlet` and the read policy narrows managers to their scopes (completed the next day, above). **Remind** sends one nudge to whoever holds a request up, refuses another inside four hours and records it in `request_reminders`; `remind_overdue_requests()` chases anything over a day at 07:00. Employees can edit or withdraw their own request while it is Pending (DSR `MyRequests.tsx`). **Schedule change** became a request type, applied through `set_schedule()` on approval. Found by testing a real one: staging was skipped when there was no auth context, which the view read as "no manager needed"; staging now happens on every insert whoever makes it.
+
+- **2026-09-18** (later 2) — **One approval workflow for every request, and the shop floor is told.** `leave_records` had a proper manager-then-owner chain; `employee_requests` had one status column, no manager stage, no scoping, and a policy letting any manager hard-delete any request. Both now share one spine, one guard (`workflow_guard()`) and one answer to "who is this waiting on" (`v_requests.stage_owner`). A request filed by an admin or HR on somebody's behalf no longer skips the manager — the reason fourteen of fifteen leave records read "Not required". The owner can still settle something a manager has not, but only with a written reason, recorded as an override against the stage it skipped. Nothing is hard-deleted. The Inbox became one queue with three tabs (§8); the DSR gained Team → Requests and its first notification centre, since the store manager's approval authority had existed only on a laptop. New events `req_stage` and `req_withdrawn` announce the silent middle of a two-step approval. `audit_log.actor_kind` separates system writes from people. The store manager's name, spelt three ways across his login, employee record and 492 entries, was made one.
+
+- **2026-09-18** (later) — **Routine SQL stops asking for permission; destruction still does.** `.claude/settings.json` in both repos pre-approves reads and non-destructive migrations; a PreToolUse hook asks before a DROP, a TRUNCATE or a DELETE with no WHERE. CLAUDE.md records the working agreement: one migration per feature, one approval request for the whole of anything destructive, and the migration file in both repos under the version the database recorded.
+
+- **2026-09-18** — **Hours vary, the shops have hours, and the shifts nobody closed are closed.** A schedule that sets no hours now means *hours vary* — nothing is claimed about lateness — instead of falling through to the office's 09:00–17:00, which had scored an afternoon salesperson nineteen hours late across three days he arrived on time. `outlets.opens_at` / `closes_at` give the shops the one time true for everyone on the floor. Twelve shifts were still open, the oldest since 6 August (1,021 hours), because the app had refused clock-outs without a GPS fix; each was closed at the latest time that person could still have been there, marked in `correction_reason` and `geo_flag` so all twelve list and revert with one query, with notifications off for the transaction. The migration folder was also brought back in line with the database: four applied migrations had no file, and six files carried invented timestamps that would have replayed them out of order.
+
+- **2026-09-17** (later 8) — **A clock-out no longer needs a location, and a correction asks the right question.** A clock-out has never needed a fix — there is no geofence test on leaving — but the app refused to write one without it, so shifts could not be closed. A clock-out with no fix is now recorded and flagged `no_clock_out_location`. The correction form pre-filled the arrival and left the leaving time empty, then sent the arrival anyway; its boxes now start empty with the record shown beside them, and `planCorrection` in `src/shared/requestRules.ts` decides what is being asked, so a request that changes nothing cannot be sent. Approval no longer re-applies an unchanged time (which would have shaved its seconds) and recomputes lateness only when the arrival moves. Overnight shifts are no longer rejected as leaving before arriving. The shared-foundation check had not been hashing `__tests__/`; it now covers them.
+
+- **2026-09-17** (later 7) — **An attendance correction reads as a change.** Each half of the day is a row — what the record says, what is asked for, an arrow only where something would change — so a missing clock-in can be told from one being moved, and a request asking for what is already recorded says outright that approving it changes nothing.
+
+- **2026-09-17** (later 6) — **Lateness is judged against the hours somebody actually works.** Punctuality was measured against a hardcoded 09:00–17:00 for everybody. It now comes from the dated schedule in force on the date, falling back to a shop-wide default only for somebody with no hours set; that default became settings (`work_start_time`, `work_end_time`, `late_grace_minutes`). A day judged against the default says so ("default hrs"); a day nobody clocked out of has no leaving time to judge. HR → Attendance gained hours late and hours early.
 
 - **2026-09-17** (later 5) — **The Time Keeper register is two channels, not one.** It carries both the online shop and the WhatsApp orders Eman handles, and the only thing telling them apart is who rang the sale up — which the sync was fetching from Lightspeed and throwing away. It now keeps it (`lightspeed_sales_by_staff`, same API calls), and `pos_channel_sales` splits the register by `pos_channel_rules`: Eman's sales are WhatsApp, everyone else's are Online. `lightspeed_sales_daily` is untouched and stays the figure everything reconciles to. The dashboard reads channels and no longer sees a register name, and the one Time Keeper monthly target became `sales_target_online` + `sales_target_whatsapp` (the old figure moved to Online, where three quarters of the money is; WhatsApp starts blank rather than inheriting a guess).
 
@@ -423,6 +682,10 @@ on; `Unknown` is the correct answer when the data does not carry one.
   *The roster name* stopped being stored twice. `employees.dsr_staff_name` is the source of truth; `profiles.sales_name` is a trigger-kept mirror. Having two and syncing neither is what locked a salesperson out of the DSR.
 
   *My Portal's rules* — clocking in and out, leave, the balance, corrections, geofence matching — moved to `src/shared/portal.ts`, used by both screens. The shop floor had never recorded how accurate the phone's fix was on clock-out, so half of them could not be checked against the geofence afterwards.
+
+  *storeDay* kept a shop open by checking the date was today, which mislabelled an overnight shift and let a clock-in nobody ever closed hold the shop open indefinitely. Abandoned records are excluded by age instead.
+
+  *Team's* own status words are gone in favour of the shared ones, so "in now" and "not in" mean the same on both apps, and its hours-per-person loop is now `shared/workload.ts` — the same count HR reports with. A genuinely lopsided week is called out, compared as hours per day due so a part-timer is measured against their own roster.
 
   *Realtime* was switched on for the first time. No table was in the `supabase_realtime` publication, so the DSR's Today's Log and follow-up board had been subscribed for months and receiving nothing. Five operational tables now publish; historical reports do not.
 
