@@ -1,0 +1,22 @@
+[
+  {
+    "version": "1.0.0",
+    "date": "2026-09-23",
+    "title": "First numbered release",
+    "changes": [
+      "Requests: leave, corrections and schedule changes in one Inbox, with reminders.",
+      "Leave goes to the store manager first, then to the owners.",
+      "An attendance correction asks for the actual times, and approving it fixes the record.",
+      "HR can change someone's working days and hours from the Employees page.",
+      "Lateness is judged against each person's own hours, with grace set per shift.",
+      "Clock in at whichever workplace you are standing in. Clocking out works without location.",
+      "Sales by shop come from the tills. The Time Keeper register is split into Online and WhatsApp.",
+      "Meta ads: spend in dinars, and what each campaign bought for which brand.",
+      "CRM: each customer's visits and Lightspeed purchases on one page, shown only to those allowed.",
+      "Send WhatsApp from the CRM and the follow-up board, with English or Arabic templates.",
+      "Birthday and anniversary reminders go to the right salesperson.",
+      "Fixed: the app going white on iPhone Safari.",
+      "The version and build now show in the app. Tap them to see this list."
+    ]
+  }
+]

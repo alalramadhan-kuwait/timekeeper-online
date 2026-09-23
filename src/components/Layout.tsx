@@ -11,6 +11,7 @@ import { unreadNotificationCount, markNotificationsRead } from '../lib/notificat
 import { getInstallPrompt, promptInstall, isStandalone, isIos } from '../lib/pwaInstall';
 import { supabase } from '../lib/supabase';
 import { X as CloseIcon } from 'lucide-react';
+import { VersionChip } from './WhatsNew';
 
 interface NavItem {
   to: string;
@@ -243,6 +244,9 @@ export default function Layout() {
           <button onClick={signOut} className="flex items-center gap-2 text-slate-300 hover:text-white text-xs">
             <LogOut size={14} /> Sign out
           </button>
+          <div className="mt-3">
+            <VersionChip tone="dark" className="text-[11px] text-slate-500" />
+          </div>
         </div>
       </aside>
 
@@ -252,7 +256,11 @@ export default function Layout() {
                    paddingLeft: 'calc(1rem + var(--sa-l))',
                    paddingRight: 'calc(1rem + var(--sa-r))' }}>
           <button onClick={() => setOpen((o) => !o)} aria-label="Menu"><Menu size={20} /></button>
-          <span className="font-semibold">Timekeeper Online</span>
+          <span className="font-semibold whitespace-nowrap">Timekeeper Online</span>
+          {/* On the narrowest phones the name needs the room; the menu still shows the version. */}
+          <span className="hidden min-[360px]:inline-flex shrink-0">
+            <VersionChip tone="light" compact className="text-[10px] text-slate-400" />
+          </span>
           <div className="ml-auto flex items-center gap-1">
             {showInstall && (
               <button onClick={handleInstall} aria-label="Install app" className="p-1"><Download size={20} /></button>

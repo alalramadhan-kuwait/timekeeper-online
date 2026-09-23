@@ -57,9 +57,15 @@ function serviceWorkerManifest(): Plugin {
   };
 }
 
+/* The exact build, shown after the version so anyone can tell whether a fresh
+   deploy has reached their phone. CI sets GITHUB_SHA; a local build shows the
+   version alone. The shop app has done this since it had a version at all. */
+const buildSha = (process.env.GITHUB_SHA ?? '').slice(0, 7);
+
 export default defineConfig(({ command }) => ({
   plugins: [react(), serviceWorkerManifest()],
   // GitHub Pages serves under /timekeeper-online/; keep dev at /
   base: command === 'build' ? '/timekeeper-online/' : '/',
   server: { port: 5180 },
+  define: { __BUILD_SHA__: JSON.stringify(buildSha) },
 }));
