@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useMemo, useState } from 'react';
+import { useCallback, Fragment, useEffect, useMemo, useState } from 'react';
 import {
   Clock, AlertTriangle, Users, LogIn, LogOut, CalendarDays, Download, Pencil, Plus, X, Check, UserRound, ArrowRight, ChevronRight,
 } from 'lucide-react';
@@ -125,6 +125,28 @@ function ManagerDashboard() {
   const empById = useMemo(() => new Map(employees.map((e) => [e.id, e])), [employees]);
   const empByUser = useMemo(
     () => new Map(employees.filter((e) => e.user_id).map((e) => [e.user_id as string, e])), [employees]);
+  /**
+   * The employee behind a record — by login first, by name only as a fallback.
+   *
+   * `employee_name` is a copy taken when the row was written. Correcting one
+   * manager's spelling in HR detached both of his records from him, and every
+   * lookup on this page went through the name: his own dated shift could not be
+   * found, so he was judged against the office 09:00 he does not work, and the
+   * area filter stopped seeing him at all. The link that was right the whole
+   * time is user_id.
+   */
+  const empOf = useCallback(
+    (r: { user_id?: string | null; employee_name: string }) =>
+      (r.user_id ? empByUser.get(r.user_id) : undefined) ?? empByName.get(r.employee_name),
+    [empByUser, empByName]);
+
+  /** One person, stable across a rename. Falls back to the name only for a row
+   *  with no HR record behind it, which is the one case with nothing better. */
+  const personKey = useCallback(
+    (r: { user_id?: string | null; employee_name: string }) =>
+      empOf(r)?.id ?? `name:${r.employee_name}`,
+    [empOf]);
+
   /** A day of one person's attendance, which is what the detail panel shows. */
   const dayKey = (r: AttendanceRecord) => `${r.user_id}|${kuwaitDate(r.clock_in)}`;
   const areas = useMemo(() => [...new Set(employees.map((e) => e.location).filter(Boolean) as string[])].sort(), [employees]);
@@ -139,8 +161,8 @@ function ManagerDashboard() {
   };
   /** When this person's day ended, on that date — their own shift if they have
    *  one, otherwise the shop default. */
-  const shiftEndFor = (name: string, date: string): string | null => {
-    const emp = empByName.get(name);
+  const shiftEndFor = (r: AttendanceRecord, date: string): string | null => {
+    const emp = empOf(r);
     return shiftTimesOn(schedules.get(emp?.id ?? '') ?? [], date,
       { defaultStart: workStart, defaultEnd: workEnd }).end;
   };
@@ -148,7 +170,7 @@ function ManagerDashboard() {
   /** Late against this person's own shift, not the office's. */
   const isLateRow = (r: AttendanceRecord) => {
     if (r.justified) return false;
-    const emp = empByName.get(r.employee_name);
+    const emp = empOf(r);
     const mine = schedules.get(emp?.id ?? '') ?? [];
     const d = dayPunctuality(
       { date: kuwaitDate(r.clock_in), schedules: mine, records: [{ clockIn: r.clock_in, clockOut: r.clock_out }] },
@@ -158,15 +180,15 @@ function ManagerDashboard() {
   };
 
   const filtered = useMemo(() => records.filter((r) => {
-    if (empFilter !== 'All' && r.employee_name !== empFilter) return false;
-    if (teamFilter !== 'All' && empByName.get(r.employee_name)?.location !== teamFilter) return false;
-    if (typeFilter !== 'All' && locationType(empByName.get(r.employee_name)?.location) !== typeFilter) return false;
+    if (empFilter !== 'All' && empOf(r)?.id !== empFilter) return false;
+    if (teamFilter !== 'All' && empOf(r)?.location !== teamFilter) return false;
+    if (typeFilter !== 'All' && locationType(empOf(r)?.location) !== typeFilter) return false;
     if (statusFilter !== 'All') {
       if (statusFilter === 'Late (any)') { if (!isLateRow(r)) return false; }
       else if (statusOf(r) !== statusFilter) return false;
     }
     return true;
-  }), [records, empFilter, teamFilter, typeFilter, statusFilter, empByName, today, workStart]);
+  }), [records, empFilter, teamFilter, typeFilter, statusFilter, empOf, today, workStart]);
 
   // approved leave / WFH covering today, per employee id (item 18: not absent)
   const onLeaveToday = useMemo(() => {
@@ -182,19 +204,19 @@ function ManagerDashboard() {
     const span = dayHours(filtered.map((r) => ({ clockIn: r.clock_in, clockOut: r.clock_out })));
     const totalHours = span.hours ?? 0;
     const needCorrection = span.unusableShifts;
-    const presentToday = new Set(filtered.filter((r) => kuwaitDate(r.clock_in) === today).map((r) => r.employee_name));
+    const presentToday = new Set(filtered.filter((r) => kuwaitDate(r.clock_in) === today).map(personKey));
     const inRangeToday = to >= today && from <= today;
     const absentToday = inRangeToday
-      ? activeEmployees.filter((e) => !presentToday.has(e.full_name) && !onLeaveToday.has(e.id) &&
+      ? activeEmployees.filter((e) => !presentToday.has(e.id) && !onLeaveToday.has(e.id) &&
           (teamFilter === 'All' || e.location === teamFilter) &&
           (typeFilter === 'All' || locationType(e.location) === typeFilter) &&
-          (empFilter === 'All' || e.full_name === empFilter))
+          (empFilter === 'All' || e.id === empFilter))
       : [];
     const excusedToday = inRangeToday
       ? activeEmployees.filter((e) => onLeaveToday.has(e.id)).map((e) => ({ name: e.full_name, type: onLeaveToday.get(e.id)! }))
       : [];
     return { late, stillIn, missed, totalHours, needCorrection, records: filtered.length, absentToday, excusedToday };
-  }, [filtered, activeEmployees, today, from, to, teamFilter, typeFilter, empFilter, onLeaveToday, workStart]);
+  }, [filtered, activeEmployees, today, from, to, teamFilter, typeFilter, empFilter, onLeaveToday, workStart, personKey]);
 
   /* Hours and days come from src/shared/workload.ts — the same counting the
      shop-floor team list uses, so the two cannot disagree about a week.
@@ -203,7 +225,7 @@ function ManagerDashboard() {
      default when nobody has set one. */
   const report = useMemo(() => {
     const loads = workload(filtered.map((r) => ({
-      who: r.employee_name, date: kuwaitDate(r.clock_in), outlet: r.location,
+      who: personKey(r), date: kuwaitDate(r.clock_in), outlet: r.location,
       clockIn: r.clock_in, clockOut: r.clock_out,
     })));
 
@@ -211,21 +233,21 @@ function ManagerDashboard() {
     const byPersonDay = new Map<string, Map<string, AttendanceRecord[]>>();
     for (const r of filtered) {
       const day = kuwaitDate(r.clock_in);
-      let days = byPersonDay.get(r.employee_name);
-      if (!days) { days = new Map(); byPersonDay.set(r.employee_name, days); }
+      let days = byPersonDay.get(personKey(r));
+      if (!days) { days = new Map(); byPersonDay.set(personKey(r), days); }
       days.set(day, [...(days.get(day) ?? []), r]);
     }
 
     const opts = { defaultStart: workStart, defaultEnd: workEnd, graceMinutes: grace };
     const marks = new Map<string, { missed: number }>();
     for (const r of filtered) {
-      const e = marks.get(r.employee_name) ?? { missed: 0 };
+      const e = marks.get(personKey(r)) ?? { missed: 0 };
       if (!r.clock_out && kuwaitDate(r.clock_in) < today) e.missed++;
-      marks.set(r.employee_name, e);
+      marks.set(personKey(r), e);
     }
 
     return loads.map((l) => {
-      const emp = empByName.get(l.who);
+      const emp = empById.get(l.who);
       const mine = schedules.get(emp?.id ?? '') ?? [];
       const days = [...(byPersonDay.get(l.who) ?? new Map<string, AttendanceRecord[]>()).entries()]
         .map(([date, recs]) => dayPunctuality({
@@ -235,7 +257,8 @@ function ManagerDashboard() {
         }, opts));
       const punct = punctualityTotals(days);
       return {
-        name: l.who,
+        // l.who is the employee id; the name shown is HR's current spelling.
+        name: emp?.full_name ?? l.who.replace(/^name:/, ''),
         area: emp?.location ?? '—',
         hours: l.hours ?? 0,
         daysPresent: l.daysWorked,
@@ -264,15 +287,15 @@ function ManagerDashboard() {
           .sort((a, b) => b.date.localeCompare(a.date)),
       };
     });
-  }, [filtered, empByName, today, workStart, workEnd, grace, schedules]);
+  }, [filtered, empById, personKey, today, workStart, workEnd, grace, schedules]);
 
   const trend = useMemo(() => {
     const days = eachDayOfInterval({ start: parseISO(from), end: parseISO(to) });
     return days.map((d) => {
       const key = format(d, 'yyyy-MM-dd');
-      return { key, count: new Set(filtered.filter((r) => kuwaitDate(r.clock_in) === key).map((r) => r.employee_name)).size };
+      return { key, count: new Set(filtered.filter((r) => kuwaitDate(r.clock_in) === key).map(personKey)).size };
     });
-  }, [filtered, from, to]);
+  }, [filtered, from, to, personKey]);
   const maxTrend = Math.max(1, ...trend.map((t) => t.count));
 
   const lateToday = filtered.filter((r) => isLateRow(r) && kuwaitDate(r.clock_in) === today);
@@ -408,7 +431,7 @@ function ManagerDashboard() {
         <input type="date" value={to} onChange={(e) => setTo(e.target.value)} className={input} />
         <select value={empFilter} onChange={(e) => setEmpFilter(e.target.value)} className={input}>
           <option value="All">All employees</option>
-          {employees.map((e) => <option key={e.id} value={e.full_name}>{e.full_name}</option>)}
+          {employees.map((e) => <option key={e.id} value={e.id}>{e.full_name}</option>)}
         </select>
         <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value as 'All' | LocationType)} className={input}>
           <option value="All">Office + Store</option>
@@ -453,7 +476,7 @@ function ManagerDashboard() {
           {lateToday.length > 0 && (
             <div className="flex items-start gap-2 px-4 py-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-700 text-sm">
               <AlertTriangle size={15} className="mt-0.5 shrink-0" />
-              <span>Late today: <b>{lateToday.map((r) => `${r.employee_name} (${lateClassOf(r.clock_in, workStart)})`).join(', ')}</b></span>
+              <span>Late today: <b>{lateToday.map((r) => `${empOf(r)?.full_name ?? r.employee_name} (${lateClassOf(r.clock_in, workStart)})`).join(', ')}</b></span>
             </div>
           )}
           {summary.missed > 0 && (
@@ -652,10 +675,10 @@ function ManagerDashboard() {
                   <Fragment key={r.id}>
                   <tr className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
                     <td className="px-4 py-2 text-slate-600 whitespace-nowrap">{fmtDate(r.clock_in)}</td>
-                    <td className="px-4 py-2 font-medium text-slate-700 whitespace-nowrap">{r.employee_name}</td>
+                    <td className="px-4 py-2 font-medium text-slate-700 whitespace-nowrap">{empOf(r)?.full_name ?? r.employee_name}</td>
                     <td className="px-4 py-2 tabular-nums whitespace-nowrap">{fmtTime(r.clock_in)}</td>
                     <td className="px-4 py-2 tabular-nums whitespace-nowrap">
-                      {r.clock_out ? <>{fmtTime(r.clock_out)}{isEarlyLeave(r.clock_out, shiftEndFor(r.employee_name, kuwaitDate(r.clock_in))) && <span className="text-amber-500 text-xs ml-1">early</span>}</> : '—'}
+                      {r.clock_out ? <>{fmtTime(r.clock_out)}{isEarlyLeave(r.clock_out, shiftEndFor(r, kuwaitDate(r.clock_in))) && <span className="text-amber-500 text-xs ml-1">early</span>}</> : '—'}
                     </td>
                     <td className="px-4 py-2 text-right tabular-nums hidden sm:table-cell">{formatHours(hoursOf(r.clock_in, r.clock_out))}</td>
                     <td className="px-4 py-2">
