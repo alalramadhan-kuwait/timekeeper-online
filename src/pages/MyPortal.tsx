@@ -325,7 +325,10 @@ export default function MyPortalPage() {
         userId: user!.id, employeeName: profile!.full_name, fenceName: matched.name,
         position: { latitude, longitude, accuracy }, isLate,
       });
-      if (err) setGeoError(err); else await load();
+      // Reload either way: a refusal usually means a shift is already open
+      // (another phone or tab), and the page should show it rather than a stale button.
+      if (err) setGeoError(err);
+      await load();
     } catch (err: any) {
       if (err.code === 1) setGeoError(`${locationBlockedMessage()}\n${CORRECTION_FALLBACK}`);
       else if (err.code === 3) setGeoError('Location request timed out. Please try again.');
@@ -616,10 +619,10 @@ export default function MyPortalPage() {
   const clockedIn = !!openRec;
   const startedToday = todayRecs.length > 0;
   const shiftsToday = todayRecs.length;
-  const workedTodayMs = todayRecs.reduce(
-    (t, r) => t + (new Date(r.clock_out ?? new Date(nowMs).toISOString()).getTime() - new Date(r.clock_in).getTime()),
-    0,
-  );
+  // Through the one rule, so a clock-in that went through twice is not counted twice.
+  const workedTodayMs = (dayHours(
+    todayRecs.map((r) => ({ clockIn: r.clock_in, clockOut: r.clock_out })), new Date(nowMs),
+  ).hours ?? 0) * 3_600_000;
   const lateClass = firstRec ? lateClassOf(firstRec.clock_in, workStart) : null;
   const lateLabel = lateClass && lateClass !== 'On time' && !firstRec?.justified ? lateClass : null;
   const portalReady = !!emp && emp.portal_enabled !== false;
