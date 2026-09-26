@@ -127,6 +127,8 @@ export interface CampaignSummary {
   impressions: number;
   clicks: number;
   purchases: number;
+  /** The value Meta put on those purchases, in the display currency. */
+  purchaseValue: number;
   /** How many of the campaigns reported a purchase at all — without it the
    *  purchase total reads as though every campaign were selling. */
   purchasingCampaigns: number;
@@ -158,6 +160,10 @@ const num = (v: unknown): number => {
 const purchasesOf = (actions: { action_type: string; value: string }[] | null | undefined): number =>
   num(actions?.find((a) => a.action_type === 'omni_purchase')?.value);
 
+/** The value Meta attached to those same purchases (action_values). */
+const purchaseValueOf = (values: { action_type: string; value: string }[] | null | undefined): number =>
+  num(values?.find((a) => a.action_type === 'omni_purchase')?.value);
+
 /**
  * The totals and the brand split for the campaigns currently listed.
  *
@@ -172,7 +178,7 @@ const purchasesOf = (actions: { action_type: string; value: string }[] | null | 
  */
 export function summarise(rows: Record<string, any>[], rate: DisplayRate = { kwdPerUsd: null, updatedAt: null }): CampaignSummary {
   const byBrand = new Map<string, BrandRow>();
-  let spend = 0, impressions = 0, clicks = 0, purchases = 0, purchasingCampaigns = 0;
+  let spend = 0, impressions = 0, clicks = 0, purchases = 0, purchaseValue = 0, purchasingCampaigns = 0;
   let storedSpend = 0;
   let earliest: string | null = null, latest: string | null = null;
   let currency = displayCode('USD', rate);
@@ -185,6 +191,7 @@ export function summarise(rows: Record<string, any>[], rate: DisplayRate = { kwd
     impressions += num(m.impressions);
     clicks += num(m.clicks);
     purchases += p;
+    purchaseValue += inDisplayCurrency(purchaseValueOf(m.action_values), m.account_currency, rate);
     if (p > 0) purchasingCampaigns += 1;
     if (m.account_currency) currency = displayCode(m.account_currency, rate);
     if (m.date_start && (!earliest || m.date_start < earliest)) earliest = m.date_start;
@@ -213,7 +220,7 @@ export function summarise(rows: Record<string, any>[], rate: DisplayRate = { kwd
 
   return {
     campaigns: rows.length,
-    currency, spend, impressions, clicks, purchases, purchasingCampaigns,
+    currency, spend, impressions, clicks, purchases, purchaseValue, purchasingCampaigns,
     earliest, latest, brands,
     brandSpend,
     brandShare: spend > 0 ? (brandSpend / spend) * 100 : 0,

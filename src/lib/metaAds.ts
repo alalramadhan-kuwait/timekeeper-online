@@ -8,6 +8,14 @@
 import { supabase } from './supabase';
 import { loadCampaignTags } from './metaBrands';
 
+type MetaActionList = { action_type: string; value: string }[] | null;
+
+/** One set of all-time totals per campaign, from meta_insight_totals. They
+ *  used to come from meta_ad_insights, where the sync added a fresh copy of
+ *  every campaign each day and a reader could pick up any of them. */
+const TOTALS_COLUMNS =
+  'campaign_id, spend, impressions, reach, frequency, clicks, ctr, cpc, cpm, actions, action_values, purchase_roas, cost_per_action_type, account_currency, date_start, date_stop, synced_at';
+
 export interface MetaCampaignOption { value: string; label: string; group?: string }
 
 export interface MetaFigures {
@@ -22,7 +30,14 @@ export interface MetaFigures {
   ctr: string | null;
   cpc: string | null;
   cpm: string | null;
+  frequency?: string | null;
   actions: { action_type: string; value: string }[] | null;
+  /** The money behind each action, in the account currency — purchase value. */
+  action_values?: MetaActionList;
+  /** Meta's own return on ad spend for purchases. */
+  purchase_roas?: MetaActionList;
+  /** Meta's own cost per result, by action type — cost per purchase. */
+  cost_per_action_type?: MetaActionList;
   account_currency: string | null;
   date_start: string | null;
   date_stop: string | null;
@@ -90,9 +105,9 @@ export async function loadMetaFigures(campaignIds: string[]): Promise<Map<string
   const ids = [...new Set(campaignIds.filter(Boolean))];
   if (!ids.length) return new Map();
   const [{ data: ins }, { data: camps }, { data: cfg }] = await Promise.all([
-    supabase.from('meta_ad_insights')
-      .select('campaign_id, spend, impressions, reach, clicks, ctr, cpc, cpm, actions, account_currency, date_start, date_stop, synced_at')
-      .eq('period', 'lifetime').in('campaign_id', ids),
+    supabase.from('meta_insight_totals')
+      .select(TOTALS_COLUMNS)
+      .eq('level', 'campaign').in('campaign_id', ids),
     supabase.from('meta_ad_campaigns').select('id, name, objective, effective_status, synced_at').in('id', ids),
     supabase.from('meta_ads_config').select('last_synced_at').eq('id', 1).maybeSingle(),
   ]);
@@ -121,7 +136,8 @@ export async function loadMetaFigures(campaignIds: string[]): Promise<Map<string
       campaign_name: c?.name ?? null, objective: c?.objective ?? null,
       effective_status: c?.effective_status ?? null,
       spend: r.spend, impressions: r.impressions, reach: r.reach, clicks: r.clicks,
-      ctr: r.ctr, cpc: r.cpc, cpm: r.cpm, actions: r.actions,
+      ctr: r.ctr, cpc: r.cpc, cpm: r.cpm, actions: r.actions, frequency: r.frequency,
+      action_values: r.action_values, purchase_roas: r.purchase_roas, cost_per_action_type: r.cost_per_action_type,
       account_currency: r.account_currency,
       date_start: r.date_start, date_stop: r.date_stop, synced_at: r.synced_at,
     });
@@ -188,6 +204,34 @@ export const prettyAction = (t: string) => {
   return named[tail] ?? tail.replace(/_/g, ' ');
 };
 
+/* ── the money: Meta's own purchase figures ─────────────────────────────── */
+
+/* Meta reports the same purchase under several action types (pixel, on-site,
+   "omni" across both). omni_purchase is the one Ads Manager shows; the others
+   are fallbacks for older campaigns that only carry the pixel type. */
+const PURCHASE_TYPES = ['omni_purchase', 'purchase', 'offsite_conversion.fb_pixel_purchase'];
+
+const pick = (list: MetaActionList | undefined): string | null => {
+  if (!list?.length) return null;
+  for (const t of PURCHASE_TYPES) {
+    const hit = list.find((a) => a.action_type === t);
+    if (hit) return hit.value;
+  }
+  return null;
+};
+
+/** Purchases, purchase value, return on ad spend and cost per purchase — each
+ *  looked up in what Meta sent, never worked out here. null means Meta did
+ *  not report it (no purchases, or not tracked). */
+export function purchaseFigures(f: Pick<MetaFigures, 'actions' | 'action_values' | 'purchase_roas' | 'cost_per_action_type'>) {
+  return {
+    purchases: pick(f.actions),
+    value: pick(f.action_values),
+    roas: pick(f.purchase_roas),
+    cpa: pick(f.cost_per_action_type),
+  };
+}
+
 export interface MetaSyncState {
   account_id: string | null;
   account_name: string | null;
@@ -197,13 +241,34 @@ export interface MetaSyncState {
   /** KD for one USD, set by an owner in Settings. Display only — see kd(). */
   kwd_per_usd: number | null;
   rate_updated_at: string | null;
+  /** Where the rate came from; rate_auto false means an owner pinned it. */
+  rate_source?: string | null;
+  rate_auto?: boolean | null;
+  /** Meta reports every "day" in this time zone, not Kuwait's. */
+  timezone_name?: string | null;
+  /** The daily pixel check: are purchases arriving, and with what. */
+  tracking?: TrackingCheck | null;
+  tracking_checked_at?: string | null;
 }
+
+export interface TrackingPixel {
+  id: string;
+  name: string;
+  last_fired_time: string | null;
+  events_7d: Record<string, number>;
+  purchase_sources?: Record<string, number>;
+  purchase_keys?: Record<string, number>;
+  purchase_fields?: Record<string, number>;
+  add_to_cart_sources?: Record<string, number>;
+  add_to_cart_keys?: Record<string, number>;
+}
+export interface TrackingCheck { checked_at: string; pixels: TrackingPixel[] }
 
 /** How the last sync went, so the page can say whether the figures are current. */
 export async function loadMetaSyncState(): Promise<MetaSyncState | null> {
   const { data } = await supabase
     .from('meta_ads_config')
-    .select('account_id, account_name, currency, last_synced_at, last_error, kwd_per_usd, rate_updated_at')
+    .select('account_id, account_name, currency, last_synced_at, last_error, kwd_per_usd, rate_updated_at, rate_source, rate_auto, timezone_name, tracking, tracking_checked_at')
     .eq('id', 1).maybeSingle();
   return (data as MetaSyncState) ?? null;
 }
@@ -213,9 +278,9 @@ export async function loadMetaSyncState(): Promise<MetaSyncState | null> {
 export async function hasNoFigures(campaignId: string): Promise<boolean> {
   if (!campaignId) return false;
   const { count } = await supabase
-    .from('meta_ad_insights')
+    .from('meta_insight_totals')
     .select('campaign_id', { count: 'exact', head: true })
-    .eq('campaign_id', campaignId).eq('period', 'lifetime');
+    .eq('campaign_id', campaignId).eq('level', 'campaign');
   return (count ?? 0) === 0;
 }
 
@@ -248,9 +313,9 @@ export async function loadAllCampaignsWithFigures(): Promise<Record<string, any>
   // Insights come back in pages like any other table; ask for all of them.
   const ins: any[] = [];
   for (let from = 0; ; from += 1000) {
-    const { data } = await supabase.from('meta_ad_insights')
-      .select('campaign_id, spend, impressions, reach, clicks, ctr, cpc, cpm, actions, account_currency, date_start, date_stop, synced_at')
-      .eq('period', 'lifetime').range(from, from + 999);
+    const { data } = await supabase.from('meta_insight_totals')
+      .select(TOTALS_COLUMNS)
+      .eq('level', 'campaign').range(from, from + 999);
     ins.push(...(data ?? []));
     if (!data || data.length < 1000) break;
   }
@@ -270,6 +335,8 @@ export async function loadAllCampaignsWithFigures(): Promise<Record<string, any>
       spend: i.spend ?? null, impressions: i.impressions ?? null, reach: i.reach ?? null,
       clicks: i.clicks ?? null, ctr: i.ctr ?? null, cpc: i.cpc ?? null, cpm: i.cpm ?? null,
       actions: i.actions ?? null, account_currency: i.account_currency ?? null,
+      frequency: i.frequency ?? null, action_values: i.action_values ?? null,
+      purchase_roas: i.purchase_roas ?? null, cost_per_action_type: i.cost_per_action_type ?? null,
       date_start: i.date_start ?? null, date_stop: i.date_stop ?? null,
       synced_at: i.synced_at ?? c.synced_at ?? null,
     };
@@ -289,8 +356,8 @@ export async function loadAllCampaignsWithFigures(): Promise<Record<string, any>
 export async function loadSpendingCampaignIds(): Promise<Set<string>> {
   const out = new Set<string>();
   for (let from = 0; ; from += 1000) {
-    const { data } = await supabase.from('meta_ad_insights')
-      .select('campaign_id, spend').eq('period', 'lifetime').range(from, from + 999);
+    const { data } = await supabase.from('meta_insight_totals')
+      .select('campaign_id, spend').eq('level', 'campaign').range(from, from + 999);
     for (const r of data ?? []) {
       if (Number(r.spend ?? 0) > 0) out.add(r.campaign_id as string);
     }
@@ -374,9 +441,9 @@ export async function loadCampaignPage(
   if (!rows.length) return [];
 
   const [{ data: ins }, tags] = await Promise.all([
-    supabase.from('meta_ad_insights')
-      .select('campaign_id, spend, impressions, reach, clicks, ctr, cpc, cpm, actions, account_currency, date_start, date_stop, synced_at')
-      .eq('period', 'lifetime').in('campaign_id', rows.map((c) => c.id)),
+    supabase.from('meta_insight_totals')
+      .select(TOTALS_COLUMNS)
+      .eq('level', 'campaign').in('campaign_id', rows.map((c) => c.id)),
     // What a person has said the campaign was for. Loaded here rather than in
     // the page so the brand figures and the list can never disagree.
     loadCampaignTags(rows.map((c) => c.id as string)),
@@ -397,6 +464,8 @@ export async function loadCampaignPage(
       spend: i.spend ?? null, impressions: i.impressions ?? null, reach: i.reach ?? null,
       clicks: i.clicks ?? null, ctr: i.ctr ?? null, cpc: i.cpc ?? null, cpm: i.cpm ?? null,
       actions: i.actions ?? null, account_currency: i.account_currency ?? null,
+      frequency: i.frequency ?? null, action_values: i.action_values ?? null,
+      purchase_roas: i.purchase_roas ?? null, cost_per_action_type: i.cost_per_action_type ?? null,
       date_start: i.date_start ?? null, date_stop: i.date_stop ?? null,
       synced_at: i.synced_at ?? c.synced_at ?? null,
     };

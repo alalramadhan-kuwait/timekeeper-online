@@ -1,5 +1,19 @@
-// Pulls @timekeeperkw performance + recent post insights into instagram_daily / instagram_media.
-// Callers: pg_cron (x-sync-key) or admin/manager JWT (Sync now).
+// Instagram's own figures for all three accounts, from Instagram itself.
+//
+// Per account: yesterday's reach, profile views, accounts engaged, total
+// interactions and website taps (instagram_daily, on yesterday's row), and the
+// last 50 posts with reach, saves, shares, views, likes, comments, profile
+// visits and follows (instagram_media). Figures are stored as Instagram sent
+// them.
+//
+// It used to need somebody to paste a personal token into instagram-connect,
+// which never happened, so it failed every morning with "not connected". It
+// now uses META_ADS_TOKEN — the System User token the ads sync uses, which
+// holds instagram_basic and instagram_manage_insights — and finds the
+// accounts through the Facebook pages that token manages.
+//
+// Callers: pg_cron (x-sync-key, the key in instagram_auth) or an
+// admin/manager/marketing JWT.
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
 const CORS = {
@@ -12,116 +26,142 @@ const json = (b: unknown, s = 200) =>
 
 const GRAPH = "https://graph.facebook.com/v21.0";
 
-interface Media { id: string; caption?: string; media_type?: string; permalink?: string; thumbnail_url?: string; media_url?: string; timestamp?: string; like_count?: number; comments_count?: number }
+async function graph(path: string, token: string, params: Record<string, string> = {}) {
+  const qs = new URLSearchParams({ ...params, access_token: token });
+  const res = await fetch(`${GRAPH}/${path}?${qs}`);
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const e = body?.error ?? {};
+    throw Object.assign(new Error(`${path}: ${e.message ?? res.status}`), { status: res.status, code: e.code });
+  }
+  return body;
+}
+
+/* Instagram refuses the whole request if one metric does not apply to the
+   post (profile_visits and follows exist for feed posts, not reels; views is
+   newer than some posts). So ask for the full set, then fall back. */
+const POST_METRICS = [
+  "reach,saved,shares,views,likes,comments,total_interactions,profile_visits,follows",
+  "reach,saved,shares,views,likes,comments,total_interactions",
+  "reach,saved,shares,likes,comments,total_interactions",
+  "reach,saved,total_interactions",
+];
+
+async function postInsights(id: string, token: string): Promise<Record<string, number> | null> {
+  for (const metric of POST_METRICS) {
+    try {
+      const body = await graph(`${id}/insights`, token, { metric });
+      const out: Record<string, number> = {};
+      for (const row of body.data ?? []) out[row.name] = Number(row.values?.[0]?.value ?? row.total_value?.value ?? 0);
+      return out;
+    } catch (e) {
+      if ((e as { status?: number }).status === 429 || (e as { code?: number }).code === 4) throw e; // rate limited
+    }
+  }
+  return null;
+}
+
+/** A Kuwait calendar date, `days` from today. */
+const kuwaitDate = (days = 0) =>
+  new Date(Date.now() + 3 * 3600_000 + days * 86400_000).toISOString().slice(0, 10);
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
   const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 
-  const { data: auth } = await admin.from("instagram_auth").select("*").eq("id", 1).single();
-  if (!auth) return json({ error: "Instagram not connected" }, 400);
-
-  // authorize: shared key (cron) or admin/manager JWT
+  const { data: auth } = await admin.from("instagram_auth").select("sync_key").eq("id", 1).maybeSingle();
   const syncKey = req.headers.get("x-sync-key");
-  let allowed = !!syncKey && syncKey === auth.sync_key;
+  let allowed = !!syncKey && !!auth?.sync_key && syncKey === auth.sync_key;
   if (!allowed) {
     const jwt = (req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, "");
     if (jwt) {
       const { data: u } = await admin.auth.getUser(jwt);
       if (u?.user) {
         const { data: p } = await admin.from("profiles").select("role").eq("id", u.user.id).single();
-        allowed = ["admin", "manager"].includes(p?.role ?? "");
+        allowed = ["admin", "manager", "marketing"].includes(p?.role ?? "");
       }
     }
   }
   if (!allowed) return json({ error: "Unauthorized" }, 401);
-  if (!auth.ig_user_id || !auth.access_token) return json({ error: "Instagram not connected — complete the connect step" }, 400);
+
+  const token = Deno.env.get("META_ADS_TOKEN");
+  if (!token) return json({ error: "META_ADS_TOKEN is not set in Edge Function secrets." }, 400);
 
   const { data: logRow } = await admin.from("instagram_sync_log").insert({ status: "running" }).select("id").single();
-  const fail = async (msg: string) => {
-    await admin.from("instagram_sync_log").update({ status: "error", error: msg.slice(0, 500), finished_at: new Date().toISOString() }).eq("id", logRow!.id);
-    return json({ error: msg }, 500);
+  const finish = async (status: string, error?: string) => {
+    await admin.from("instagram_sync_log")
+      .update({ status, error: error?.slice(0, 500) ?? null, finished_at: new Date().toISOString() })
+      .eq("id", logRow!.id);
   };
 
   try {
-    let token: string = auth.access_token;
-    const igId: string = auth.ig_user_id;
+    const pages = await graph("me/accounts", token, { fields: "name,instagram_business_account{id,username}", limit: "50" });
+    const accounts = (pages.data ?? [])
+      .map((p: any) => p.instagram_business_account)
+      .filter((a: any) => a?.id);
 
-    // refresh long-lived token if it expires within 7 days
-    if (!auth.token_expires || new Date(auth.token_expires).getTime() < Date.now() + 7 * 86400_000) {
-      const appId = Deno.env.get("IG_APP_ID"); const appSecret = Deno.env.get("IG_APP_SECRET");
-      if (appId && appSecret) {
-        const r = await fetch(`${GRAPH}/oauth/access_token?grant_type=fb_exchange_token&client_id=${appId}&client_secret=${appSecret}&fb_exchange_token=${encodeURIComponent(token)}`);
-        const b = await r.json().catch(() => ({}));
-        if (r.ok && b.access_token) {
-          token = b.access_token;
-          await admin.from("instagram_auth").update({
-            access_token: token,
-            token_expires: b.expires_in ? new Date(Date.now() + b.expires_in * 1000).toISOString() : new Date(Date.now() + 55 * 86400_000).toISOString(),
-            updated_at: new Date().toISOString(),
-          }).eq("id", 1);
-        }
-      }
-    }
+    const since = Math.floor(new Date(`${kuwaitDate(-1)}T00:00:00+03:00`).getTime() / 1000);
+    const until = since + 86400;
+    const report: Record<string, unknown>[] = [];
 
-    // account profile (followers, media_count)
-    const profRes = await fetch(`${GRAPH}/${igId}?fields=followers_count,media_count,username&access_token=${encodeURIComponent(token)}`);
-    const profBody = await profRes.json();
-    if (!profRes.ok) return await fail(`Profile: ${profBody?.error?.message ?? profRes.status}`);
-    const followers = profBody.followers_count ?? null;
-    const mediaCount = profBody.media_count ?? null;
-
-    // account day insights (reach, profile_views); impressions deprecated for some accounts → tolerate
-    let reach: number | null = null, profileViews: number | null = null;
-    const insRes = await fetch(`${GRAPH}/${igId}/insights?metric=reach,profile_views&period=day&access_token=${encodeURIComponent(token)}`);
-    const insBody = await insRes.json();
-    if (insRes.ok) {
-      for (const m of insBody.data ?? []) {
-        const val = m.values?.[m.values.length - 1]?.value ?? null;
-        if (m.name === "reach") reach = val;
-        if (m.name === "profile_views") profileViews = val;
-      }
-    }
-
-    const snapshotDate = new Date(Date.now() + 3 * 3600_000).toISOString().slice(0, 10); // Kuwait date
-    await admin.from("instagram_daily").upsert({
-      snapshot_date: snapshotDate, followers, reach, profile_views: profileViews, media_count: mediaCount,
-      updated_at: new Date().toISOString(),
-    });
-
-    // recent media (cap 50 to respect rate limits)
-    const medRes = await fetch(`${GRAPH}/${igId}/media?fields=caption,media_type,permalink,thumbnail_url,media_url,timestamp,like_count,comments_count&limit=50&access_token=${encodeURIComponent(token)}`);
-    const medBody = await medRes.json();
-    let mediaSynced = 0;
-    if (medRes.ok) {
-      const items: Media[] = medBody.data ?? [];
-      const syncedAt = new Date().toISOString();
-      for (const m of items) {
-        let mReach = 0, saved = 0, engagement = 0;
-        const mi = await fetch(`${GRAPH}/${m.id}/insights?metric=reach,saved,total_interactions&access_token=${encodeURIComponent(token)}`);
-        if (mi.ok) {
-          const mb = await mi.json();
-          for (const row of mb.data ?? []) {
-            const v = row.values?.[0]?.value ?? 0;
-            if (row.name === "reach") mReach = v;
-            if (row.name === "saved") saved = v;
-            if (row.name === "total_interactions") engagement = v;
-          }
-        } else if (mi.status === 429) { break; } // rate limited — stop paging insights
-        await admin.from("instagram_media").upsert({
-          media_id: m.id, caption: (m.caption ?? "").slice(0, 500), media_type: m.media_type ?? null,
-          permalink: m.permalink ?? null, thumbnail_url: m.thumbnail_url ?? m.media_url ?? null,
-          posted_at: m.timestamp ?? null, like_count: m.like_count ?? 0, comments_count: m.comments_count ?? 0,
-          reach: mReach, saved, engagement: engagement || ((m.like_count ?? 0) + (m.comments_count ?? 0) + saved),
-          synced_at: syncedAt,
+    for (const acc of accounts) {
+      const one: Record<string, unknown> = { username: acc.username };
+      // Yesterday, on yesterday's row, beside the follower count the scraper
+      // wrote for that day. Only these columns are written, so the scraper's
+      // own figures are left as they are.
+      try {
+        const body = await graph(`${acc.id}/insights`, token, {
+          metric: "reach,profile_views,accounts_engaged,total_interactions,website_clicks",
+          period: "day", metric_type: "total_value", since: String(since), until: String(until),
         });
-        mediaSynced++;
+        const v: Record<string, number> = {};
+        for (const m of body.data ?? []) v[m.name] = Number(m.total_value?.value ?? m.values?.[0]?.value ?? 0);
+        await admin.from("instagram_daily").upsert({
+          snapshot_date: kuwaitDate(-1), username: acc.username,
+          reach: v.reach ?? null, profile_views: v.profile_views ?? null,
+          accounts_engaged: v.accounts_engaged ?? null, total_interactions: v.total_interactions ?? null,
+          website_clicks: v.website_clicks ?? null, updated_at: new Date().toISOString(),
+        }, { onConflict: "snapshot_date,username" });
+        one.day = v;
+      } catch (e) {
+        one.day_error = e instanceof Error ? e.message : String(e);
       }
+
+      const media = await graph(`${acc.id}/media`, token, {
+        fields: "id,caption,media_type,media_product_type,permalink,thumbnail_url,media_url,timestamp,like_count,comments_count",
+        limit: "50",
+      });
+      let posts = 0, withInsights = 0;
+      for (const m of media.data ?? []) {
+        let ins: Record<string, number> | null = null;
+        try { ins = await postInsights(m.id, token); } catch { break; } // rate limited: keep what we have
+        const { error } = await admin.from("instagram_media").upsert({
+          media_id: m.id, username: acc.username,
+          caption: (m.caption ?? "").slice(0, 500), media_type: m.media_type ?? null,
+          media_product_type: m.media_product_type ?? null,
+          permalink: m.permalink ?? null, thumbnail_url: m.thumbnail_url ?? m.media_url ?? null,
+          posted_at: m.timestamp ?? null,
+          like_count: m.like_count ?? 0, comments_count: m.comments_count ?? 0,
+          reach: ins?.reach ?? null, saved: ins?.saved ?? null, shares: ins?.shares ?? null,
+          views: ins?.views ?? null, total_interactions: ins?.total_interactions ?? null,
+          profile_visits: ins?.profile_visits ?? null, follows: ins?.follows ?? null,
+          engagement: ins?.total_interactions ?? ((m.like_count ?? 0) + (m.comments_count ?? 0)),
+          insights: ins, synced_at: new Date().toISOString(),
+        }, { onConflict: "media_id" });
+        if (error) throw new Error(`instagram_media: ${error.message}`);
+        posts++;
+        if (ins) withInsights++;
+      }
+      one.posts = posts;
+      one.posts_with_insights = withInsights;
+      report.push(one);
     }
 
-    await admin.from("instagram_sync_log").update({ status: "ok", finished_at: new Date().toISOString() }).eq("id", logRow!.id);
-    return json({ ok: true, followers, reach, media_synced: mediaSynced });
+    await finish("ok");
+    return json({ ok: true, accounts: report });
   } catch (e) {
-    return await fail(e instanceof Error ? e.message : String(e));
+    const msg = e instanceof Error ? e.message : String(e);
+    await finish("error", msg);
+    return json({ error: msg }, 500);
   }
 });

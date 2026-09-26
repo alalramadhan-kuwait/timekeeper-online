@@ -1,6 +1,6 @@
 import { Badge } from './ui';
 import {
-  resultFor, whenSynced, inDisplayCurrency, displayCode, money, rateNote,
+  resultFor, purchaseFigures, whenSynced, inDisplayCurrency, displayCode, money, rateNote,
   type MetaFigures, type DisplayRate,
 } from '../lib/metaAds';
 
@@ -18,6 +18,7 @@ const NO_RATE: DisplayRate = { kwdPerUsd: null, updatedAt: null };
 
 export function MetaFigureGrid({ f, rate = NO_RATE }: { f: MetaFigures; rate?: DisplayRate }) {
   const res = resultFor(f);
+  const pf = purchaseFigures(f);
   /* The sheet is the one place that shows Meta's own figures untouched, so the
      spend cell keeps its USD string and the KD sits under it as a second line
      rather than in place of it. This is what somebody checks against Ads
@@ -34,7 +35,15 @@ export function MetaFigureGrid({ f, rate = NO_RATE }: { f: MetaFigures; rate?: D
     { label: 'CTR', value: f.ctr },
     { label: 'CPC', value: f.cpc },
     { label: 'CPM', value: f.cpm },
+    { label: 'Frequency', value: f.frequency ?? null },
     ...(res ? [{ label: res.label, value: res.value }] : []),
+    /* Only when Meta reported a purchase: an empty ROAS cell on a campaign
+       that was never selling reads like a failure it did not have. */
+    ...(pf.purchases ? [
+      { label: `Purchase value (${f.account_currency ?? '—'})`, value: pf.value },
+      { label: 'Return on spend (Meta)', value: pf.roas ? `${pf.roas}×` : null },
+      { label: `Cost per purchase (${f.account_currency ?? '—'})`, value: pf.cpa },
+    ] : []),
   ];
   return (
     <div>

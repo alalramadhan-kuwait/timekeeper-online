@@ -1,5 +1,17 @@
 [
   {
+    "version": "1.1.0",
+    "date": "2026-09-26",
+    "title": "Marketing you can act on",
+    "changes": [
+      "Growth Review: each week's spend, sales, return on spend and cost per purchase, the best product and creative, and a Scale / Hold / Improve / Stop call for every campaign. It also arrives as a notification on Sunday morning.",
+      "Campaign Proposals: propose a campaign with its product, goal, audience, Instagram post, budget, reason and success measure. An owner approves it, it is built on Meta paused, and it spends only when an owner switches it on.",
+      "Meta Campaigns now shows purchase value, return on spend and cost per purchase, a daily check of whether website purchases are reaching Meta, Meta's time zone, and where the KD rate comes from.",
+      "Instagram Performance now shows Instagram's own figures: reach, profile visits, website taps, and each post's reach, saves, shares and views.",
+      "The KD rate for ad spend now updates every morning. An owner can still pin one in Settings."
+    ]
+  },
+  {
     "version": "1.0.2",
     "date": "2026-09-24",
     "title": "Attendance follows the person, not the spelling",

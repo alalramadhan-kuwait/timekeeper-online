@@ -698,10 +698,10 @@ function Geofences({ workStartTime, setWorkStartTime, workEndTime, setWorkEndTim
  * What a dollar of Meta spend is worth in dinars.
  *
  * Meta bills this ad account in USD; every other figure in the business is KD.
- * The rate is typed in rather than fetched because the dinar is pegged and
- * moves by fractions of a per cent in a year — a daily sync would add something
- * that can fail in exchange for noise, and it would still be applying today's
- * rate to spend from 2023.
+ * The Meta sync fetches the day's published rate each morning (26 Sep: the
+ * hand-typed rate had not been touched in ten days and nobody could say where
+ * it came from). An owner can still pin a rate by hand — the sync then leaves
+ * it alone until "Use the daily rate" is pressed.
  *
  * It changes what is DISPLAYED and nothing else: Meta's figures stay in the
  * database exactly as they arrived, and every screen that shows a converted
@@ -709,16 +709,17 @@ function Geofences({ workStartTime, setWorkStartTime, workEndTime, setWorkEndTim
  */
 function AdCurrency() {
   const [rate, setRate] = useState('');
-  const [account, setAccount] = useState<{ currency: string | null; updated: string | null }>({ currency: null, updated: null });
+  const [account, setAccount] = useState<{ currency: string | null; updated: string | null; source: string | null; auto: boolean }>(
+    { currency: null, updated: null, source: null, auto: true });
   const [msg, setMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    supabase.from('meta_ads_config').select('currency, kwd_per_usd, rate_updated_at').eq('id', 1).maybeSingle()
+    supabase.from('meta_ads_config').select('currency, kwd_per_usd, rate_updated_at, rate_source, rate_auto').eq('id', 1).maybeSingle()
       .then(({ data }) => {
         if (!data) return;
         setRate(data.kwd_per_usd != null ? String(data.kwd_per_usd) : '');
-        setAccount({ currency: data.currency, updated: data.rate_updated_at });
+        setAccount({ currency: data.currency, updated: data.rate_updated_at, source: data.rate_source, auto: data.rate_auto !== false });
       });
   }, []);
 
@@ -726,11 +727,20 @@ function AdCurrency() {
     const v = rate.trim() === '' ? null : Number(rate);
     if (v !== null && !(v > 0)) { setMsg('The rate must be a number above zero.'); return; }
     setBusy(true);
+    // A rate typed here is pinned: the morning sync stops replacing it.
     const { error } = await supabase.from('meta_ads_config')
-      .update({ kwd_per_usd: v, rate_updated_at: new Date().toISOString() }).eq('id', 1);
+      .update({ kwd_per_usd: v, rate_updated_at: new Date().toISOString(), rate_auto: false, rate_source: 'set by hand in Settings' }).eq('id', 1);
     setBusy(false);
-    setMsg(error ? `Failed: ${error.message}` : v === null ? `Cleared — spend now shows in ${account.currency ?? 'USD'}` : 'Rate saved');
-    if (!error) setAccount((a) => ({ ...a, updated: new Date().toISOString() }));
+    setMsg(error ? `Failed: ${error.message}` : v === null ? `Cleared — spend now shows in ${account.currency ?? 'USD'}` : 'Rate pinned');
+    if (!error) setAccount((a) => ({ ...a, updated: new Date().toISOString(), source: 'set by hand in Settings', auto: false }));
+  }
+
+  async function useDaily() {
+    setBusy(true);
+    const { error } = await supabase.from('meta_ads_config').update({ rate_auto: true }).eq('id', 1);
+    setBusy(false);
+    setMsg(error ? `Failed: ${error.message}` : 'The next morning sync will fetch the day’s rate');
+    if (!error) setAccount((a) => ({ ...a, auto: true }));
   }
 
   const preview = Number(rate) > 0 ? (1000 * Number(rate)) : null;
@@ -740,9 +750,9 @@ function AdCurrency() {
       <h2 className="text-sm font-semibold text-slate-700 mb-1">Ad spend currency</h2>
       <p className="text-xs text-slate-400 mb-3">
         Meta bills the ad account in <span className="font-medium text-slate-500">{account.currency ?? 'USD'}</span>.
-        Set the rate and Meta Campaigns and the Paid Ads Tracker show spend in KD, so it sits
-        beside a KD budget. Meta’s own figures are never changed — each campaign’s sheet still
-        shows them exactly as Meta sent them. Leave blank to show {account.currency ?? 'USD'} everywhere.
+        Meta Campaigns and the Paid Ads Tracker show spend in KD at this rate, so it sits beside a
+        KD budget. The rate is fetched every morning; type one here only to pin it. Meta’s own
+        figures are never changed — each campaign’s sheet still shows them exactly as Meta sent them.
       </p>
       <div className="flex flex-wrap items-end gap-2">
         <label className="text-xs">
@@ -752,8 +762,14 @@ function AdCurrency() {
         </label>
         <button onClick={save} disabled={busy}
           className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-slate-900 text-white text-sm font-medium hover:bg-slate-700 disabled:opacity-50">
-          <Save size={13} /> {busy ? 'Saving…' : 'Save rate'}
+          <Save size={13} /> {busy ? 'Saving…' : 'Pin this rate'}
         </button>
+        {!account.auto && (
+          <button onClick={useDaily} disabled={busy}
+            className="px-4 py-1.5 rounded-lg border border-slate-300 text-slate-700 text-sm font-medium hover:bg-slate-50 disabled:opacity-50">
+            Use the daily rate
+          </button>
+        )}
         {preview !== null && (
           <span className="text-xs text-slate-400">
             1,000 {account.currency ?? 'USD'} of spend reads as {preview.toLocaleString('en-GB', { maximumFractionDigits: 0 })} KD
@@ -763,7 +779,9 @@ function AdCurrency() {
       </div>
       {account.updated && (
         <p className="text-[11px] text-slate-400 mt-2">
-          Last changed {new Date(account.updated).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}.
+          Last changed {new Date(account.updated).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+          {account.source ? ` · ${account.source}` : ''}
+          {account.auto ? ' · refreshed every morning' : ' · pinned, not refreshed'}.
         </p>
       )}
     </div>

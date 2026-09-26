@@ -1,15 +1,18 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Instagram, RefreshCw, Heart, MessageCircle, Users, UserPlus, TrendingUp } from 'lucide-react';
+import { Instagram, RefreshCw, Heart, MessageCircle, Users, UserPlus, TrendingUp, Eye, Bookmark, Send, MousePointerClick } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Spinner } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 
-// Data comes from the Apify scraper (instagram-apify-sync): public followers + per-post
-// engagement, no Instagram login. Reach / impressions / saves are NOT here — those are
-// private Insights only the Meta Graph API exposes for the account owner.
+// Two sources. Instagram itself (instagram-sync, through the business's Meta
+// token): reach, saves, shares and views per post, and each day's reach,
+// profile visits and website taps. The public scraper (instagram-apify-sync):
+// followers over time, and likes and comments for older posts.
 const ACCOUNTS = ['timekeeperkw', 'timegallerykw', 'timekeeperkwshop'];
 
 interface DailyRow { snapshot_date: string; username: string; followers: number | null; follows_count: number | null; media_count: number | null; last_post_date: string | null }
+interface InsightRow { snapshot_date: string; reach: number | null; profile_views: number | null; accounts_engaged: number | null; website_clicks: number | null }
+interface MediaRow { media_id: string; posted_at: string | null; media_type: string | null; media_product_type: string | null; caption: string | null; permalink: string | null; like_count: number | null; comments_count: number | null; reach: number | null; saved: number | null; shares: number | null; views: number | null; total_interactions: number | null; profile_visits: number | null; follows: number | null }
 interface PostRow { shortcode: string; username: string; posted_at: string | null; type: string | null; likes: number | null; comments: number | null; caption: string | null; url: string | null }
 
 const nf = (n: number | null | undefined) => (n == null ? '—' : n.toLocaleString('en-US'));
@@ -25,15 +28,25 @@ export default function InstagramPage() {
   const [syncing, setSyncing] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const [sort, setSort] = useState<'engagement' | 'likes' | 'comments' | 'posted_at'>('engagement');
+  const [media, setMedia] = useState<MediaRow[]>([]);
+  const [insight, setInsight] = useState<InsightRow[]>([]);
+  const [mSort, setMSort] = useState<'reach' | 'saved' | 'shares' | 'posted_at'>('reach');
 
   async function load() {
     setLoading(true);
-    const [d, p] = await Promise.all([
+    const [d, p, m, ins] = await Promise.all([
       supabase.from('instagram_daily').select('snapshot_date, username, followers, follows_count, media_count, last_post_date')
         .eq('username', account).order('snapshot_date').limit(365),
       supabase.from('instagram_posts').select('shortcode, username, posted_at, type, likes, comments, caption, url')
         .eq('username', account).order('posted_at', { ascending: false }).limit(60),
+      supabase.from('instagram_media')
+        .select('media_id, posted_at, media_type, media_product_type, caption, permalink, like_count, comments_count, reach, saved, shares, views, total_interactions, profile_visits, follows')
+        .eq('username', account).order('posted_at', { ascending: false }).limit(50),
+      supabase.from('instagram_daily').select('snapshot_date, reach, profile_views, accounts_engaged, website_clicks')
+        .eq('username', account).not('reach', 'is', null).order('snapshot_date', { ascending: false }).limit(30),
     ]);
+    setMedia((m.data as MediaRow[]) ?? []);
+    setInsight((ins.data as InsightRow[]) ?? []);
     setDaily((d.data as DailyRow[]) ?? []);
     setPosts((p.data as PostRow[]) ?? []);
     setLoading(false);
@@ -42,6 +55,8 @@ export default function InstagramPage() {
 
   async function syncNow() {
     setSyncing(true); setMsg(null);
+    // Instagram's own figures first; the scraper's followers after.
+    await supabase.functions.invoke('instagram-sync', { body: {} });
     const { data, error } = await supabase.functions.invoke('instagram-apify-sync', { body: {} });
     if (error || (data as any)?.error) {
       // invoke() masks the real reason — dig it out of the response body
@@ -106,8 +121,17 @@ export default function InstagramPage() {
         <div className={`mb-3 px-4 py-2 rounded-lg text-sm border ${msg.includes('✓') ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-red-50 border-red-200 text-red-700'}`}>{msg}</div>
       )}
 
+      {insight[0] && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+          <Kpi icon={<Eye size={13} />} label="Reach" value={nf(insight[0].reach)} sub={`accounts reached · ${insight[0].snapshot_date}`} />
+          <Kpi icon={<Users size={13} />} label="Profile visits" value={nf(insight[0].profile_views)} sub={insight[0].snapshot_date} />
+          <Kpi icon={<Heart size={13} />} label="Accounts engaged" value={nf(insight[0].accounts_engaged)} sub={insight[0].snapshot_date} />
+          <Kpi icon={<MousePointerClick size={13} />} label="Website taps" value={nf(insight[0].website_clicks)} sub={insight[0].snapshot_date} />
+        </div>
+      )}
       <p className="text-xs text-slate-400 mb-4">
-        Reach, impressions & saves aren’t shown — those are private Insights only the Meta API exposes. This page tracks public followers and post engagement.
+        Reach, visits, saves, shares and views are Instagram’s own figures. Followers and older
+        likes come from the public scraper. Instagram counts its day in Pacific time.
       </p>
 
       {/* KPI cards */}
@@ -164,9 +188,62 @@ export default function InstagramPage() {
         );
       })()}
 
+      {/* What each post did, by Instagram's own count */}
+      {media.length > 0 && (
+        <>
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-sm font-semibold text-slate-700">Post performance</h3>
+            <div className="flex rounded-lg border border-slate-300 overflow-hidden text-xs">
+              {([['reach', 'Reach'], ['saved', 'Saves'], ['shares', 'Shares'], ['posted_at', 'Newest']] as const).map(([k, l]) => (
+                <button key={k} onClick={() => setMSort(k)}
+                  className={`px-2.5 py-1 ${mSort === k ? 'bg-slate-900 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}>{l}</button>
+              ))}
+            </div>
+          </div>
+          <div className="mb-6 bg-white rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-slate-50 text-slate-500 text-[11px] uppercase tracking-wider">
+                <tr>
+                  <th className="text-left px-3 py-2 font-semibold">Post</th>
+                  <th className="text-right px-3 py-2 font-semibold">Reach</th>
+                  <th className="text-right px-3 py-2 font-semibold">Views</th>
+                  <th className="text-right px-3 py-2 font-semibold">Saves</th>
+                  <th className="text-right px-3 py-2 font-semibold">Shares</th>
+                  <th className="text-right px-3 py-2 font-semibold">Likes</th>
+                  <th className="text-right px-3 py-2 font-semibold">Profile visits</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {[...media].sort((a, b) => mSort === 'posted_at'
+                  ? (b.posted_at ?? '').localeCompare(a.posted_at ?? '')
+                  : Number(b[mSort] ?? -1) - Number(a[mSort] ?? -1)).slice(0, 20).map((m) => (
+                  <tr key={m.media_id} className="hover:bg-slate-50">
+                    <td className="px-3 py-2 max-w-[340px]">
+                      <a href={m.permalink ?? '#'} target="_blank" rel="noopener noreferrer" className="block">
+                        <span className="text-[10px] uppercase tracking-wide text-slate-400">
+                          {m.media_product_type === 'REELS' ? 'Reel' : m.media_type === 'CAROUSEL_ALBUM' ? 'Carousel' : 'Post'}
+                          {m.posted_at && <> · {m.posted_at.slice(0, 10)}</>}
+                        </span>
+                        <span className="block text-xs text-slate-600 truncate">{m.caption?.replace(/\s+/g, ' ').trim() || '(no caption)'}</span>
+                      </a>
+                    </td>
+                    <td className="px-3 py-2 text-right tabular-nums font-semibold text-slate-800">{nf(m.reach)}</td>
+                    <td className="px-3 py-2 text-right tabular-nums text-slate-600">{nf(m.views)}</td>
+                    <td className="px-3 py-2 text-right tabular-nums text-slate-600"><span className="inline-flex items-center gap-1"><Bookmark size={11} />{nf(m.saved)}</span></td>
+                    <td className="px-3 py-2 text-right tabular-nums text-slate-600"><span className="inline-flex items-center gap-1"><Send size={11} />{nf(m.shares)}</span></td>
+                    <td className="px-3 py-2 text-right tabular-nums text-slate-600">{nf(m.like_count)}</td>
+                    <td className="px-3 py-2 text-right tabular-nums text-slate-600">{nf(m.profile_visits)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
+
       {/* Top posts */}
       <div className="flex items-center justify-between mb-2">
-        <h3 className="text-sm font-semibold text-slate-700">Top posts</h3>
+        <h3 className="text-sm font-semibold text-slate-700">Likes and comments (public count)</h3>
         <div className="flex rounded-lg border border-slate-300 overflow-hidden text-xs">
           {([['engagement', 'Engagement'], ['likes', 'Likes'], ['comments', 'Comments'], ['posted_at', 'Newest']] as const).map(([k, l]) => (
             <button key={k} onClick={() => setSort(k)}
@@ -195,6 +272,16 @@ export default function InstagramPage() {
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+function Kpi({ icon, label, value, sub }: { icon: React.ReactNode; label: string; value: string; sub?: string }) {
+  return (
+    <div className="bg-white rounded-xl border border-slate-200 shadow-sm px-4 py-3">
+      <div className="flex items-center gap-1.5 text-xs text-slate-500 mb-0.5">{icon} {label}</div>
+      <p className="text-xl font-bold text-slate-800 tabular-nums">{value}</p>
+      {sub && <p className="text-xs text-slate-400">{sub}</p>}
     </div>
   );
 }

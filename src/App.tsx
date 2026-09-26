@@ -26,6 +26,8 @@ import {
   VipCustomersPage, EmployeesPage, CompanyDocsPage, LimitedProjectsPage, RepairWatchesPage, ContentPlannerPage, PaidAdsPage, InfluencersPage,
 } from './pages/modules';
 import { MetaCampaignsPage } from './pages/MetaCampaigns';
+import { CampaignProposalsPage } from './pages/CampaignProposals';
+import { GrowthReviewPage } from './pages/GrowthReview';
 import { Spinner } from './components/ui';
 
 function Shell() {
@@ -63,6 +65,8 @@ function Shell() {
         <Route path="/content" element={g('/content', <ContentPlannerPage />)} />
         <Route path="/paid-ads" element={g('/paid-ads', <PaidAdsPage />)} />
         <Route path="/meta-campaigns" element={g('/meta-campaigns', <MetaCampaignsPage />)} />
+        <Route path="/campaign-proposals" element={g('/campaign-proposals', <CampaignProposalsPage />)} />
+        <Route path="/growth-review" element={g('/growth-review', <GrowthReviewPage />)} />
         <Route path="/influencers" element={g('/influencers', <InfluencersPage />)} />
         <Route path="/influencers/:id" element={g('/influencers', <InfluencerProfilePage />)} />
         <Route path="/activity" element={g('/activity', <UserActivityPage />)} />

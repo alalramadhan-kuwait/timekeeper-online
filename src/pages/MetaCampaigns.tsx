@@ -6,6 +6,7 @@ import { Modal } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { MetaLinkChip, MetaFigureGrid } from '../components/MetaFigures';
 import { MetaSummary } from '../components/MetaSummary';
+import { MetaHealth } from '../components/MetaHealth';
 import { CampaignBrandPicker } from '../components/CampaignBrandPicker';
 import { loadBrands, attribute, type Brand, type StoredTag } from '../lib/metaBrands';
 import {
@@ -129,7 +130,9 @@ export function MetaCampaignsPage() {
         </span>.
       </p>
 
-      <div className="flex flex-wrap items-center gap-3 mt-4 mb-3">
+      <div className="mt-4"><MetaHealth sync={sync} /></div>
+
+      <div className="flex flex-wrap items-center gap-3 mb-3">
         <div className="relative flex-1 min-w-[220px] max-w-sm">
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input

@@ -71,6 +71,8 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/instagram', label: 'Instagram Performance', icon: Instagram, roles: ['admin', 'manager', 'marketing', 'sales'] },
       { to: '/content', label: 'Content Planner', icon: Clapperboard, roles: ['admin', 'manager', 'marketing', 'sales'] },
       { to: '/paid-ads', label: 'Paid Ads Tracker', icon: Megaphone, roles: ['admin', 'manager', 'marketing', 'sales'] },
+      { to: '/growth-review', label: 'Growth Review', icon: TrendingUp, roles: ['admin', 'manager', 'marketing'] },
+      { to: '/campaign-proposals', label: 'Campaign Proposals', icon: ClipboardList, roles: ['admin', 'manager', 'marketing'] },
       { to: '/meta-campaigns', label: 'Meta Campaigns', icon: Target, roles: ['admin', 'manager', 'marketing'] },
       { to: '/influencers', label: 'Influencer Tracker', icon: Sparkles, roles: ['admin', 'manager', 'marketing', 'sales'] },
     ],

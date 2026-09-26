@@ -27,12 +27,16 @@ export function MetaSummary({ rows, rate }: {
 
   return (
     <div className="space-y-3 mb-6">
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 lg:grid-cols-6 gap-3">
         <Card label="Total spend" value={money(s.spend, s.currency)} unit={s.currency} note={span(s)} dark />
-        <Card label="Impressions" value={count(s.impressions)} />
+        <Card label="Purchase value" value={money(s.purchaseValue, s.currency)} unit={s.currency} note="as Meta attributes it" />
+        {/* Ours: total value over total spend. Meta's own ROAS is per
+            campaign and is on each campaign's sheet. */}
+        <Card label="Return on spend" value={s.spend > 0 && s.purchaseValue > 0 ? `${(s.purchaseValue / s.spend).toFixed(2)}×` : '—'} note="value ÷ spend" />
+        <Card label="Purchases" value={count(s.purchases)}
+          note={s.purchases > 0 ? `${money(s.spend / s.purchases, s.currency)} ${s.currency} each` : undefined} />
         <Card label="Clicks" value={count(s.clicks)} />
-        <Card label="Purchases" value={count(s.purchases)} />
-        <Card label="Spending campaigns" value={count(s.campaigns)} wide />
+        <Card label="Spending campaigns" value={count(s.campaigns)} />
       </div>
 
       <Brands s={s} onInfo={() => setInfo(true)} />
