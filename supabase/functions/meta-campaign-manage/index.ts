@@ -164,10 +164,10 @@ async function context(admin: SupabaseClient, token: string, p: Proposal): Promi
            igUserId: page.instagram_business_account.id, inbox: "WHATSAPP" };
 }
 
-/** The Facebook page post carrying the same picture as the Instagram post.
- *  Every post on these accounts is published to both. While the Meta app is
- *  in development mode Meta refuses an ad made from the Instagram post but
- *  accepts one made from the page post (tested 26 Sep). */
+/** The Facebook page post carrying the same picture as the Instagram post,
+ *  when there is one — the pages carry only some of the Instagram posts.
+ *  While the Meta app is in development mode Meta refuses an ad made from
+ *  the Instagram post but accepts one made from the page post (tested 26 Sep). */
 async function pagePostFor(admin: SupabaseClient, token: string, p: Proposal, ctx: Context): Promise<string | null> {
   const { data: m } = await admin.from("instagram_media").select("caption, posted_at")
     .eq("media_id", p.instagram_media_id).maybeSingle();
@@ -179,8 +179,9 @@ async function pagePostFor(admin: SupabaseClient, token: string, p: Proposal, ct
   const time = (x: any) => Date.parse(String(x.created_time).replace(/\+0000$/, "Z")) / 1000;
   // The page's posts, newest first, back to a day before the Instagram post.
   const posts: any[] = [];
-  let params: Record<string, string> = { fields: "id,message,created_time", limit: "100" };
-  for (let page = 0; page < 10; page++) {
+  // Pages of 25: Meta refuses larger ones on these pages ("reduce the data").
+  let params: Record<string, string> = { fields: "id,message,created_time", limit: "25" };
+  for (let page = 0; page < 40; page++) {
     const r = await graphGet(`${ctx.pageId}/published_posts`, pageToken, params);
     posts.push(...(r.data ?? []));
     const last = (r.data ?? []).at(-1);

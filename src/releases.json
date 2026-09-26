@@ -1,5 +1,14 @@
 [
   {
+    "version": "1.1.2",
+    "date": "2026-09-26",
+    "title": "Campaign checks that tell you what to do",
+    "changes": [
+      "“Ask Meta to check” now tries the whole campaign on Meta and removes it again, so it catches problems the old check missed. Nothing is left behind and nothing spends.",
+      "When Meta can’t build a campaign yet, the proposal says what to do instead, such as boosting the post from the Instagram app."
+    ]
+  },
+  {
     "version": "1.1.1",
     "date": "2026-09-26",
     "title": "Clearer when Meta says no",

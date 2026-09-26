@@ -213,7 +213,8 @@ function ProposalCard({ p, owner, mine, rate, media, events, focused, busy, msg,
       {p.meta_error && <MetaRefusal text={p.meta_error} />}
       {p.decision_note && <p className="mt-2 text-xs text-slate-500">Owner’s note: {p.decision_note}</p>}
       {p.meta_campaign_id && <p className="mt-2 text-[11px] text-slate-400">Meta campaign {p.meta_campaign_id}</p>}
-      {msg && !(msg.bad && msg.text === p.meta_error) && <p className={`mt-3 text-xs rounded-lg px-3 py-2 border ${msg.bad ? 'border-rose-200 bg-rose-50 text-rose-800' : 'border-emerald-200 bg-emerald-50 text-emerald-800'}`}>{msg.text}</p>}
+      {msg && !msg.bad && <p className="mt-3 text-xs rounded-lg px-3 py-2 border border-emerald-200 bg-emerald-50 text-emerald-800">{msg.text}</p>}
+      {msg?.bad && msg.text !== p.meta_error && <MetaRefusal text={msg.text} />}
 
       <div className="flex flex-wrap items-center gap-2 mt-4">
         {['proposed', 'failed'].includes(p.status) && (
@@ -279,7 +280,11 @@ function ProposalCard({ p, owner, mine, rate, media, events, focused, busy, msg,
 
 /** Meta's refusals that need an owner, not a retry, said in plain words. */
 const FIXES: [RegExp, string][] = [
-  [/development mode/i, 'The Meta app that builds the ads is still in test mode. An owner switches it to Live in Meta for Developers (the app → App Mode → Live), then approves again.'],
+  // Test mode lets this app advertise only a post that is already on the
+  // Facebook page, and only to promote the post itself: Meta refuses the
+  // website or message button a sales or WhatsApp ad needs (tested 26 Sep).
+  [/development mode|external website URL|incompatible with the objective|not on the Facebook page/i,
+    'The Meta app that builds the ads is still in test mode, so this page cannot build sales or message ads yet. To run this campaign now, boost the post from the Instagram app (the post → Boost post) with this proposal’s audience, budget and days. Once an owner switches the app to Live (Meta for Developers → the app → App Mode → Live), Approve builds it here.'],
   [/not linked to a WhatsApp/i, 'This Facebook page has no WhatsApp Business number linked. Link one in the page’s settings (Linked accounts → WhatsApp), then approve again.'],
 ];
 
