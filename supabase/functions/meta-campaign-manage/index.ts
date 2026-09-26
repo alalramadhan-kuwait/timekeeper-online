@@ -127,7 +127,7 @@ function creativeParams(p: Proposal, ctx: Context) {
   const cta =
     p.objective === "OUTCOME_SALES" ? { type: "SHOP_NOW", value: { link } }
     : p.objective === "OUTCOME_TRAFFIC" ? { type: "LEARN_MORE", value: { link } }
-    : p.objective === "MESSAGES" ? { type: "WHATSAPP_MESSAGE", value: { app_destination: "WHATSAPP" } }
+    : p.objective === "MESSAGES" ? { type: "WHATSAPP_MESSAGE", value: { app_destination: "WHATSAPP", link: "https://api.whatsapp.com/send" } }
     : undefined;
   // The existing Instagram post, run as the ad — how this account has always
   // advertised, so likes and comments stay on the one post.
