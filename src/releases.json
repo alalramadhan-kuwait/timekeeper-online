@@ -1,5 +1,13 @@
 [
   {
+    "version": "1.1.1",
+    "date": "2026-09-26",
+    "title": "Clearer when Meta says no",
+    "changes": [
+      "When Meta refuses a campaign, the proposal now says in plain words what an owner needs to do, and shows the refusal once instead of twice."
+    ]
+  },
+  {
     "version": "1.1.0",
     "date": "2026-09-26",
     "title": "Marketing you can act on",

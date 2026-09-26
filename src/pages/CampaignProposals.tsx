@@ -209,10 +209,10 @@ function ProposalCard({ p, owner, mine, rate, media, events, focused, busy, msg,
         <div className="sm:col-span-2"><Field label="Why">{p.reason}</Field></div>
       </dl>
 
-      {p.meta_error && <p className="mt-3 text-xs rounded-lg border border-rose-200 bg-rose-50 text-rose-800 px-3 py-2">Meta said: {p.meta_error}</p>}
+      {p.meta_error && <MetaRefusal text={p.meta_error} />}
       {p.decision_note && <p className="mt-2 text-xs text-slate-500">Owner’s note: {p.decision_note}</p>}
       {p.meta_campaign_id && <p className="mt-2 text-[11px] text-slate-400">Meta campaign {p.meta_campaign_id}</p>}
-      {msg && <p className={`mt-3 text-xs rounded-lg px-3 py-2 border ${msg.bad ? 'border-rose-200 bg-rose-50 text-rose-800' : 'border-emerald-200 bg-emerald-50 text-emerald-800'}`}>{msg.text}</p>}
+      {msg && !(msg.bad && msg.text === p.meta_error) && <p className={`mt-3 text-xs rounded-lg px-3 py-2 border ${msg.bad ? 'border-rose-200 bg-rose-50 text-rose-800' : 'border-emerald-200 bg-emerald-50 text-emerald-800'}`}>{msg.text}</p>}
 
       <div className="flex flex-wrap items-center gap-2 mt-4">
         {['proposed', 'failed'].includes(p.status) && (
@@ -273,6 +273,22 @@ function ProposalCard({ p, owner, mine, rate, media, events, focused, busy, msg,
         </ol>
       )}
     </article>
+  );
+}
+
+/** Meta's refusals that need an owner, not a retry, said in plain words. */
+const FIXES: [RegExp, string][] = [
+  [/development mode/i, 'The Meta app that builds the ads is still in test mode. An owner switches it to Live in Meta for Developers (the app → App Mode → Live), then approves again.'],
+  [/not linked to a WhatsApp/i, 'This Facebook page has no WhatsApp Business number linked. Link one in the page’s settings (Linked accounts → WhatsApp), then approve again.'],
+];
+
+function MetaRefusal({ text }: { text: string }) {
+  const fixes = FIXES.filter(([re]) => re.test(text)).map(([, fix]) => fix);
+  return (
+    <div className="mt-3 text-xs rounded-lg border border-rose-200 bg-rose-50 text-rose-800 px-3 py-2 space-y-1">
+      {fixes.map((f) => <p key={f} className="font-semibold">{f}</p>)}
+      <p className={fixes.length ? 'opacity-70' : ''}>Meta said: {text}</p>
+    </div>
   );
 }
 

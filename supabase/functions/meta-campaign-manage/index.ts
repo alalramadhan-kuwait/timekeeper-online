@@ -55,7 +55,10 @@ async function graphPost(path: string, token: string, params: Record<string, unk
   const body = await res.json().catch(() => ({}));
   if (!res.ok) {
     const e = body?.error ?? {};
-    throw new MetaError(`${e.error_user_title ? e.error_user_title + ": " : ""}${e.error_user_msg ?? e.message ?? `Meta ${res.status}`}`);
+    const msg: string = e.error_user_msg ?? e.message ?? `Meta ${res.status}`;
+    // Meta often repeats its title as the first words of the message.
+    const title: string = e.error_user_title && !msg.startsWith(e.error_user_title) ? `${e.error_user_title}: ` : "";
+    throw new MetaError(title + msg);
   }
   return body;
 }
@@ -263,7 +266,10 @@ Deno.serve(async (req: Request) => {
         } catch (e) {
           // Nothing half-built is left behind: a campaign Meta accepted
           // before a later step failed is deleted again.
-          if (made.campaign) await graphPost(made.campaign, token, { status: "DELETED" }).catch(() => {});
+          if (made.campaign) {
+            const gone = await graphPost(made.campaign, token, { status: "DELETED" }).then(() => true, () => false);
+            await log(gone ? "half_built_removed" : "half_built_left", made);
+          }
           throw e;
         }
         await update({ status: "created", meta_campaign_id: made.campaign, meta_adset_id: made.adset, meta_ad_id: made.ad });
