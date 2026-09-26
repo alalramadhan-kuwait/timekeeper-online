@@ -12,8 +12,9 @@
 //   - Every step is written to ad_proposal_events, with who did it.
 //
 // Actions (POST body `action`, with `id` = the proposal):
-//   check    — Meta checks the campaign, ad set and creative without
-//              creating anything (validate_only). Anyone who may propose.
+//   check    — a rehearsal: campaign and ad set are built paused, the ad is
+//              checked without being made, and the campaign is deleted
+//              again. Nothing can spend. Anyone who may propose.
 //   approve  — owner: build it on Meta, paused.
 //   reject   — owner: no, with a note.
 //   activate — owner: switch campaign, ad set and ad on; the run's end date
@@ -89,6 +90,9 @@ interface Context {
   pixelId: string | null;
   pageId: string;
   igUserId: string;
+  /** Where a message ad sends people: WhatsApp, or Instagram Direct when
+   *  the page has no WhatsApp number linked. */
+  inbox: "WHATSAPP" | "INSTAGRAM_DIRECT";
 }
 
 function adSetParams(p: Proposal, ctx: Context, campaignId: string) {
@@ -118,7 +122,7 @@ function adSetParams(p: Proposal, ctx: Context, campaignId: string) {
     case "OUTCOME_AWARENESS":
       return { ...base, optimization_goal: "REACH" };
     case "MESSAGES":
-      return { ...base, optimization_goal: "CONVERSATIONS", destination_type: "WHATSAPP",
+      return { ...base, optimization_goal: "CONVERSATIONS", destination_type: ctx.inbox,
                promoted_object: { page_id: ctx.pageId } };
   }
   throw new MetaError(`Unknown objective ${p.objective}`);
@@ -130,7 +134,8 @@ function creativeParams(p: Proposal, ctx: Context) {
   const cta =
     p.objective === "OUTCOME_SALES" ? { type: "SHOP_NOW", value: { link } }
     : p.objective === "OUTCOME_TRAFFIC" ? { type: "LEARN_MORE", value: { link } }
-    : p.objective === "MESSAGES" ? { type: "WHATSAPP_MESSAGE", value: { app_destination: "WHATSAPP", link: "https://api.whatsapp.com/send" } }
+    : p.objective === "MESSAGES" && ctx.inbox === "WHATSAPP" ? { type: "WHATSAPP_MESSAGE", value: { app_destination: "WHATSAPP", link: "https://api.whatsapp.com/send" } }
+    : p.objective === "MESSAGES" ? { type: "INSTAGRAM_MESSAGE", value: { app_destination: "INSTAGRAM_DIRECT", link: "https://www.instagram.com/" } }
     : undefined;
   // The existing Instagram post, run as the ad — how this account has always
   // advertised, so likes and comments stay on the one post.
@@ -155,7 +160,105 @@ async function context(admin: SupabaseClient, token: string, p: Proposal): Promi
   const want = (p.instagram_account ?? "timekeeperkw").toLowerCase();
   const page = (pages.data ?? []).find((x: any) => x.instagram_business_account?.username?.toLowerCase() === want);
   if (!page) throw new MetaError(`No Facebook page is linked to @${want}.`);
-  return { rate, pixelId: pixel?.events_7d?.Purchase ? pixel.id : null, pageId: page.id, igUserId: page.instagram_business_account.id };
+  return { rate, pixelId: pixel?.events_7d?.Purchase ? pixel.id : null, pageId: page.id,
+           igUserId: page.instagram_business_account.id, inbox: "WHATSAPP" };
+}
+
+/** The Facebook page post carrying the same picture as the Instagram post.
+ *  Every post on these accounts is published to both. While the Meta app is
+ *  in development mode Meta refuses an ad made from the Instagram post but
+ *  accepts one made from the page post (tested 26 Sep). */
+async function pagePostFor(admin: SupabaseClient, token: string, p: Proposal, ctx: Context): Promise<string | null> {
+  const { data: m } = await admin.from("instagram_media").select("caption, posted_at")
+    .eq("media_id", p.instagram_media_id).maybeSingle();
+  if (!m?.posted_at) return null;
+  const pages = await graphGet("me/accounts", token, { fields: "id,access_token", limit: "50" });
+  const pageToken = (pages.data ?? []).find((x: any) => x.id === ctx.pageId)?.access_token ?? token;
+  const at = Math.round(Date.parse(m.posted_at) / 1000);
+  const firstLine = (t: string | null) => (t ?? "").split("\n")[0].trim().toLowerCase();
+  const time = (x: any) => Date.parse(String(x.created_time).replace(/\+0000$/, "Z")) / 1000;
+  // The page's posts, newest first, back to a day before the Instagram post.
+  const posts: any[] = [];
+  let params: Record<string, string> = { fields: "id,message,created_time", limit: "100" };
+  for (let page = 0; page < 10; page++) {
+    const r = await graphGet(`${ctx.pageId}/published_posts`, pageToken, params);
+    posts.push(...(r.data ?? []));
+    const last = (r.data ?? []).at(-1);
+    const after = r.paging?.cursors?.after;
+    if (!last || !after || time(last) < at - 86400) break;
+    params = { ...params, after };
+  }
+  const same = posts.find((x) => firstLine(x.message) && firstLine(x.message) === firstLine(m.caption));
+  if (same) return same.id;
+  // No caption match: the one post published within ten minutes of it.
+  const near = posts.filter((x) => Math.abs(time(x) - at) < 600);
+  return near.length === 1 ? near[0].id : null;
+}
+
+/**
+ * Builds the proposal on Meta, everything paused. With `rehearse` the ad is
+ * only checked, not made, and the campaign is deleted again at the end —
+ * that is the "check". Either way a campaign left behind by a failure is
+ * deleted, so nothing half-built remains.
+ *
+ * Two fallbacks keep a proposal buildable with what the account has today,
+ * and each is reported in `notes`:
+ *  - a message ad goes to Instagram Direct when the page has no WhatsApp;
+ *  - the ad uses the page's copy of the post while the Meta app is in
+ *    development mode.
+ */
+async function build(admin: SupabaseClient, token: string, act: string, p: Proposal, ctx: Context,
+                     rehearse: boolean, log: (a: string, d?: unknown) => unknown) {
+  const made: Record<string, string> = {};
+  const notes: string[] = [];
+  try {
+    const camp = await graphPost(`${act}/campaigns`, token, {
+      name: campaignName(p), objective: metaObjective(p.objective), status: "PAUSED",
+      special_ad_categories: [], buying_type: "AUCTION",
+      // The approved budget stays on the one ad set; Meta may not move it.
+      is_adset_budget_sharing_enabled: false,
+    });
+    made.campaign = camp.id;
+
+    let set;
+    try {
+      set = await graphPost(`${act}/adsets`, token, adSetParams(p, ctx, camp.id));
+    } catch (e) {
+      if (p.objective !== "MESSAGES" || !/whatsapp/i.test(String(e))) throw e;
+      ctx.inbox = "INSTAGRAM_DIRECT";
+      set = await graphPost(`${act}/adsets`, token, adSetParams(p, ctx, camp.id));
+      notes.push("Messages go to Instagram Direct: this Facebook page has no WhatsApp number linked yet.");
+    }
+    made.adset = set.id;
+
+    let spec: Record<string, unknown> = creativeParams(p, ctx);
+    try {
+      await graphPost(`${act}/adcreatives`, token, { ...spec, execution_options: ["validate_only"] });
+    } catch (e) {
+      if (!/development mode/i.test(String(e))) throw e;
+      const post = await pagePostFor(admin, token, p, ctx);
+      if (!post) throw new MetaError("The Meta app is in test mode, so the ad has to use the Facebook page's copy of this post, and this post is not on the Facebook page. Choose a post that was also shared to Facebook.");
+      spec = { name: spec.name, object_story_id: post, instagram_user_id: ctx.igUserId };
+      notes.push("Uses the Facebook page's copy of the post (the Meta app is still in test mode).");
+    }
+    const creative = await graphPost(`${act}/adcreatives`, token, spec);
+    const ad = await graphPost(`${act}/ads`, token, {
+      name: `IG post | ${p.instagram_media_id}`, adset_id: set.id, status: "PAUSED",
+      creative: { creative_id: creative.id }, ...(rehearse ? { execution_options: ["validate_only"] } : {}),
+    });
+    if (!rehearse) made.ad = ad.id;
+  } catch (e) {
+    if (made.campaign) {
+      const gone = await graphPost(made.campaign, token, { status: "DELETED" }).then(() => true, () => false);
+      await log(gone ? "half_built_removed" : "half_built_left", made);
+    }
+    throw e;
+  }
+  if (rehearse) {
+    const gone = await graphPost(made.campaign, token, { status: "DELETED" }).then(() => true, () => false);
+    if (!gone) await log("half_built_left", made);
+  }
+  return { made, notes };
 }
 
 async function account(admin: SupabaseClient) {
@@ -176,9 +279,9 @@ Deno.serve(async (req: Request) => {
   let body: { action?: string; id?: string; note?: string; daily_budget_kd?: number } = {};
   try { body = await req.json(); } catch { return json({ error: "Invalid request." }, 400); }
 
-  /* The scheduler's key may run "check" and nothing else: it asks Meta to
-     validate without creating anything, which is how this was tested and how
-     a nightly check could run. Every other action needs a signed-in person. */
+  /* The scheduler's key may run "check" and nothing else: a rehearsal that
+     leaves nothing on the account and cannot spend, which is how this was
+     tested. Every other action needs a signed-in person. */
   const { data: keyRow } = await admin.from("lightspeed_auth").select("sync_key").eq("id", 1).single();
   const system = body.action === "check" && !!keyRow?.sync_key && req.headers.get("x-sync-key") === keyRow.sync_key;
   let userId: string | null = null, role = "";
@@ -206,37 +309,10 @@ Deno.serve(async (req: Request) => {
 
     switch (body.action) {
       case "check": {
-        // Each part checked on its own so one refusal does not hide the rest.
         const ctx = await context(admin, token, p);
-        const V = { execution_options: ["validate_only"] };
-        const step = async (fn: () => Promise<unknown>) => {
-          try { await fn(); return "ok"; } catch (e) { return e instanceof Error ? e.message : String(e); }
-        };
-        const campaign = await step(() => graphPost(`${act}/campaigns`, token, {
-          name: campaignName(p), objective: metaObjective(p.objective), status: "PAUSED",
-          special_ad_categories: [], buying_type: "AUCTION",
-          // The approved budget stays on the one ad set; Meta may not move it.
-          is_adset_budget_sharing_enabled: false, ...V,
-        }));
-        // An ad set can only be checked against a campaign that exists. A
-        // recent one of the same objective serves — one without a budget of
-        // its own, like the campaign an approval would build — and nothing is
-        // made.
-        const { data: recent } = await admin.from("meta_ad_campaigns").select("id")
-          .eq("objective", metaObjective(p.objective)).order("start_time", { ascending: false }).limit(15);
-        let sibling: string | null = null;
-        for (const c of recent ?? []) {
-          const b = await graphGet(c.id, token, { fields: "daily_budget,lifetime_budget" }).catch(() => null);
-          if (b && !Number(b.daily_budget) && !Number(b.lifetime_budget)) { sibling = c.id; break; }
-        }
-        const adset = sibling
-          ? await step(() => graphPost(`${act}/adsets`, token, { ...adSetParams(p, ctx, sibling!), ...V }))
-          : "not checked: no recent campaign of this objective without its own budget to check it against";
-        const creative = await step(() => graphPost(`${act}/adcreatives`, token, { ...creativeParams(p, ctx), ...V }));
-        const ok = campaign === "ok" && adset === "ok" && creative === "ok";
-        await log(ok ? "checked" : "check_failed", { campaign, adset, creative });
-        return json(ok ? { ok, campaign, adset, creative }
-                       : { error: [campaign, adset, creative].filter((x) => x !== "ok").join(" · "), campaign, adset, creative }, ok ? 200 : 422);
+        const { notes } = await build(admin, token, act, p, ctx, true, log);
+        await log("checked", { notes });
+        return json({ ok: true, notes });
       }
 
       case "approve": {
@@ -246,35 +322,10 @@ Deno.serve(async (req: Request) => {
         await log("approved", { note: body.note ?? null });
 
         const ctx = await context(admin, token, p);
-        const made: Record<string, string> = {};
-        try {
-          const camp = await graphPost(`${act}/campaigns`, token, {
-            name: campaignName(p), objective: metaObjective(p.objective), status: "PAUSED",
-            special_ad_categories: [], buying_type: "AUCTION",
-            // The approved budget stays on the one ad set; Meta may not move it.
-            is_adset_budget_sharing_enabled: false,
-          });
-          made.campaign = camp.id;
-          const set = await graphPost(`${act}/adsets`, token, adSetParams(p, ctx, camp.id));
-          made.adset = set.id;
-          const creative = await graphPost(`${act}/adcreatives`, token, creativeParams(p, ctx));
-          const ad = await graphPost(`${act}/ads`, token, {
-            name: `IG post | ${p.instagram_media_id}`, adset_id: set.id, status: "PAUSED",
-            creative: { creative_id: creative.id },
-          });
-          made.ad = ad.id;
-        } catch (e) {
-          // Nothing half-built is left behind: a campaign Meta accepted
-          // before a later step failed is deleted again.
-          if (made.campaign) {
-            const gone = await graphPost(made.campaign, token, { status: "DELETED" }).then(() => true, () => false);
-            await log(gone ? "half_built_removed" : "half_built_left", made);
-          }
-          throw e;
-        }
+        const { made, notes } = await build(admin, token, act, p, ctx, false, log);
         await update({ status: "created", meta_campaign_id: made.campaign, meta_adset_id: made.adset, meta_ad_id: made.ad });
-        await log("created_paused", made);
-        return json({ ok: true, ...made });
+        await log("created_paused", { ...made, notes });
+        return json({ ok: true, ...made, notes });
       }
 
       case "reject": {
@@ -326,7 +377,7 @@ Deno.serve(async (req: Request) => {
       await update({ status: "failed", meta_error: msg });
       await log("meta_refused", { error: msg });
     } else {
-      await log(`${body.action}_failed`, { error: msg });
+      await log(body.action === "check" ? "check_failed" : `${body.action}_failed`, { error: msg });
     }
     return json({ error: msg }, e instanceof MetaError ? 422 : 500);
   }

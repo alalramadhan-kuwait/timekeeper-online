@@ -103,7 +103,8 @@ export function CampaignProposalsPage() {
     setBusy(`${p.id}:${action}`); setMsg(null);
     const r = await manage({ action, id: p.id, ...extra });
     setBusy(null);
-    setMsg({ id: p.id, text: r.error ?? DONE[action] ?? 'Done', bad: !!r.error });
+    const notes = Array.isArray(r.notes) ? (r.notes as string[]) : [];
+    setMsg({ id: p.id, text: r.error ?? [DONE[action] ?? 'Done', ...notes].join(' '), bad: !!r.error });
     void load();
   }
 
@@ -163,7 +164,7 @@ export function CampaignProposalsPage() {
 }
 
 const DONE: Record<string, string> = {
-  check: 'Meta checked it — it would be accepted as it stands.',
+  check: 'Meta checked it: it would be accepted as it stands. Nothing was left on the ad account.',
   approve: 'Approved and built on Meta, paused. Nothing is spending.',
   reject: 'Rejected.', activate: 'Switched on — it is spending now.', pause: 'Paused.', budget: 'Budget changed on Meta.',
 };
