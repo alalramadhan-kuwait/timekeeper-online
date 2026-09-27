@@ -367,7 +367,7 @@ export function PaidAdsPage() {
                 : staleHours(sync.last_synced_at) > 36 ? 'bg-amber-100 text-amber-800 border-amber-200'
                 : 'bg-emerald-100 text-emerald-700 border-emerald-200'}`}>
               <span className="w-1.5 h-1.5 rounded-full bg-current" />
-              Last successful sync: {whenSynced(sync?.last_synced_at)}
+              Synced {whenSynced(sync?.last_synced_at)}
             </span>
             <span className="text-xs text-slate-400">
               Meta figures in {sync?.currency ?? 'USD'} · budgets in KD

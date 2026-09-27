@@ -191,68 +191,13 @@ function Methodology({ s, rate, onClose }: {
 }) {
   return (
     <Modal title="How these figures are worked out" onClose={onClose}>
-      <div className="space-y-3 text-sm text-slate-600 leading-relaxed">
-        <p>
-          Every per-campaign figure is the string Meta sent — not rounded, not recalculated. The
-          five totals above are sums of those figures for the campaigns listed below, so they
-          always match what is on screen, search included.
-        </p>
-        <Section title="Currency">
-          <p>
-            Meta bills and reports this ad account in <b>USD</b>. The shop's budgets, targets and
-            till are in KD, so spend is <b>shown</b> in KD
-            {rate.kwdPerUsd ? <> at <b>{rate.kwdPerUsd} KD per USD</b></> : null} — a rate an owner
-            sets in Settings, not a live one, because the dinar is pegged and a rate fetched today
-            would be applied to spend from 2023 either way. Nothing stored is converted: each
-            campaign's own sheet still shows Meta's USD figures exactly as they arrived, which is
-            what to compare against Ads Manager.
-          </p>
-        </Section>
-        <Section title="What is deliberately not shown">
-          <p>
-            <b>Reach</b> counts people, once per campaign. Somebody reached by thirty campaigns
-            would count thirty times in a total, so there is no honest account-wide reach.
-          </p>
-          <p>
-            <b>CTR, CPC and CPM</b> are ratios. Averaging them across campaigns does not give the
-            account's ratio, and re-deriving them from the totals would mean calculating a Meta
-            metric rather than showing Meta's. Each campaign's own values are in the table.
-          </p>
-          <p>
-            <b>A combined "Results"</b> would add purchases to app installs to link clicks to
-            conversations — six objectives run on this account — and mean nothing. Purchases is
-            shown alone because it is one thing throughout.
-          </p>
-        </Section>
-        <Section title="Purchases">
-          <p>
-            Meta's Purchases, web and app counted once. {count(s.purchasingCampaigns)} of the{' '}
-            {count(s.campaigns)} campaigns listed reported one. A customer shown two campaigns
-            before buying can be credited to both, so a cross-campaign total can run slightly ahead
-            of orders.
-          </p>
-        </Section>
-        <Section title="Brands">
-          <p>
-            A brand set on a campaign always wins. Where nobody has set one, the brand is read from
-            the campaign name, which works for a minority of the spend: most campaigns here are
-            boosted Instagram posts, and Meta names those after the post's own caption, truncated
-            mid-word and usually before the brand appears.
-          </p>
-          <p>
-            <b>Whole shop</b> is campaigns that were never for one brand — retargeting, the
-            catalogue, the app, straps, seasonal sales. <b>Unknown</b> is a campaign nobody can
-            place. Neither is guessed at. <b>Several brands</b> is a campaign that really did cover
-            more than one: Meta reports a single figure for it, so it is counted once under its own
-            row rather than split between brands or added to each.
-          </p>
-          <p>
-            Grouping by brand, and cost per purchase, are ours — Meta has no per-brand figure to
-            report. {s.storedShare.toFixed(0)}% of the spend shown has a brand set by hand; the
-            rest is read from names. Set brands on the <b>Needs a brand</b> tab.
-          </p>
-        </Section>
-      </div>
+      <ul className="space-y-2 text-sm text-slate-600 leading-relaxed list-disc pl-4">
+        <li>Figures are Meta’s, unchanged. Totals add up the campaigns listed.</li>
+        <li>Spend is shown in KD{rate.kwdPerUsd ? <> at <b>{rate.kwdPerUsd}</b> per USD</> : null}; each campaign’s sheet keeps Meta’s USD.</li>
+        <li>No total reach, CTR or CPC: they can’t be added across campaigns.</li>
+        <li>Purchases: {count(s.purchasingCampaigns)} of {count(s.campaigns)} campaigns reported one. A sale can be credited to two campaigns.</li>
+        <li>Brands: set by hand ({s.storedShare.toFixed(0)}% of spend) or read from the campaign name. Set missing ones on <b>Needs a brand</b>.</li>
+      </ul>
     </Modal>
   );
 }

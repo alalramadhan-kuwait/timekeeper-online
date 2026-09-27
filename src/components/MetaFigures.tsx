@@ -80,20 +80,16 @@ export function MetaFigureGrid({ f, rate = NO_RATE }: { f: MetaFigures; rate?: D
       </div>
       {f.link_state === 'missing' && (
         <p className="text-xs text-rose-700 bg-rose-50 border border-rose-200 rounded-lg px-3 py-2 mt-2">
-          Meta did not return this campaign on the last successful sync. It has most likely been
-          deleted. The figures above are the last ones Meta sent; pick another campaign to start
-          reporting again.
+          Not found on Meta any more (probably deleted). These are its last figures.
         </p>
       )}
       {f.link_state === 'stopped' && (
         <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mt-2">
-          This campaign is {f.status_label.toLowerCase()} on Meta, so the figures stop moving until
-          it runs again.
+          {f.status_label} on Meta — figures won’t change until it runs again.
         </p>
       )}
       <p className="text-[11px] text-slate-400 mt-2">
-        Figures are Meta’s and are shown unchanged — not recalculated, not converted.
-        {asKd && ` The KD line under spend is ours, ${rateNote(rate)}; the ${f.account_currency} figure is Meta’s.`}
+        Meta’s figures{asKd && `; KD ${rateNote(rate)}`}.
       </p>
     </div>
   );

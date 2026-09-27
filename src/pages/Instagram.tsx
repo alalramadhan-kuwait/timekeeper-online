@@ -130,8 +130,7 @@ export default function InstagramPage() {
         </div>
       )}
       <p className="text-xs text-slate-400 mb-4">
-        Reach, visits, saves, shares and views are Instagram’s own figures. Followers and older
-        likes come from the public scraper. Instagram counts its day in Pacific time.
+        Instagram’s own figures (Pacific-time days).
       </p>
 
       {/* KPI cards */}
@@ -183,7 +182,7 @@ export default function InstagramPage() {
                 ))}
               </svg>
             </div>
-            {pts.length === 1 && <p className="text-xs text-slate-400 mt-1">One data point so far — the growth line builds as the daily sync runs.</p>}
+            {pts.length === 1 && <p className="text-xs text-slate-400 mt-1">One day so far — the line grows daily.</p>}
           </div>
         );
       })()}

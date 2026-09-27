@@ -60,52 +60,36 @@ function Tracking({ sync }: { sync: MetaSyncState }) {
   if (!px) {
     return (
       <Panel tone="slate" icon={<Clock size={16} />} title="Purchase tracking">
-        Not checked yet — the morning sync checks the pixel every day.
+        Not checked yet (checked every morning).
       </Panel>
     );
   }
   const purchases = px.events_7d?.Purchase ?? 0;
-  const withValue = px.purchase_fields?.value ?? 0;
   const pSources = px.purchase_sources ?? {};
-  const cSources = px.add_to_cart_sources ?? {};
   const pBrowser = pct(pSources.BROWSER ?? 0, (pSources.BROWSER ?? 0) + (pSources.SERVER ?? 0));
-  const cBrowser = pct(cSources.BROWSER ?? 0, (cSources.BROWSER ?? 0) + (cSources.SERVER ?? 0));
   const q = qualityFor(px, 'Purchase');
   const score = q?.event_match_quality?.composite_score ?? null;
   /* Meta lists an identifier only when some events carry it, so a purchase
      report without fbc means none carried the ad-click ID — 0%, not unknown. */
   const fbc = q ? (coverage(q, 'fbc') ?? 0) : null;
-  const cartFbc = coverage(qualityFor(px, 'AddToCart'), 'fbc');
   const checkoutFbc = coverage(qualityFor(px, 'InitiateCheckout'), 'fbc');
 
   const weak = (fbc !== null && fbc < 30) || (fbc === null && pBrowser < 50);
   const tone = purchases === 0 ? 'rose' : weak ? 'amber' : 'emerald';
-  const title = purchases === 0 ? 'No purchases reached Meta this week'
-    : weak ? 'Purchases arrive, but Meta can’t tie them to ads'
-    : 'Purchase tracking is working';
+  const title = purchases === 0 ? 'No purchases reach Meta'
+    : weak ? 'Meta can’t link sales to ads'
+    : 'Purchase tracking works';
 
   return (
     <Panel tone={tone} icon={tone === 'emerald' ? <CheckCircle2 size={16} /> : <AlertTriangle size={16} />} title={title}>
       <ul className="space-y-0.5">
-        <li><b className="tabular-nums">{purchases}</b> purchases reached “{px.name}” in 7 days</li>
-        {purchases > 0 && <>
-          <li><b className="tabular-nums">{withValue}</b> carried a value and currency</li>
-          <li><b className="tabular-nums">{pBrowser}%</b> came from the shopper’s browser
-            {cBrowser > 0 && <> (add-to-carts: <b className="tabular-nums">{cBrowser}%</b>)</>}; the rest only from Shopify’s server</li>
-          {score !== null && <li>Meta’s match quality for purchases: <b className="tabular-nums">{score}/10</b></li>}
-          {fbc !== null && (
-            <li>Ad-click ID on <b className="tabular-nums">{fbc}%</b> of purchases
-              {(cartFbc !== null || checkoutFbc !== null) && <> — add-to-carts <b className="tabular-nums">{cartFbc ?? 0}%</b>, checkouts <b className="tabular-nums">{checkoutFbc ?? 0}%</b></>}</li>
-          )}
-        </>}
+        <li><b className="tabular-nums">{purchases}</b> purchases in 7 days{score !== null && <> · quality <b className="tabular-nums">{score}/10</b></>}</li>
+        {purchases > 0 && fbc !== null && (
+          <li>Linked to an ad click: <b className="tabular-nums">{fbc}%</b>{checkoutFbc !== null && <> (checkouts <b className="tabular-nums">{checkoutFbc}%</b>)</>}</li>
+        )}
       </ul>
       {tone === 'amber' && (
-        <p className="mt-2">
-          The ad-click ID is lost between checkout and the order page. In Shopify → Facebook &amp;
-          Instagram app → Settings, set data sharing to “Maximum”; check the cookie banner is not
-          holding back marketing cookies for Kuwait; then place a test order from an ad link with
-          Meta’s Test Events open and confirm the Purchase carries “fbc”.
-        </p>
+        <p className="mt-2"><b>Fix:</b> Shopify → Facebook &amp; Instagram → Settings → data sharing: <b>Maximum</b>.</p>
       )}
       <p className="mt-1 text-[11px] opacity-70">Checked {whenSynced(sync.tracking_checked_at)}.</p>
     </Panel>
@@ -135,14 +119,10 @@ function TimeZone({ tz }: { tz: string | null }) {
   const behind = hoursBehindKuwait(tz);
   const city = tz ? tz.split('/').pop()!.replace(/_/g, ' ') : null;
   return (
-    <Panel tone="slate" icon={<Clock size={16} />} title={`Meta’s days are ${city ?? 'not Kuwait'} days`}>
-      {tz && behind !== null ? (
-        <>
-          The ad account runs on {city} time ({tz}), {behind} hours behind Kuwait. A Meta
-          “day” runs from {String(behind).padStart(2, '0')}:00 Kuwait time to the same hour the next
-          day, so a date here won’t line up exactly with that date’s shop sales.
-        </>
-      ) : 'The account’s time zone has not been read yet.'}
+    <Panel tone="slate" icon={<Clock size={16} />} title={`Meta days: ${city ?? 'unknown'} time`}>
+      {tz && behind !== null
+        ? <>{behind}h behind Kuwait — a Meta day starts {String(behind).padStart(2, '0')}:00 here.</>
+        : 'Not read yet.'}
     </Panel>
   );
 }
@@ -152,10 +132,7 @@ function TimeZone({ tz }: { tz: string | null }) {
 function Rate({ sync }: { sync: MetaSyncState }) {
   return (
     <Panel tone="slate" icon={<Coins size={16} />} title={sync.kwd_per_usd ? `${sync.kwd_per_usd} KD per USD` : 'No KD rate set'}>
-      Meta bills in {sync.currency ?? 'USD'}; spend is shown in KD at this rate.
-      {' '}{sync.rate_source ? `Source: ${sync.rate_source}.` : ''}
-      {' '}{sync.rate_auto === false ? 'Pinned by an owner in Settings.' : 'Refreshed every morning.'}
-      {sync.rate_updated_at && <> Updated {whenSynced(sync.rate_updated_at)}.</>}
+      Meta bills in {sync.currency ?? 'USD'}. {sync.rate_auto === false ? 'Pinned in Settings.' : 'Updated daily.'}
     </Panel>
   );
 }

@@ -97,15 +97,14 @@ export function MetaCampaignsPage() {
     <div className="p-4 sm:p-6 max-w-[1400px] mx-auto">
       {sync?.last_error && (
         <div className="mb-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm text-amber-800">
-          <span className="font-semibold">Meta’s last sync did not finish.</span>{' '}
-          These are the last campaigns Meta sent, from {whenSynced(sync.last_synced_at)}.
+          <span className="font-semibold">Last sync failed.</span> Showing {whenSynced(sync.last_synced_at)}.
         </div>
       )}
 
       <div className="flex flex-wrap items-center gap-3 mb-4">
         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${pill}`}>
           <span className="w-1.5 h-1.5 rounded-full bg-current" />
-          Last successful sync: {whenSynced(sync?.last_synced_at)}
+          Synced {whenSynced(sync?.last_synced_at)}
         </span>
         <span className="text-xs text-slate-400">
           {sync?.account_name ?? 'Meta ad account'} · spend in{' '}
@@ -124,10 +123,10 @@ export function MetaCampaignsPage() {
       {/* The two pages are easy to confuse, and the difference decides which one
           somebody should be looking at — but one line is enough to say it. */}
       <p className="text-slate-400 text-xs mt-1">
-        Meta's own records. Budgets and contracts live in the{' '}
+        Meta’s records. Budgets:{' '}
         <span className="inline-flex items-center gap-1 font-medium text-slate-500">
           <Megaphone size={12} /> Paid Ads Tracker
-        </span>.
+        </span>
       </p>
 
       <div className="mt-4"><MetaHealth sync={sync} /></div>
@@ -179,7 +178,7 @@ export function MetaCampaignsPage() {
         <div className="py-20 flex justify-center"><Spinner /></div>
       ) : !sorted.length ? (
         <div className="py-16 text-center text-slate-400">
-          {searching ? `Nothing matches “${term}”.` : 'No campaign has spent anything in the last 90 days.'}
+          {searching ? `Nothing matches “${term}”.` : 'No spend in 90 days.'}
         </div>
       ) : (
         <>

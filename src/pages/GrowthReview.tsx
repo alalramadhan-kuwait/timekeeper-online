@@ -82,8 +82,7 @@ export function GrowthReviewPage() {
         </div>
       </div>
       <p className="text-xs text-slate-400 mb-5">
-        Meta’s figures are Meta’s attribution, in its own (Los Angeles) days; shop sales are Lightspeed’s, in Kuwait days.
-        {rate ? ` USD shown in KD at ${rate}.` : ''}
+        Meta: Los Angeles days · Shop: Kuwait days{rate ? ` · ${rate} KD/USD` : ''}
       </p>
 
       {/* The owner's version: five lines */}
@@ -98,7 +97,7 @@ export function GrowthReviewPage() {
         </dl>
         <div className="mt-4 pt-4 border-t border-white/15 grid grid-cols-1 md:grid-cols-3 gap-3 text-sm [&>p]:min-w-0 [&>p]:break-words">
           <p><span className="text-white/50">Best product · </span>{bestProduct ? `${bestProduct.name} (${kd(bestProduct.kd)})` : '—'}</p>
-          <p><span className="text-white/50">Best creative · </span>{bestCreative ? (bestCreative.body?.slice(0, 50) || bestCreative.name || 'ad') : 'no ad spent 5+ USD'}</p>
+          <p><span className="text-white/50">Best creative · </span>{bestCreative ? (bestCreative.body?.slice(0, 50) || bestCreative.name || 'ad') : '—'}</p>
           <p><span className="text-white/50">Decision · </span>
             {stop.length ? `Stop ${stop.length}` : ''}{stop.length && (scale.length || improve.length) ? ', ' : ''}
             {improve.length ? `improve ${improve.length}` : ''}{improve.length && scale.length ? ', ' : ''}
@@ -110,25 +109,24 @@ export function GrowthReviewPage() {
 
       {m.purchases === 0 && m.spend_usd > 0 && (
         <p className="mb-5 text-xs rounded-lg border border-amber-200 bg-amber-50 text-amber-900 px-3 py-2">
-          Meta credited no purchase to any ad this week while the website sold {r.shop.online?.sales ?? 0} times. Until
-          purchase tracking is fixed (see Meta Campaigns), sales verdicts lean on clicks and are provisional.
+          Meta saw 0 ad sales ({r.shop.online?.sales ?? 0} website sales). Verdicts are provisional until tracking is fixed.
         </p>
       )}
 
       {/* Campaigns and their call */}
       <div className="flex items-center justify-between mb-2">
         <h2 className="text-sm font-semibold text-slate-700">Campaigns that spent</h2>
-        <button onClick={() => setRules((x) => !x)} className="flex items-center gap-1 text-xs text-slate-500 hover:text-slate-800"><Info size={13} /> How the call is made</button>
+        <button onClick={() => setRules((x) => !x)} className="flex items-center gap-1 text-xs text-slate-500 hover:text-slate-800"><Info size={13} /> Rules</button>
       </div>
       {rules && (
         <div className="mb-3 rounded-lg border border-slate-200 bg-white p-3 text-xs text-slate-600 space-y-1">
-          <p><b>Sales campaigns.</b> {r.rules.sales}</p>
-          <p><b>WhatsApp campaigns.</b> {r.rules.messages}</p>
-          <p><b>Everything else.</b> {r.rules.other}</p>
+          <p><b>Sales:</b> {r.rules.sales}</p>
+          <p><b>Messages:</b> {r.rules.messages}</p>
+          <p><b>Other:</b> {r.rules.other}</p>
         </div>
       )}
       {r.campaigns.length === 0 ? (
-        <p className="text-sm text-slate-400 mb-6">No campaign spent anything this week.</p>
+        <p className="text-sm text-slate-400 mb-6">No spend this week.</p>
       ) : (
         <div className="mb-6 bg-white rounded-xl border border-slate-200 overflow-x-auto">
           <table className="w-full text-sm">
@@ -170,7 +168,7 @@ export function GrowthReviewPage() {
                 </li>
               ))}
             </ol>
-          ) : <p className="text-sm text-slate-400">No online or WhatsApp sales this week.</p>}
+          ) : <p className="text-sm text-slate-400">None this week.</p>}
         </section>
         <section className="min-w-0 bg-white rounded-xl border border-slate-200 p-4">
           <h2 className="text-sm font-semibold text-slate-700 mb-2">Best creatives</h2>
@@ -186,12 +184,12 @@ export function GrowthReviewPage() {
                 </li>
               ))}
             </ol>
-          ) : <p className="text-sm text-slate-400">No ad spent 5 USD or more this week.</p>}
+          ) : <p className="text-sm text-slate-400">None this week.</p>}
         </section>
       </div>
 
       <p className="mt-6 text-xs text-slate-400">
-        Something to scale or test? <Link to="/campaign-proposals" className="underline hover:text-slate-700">Propose it</Link> — an owner approves it, and it is built on Meta paused.
+        <Link to="/campaign-proposals" className="underline hover:text-slate-700">Propose a campaign</Link>
       </p>
     </div>
   );

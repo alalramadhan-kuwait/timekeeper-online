@@ -33,11 +33,11 @@ interface MediaOption { media_id: string; username: string; caption: string | nu
 interface Event { proposal_id: string; at: string; action: string; detail: Record<string, unknown> | null }
 
 const OBJECTIVES: Record<string, { label: string; hint: string }> = {
-  OUTCOME_SALES: { label: 'Website sales', hint: 'Optimises for purchases on time-keeper.com' },
-  MESSAGES: { label: 'WhatsApp conversations', hint: 'For pieces people ask about before buying' },
-  OUTCOME_TRAFFIC: { label: 'Website visits', hint: 'Only when purchases cannot be tracked' },
-  OUTCOME_ENGAGEMENT: { label: 'Post engagement', hint: 'Social proof for a launch — not a sales goal' },
-  OUTCOME_AWARENESS: { label: 'Reach / awareness', hint: 'Brand campaigns, kept apart from sales' },
+  OUTCOME_SALES: { label: 'Website sales', hint: 'Buy on the website' },
+  MESSAGES: { label: 'WhatsApp conversations', hint: 'Pieces people ask about first' },
+  OUTCOME_TRAFFIC: { label: 'Website visits', hint: 'When sales can’t be tracked' },
+  OUTCOME_ENGAGEMENT: { label: 'Post engagement', hint: 'Launch buzz, not sales' },
+  OUTCOME_AWARENESS: { label: 'Reach / awareness', hint: 'Brand only' },
 };
 const KPIS = ['Purchases', 'Cost per purchase', 'Return on spend', 'WhatsApp conversations', 'Cost per conversation', 'Landing page views', 'Reach'];
 const COUNTRIES: [string, string][] = [['KW', 'Kuwait'], ['SA', 'Saudi'], ['AE', 'UAE'], ['QA', 'Qatar'], ['BH', 'Bahrain'], ['OM', 'Oman']];
@@ -164,8 +164,8 @@ export function CampaignProposalsPage() {
 
 const DONE: Record<string, string> = {
   check: 'Meta accepts it. Nothing was left on Meta.',
-  approve: 'Approved and built on Meta, paused. Nothing is spending.',
-  reject: 'Rejected.', activate: 'Switched on — it is spending now.', pause: 'Paused.', budget: 'Budget changed on Meta.',
+  approve: 'Built on Meta, paused.',
+  reject: 'Rejected.', activate: 'Switched on — spending now.', pause: 'Paused.', budget: 'Budget changed on Meta.',
 };
 
 function ProposalCard({ p, owner, mine, rate, media, events, focused, busy, msg, onAct, onWithdraw }: {
@@ -362,7 +362,7 @@ function ProposalForm({ media, rate, onClose, onSaved }: {
           </select>
         </label>
         {['OUTCOME_SALES', 'OUTCOME_TRAFFIC'].includes(f.objective) && (
-          <label className="block"><span className={lbl}>Product page on time-keeper.com</span>
+          <label className="block"><span className={lbl}>Product link</span>
             <input id="p-url" className={input} value={f.landing_url} onChange={(e) => set('landing_url', e.target.value)} placeholder="https://time-keeper.com/products/…" /></label>
         )}
         <label className="block"><span className={lbl}>Audience</span>
@@ -386,7 +386,7 @@ function ProposalForm({ media, rate, onClose, onSaved }: {
               {ACCOUNTS.map((a) => <option key={a} value={a}>@{a}</option>)}
             </select>
           </label>
-          <label className="col-span-2"><span className={lbl}>Instagram post to run as the ad</span>
+          <label className="col-span-2"><span className={lbl}>Instagram post</span>
             <select id="p-media" className={input} value={f.instagram_media_id} onChange={(e) => set('instagram_media_id', e.target.value)}>
               <option value="">Choose a post…</option>
               {posts.map((m) => (
