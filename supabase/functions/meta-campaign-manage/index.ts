@@ -251,7 +251,7 @@ async function build(admin: SupabaseClient, token: string, act: string, p: Propo
   } catch (e) {
     if (made.campaign) {
       const gone = await graphPost(made.campaign, token, { status: "DELETED" }).then(() => true, () => false);
-      await log(gone ? "half_built_removed" : "half_built_left", made);
+      await log(gone ? "half_built_removed" : "half_built_left", { ...made, notes });
     }
     throw e;
   }
