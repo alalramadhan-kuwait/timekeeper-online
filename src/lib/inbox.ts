@@ -140,7 +140,7 @@ export async function loadInbox(user: User, profile: Profile | null, role: Role 
 
   for (const r of ads)
     if (mine(r.owner) && OPEN.ads(r.status))
-      tasks.push({ key: `ads_${r.id}`, module: 'Paid Ads', link: '/paid-ads', title: r.ad_name || 'Ad', status: r.status, due: r.end_date });
+      tasks.push({ key: `ads_${r.id}`, module: 'Client Ads', link: '/client-ads', title: r.ad_name || 'Ad', status: r.status, due: r.end_date });
 
   for (const r of repairs)
     if (mine(r.assigned_to) && OPEN.repair(r.status))

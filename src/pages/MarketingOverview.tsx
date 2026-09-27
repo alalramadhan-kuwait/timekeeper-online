@@ -140,7 +140,7 @@ export function MarketingOverviewPage() {
       </div>
 
       <p className="text-xs text-slate-400">
-        <Link to="/campaign-proposals" className="underline hover:text-slate-700">Propose a campaign</Link>
+        <Link to="/ads?tab=proposals" className="underline hover:text-slate-700">Propose a campaign</Link>
         {' · '}Meta: Los Angeles days · Shop: Kuwait days{rate ? ` · ${rate} KD/USD` : ''}
       </p>
     </div>
@@ -158,16 +158,16 @@ function Health({ sync, o, end }: { sync: MetaSyncState | null; o: Overview; end
   const waiting = n.proposals + n.client_unpaid + n.client_no_report > 0;
   return (
     <div className="flex flex-wrap gap-2 text-xs">
-      <Pill to="/meta-campaigns" tone={!t ? 'none' : t.tone === 'emerald' ? 'good' : t.tone === 'amber' ? 'warn' : 'bad'}>
+      <Pill to="/ads" tone={!t ? 'none' : t.tone === 'emerald' ? 'good' : t.tone === 'amber' ? 'warn' : 'bad'}>
         {t ? t.title : 'Tracking not checked yet'}{t?.fbc != null && t.tone === 'emerald' ? ` · ${t.fbc}% linked` : ''}
       </Pill>
-      <Pill to="/meta-campaigns" tone={quiet ? 'warn' : 'good'}>
+      <Pill to="/ads" tone={quiet ? 'warn' : 'good'}>
         {quiet ? (o.last_spend_day ? `No ad spend since ${day(o.last_spend_day)}` : 'No ad spend yet') : 'Ads are running'}
       </Pill>
       {waiting ? <>
-        {n.proposals > 0 && <Pill to="/campaign-proposals" tone="warn">{n.proposals} proposal{n.proposals === 1 ? '' : 's'} to decide</Pill>}
-        {n.client_unpaid > 0 && <Pill to="/paid-ads" tone="warn">{kd(n.client_unpaid_kd)} unpaid by clients</Pill>}
-        {n.client_no_report > 0 && <Pill to="/paid-ads" tone="warn">{n.client_no_report} client report{n.client_no_report === 1 ? '' : 's'} to send</Pill>}
+        {n.proposals > 0 && <Pill to="/ads?tab=proposals" tone="warn">{n.proposals} proposal{n.proposals === 1 ? '' : 's'} to decide</Pill>}
+        {n.client_unpaid > 0 && <Pill to="/client-ads" tone="warn">{kd(n.client_unpaid_kd)} unpaid by clients</Pill>}
+        {n.client_no_report > 0 && <Pill to="/client-ads" tone="warn">{n.client_no_report} client report{n.client_no_report === 1 ? '' : 's'} to send</Pill>}
       </> : <Pill tone="good">Nothing waiting for you</Pill>}
     </div>
   );
@@ -298,7 +298,7 @@ function Pushing({ o, span, setSpan, rate, loading }: {
           {(P.unknown_share ?? 0) > 0 && (
             <p className="mt-3 text-xs text-slate-500">
               {P.unknown_share}% of spend ({P.unknown_campaigns} campaign{P.unknown_campaigns === 1 ? '' : 's'}) has no known brand.{' '}
-              <Link to="/meta-campaigns?scope=untagged" className="underline text-slate-700 hover:text-slate-900">Set brands</Link>
+              <Link to="/ads?scope=untagged" className="underline text-slate-700 hover:text-slate-900">Set brands</Link>
             </p>
           )}
         </>
@@ -385,7 +385,7 @@ function Calls({ r, rate }: { r: Review; rate: number }) {
           {r.campaigns.map((c) => (
             <li key={c.campaign_id} className="flex items-center gap-3 py-2 min-w-0">
               <Badge className={VERDICT[c.verdict]}>{c.verdict}</Badge>
-              <Link to={`/meta-campaigns?q=${encodeURIComponent(c.campaign_id)}`} dir="auto" className="flex-1 min-w-0 truncate text-sm text-slate-700 hover:text-slate-900 hover:underline" title={c.name}>
+              <Link to={`/ads?q=${encodeURIComponent(c.campaign_id)}`} dir="auto" className="flex-1 min-w-0 truncate text-sm text-slate-700 hover:text-slate-900 hover:underline" title={c.name}>
                 {/* Boosted posts are all named "Instagram post: <caption>"; the caption is what tells them apart. */}
                 {c.name.replace(/^Instagram post:\s*[\u200e\u2068]*/, '')}
               </Link>

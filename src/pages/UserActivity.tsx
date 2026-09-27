@@ -12,7 +12,7 @@ const PAGE_LABEL: Record<string, string> = {
   '/vip': 'VIP', '/waiting-list': 'Demand List', '/stock': 'Stock', '/purchase-orders': 'Supplier Payments',
   '/consignments': 'Consignments', '/limited-projects': 'Limited Projects', '/repairs': 'Repairs',
   '/attendance': 'Attendance', '/hr': 'Employees', '/leave': 'Leave', '/instagram': 'Instagram',
-  '/content': 'Content Planner', '/paid-ads': 'Paid Ads', '/history': 'History Log', '/settings': 'Settings',
+  '/content': 'Content Planner', '/paid-ads': 'Paid Ads', '/client-ads': 'Client Ads', '/ads': 'Ads', '/marketing': 'Marketing Overview', '/history': 'History Log', '/settings': 'Settings',
   '/activity': 'User Activity', '/company-documents': 'Company Documents',
 };
 

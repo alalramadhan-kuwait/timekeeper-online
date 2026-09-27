@@ -1,5 +1,18 @@
 [
   {
+    "version": "2.0.0",
+    "date": "2026-09-27",
+    "title": "Media & Marketing, simpler",
+    "changes": [
+      "Media & Marketing now has five pages: Marketing Overview, Ads, Client Ads, Instagram and Influencers.",
+      "Ads: Meta campaigns and campaign proposals are now two tabs on one page, with a count of proposals waiting for you.",
+      "The campaign list is shorter: one line for Meta’s health and three figures at the top.",
+      "Client Ads replaces Paid Ads Tracker: what clients booked, what they still owe, and which reports are due.",
+      "Link a client job to its Instagram post and its reach and views fill in by themselves. “Copy report for client” copies them ready to send.",
+      "Old links and bookmarks still work and open the new pages."
+    ]
+  },
+  {
     "version": "1.2.0",
     "date": "2026-09-27",
     "title": "Marketing Overview",

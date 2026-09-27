@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { RefreshCw, Search, X, Megaphone } from 'lucide-react';
+import { RefreshCw, Search, X } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Spinner } from '../components/ui';
@@ -7,7 +7,7 @@ import { Modal } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { MetaLinkChip, MetaFigureGrid } from '../components/MetaFigures';
 import { MetaSummary } from '../components/MetaSummary';
-import { MetaHealth } from '../components/MetaHealth';
+import { MetaHealth, trackingState, hoursBehindKuwait } from '../components/MetaHealth';
 import { CampaignBrandPicker } from '../components/CampaignBrandPicker';
 import { loadBrands, attribute, type Brand, type StoredTag } from '../lib/metaBrands';
 import {
@@ -27,7 +27,8 @@ import {
  *
  * Read-only throughout. Nothing here is ours to edit.
  */
-export function MetaCampaignsPage() {
+/** The Campaigns tab of Ads. `embedded` leaves the title to the Ads page. */
+export function MetaCampaignsPage({ embedded = false }: { embedded?: boolean } = {}) {
   const { role, user } = useAuth();
   const canSync = ['admin', 'manager', 'marketing'].includes(role ?? '');
   const [brands, setBrands] = useState<Brand[]>([]);
@@ -45,6 +46,7 @@ export function MetaCampaignsPage() {
   const [sync, setSync] = useState<MetaSyncState | null>(null);
   const [busy, setBusy] = useState(false);
   const [open, setOpen] = useState<Record<string, any> | null>(null);
+  const [health, setHealth] = useState(false);
 
   // Typing shouldn't fire a query per keystroke.
   useEffect(() => {
@@ -105,7 +107,7 @@ export function MetaCampaignsPage() {
     : 'bg-emerald-100 text-emerald-700 border-emerald-200';
 
   return (
-    <div className="p-4 sm:p-6 max-w-[1400px] mx-auto">
+    <div className={embedded ? 'min-w-0' : 'p-4 sm:p-6 max-w-[1400px] mx-auto'}>
       {sync?.last_error && (
         <div className="mb-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm text-amber-800">
           <span className="font-semibold">Last sync failed.</span> Showing {whenSynced(sync.last_synced_at)}.
@@ -135,17 +137,11 @@ export function MetaCampaignsPage() {
           <span className="font-semibold">Refresh failed.</span> {refreshErr}
         </div>
       )}
-      <h1 className="text-2xl font-bold text-slate-900">Meta Campaigns</h1>
-      {/* The two pages are easy to confuse, and the difference decides which one
-          somebody should be looking at — but one line is enough to say it. */}
-      <p className="text-slate-400 text-xs mt-1">
-        Meta’s records. Budgets:{' '}
-        <Link to="/paid-ads" className="inline-flex items-center gap-1 font-medium text-slate-500 underline hover:text-slate-800">
-          <Megaphone size={12} /> Paid Ads Tracker
-        </Link>
-      </p>
+      {!embedded && <h1 className="text-2xl font-bold text-slate-900">Meta Campaigns</h1>}
 
-      <div className="mt-4"><MetaHealth sync={sync} /></div>
+      {/* Tracking, Meta's clock and the rate in one line; the panels on request. */}
+      <HealthLine sync={sync} open={health} onToggle={() => setHealth((h) => !h)} />
+      {health && <div className="mb-4"><MetaHealth sync={sync} /></div>}
 
       <div className="flex flex-wrap items-center gap-3 mb-3">
         <div className="relative flex-1 min-w-[220px] max-w-sm">
@@ -166,8 +162,8 @@ export function MetaCampaignsPage() {
         </div>
         <div className="flex rounded-lg border border-slate-300 overflow-hidden text-sm">
           {([
-            ['recent', 'Spending in the last 90 days'],
-            ['all', 'All campaigns that spent'],
+            ['recent', 'Last 90 days'],
+            ['all', 'All'],
             ['untagged', 'Needs a brand'],
           ] as const).map(([v, label]) => (
             <button key={v} onClick={() => setScope(v)}
@@ -184,7 +180,7 @@ export function MetaCampaignsPage() {
           : scope === 'recent'
             ? `${sorted.length} spent in the last 90 days${total ? `, of ${total} that have ever spent` : ''}.`
             : scope === 'untagged'
-              ? `${sorted.length} without a brand, biggest spender first. Open one to set it — a brand set here beats what the name says.`
+              ? `${sorted.length} with no brand found, biggest spender first. Open one to set it.`
               : `${sorted.length} campaign${sorted.length === 1 ? '' : 's'} that have ever spent${total && sorted.length < total ? `, first 1,000 by spend` : ''}.`}
       </p>
 
@@ -266,6 +262,7 @@ export function MetaCampaignsPage() {
         <Modal onClose={() => setOpen(null)} title={open.name || 'Campaign'}>
           <div className="space-y-3">
             <p className="text-xs text-slate-400 font-mono break-all">{open.id}</p>
+            <ProposalLink campaignId={open.id} />
             <CampaignBrandPicker
               key={open.id}
               campaignId={open.id}
@@ -310,5 +307,36 @@ function SpendCell({ f, rate }: { f: MetaFigures; rate: import('../lib/metaAds')
     <span title={code === f.account_currency ? undefined : `Meta: ${f.spend} ${f.account_currency}`}>
       {money(shown, code)} <span className="text-slate-400 text-xs">{code}</span>
     </span>
+  );
+}
+
+/** One line for what the three health panels say; tap for the panels. */
+function HealthLine({ sync, open, onToggle }: { sync: MetaSyncState | null; open: boolean; onToggle: () => void }) {
+  const t = trackingState(sync);
+  const behind = hoursBehindKuwait(sync?.timezone_name ?? null);
+  const dot = !t ? 'bg-slate-300' : t.tone === 'emerald' ? 'bg-emerald-500' : t.tone === 'amber' ? 'bg-amber-500' : 'bg-rose-500';
+  return (
+    <button type="button" onClick={onToggle}
+      className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-600 hover:text-slate-900">
+      <span className="inline-flex items-center gap-1.5"><span className={`w-2 h-2 rounded-full ${dot}`} />{t ? t.title : 'Tracking not checked'}{t?.fbc != null ? ` · ${t.fbc}% linked` : ''}</span>
+      {behind != null && <span>Meta day: {behind}h behind Kuwait</span>}
+      {sync?.kwd_per_usd && <span>{sync.kwd_per_usd} KD/USD</span>}
+      <span className="underline">{open ? 'Hide' : 'Details'}</span>
+    </button>
+  );
+}
+
+/** The proposal a campaign was built from, when it was built from one. */
+function ProposalLink({ campaignId }: { campaignId: string }) {
+  const [p, setP] = useState<{ id: string; product: string } | null>(null);
+  useEffect(() => {
+    void supabase.from('ad_proposals').select('id, product').eq('meta_campaign_id', campaignId).maybeSingle()
+      .then(({ data }) => setP(data ?? null));
+  }, [campaignId]);
+  if (!p) return null;
+  return (
+    <Link to={`/ads?tab=proposals&focus=${p.id}`} className="block text-xs text-slate-600 underline hover:text-slate-900">
+      Built from the proposal “{p.product}”
+    </Link>
   );
 }

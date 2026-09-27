@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react';
 import { Info } from 'lucide-react';
 import { Modal } from './ui';
-import { summarise, type BrandRow } from '../lib/metaBrands';
-import { money, rateNote, type DisplayRate } from '../lib/metaAds';
+import { summarise } from '../lib/metaBrands';
+import { money, type DisplayRate } from '../lib/metaAds';
 
 /**
  * The top of the Meta Campaigns page: spend, then performance, then brands.
@@ -23,30 +23,20 @@ export function MetaSummary({ rows, rate }: {
   const s = useMemo(() => summarise(rows, rate), [rows, rate]);
   const [info, setInfo] = useState(false);
   if (!s.campaigns) return null;
-  const note = s.currency === 'KD' ? rateNote(rate) : null;
 
   return (
-    <div className="space-y-3 mb-6">
-      <div className="grid grid-cols-2 lg:grid-cols-6 gap-3">
-        <Card label="Total spend" value={money(s.spend, s.currency)} unit={s.currency} note={span(s)} dark />
-        <Card label="Purchase value" value={money(s.purchaseValue, s.currency)} unit={s.currency} note="as Meta attributes it" />
+    <div className="space-y-3 mb-5">
+      <div className="grid grid-cols-3 gap-3">
+        <Card label="Spend" value={money(s.spend, s.currency)} unit={s.currency} note={span(s)} dark />
         {/* Ours: total value over total spend. Meta's own ROAS is per
             campaign and is on each campaign's sheet. */}
-        <Card label="Return on spend" value={s.spend > 0 && s.purchaseValue > 0 ? `${(s.purchaseValue / s.spend).toFixed(2)}×` : '—'} note="value ÷ spend" />
+        <Card label="Return" value={s.spend > 0 && s.purchaseValue > 0 ? `${(s.purchaseValue / s.spend).toFixed(2)}×` : '—'}
+          note={s.purchaseValue > 0 ? `${money(s.purchaseValue, s.currency)} ${s.currency} sales` : 'no sales credited'} />
         <Card label="Purchases" value={count(s.purchases)}
-          note={s.purchases > 0 ? `${money(s.spend / s.purchases, s.currency)} ${s.currency} each` : undefined} />
-        <Card label="Clicks" value={count(s.clicks)} />
-        <Card label="Spending campaigns" value={count(s.campaigns)} />
+          note={s.purchases > 0 ? `${money(s.spend / s.purchases, s.currency)} ${s.currency} each` : `${count(s.campaigns)} campaigns`} />
       </div>
 
       <Brands s={s} onInfo={() => setInfo(true)} />
-
-      {note && (
-        <p className="text-[11px] text-slate-400">
-          Meta reports this account in USD; figures above are shown in KD, {note}. Each campaign’s
-          own USD figures are unchanged on its sheet.
-        </p>
-      )}
 
       {info && <Methodology s={s} rate={rate} onClose={() => setInfo(false)} />}
     </div>
@@ -60,10 +50,6 @@ const month = (d: string | null) =>
   !d ? '' : new Date(d).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' });
 const span = (s: ReturnType<typeof summarise>) =>
   s.earliest && s.latest ? `${month(s.earliest)} – ${month(s.latest)}` : '';
-
-/** Spend per purchase. Ours, not Meta's — Meta has no per-brand figure to
- *  report — and only shown where there is something to divide by. */
-const costPer = (b: BrandRow) => (b.purchases > 0 ? b.spend / b.purchases : null);
 
 function Card({ label, value, unit, note, dark, wide }: {
   label: string; value: string; unit?: string; note?: string; dark?: boolean; wide?: boolean;
@@ -86,101 +72,40 @@ function Brands({ s, onInfo }: { s: ReturnType<typeof summarise>; onInfo: () => 
   const m = (n: number) => money(n, s.currency);
   const named = s.brands.filter((b) => b.kind === 'brand');
   const rest = s.brands.filter((b) => b.kind !== 'brand');
-  const top = named.slice(0, 10);
+  const top = named.slice(0, 8);
   // Bars compare brands with each other: at the scale of the whole spend, where
-  // one non-brand row is most of the money, every brand is a pixel wide.
+  // one non-brand row can be most of the money, every brand is a pixel wide.
   const widest = Math.max(...top.map((b) => b.share), 0.0001);
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 p-4">
-      <div className="flex items-center justify-between gap-3">
-        <h2 className="text-sm font-semibold text-slate-800">Brands</h2>
-        <div className="flex items-center gap-3">
-          <span className="text-xs text-slate-500">
-            <span className="font-semibold text-slate-800 tabular-nums">{s.brandShare.toFixed(0)}%</span>
-            <span className="text-slate-400"> of spend assigned</span>
-          </span>
-          <button type="button" onClick={onInfo} aria-label="How these figures are worked out"
-            className="text-slate-400 hover:text-slate-700">
-            <Info size={15} />
-          </button>
-        </div>
+      <div className="flex items-center justify-between gap-3 mb-3">
+        <h2 className="text-sm font-semibold text-slate-800">Spend by brand</h2>
+        <button type="button" onClick={onInfo} aria-label="How these figures are worked out"
+          className="flex items-center gap-1 text-xs text-slate-500 hover:text-slate-800">
+          <span className="tabular-nums font-semibold text-slate-700">{s.brandShare.toFixed(0)}%</span> known <Info size={14} />
+        </button>
       </div>
-
-      {/* The whole spend, split three ways — the one chart that has to sum to 100. */}
-      <div className="mt-3 flex h-2.5 rounded-full overflow-hidden bg-slate-100">
-        <div className="bg-slate-800" style={{ width: `${s.brandShare}%` }} />
-        {rest.map((b) => (
-          <div key={b.brand} className={b.kind === 'shop' ? 'bg-slate-400' : 'bg-slate-200'}
-            style={{ width: `${b.share}%` }} />
-        ))}
-      </div>
-      <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[11px]">
-        <Key tone="bg-slate-800" name={`${named.length} brands`} value={m(s.brandSpend)}
-          pct={s.brandShare} currency={s.currency} />
-        {rest.map((b) => (
-          <Key key={b.brand} tone={b.kind === 'shop' ? 'bg-slate-400' : 'bg-slate-200'}
-            name={b.brand} value={m(b.spend)} pct={b.share} currency={s.currency} />
-        ))}
-      </div>
-
-      {!!top.length && (
-        <div className="mt-4 overflow-x-auto">
-          <table className="text-sm w-full max-w-3xl min-w-[22rem] sm:min-w-[32rem]">
-            <thead className="text-[10px] uppercase tracking-wider text-slate-400">
-              <tr>
-                <th className="text-left font-semibold pb-1.5 w-32">Brand</th>
-                <th className="pb-1.5 w-40 hidden sm:table-cell" />
-                <th className="text-right font-semibold pb-1.5 pl-3">Spend</th>
-                <th className="text-right font-semibold pb-1.5 pl-4">Share</th>
-                <th className="text-right font-semibold pb-1.5 pl-4">Purchases</th>
-                <th className="text-right font-semibold pb-1.5 pl-4">Cost&nbsp;/&nbsp;purchase</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {top.map((b) => {
-                const cp = costPer(b);
-                return (
-                  <tr key={b.brand}>
-                    <td className="py-1.5 pr-3 text-slate-700 truncate max-w-[8rem]" title={b.brand}>{b.brand}</td>
-                    <td className="py-1.5 hidden sm:table-cell">
-                      <div className="h-1.5 rounded-full bg-slate-100 overflow-hidden">
-                        <div className="h-full rounded-full bg-slate-800"
-                          style={{ width: `${Math.max((b.share / widest) * 100, 2)}%` }} />
-                      </div>
-                    </td>
-                    <td className="py-1.5 pl-3 text-right tabular-nums text-slate-800 whitespace-nowrap">{m(b.spend)}</td>
-                    <td className="py-1.5 pl-4 text-right tabular-nums text-slate-400 whitespace-nowrap">{b.share.toFixed(1)}%</td>
-                    <td className="py-1.5 pl-4 text-right tabular-nums text-slate-600">{b.purchases ? count(b.purchases) : '—'}</td>
-                    <td className="py-1.5 pl-4 text-right tabular-nums text-slate-600 whitespace-nowrap">
-                      {cp === null ? '—' : `${m(cp)} ${s.currency}`}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-          {named.length > top.length && (
-            <p className="mt-2 text-[11px] text-slate-400">
-              Top {top.length} of {named.length} brands by spend.
-            </p>
-          )}
-        </div>
+      {top.length ? (
+        <ul className="space-y-2">
+          {top.map((b) => (
+            <li key={b.brand} className="grid grid-cols-[7rem_1fr_auto] sm:grid-cols-[9rem_1fr_auto] items-center gap-3 text-sm">
+              <span className="truncate text-slate-700" title={b.brand}>{b.brand}</span>
+              <span className="h-2.5 rounded-full bg-slate-100 overflow-hidden">
+                <span className="block h-full rounded-full bg-amber-400" style={{ width: `${Math.max((b.share / widest) * 100, 2)}%` }} />
+              </span>
+              <span className="tabular-nums text-xs text-slate-600 whitespace-nowrap">{m(b.spend)} {s.currency} · {b.share.toFixed(0)}%</span>
+            </li>
+          ))}
+        </ul>
+      ) : <p className="text-sm text-slate-400">No brand known for this spend yet.</p>}
+      {!!rest.length && (
+        <p className="mt-3 text-[11px] text-slate-500">
+          {rest.map((b) => `${b.brand} ${b.share.toFixed(0)}%`).join(' · ')}
+          {named.length > top.length && ` · ${named.length - top.length} more brands`}
+        </p>
       )}
     </div>
-  );
-}
-
-function Key({ tone, name, value, pct, currency }: {
-  tone: string; name: string; value: string; pct: number; currency: string;
-}) {
-  return (
-    <span className="inline-flex items-center gap-1.5 text-slate-500">
-      <span className={`w-2 h-2 rounded-sm ${tone}`} />
-      <span>{name}</span>
-      <span className="tabular-nums text-slate-700 font-medium">{value} {currency}</span>
-      <span className="tabular-nums text-slate-400">{pct.toFixed(0)}%</span>
-    </span>
   );
 }
 
@@ -196,17 +121,8 @@ function Methodology({ s, rate, onClose }: {
         <li>Spend is shown in KD{rate.kwdPerUsd ? <> at <b>{rate.kwdPerUsd}</b> per USD</> : null}; each campaign’s sheet keeps Meta’s USD.</li>
         <li>No total reach, CTR or CPC: they can’t be added across campaigns.</li>
         <li>Purchases: {count(s.purchasingCampaigns)} of {count(s.campaigns)} campaigns reported one. A sale can be credited to two campaigns.</li>
-        <li>Brands: set by hand ({s.storedShare.toFixed(0)}% of spend) or read from the campaign name. Set missing ones on <b>Needs a brand</b>.</li>
+        <li>Brands: set by hand ({s.storedShare.toFixed(0)}% of spend), else found in the ad text (Arabic spellings too), else read from the campaign name. Set missing ones on <b>Needs a brand</b>.</li>
       </ul>
     </Modal>
-  );
-}
-
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div className="pt-1">
-      <p className="text-[11px] uppercase tracking-wider font-semibold text-slate-400 mb-1">{title}</p>
-      <div className="space-y-1.5">{children}</div>
-    </div>
   );
 }

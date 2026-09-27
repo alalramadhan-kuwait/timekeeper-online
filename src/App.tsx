@@ -23,10 +23,10 @@ import PerformancePage from './pages/Performance';
 import { PurchaseOrdersPage } from './pages/PurchaseOrders';
 import {
   WaitingListPage, PreOrdersPage, ConsignmentsPage,
-  VipCustomersPage, EmployeesPage, CompanyDocsPage, LimitedProjectsPage, RepairWatchesPage, ContentPlannerPage, PaidAdsPage, InfluencersPage,
+  VipCustomersPage, EmployeesPage, CompanyDocsPage, LimitedProjectsPage, RepairWatchesPage, ContentPlannerPage, InfluencersPage,
 } from './pages/modules';
-import { MetaCampaignsPage } from './pages/MetaCampaigns';
-import { CampaignProposalsPage } from './pages/CampaignProposals';
+import { AdsPage } from './pages/Ads';
+import { ClientAdsPage } from './pages/ClientAds';
 import { MarketingOverviewPage } from './pages/MarketingOverview';
 import { Spinner } from './components/ui';
 
@@ -63,9 +63,12 @@ function Shell() {
         <Route path="/repairs" element={g('/repairs', <RepairWatchesPage />)} />
         <Route path="/instagram" element={g('/instagram', <InstagramPage />)} />
         <Route path="/content" element={g('/content', <ContentPlannerPage />)} />
-        <Route path="/paid-ads" element={g('/paid-ads', <PaidAdsPage />)} />
-        <Route path="/meta-campaigns" element={g('/meta-campaigns', <MetaCampaignsPage />)} />
-        <Route path="/campaign-proposals" element={g('/campaign-proposals', <CampaignProposalsPage />)} />
+        <Route path="/ads" element={g('/ads', <AdsPage />)} />
+        <Route path="/client-ads" element={g('/client-ads', <ClientAdsPage />)} />
+        {/* Merged into Ads and Client Ads (27 Sep); old links and notifications still land. */}
+        <Route path="/meta-campaigns" element={<KeepSearch to="/ads" />} />
+        <Route path="/campaign-proposals" element={<KeepSearch to="/ads" add={{ tab: 'proposals' }} />} />
+        <Route path="/paid-ads" element={<KeepSearch to="/client-ads" />} />
         <Route path="/marketing" element={g('/marketing', <MarketingOverviewPage />)} />
         {/* Growth Review became Marketing Overview (27 Sep); old links and the
             Sunday notification keep working, with their query string. */}
@@ -95,7 +98,10 @@ export default function App() {
 }
 
 /** A redirect that keeps the query string (a notification's ?n= among it). */
-function KeepSearch({ to }: { to: string }) {
+function KeepSearch({ to, add }: { to: string; add?: Record<string, string> }) {
   const { search } = useLocation();
-  return <Navigate to={{ pathname: to, search }} replace />;
+  const q = new URLSearchParams(search);
+  for (const [k, v] of Object.entries(add ?? {})) q.set(k, v);
+  const s = q.toString();
+  return <Navigate to={{ pathname: to, search: s ? `?${s}` : '' }} replace />;
 }

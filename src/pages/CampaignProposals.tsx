@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Plus, Check, X, Play, Pause, Wallet, ShieldCheck, ExternalLink, History } from 'lucide-react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { Badge, Modal, Spinner } from '../components/ui';
@@ -74,7 +74,8 @@ async function manage(body: Record<string, unknown>): Promise<{ ok?: boolean; er
   catch { return { error: error.message }; }
 }
 
-export function CampaignProposalsPage() {
+/** The Proposals tab of Ads. `embedded` leaves the title to the Ads page. */
+export function CampaignProposalsPage({ embedded = false }: { embedded?: boolean } = {}) {
   const { role, user } = useAuth();
   const owner = role === 'admin';
   const [rows, setRows] = useState<Proposal[]>([]);
@@ -119,20 +120,25 @@ export function CampaignProposalsPage() {
   }
 
   const groups = useMemo(() => ([
-    { title: 'Waiting for a decision', rows: rows.filter((r) => ['proposed', 'failed', 'approved'].includes(r.status)) },
-    { title: 'On Meta', rows: rows.filter((r) => ['created', 'active', 'paused'].includes(r.status)) },
-    { title: 'Decided', rows: rows.filter((r) => ['rejected', 'withdrawn'].includes(r.status)) },
+    { title: 'Waiting for a decision', short: 'Waiting', rows: rows.filter((r) => ['proposed', 'failed', 'approved'].includes(r.status)) },
+    { title: 'On Meta', short: 'On Meta', rows: rows.filter((r) => ['created', 'active', 'paused'].includes(r.status)) },
+    { title: 'Decided', short: 'Decided', rows: rows.filter((r) => ['rejected', 'withdrawn'].includes(r.status)) },
   ]), [rows]);
 
   if (loading) return <Spinner />;
 
   return (
     <div className="max-w-5xl">
-      <div className="flex flex-wrap items-start justify-between gap-3 mb-2">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
         <div>
-          <h1 className="text-xl font-bold text-slate-900">Campaign Proposals</h1>
-          <p className="text-sm text-slate-500 max-w-2xl">
-            An owner approves, it’s built <b>paused</b>, and it spends only when switched on.
+          {!embedded && <h1 className="text-xl font-bold text-slate-900">Campaign Proposals</h1>}
+          {/* Where things stand, as counts; each group is listed below. */}
+          <p className="flex flex-wrap gap-2 text-xs">
+            {groups.map((g) => (
+              <span key={g.title} className="px-2.5 py-1 rounded-full border border-slate-200 bg-white text-slate-600">
+                {g.short} <b className="tabular-nums text-slate-900">{g.rows.length}</b>
+              </span>
+            ))}
           </p>
         </div>
         <button onClick={() => setCreating(true)}
@@ -214,7 +220,11 @@ function ProposalCard({ p, owner, mine, rate, media, events, focused, busy, msg,
           <Field label="Success measure">{p.success_kpi}{p.kpi_target && <> — {p.kpi_target}</>}</Field>
           <div className="sm:col-span-2"><Field label="Why">{p.reason}</Field></div>
           {p.decision_note && <div className="sm:col-span-2"><Field label="Owner’s note">{p.decision_note}</Field></div>}
-          {p.meta_campaign_id && <div className="sm:col-span-2"><Field label="Meta campaign">{p.meta_campaign_id}</Field></div>}
+          {p.meta_campaign_id && (
+            <div className="sm:col-span-2"><Field label="Meta campaign">
+              <Link to={`/ads?q=${encodeURIComponent(p.meta_campaign_id)}`} className="underline text-slate-700 hover:text-slate-900">Open its figures</Link>
+            </Field></div>
+          )}
         </dl>
       )}
 
