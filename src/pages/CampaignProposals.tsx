@@ -128,8 +128,7 @@ export function CampaignProposalsPage() {
         <div>
           <h1 className="text-xl font-bold text-slate-900">Campaign Proposals</h1>
           <p className="text-sm text-slate-500 max-w-2xl">
-            Every campaign starts here. An owner approves it; it is built on Meta <b>paused</b>; it
-            spends only when an owner switches it on. Budget changes are an owner’s call.
+            An owner approves, it’s built <b>paused</b>, and it spends only when switched on.
           </p>
         </div>
         <button onClick={() => setCreating(true)}
@@ -164,7 +163,7 @@ export function CampaignProposalsPage() {
 }
 
 const DONE: Record<string, string> = {
-  check: 'Meta checked it: it would be accepted as it stands. Nothing was left on the ad account.',
+  check: 'Meta accepts it. Nothing was left on Meta.',
   approve: 'Approved and built on Meta, paused. Nothing is spending.',
   reject: 'Rejected.', activate: 'Switched on — it is spending now.', pause: 'Paused.', budget: 'Budget changed on Meta.',
 };
@@ -176,6 +175,7 @@ function ProposalCard({ p, owner, mine, rate, media, events, focused, busy, msg,
   onWithdraw: (p: Proposal) => void;
 }) {
   const [history, setHistory] = useState(false);
+  const [more, setMore] = useState(false);
   const st = STATUS[p.status] ?? { label: p.status, cls: '' };
   const total = Number(p.daily_budget_kd) * p.days;
   const usd = rate ? Number(p.daily_budget_kd) / rate : null;
@@ -184,37 +184,38 @@ function ProposalCard({ p, owner, mine, rate, media, events, focused, busy, msg,
 
   return (
     <article className={`bg-white rounded-xl border p-4 ${focused ? 'border-slate-900 ring-2 ring-slate-900/10' : 'border-slate-200'}`}>
-      <div className="flex flex-wrap items-start justify-between gap-2">
-        <div>
-          <p className="font-semibold text-slate-900">{p.product}{p.brand && <span className="text-slate-400 font-normal"> · {p.brand}</span>}</p>
-          <p className="text-xs text-slate-500">{OBJECTIVES[p.objective]?.label ?? p.objective} · proposed {p.created_at.slice(0, 10)}</p>
-        </div>
+      <div className="flex items-start justify-between gap-2">
+        <p className="min-w-0 font-semibold text-slate-900">{p.product}</p>
         <Badge className={st.cls}>{st.label}</Badge>
       </div>
+      <p className="mt-1 text-sm text-slate-600">
+        {OBJECTIVES[p.objective]?.label ?? p.objective} · <b className="tabular-nums">{Number(p.daily_budget_kd).toLocaleString('en-GB')} KD</b>/day × {p.days} days
+        = <b className="tabular-nums">{total.toLocaleString('en-GB')} KD</b>
+      </p>
+      {p.kpi_target && <p className="text-xs text-slate-500">Target: {p.kpi_target.replace(/\s*\(.*\)$/, '')}</p>}
 
-      <dl className="grid sm:grid-cols-2 gap-x-6 gap-y-2 mt-3 text-sm">
-        <Field label="Audience">{p.audience} · {p.countries.join(', ')} · {p.age_min}–{p.age_max}</Field>
-        <Field label="Budget">
-          <b className="tabular-nums">{Number(p.daily_budget_kd).toLocaleString('en-GB')} KD</b>/day × {p.days} days = <b className="tabular-nums">{total.toLocaleString('en-GB')} KD</b>
-          {usd && <span className="text-slate-400"> (≈ {usd.toFixed(2)} USD/day)</span>}
-        </Field>
-        <Field label="Creative">
-          {p.creative}
-          {media && (
-            <a href={media.permalink ?? '#'} target="_blank" rel="noopener noreferrer" className="block text-xs text-slate-500 hover:text-slate-800 truncate">
-              @{media.username} · {media.caption?.replace(/\s+/g, ' ').slice(0, 80) || 'post'} <ExternalLink size={10} className="inline" />
-            </a>
-          )}
-        </Field>
-        <Field label="Success measure">{p.success_kpi}{p.kpi_target && <> — target {p.kpi_target}</>}</Field>
-        <div className="sm:col-span-2"><Field label="Why">{p.reason}</Field></div>
-      </dl>
+      {more && (
+        <dl className="grid sm:grid-cols-2 gap-x-6 gap-y-2 mt-3 text-sm">
+          <Field label="Audience">{p.audience} · {p.countries.join(', ')} · {p.age_min}–{p.age_max}</Field>
+          <Field label="Budget in USD">{usd ? `≈ ${usd.toFixed(2)} USD/day` : '—'}</Field>
+          <Field label="Creative">
+            {p.creative}
+            {media && (
+              <a href={media.permalink ?? '#'} target="_blank" rel="noopener noreferrer" className="block text-xs text-slate-500 hover:text-slate-800 truncate">
+                Open the post <ExternalLink size={10} className="inline" />
+              </a>
+            )}
+          </Field>
+          <Field label="Success measure">{p.success_kpi}{p.kpi_target && <> — {p.kpi_target}</>}</Field>
+          <div className="sm:col-span-2"><Field label="Why">{p.reason}</Field></div>
+          {p.decision_note && <div className="sm:col-span-2"><Field label="Owner’s note">{p.decision_note}</Field></div>}
+          {p.meta_campaign_id && <div className="sm:col-span-2"><Field label="Meta campaign">{p.meta_campaign_id}</Field></div>}
+        </dl>
+      )}
 
-      {p.meta_error && <MetaRefusal text={p.meta_error} />}
-      {p.decision_note && <p className="mt-2 text-xs text-slate-500">Owner’s note: {p.decision_note}</p>}
-      {p.meta_campaign_id && <p className="mt-2 text-[11px] text-slate-400">Meta campaign {p.meta_campaign_id}</p>}
+      {p.meta_error && <MetaRefusal text={p.meta_error} raw={more} />}
       {msg && !msg.bad && <p className="mt-3 text-xs rounded-lg px-3 py-2 border border-emerald-200 bg-emerald-50 text-emerald-800">{msg.text}</p>}
-      {msg?.bad && msg.text !== p.meta_error && <MetaRefusal text={msg.text} />}
+      {msg?.bad && msg.text !== p.meta_error && <MetaRefusal text={msg.text} raw={more} />}
 
       <div className="flex flex-wrap items-center gap-2 mt-4">
         {['proposed', 'failed'].includes(p.status) && (
@@ -256,8 +257,11 @@ function ProposalCard({ p, owner, mine, rate, media, events, focused, busy, msg,
             <Wallet size={13} /> Change budget
           </button>
         )}
+        <button onClick={() => setMore((m) => !m)} className={`${btn} ml-auto text-slate-400 hover:text-slate-700`}>
+          {more ? 'Less' : 'Details'}
+        </button>
         {events.length > 0 && (
-          <button onClick={() => setHistory((h) => !h)} className={`${btn} ml-auto text-slate-400 hover:text-slate-700`}>
+          <button onClick={() => setHistory((h) => !h)} className={`${btn} text-slate-400 hover:text-slate-700`}>
             <History size={13} /> {history ? 'Hide' : 'History'}
           </button>
         )}
@@ -284,16 +288,17 @@ const FIXES: [RegExp, string][] = [
   // Facebook page, and only to promote the post itself: Meta refuses the
   // website or message button a sales or WhatsApp ad needs (tested 26 Sep).
   [/development mode|external website URL|incompatible with the objective|not on the Facebook page/i,
-    'The Meta app that builds the ads is still in test mode, so this page cannot build sales or message ads yet. To run this campaign now, boost the post from the Instagram app (the post → Boost post) with this proposal’s audience, budget and days. Once an owner switches the app to Live (Meta for Developers → the app → App Mode → Live), Approve builds it here.'],
-  [/not linked to a WhatsApp/i, 'This Facebook page has no WhatsApp Business number linked. Link one in the page’s settings (Linked accounts → WhatsApp), then approve again.'],
+    'Meta app is in test mode. Boost this post from the Instagram app for now.'],
+  [/not linked to a WhatsApp/i, 'Link a WhatsApp Business number to this Facebook page first.'],
 ];
 
-function MetaRefusal({ text }: { text: string }) {
+/** The fix in one line; Meta's own words only under Details. */
+function MetaRefusal({ text, raw }: { text: string; raw: boolean }) {
   const fixes = FIXES.filter(([re]) => re.test(text)).map(([, fix]) => fix);
   return (
     <div className="mt-3 text-xs rounded-lg border border-rose-200 bg-rose-50 text-rose-800 px-3 py-2 space-y-1">
       {fixes.map((f) => <p key={f} className="font-semibold">{f}</p>)}
-      <p className={fixes.length ? 'opacity-70' : ''}>Meta said: {text}</p>
+      {(raw || !fixes.length) && <p className={fixes.length ? 'opacity-70' : ''}>Meta said: {text}</p>}
     </div>
   );
 }
