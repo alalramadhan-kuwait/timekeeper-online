@@ -1,5 +1,19 @@
 [
   {
+    "version": "1.1.7",
+    "date": "2026-09-27",
+    "title": "Media & Marketing fixes",
+    "changes": [
+      "Content Planner is hidden from the menu for now; nothing in it was deleted.",
+      "Instagram keeps showing the latest followers after its first year, and Sync now says when the Instagram part fails.",
+      "Posted or finished items no longer show as Overdue.",
+      "Meta Campaigns: the Paid Ads Tracker link works, refresh errors are shown, and “Needs a brand” stays filtered while you search.",
+      "Growth Review: tap a campaign to open it; Try again if the review fails to load.",
+      "Campaign Proposals: withdrawing is recorded, Approve asks “are you sure?” first, and a build that stopped halfway can be approved again.",
+      "Influencers: one Status filter instead of two, no more 0.0× return when no revenue is entered, and followers typed on the list feed the growth chart."
+    ]
+  },
+  {
     "version": "1.1.6",
     "date": "2026-09-27",
     "title": "What's new opens properly on phones",

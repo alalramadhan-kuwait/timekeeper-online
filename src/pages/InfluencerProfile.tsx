@@ -100,7 +100,9 @@ export default function InfluencerProfilePage() {
     return Number(inf.followers) - Number(base.followers);
   };
   const g30 = growth(30), g90 = growth(90);
-  const roi = agg.paid + agg.gift > 0 ? agg.revenue / (agg.paid + agg.gift) : null;
+  // No return until some revenue has actually been entered: 0 revenue is
+  // "not recorded", not a 0× return.
+  const roi = agg.revenue > 0 && agg.paid + agg.gift > 0 ? agg.revenue / (agg.paid + agg.gift) : null;
 
   async function refreshFollowers() {
     setRefreshing(true); setMsg('Fetching fresh followers… this takes about a minute.');
@@ -175,7 +177,6 @@ export default function InfluencerProfilePage() {
     extraFilters: [
       { key: 'collab_type', label: 'Type', options: COLLAB_TYPES },
       { key: 'payment_status', label: 'Payment', options: O.INF_PAYMENT },
-      { key: 'status', label: 'Status', options: O.INF_STATUSES },
     ],
     fields: [
       { key: 'agreed_date', label: 'Date agreed', type: 'date' },
@@ -338,7 +339,7 @@ export default function InfluencerProfilePage() {
           <Kpi icon={<Handshake size={13} />} label="Collaborations" value={String(agg.count)} />
           <Kpi icon={<Wallet size={13} />} label="Total paid" value={kd(agg.paid)} accent="text-slate-800" />
           <Kpi icon={<Gift size={13} />} label="Gift value" value={kd(agg.gift)} accent="text-violet-600" />
-          <Kpi icon={<TrendingUp size={13} />} label="Attributed revenue" value={kd(agg.revenue)} accent="text-emerald-600" />
+          <Kpi icon={<TrendingUp size={13} />} label="Attributed revenue" value={agg.revenue > 0 ? kd(agg.revenue) : "—"} accent="text-emerald-600" sub={agg.revenue > 0 ? undefined : "not entered yet"} />
           <Kpi icon={<Calendar size={13} />} label="Last collaboration" value={agg.last ?? '—'} />
           <Kpi icon={<TrendingUp size={13} />} label="ROI" value={roi != null ? `${roi.toFixed(1)}×` : '—'} accent={roi != null && roi >= 1 ? 'text-emerald-600' : 'text-slate-800'} sub={roi == null ? 'add revenue to see' : 'revenue ÷ spend'} />
         </div>

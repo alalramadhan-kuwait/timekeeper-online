@@ -36,7 +36,7 @@ export default function InstagramPage() {
     setLoading(true);
     const [d, p, m, ins] = await Promise.all([
       supabase.from('instagram_daily').select('snapshot_date, username, followers, follows_count, media_count, last_post_date')
-        .eq('username', account).order('snapshot_date').limit(365),
+        .eq('username', account).order('snapshot_date', { ascending: false }).limit(365),
       supabase.from('instagram_posts').select('shortcode, username, posted_at, type, likes, comments, caption, url')
         .eq('username', account).order('posted_at', { ascending: false }).limit(60),
       supabase.from('instagram_media')
@@ -47,24 +47,32 @@ export default function InstagramPage() {
     ]);
     setMedia((m.data as MediaRow[]) ?? []);
     setInsight((ins.data as InsightRow[]) ?? []);
-    setDaily((d.data as DailyRow[]) ?? []);
+    // Newest year, fetched newest-first and put back in date order for the chart.
+    setDaily(((d.data as DailyRow[]) ?? []).reverse());
     setPosts((p.data as PostRow[]) ?? []);
     setLoading(false);
   }
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [account]);
 
+  /** invoke() masks the function's own message; dig it out of the response. */
+  async function failure(res: { data: unknown; error: unknown }): Promise<string | null> {
+    const body = res.data as { error?: string } | null;
+    if (!res.error && !body?.error) return null;
+    let detail = body?.error ?? (res.error as Error)?.message ?? 'unknown error';
+    try { detail = (await (res.error as any)?.context?.clone().json())?.error ?? detail; } catch { /* keep */ }
+    return detail;
+  }
+
   async function syncNow() {
     setSyncing(true); setMsg(null);
-    // Instagram's own figures first; the scraper's followers after.
-    await supabase.functions.invoke('instagram-sync', { body: {} });
-    const { data, error } = await supabase.functions.invoke('instagram-apify-sync', { body: {} });
-    if (error || (data as any)?.error) {
-      // invoke() masks the real reason — dig it out of the response body
-      let detail = (data as any)?.error ?? error?.message;
-      try { detail = (await (error as any)?.context?.clone().json())?.error ?? detail; } catch { /* keep */ }
-      setMsg(`Sync failed: ${detail}`);
+    // Instagram's own figures first; the public follower count after. Both are reported.
+    const graph = await supabase.functions.invoke('instagram-sync', { body: {} });
+    const scraper = await supabase.functions.invoke('instagram-apify-sync', { body: {} });
+    const [gErr, sErr] = await Promise.all([failure(graph), failure(scraper)]);
+    if (gErr || sErr) {
+      setMsg(`Sync failed: ${[gErr && `Instagram — ${gErr}`, sErr && `followers — ${sErr}`].filter(Boolean).join(' · ')}`);
     } else {
-      setMsg(`Synced ✓ ${data?.accounts ?? 0} accounts · ${data?.posts ?? 0} posts`);
+      setMsg(`Synced ✓ ${(scraper.data as any)?.accounts ?? 0} accounts · ${(scraper.data as any)?.posts ?? 0} posts`);
     }
     setSyncing(false);
     load();
@@ -129,9 +137,7 @@ export default function InstagramPage() {
           <Kpi icon={<MousePointerClick size={13} />} label="Website taps" value={nf(insight[0].website_clicks)} sub={insight[0].snapshot_date} />
         </div>
       )}
-      <p className="text-xs text-slate-400 mb-4">
-        Instagram’s own figures (Pacific-time days).
-      </p>
+      {insight[0] && <p className="text-xs text-slate-400 mb-4">Instagram’s own figures, by Kuwait day.</p>}
 
       {/* KPI cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">

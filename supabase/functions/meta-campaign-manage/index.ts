@@ -21,6 +21,10 @@
 //              is counted from now.
 //   pause    — owner, manager or marketing: switch it off.
 //   budget   — owner: new daily budget in KD.
+//   withdraw — whoever proposed it, while it is still only a proposal.
+//
+// A build that stops partway leaves the proposal "approved"; after five
+// minutes it may be approved (or rejected) again.
 //
 // Needs META_ADS_TOKEN (a System User token with ads_management).
 import { createClient, type SupabaseClient } from "jsr:@supabase/supabase-js@2";
@@ -300,6 +304,9 @@ Deno.serve(async (req: Request) => {
   const { data: p } = await admin.from("ad_proposals").select("*").eq("id", body.id ?? "").maybeSingle();
   if (!p) return json({ error: "Proposal not found." }, 404);
 
+  const stalled = p.status === "approved" && Date.now() - Date.parse(p.updated_at ?? p.created_at) > 5 * 60_000;
+  const open = p.status === "proposed" || p.status === "failed" || stalled;
+
   const log = (action: string, detail: unknown = null) =>
     admin.from("ad_proposal_events").insert({ proposal_id: p.id, by_user: userId, action, detail });
   const update = (patch: Record<string, unknown>) =>
@@ -318,7 +325,7 @@ Deno.serve(async (req: Request) => {
 
       case "approve": {
         if (!owner) return json({ error: "Only an owner can approve." }, 403);
-        if (p.status !== "proposed" && p.status !== "failed") return json({ error: `This proposal is ${p.status}.` }, 409);
+        if (!open) return json({ error: `This proposal is ${p.status}.` }, 409);
         await update({ status: "approved", decided_by: userId, decided_at: new Date().toISOString(), decision_note: body.note ?? null, meta_error: null });
         await log("approved", { note: body.note ?? null });
 
@@ -331,9 +338,17 @@ Deno.serve(async (req: Request) => {
 
       case "reject": {
         if (!owner) return json({ error: "Only an owner can reject." }, 403);
-        if (p.status !== "proposed" && p.status !== "failed") return json({ error: `This proposal is ${p.status}.` }, 409);
+        if (!open) return json({ error: `This proposal is ${p.status}.` }, 409);
         await update({ status: "rejected", decided_by: userId, decided_at: new Date().toISOString(), decision_note: body.note ?? null });
         await log("rejected", { note: body.note ?? null });
+        return json({ ok: true });
+      }
+
+      case "withdraw": {
+        if (!userId || p.created_by !== userId) return json({ error: "Only whoever proposed it can withdraw it." }, 403);
+        if (p.status !== "proposed") return json({ error: `This proposal is ${p.status}.` }, 409);
+        await update({ status: "withdrawn" });
+        await log("withdrawn");
         return json({ ok: true });
       }
 

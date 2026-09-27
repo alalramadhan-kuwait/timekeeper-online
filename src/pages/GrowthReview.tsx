@@ -49,6 +49,7 @@ export function GrowthReviewPage() {
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [rules, setRules] = useState(false);
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     setLoading(true);
@@ -57,10 +58,15 @@ export function GrowthReviewPage() {
       setErr(error?.message ?? null);
       setLoading(false);
     });
-  }, [end]);
+  }, [end, attempt]);
 
   if (loading) return <Spinner />;
-  if (err || !r) return <p className="text-sm text-rose-700">The review could not be loaded: {err}</p>;
+  if (err || !r) return (
+    <div className="text-sm text-rose-700 space-y-2">
+      <p>The review could not be loaded{err ? `: ${err}` : '.'}</p>
+      <button onClick={() => setAttempt((a) => a + 1)} className="px-3 py-1.5 rounded-lg border border-slate-300 text-slate-700 text-xs font-semibold hover:bg-slate-50">Try again</button>
+    </div>
+  );
 
   const m = r.meta;
   const rate = r.kwd_per_usd;
@@ -144,7 +150,9 @@ export function GrowthReviewPage() {
               {r.campaigns.map((c) => (
                 <tr key={c.campaign_id}>
                   <td className="px-3 py-2"><Badge className={VERDICT[c.verdict]}>{c.verdict}</Badge></td>
-                  <td className="px-3 py-2 max-w-[180px] sm:max-w-[340px] truncate text-slate-700" title={c.name}>{c.name}</td>
+                  <td className="px-3 py-2 max-w-[180px] sm:max-w-[340px] truncate" title={c.name}>
+                    <Link to={`/meta-campaigns?q=${encodeURIComponent(c.campaign_id)}`} className="text-slate-700 underline decoration-slate-300 hover:text-slate-900">{c.name}</Link>
+                  </td>
                   <td className="px-3 py-2 text-right tabular-nums">{kd(usdToKd(c.spend_usd, rate))}</td>
                   <td className="px-3 py-2 text-right tabular-nums">{c.purchases || (c.conversations ? `${c.conversations} chats` : '—')}</td>
                   <td className="px-3 py-2 text-right tabular-nums">{c.roas != null ? `${c.roas}×` : '—'}</td>

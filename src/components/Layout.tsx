@@ -1,7 +1,7 @@
 import { NavLink, Outlet, useLocation, useSearchParams } from 'react-router-dom';
 import {
   LayoutDashboard, TrendingUp, Hourglass, Truck, Handshake,
-  Star, Users, CalendarRange, LogOut, Watch, Menu, Contact, Settings, Gem, ClipboardCheck, PhoneCall, Boxes, History, UserRound, Wrench, Instagram, Clapperboard, Megaphone, Target, Sparkles, Activity, Gauge, Inbox, ClipboardList, ChevronDown, BellRing, Bell, Download, Share, type LucideIcon,
+  Star, Users, CalendarRange, LogOut, Watch, Menu, Contact, Settings, Gem, ClipboardCheck, PhoneCall, Boxes, History, UserRound, Wrench, Instagram, Megaphone, Target, Sparkles, Activity, Gauge, Inbox, ClipboardList, ChevronDown, BellRing, Bell, Download, Share, type LucideIcon,
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useAuth, Role } from '../context/AuthContext';
@@ -69,7 +69,7 @@ const NAV_GROUPS: NavGroup[] = [
     title: 'Media & Marketing',
     items: [
       { to: '/instagram', label: 'Instagram Performance', icon: Instagram, roles: ['admin', 'manager', 'marketing', 'sales'] },
-      { to: '/content', label: 'Content Planner', icon: Clapperboard, roles: ['admin', 'manager', 'marketing', 'sales'] },
+      // Content Planner hidden from the menu while unused (27 Sep: 0 items ever added; data and page kept)
       { to: '/paid-ads', label: 'Paid Ads Tracker', icon: Megaphone, roles: ['admin', 'manager', 'marketing', 'sales'] },
       { to: '/growth-review', label: 'Growth Review', icon: TrendingUp, roles: ['admin', 'manager', 'marketing'] },
       { to: '/campaign-proposals', label: 'Campaign Proposals', icon: ClipboardList, roles: ['admin', 'manager', 'marketing'] },
@@ -103,6 +103,7 @@ export function canAccessPath(to: string, role: Role | null, pageAccess: string[
   if (to === '/settings') return role === 'admin' || role === 'manager';
   // hidden from the menu but still reachable by URL for HR (module kept per cleanup decision)
   if (to === '/company-documents') return ['admin', 'manager', 'hr'].includes(role ?? '');
+  if (to === '/content') return ['admin', 'manager', 'marketing'].includes(role ?? '');
   if (role === 'admin') return true;
   // an explicit list — even an empty one — replaces the role defaults, so a
   // salesperson can be limited to Dashboard, My Portal, Inbox and Notifications

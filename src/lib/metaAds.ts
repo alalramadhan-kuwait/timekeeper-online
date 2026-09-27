@@ -472,7 +472,8 @@ export async function loadCampaignPage(
     return { ...c, __meta: figures, __result: resultFor(figures), __tag: tags.get(c.id) ?? null };
   });
 
-  return opts.scope === 'untagged' && !term ? out.filter((r) => !r.__tag) : out;
+  // "Needs a brand" stays that way while searching, too.
+  return opts.scope === 'untagged' ? out.filter((r) => !r.__tag) : out;
 }
 
 /** How many campaigns are offered at all — those that have ever spent. The

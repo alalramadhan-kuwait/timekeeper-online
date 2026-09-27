@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { RefreshCw, Search, X, Megaphone } from 'lucide-react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Spinner } from '../components/ui';
 import { Modal } from '../components/ui';
@@ -32,10 +33,13 @@ export function MetaCampaignsPage() {
   const [brands, setBrands] = useState<Brand[]>([]);
 
   const [scope, setScope] = useState<CampaignScope>('recent');
-  const [search, setSearch] = useState('');
-  const [term, setTerm] = useState('');           // what is actually queried
+  // ?q= opens the page already searched (the Growth Review links here by campaign id)
+  const [params] = useSearchParams();
+  const [search, setSearch] = useState(params.get('q') ?? '');
+  const [term, setTerm] = useState(params.get('q') ?? '');   // what is actually queried
   const [rows, setRows] = useState<Record<string, any>[]>([]);
   const [total, setTotal] = useState<number | null>(null);
+  const [refreshErr, setRefreshErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [sync, setSync] = useState<MetaSyncState | null>(null);
   const [busy, setBusy] = useState(false);
@@ -72,10 +76,16 @@ export function MetaCampaignsPage() {
   }, []);
 
   async function refresh() {
-    setBusy(true);
+    setBusy(true); setRefreshErr(null);
     try {
-      await supabase.functions.invoke('meta-ads-sync', { body: { days: 14 } });
+      const { data, error } = await supabase.functions.invoke('meta-ads-sync', { body: { days: 14 } });
+      if (error || (data as { error?: string } | null)?.error) {
+        let detail = (data as { error?: string } | null)?.error ?? error?.message ?? 'unknown error';
+        try { detail = (await (error as any)?.context?.clone().json())?.error ?? detail; } catch { /* keep */ }
+        setRefreshErr(detail);
+      }
       await load();
+      void countAvailableCampaigns().then(setTotal);
     } finally {
       setBusy(false);
       void loadMetaSyncState().then(setSync);
@@ -119,14 +129,19 @@ export function MetaCampaignsPage() {
         )}
       </div>
 
+      {refreshErr && (
+        <div className="mb-3 rounded-xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-sm text-rose-800">
+          <span className="font-semibold">Refresh failed.</span> {refreshErr}
+        </div>
+      )}
       <h1 className="text-2xl font-bold text-slate-900">Meta Campaigns</h1>
       {/* The two pages are easy to confuse, and the difference decides which one
           somebody should be looking at — but one line is enough to say it. */}
       <p className="text-slate-400 text-xs mt-1">
         Meta’s records. Budgets:{' '}
-        <span className="inline-flex items-center gap-1 font-medium text-slate-500">
+        <Link to="/paid-ads" className="inline-flex items-center gap-1 font-medium text-slate-500 underline hover:text-slate-800">
           <Megaphone size={12} /> Paid Ads Tracker
-        </span>
+        </Link>
       </p>
 
       <div className="mt-4"><MetaHealth sync={sync} /></div>
@@ -169,7 +184,7 @@ export function MetaCampaignsPage() {
             ? `${sorted.length} spent in the last 90 days${total ? `, of ${total} that have ever spent` : ''}.`
             : scope === 'untagged'
               ? `${sorted.length} without a brand, biggest spender first. Open one to set it — a brand set here beats what the name says.`
-              : `${sorted.length} campaign${sorted.length === 1 ? '' : 's'} that have ever spent${total && sorted.length < total ? `, first 1,000 by name` : ''}.`}
+              : `${sorted.length} campaign${sorted.length === 1 ? '' : 's'} that have ever spent${total && sorted.length < total ? `, first 1,000 by spend` : ''}.`}
       </p>
 
       {!loading && !!sorted.length && <MetaSummary rows={sorted} rate={rate} />}
@@ -178,7 +193,9 @@ export function MetaCampaignsPage() {
         <div className="py-20 flex justify-center"><Spinner /></div>
       ) : !sorted.length ? (
         <div className="py-16 text-center text-slate-400">
-          {searching ? `Nothing matches “${term}”.` : 'No spend in 90 days.'}
+          {searching ? `Nothing matches “${term}”.`
+            : scope === 'untagged' ? 'Every campaign has a brand.'
+            : scope === 'recent' ? 'No spend in 90 days.' : 'No campaign has spent yet.'}
         </div>
       ) : (
         <>

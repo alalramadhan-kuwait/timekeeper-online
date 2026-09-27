@@ -237,19 +237,28 @@ export function CrudModule({ config }: { config: CrudConfig }) {
       payload[f.key] = f.parse ? f.parse(v) : v;
     }
     if (config.beforeSave) payload = config.beforeSave(payload);
+    let savedId = editing?.id;
     if (editing) {
       const { error } = await supabase.from(config.table).update(payload).eq('id', editing.id);
       if (error) { setError(error.message); return; }
     } else {
       if (config.stampCreatedBy !== false && user) payload.created_by = user.id;
-      const { error } = await supabase.from(config.table).insert(payload);
-      if (error) { setError(error.message); return; }
+      // Ask for the new id only when afterSave needs it: returning a row needs
+      // read access, which some tables deliberately don't grant on insert.
+      if (config.afterSave) {
+        const { data, error } = await supabase.from(config.table).insert(payload).select('id').maybeSingle();
+        if (error) { setError(error.message); return; }
+        savedId = data?.id;
+      } else {
+        const { error } = await supabase.from(config.table).insert(payload);
+        if (error) { setError(error.message); return; }
+      }
     }
     setShowForm(false);
     setEditing(null);
     load();
     config.onChanged?.();
-    config.afterSave?.(payload, load);
+    config.afterSave?.({ ...payload, id: savedId }, load);
   }
 
   async function remove(row: Record<string, any>) {

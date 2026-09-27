@@ -58,7 +58,13 @@ const EVENT_WORDS: Record<string, string> = {
   checked: 'Meta checked it — no problems', check_failed: 'Meta’s check found a problem',
   approved: 'Approved', created_paused: 'Built on Meta, paused', meta_refused: 'Meta refused it',
   rejected: 'Rejected', activated: 'Switched on', paused: 'Paused', budget_changed: 'Budget changed',
+  withdrawn: 'Withdrawn', post_changed: 'Post changed',
+  half_built_removed: 'Unfinished build removed from Meta', half_built_left: 'Unfinished build left on Meta — check Ads Manager',
 };
+
+/** A build that has sat at "approved" for 5 minutes died partway; it may be tried again. */
+const stalled = (p: { status: string; updated_at?: string | null }) =>
+  p.status === 'approved' && !!p.updated_at && Date.now() - Date.parse(p.updated_at) > 5 * 60_000;
 
 /** invoke() hides the function's own message behind a generic one. */
 async function manage(body: Record<string, unknown>): Promise<{ ok?: boolean; error?: string } & Record<string, unknown>> {
@@ -108,10 +114,8 @@ export function CampaignProposalsPage() {
     void load();
   }
 
-  async function withdraw(p: Proposal) {
-    if (!window.confirm('Withdraw this proposal?')) return;
-    await supabase.from('ad_proposals').update({ status: 'withdrawn' }).eq('id', p.id);
-    void load();
+  function withdraw(p: Proposal) {
+    void act(p, 'withdraw', {}, 'Withdraw this proposal?');
   }
 
   const groups = useMemo(() => ([
@@ -166,6 +170,7 @@ const DONE: Record<string, string> = {
   check: 'Meta accepts it. Nothing was left on Meta.',
   approve: 'Built on Meta, paused.',
   reject: 'Rejected.', activate: 'Switched on — spending now.', pause: 'Paused.', budget: 'Budget changed on Meta.',
+  withdraw: 'Withdrawn.',
 };
 
 function ProposalCard({ p, owner, mine, rate, media, events, focused, busy, msg, onAct, onWithdraw }: {
@@ -218,14 +223,16 @@ function ProposalCard({ p, owner, mine, rate, media, events, focused, busy, msg,
       {msg?.bad && msg.text !== p.meta_error && <MetaRefusal text={msg.text} raw={more} />}
 
       <div className="flex flex-wrap items-center gap-2 mt-4">
-        {['proposed', 'failed'].includes(p.status) && (
+        {(['proposed', 'failed'].includes(p.status) || stalled(p)) && (
           <button onClick={() => onAct(p, 'check')} disabled={!!busy} className={`${btn} border border-slate-300 text-slate-700 hover:bg-slate-50`}>
             <ShieldCheck size={13} /> {is('check') ? 'Asking Meta…' : 'Ask Meta to check'}
           </button>
         )}
-        {owner && ['proposed', 'failed'].includes(p.status) && <>
-          <button onClick={() => onAct(p, 'approve', { note: window.prompt('A note with the approval (optional)') ?? undefined },
-            `Approve and build on Meta?\n\nIt will be created PAUSED. Nothing spends until an owner switches it on.`)}
+        {owner && (['proposed', 'failed'].includes(p.status) || stalled(p)) && <>
+          <button onClick={() => {
+            if (!window.confirm('Approve and build on Meta?\n\nIt will be created PAUSED. Nothing spends until an owner switches it on.')) return;
+            onAct(p, 'approve', { note: window.prompt('A note with the approval (optional)') || undefined });
+          }}
             disabled={!!busy} className={`${btn} bg-slate-900 text-white hover:bg-slate-700`}>
             <Check size={13} /> {is('approve') ? 'Building…' : 'Approve — build paused'}
           </button>

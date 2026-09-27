@@ -83,7 +83,7 @@ const contentTasks: CrudConfig = {
     { key: 'content_type', label: 'Type', sortable: true, hideBelow: 'sm' },
     { key: 'channel', label: 'Channel', hideBelow: 'md' },
     { key: 'owner', label: 'Owner', sortable: true, hideBelow: 'lg' },
-    { key: 'planned_date', label: 'Planned', sortable: true, render: (r) => <ExpiryCell date={r.planned_date} /> },
+    { key: 'planned_date', label: 'Planned', sortable: true, render: (r) => <ExpiryCell date={r.planned_date} done={['Posted', 'Cancelled'].includes(r.status)} /> },
     { key: 'status', label: 'Status', sortable: true },
     { key: 'posted_date', label: 'Posted', sortable: true, hideBelow: 'lg' },
   ],
@@ -276,7 +276,7 @@ const paidAds: CrudConfig = {
       : <Badge className="bg-slate-100 text-slate-600 border-slate-200">Timekeeper</Badge> },
     { key: 'platform', label: 'Platform', sortable: true, hideBelow: 'sm' },
     { key: 'start_date', label: 'Start', sortable: true, hideBelow: 'md' },
-    { key: 'end_date', label: 'End', sortable: true, hideBelow: 'lg', render: (r) => <ExpiryCell date={r.end_date} /> },
+    { key: 'end_date', label: 'End', sortable: true, hideBelow: 'lg', render: (r) => <ExpiryCell date={r.end_date} done={['Completed', 'Cancelled'].includes(r.status)} /> },
     { key: 'budget', label: 'Budget', sortable: true, hideBelow: 'md', render: (r) => kd(r.budget) },
     { key: 'amount_charged', label: 'Charged', sortable: true, render: (r) => r.client_type === 'External company' ? kd(r.amount_charged) : <span className="text-slate-300 text-xs">—</span> },
     /* Meta bills in USD and the budget beside this is in KD, so the spend is
@@ -418,8 +418,14 @@ const influencerList: CrudConfig = {
     { key: 'platform', label: 'Platform', options: INF_PLATFORMS },
     { key: 'tier', label: 'Tier', options: INF_TIERS },
     { key: 'country', label: 'Country' },
-    { key: 'status', label: 'Status', options: INF_REL_STATUS },
   ],
+  // Followers typed here feed the growth chart too, as they do on the profile.
+  afterSave: async (p) => {
+    if (!p.id || p.followers == null || p.followers === '') return;
+    const day = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kuwait' });
+    await supabase.from('influencer_follower_snapshots')
+      .upsert({ influencer_id: p.id, snapshot_date: day, followers: Number(p.followers) }, { onConflict: 'influencer_id,snapshot_date' });
+  },
   fields: [
     { key: 'name', label: 'Influencer name', type: 'text', required: true },
     { key: 'handle', label: 'Instagram handle (@)', type: 'text', placeholder: '@username' },
@@ -484,7 +490,7 @@ export function InfluencersPage() {
     <div>
       {canSync && (
         <div className="flex flex-wrap items-center justify-end gap-3 mb-3">
-          {msg && <span className={`text-xs ${msg.includes('✓') ? 'text-emerald-600' : 'text-red-600'}`}>{msg}</span>}
+          {msg && <span className={`text-xs ${msg.startsWith('Refresh failed') ? 'text-red-600' : msg.includes('✓') ? 'text-emerald-600' : 'text-slate-500'}`}>{msg}</span>}
           <button onClick={refreshAll} disabled={busy}
             className="flex items-center gap-2 bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-50 disabled:opacity-60">
             <RefreshCw size={15} className={busy ? 'animate-spin' : ''} /> {busy ? 'Refreshing…' : 'Refresh all followers'}
@@ -560,8 +566,10 @@ export const RepairWatchesPage = () => <CrudModule config={repairWatches} />;
 
 const kd = (v: number | null | undefined) => (v == null ? '—' : `${formatKD(Number(v))} KD`);
 
-function ExpiryCell({ date }: { date: string | null }) {
+/** A due date with an Overdue/soon badge — none once the item is `done`. */
+function ExpiryCell({ date, done = false }: { date: string | null; done?: boolean }) {
   if (!date) return <span className="text-slate-400">—</span>;
+  if (done) return <span className="text-slate-400">{date}</span>;
   const tier = expiryTier(date);
   return (
     <span className="flex items-center gap-2">
