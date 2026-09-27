@@ -1,4 +1,4 @@
-import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Layout, { canAccessPath } from './components/Layout';
 import LoginPage from './components/LoginPage';
@@ -27,7 +27,7 @@ import {
 } from './pages/modules';
 import { MetaCampaignsPage } from './pages/MetaCampaigns';
 import { CampaignProposalsPage } from './pages/CampaignProposals';
-import { GrowthReviewPage } from './pages/GrowthReview';
+import { MarketingOverviewPage } from './pages/MarketingOverview';
 import { Spinner } from './components/ui';
 
 function Shell() {
@@ -66,7 +66,10 @@ function Shell() {
         <Route path="/paid-ads" element={g('/paid-ads', <PaidAdsPage />)} />
         <Route path="/meta-campaigns" element={g('/meta-campaigns', <MetaCampaignsPage />)} />
         <Route path="/campaign-proposals" element={g('/campaign-proposals', <CampaignProposalsPage />)} />
-        <Route path="/growth-review" element={g('/growth-review', <GrowthReviewPage />)} />
+        <Route path="/marketing" element={g('/marketing', <MarketingOverviewPage />)} />
+        {/* Growth Review became Marketing Overview (27 Sep); old links and the
+            Sunday notification keep working, with their query string. */}
+        <Route path="/growth-review" element={<KeepSearch to="/marketing" />} />
         <Route path="/influencers" element={g('/influencers', <InfluencersPage />)} />
         <Route path="/influencers/:id" element={g('/influencers', <InfluencerProfilePage />)} />
         <Route path="/activity" element={g('/activity', <UserActivityPage />)} />
@@ -89,4 +92,10 @@ export default function App() {
       </HashRouter>
     </AuthProvider>
   );
+}
+
+/** A redirect that keeps the query string (a notification's ?n= among it). */
+function KeepSearch({ to }: { to: string }) {
+  const { search } = useLocation();
+  return <Navigate to={{ pathname: to, search }} replace />;
 }

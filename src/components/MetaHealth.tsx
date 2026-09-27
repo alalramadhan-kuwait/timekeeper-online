@@ -55,15 +55,11 @@ const pct = (part: number, whole: number) => (whole > 0 ? Math.round((part / who
  * ad-click ID (fbc), which 43% of add-to-carts and 58% of checkouts did. A
  * purchase Meta cannot tie to a click is a purchase no ad gets credit for.
  */
-function Tracking({ sync }: { sync: MetaSyncState }) {
-  const px = mainPixel(sync.tracking?.pixels ?? []);
-  if (!px) {
-    return (
-      <Panel tone="slate" icon={<Clock size={16} />} title="Purchase tracking">
-        Not checked yet (checked every morning).
-      </Panel>
-    );
-  }
+/** Purchase tracking in one verdict — shared by this panel and the
+ *  Marketing Overview's health dot so the two never disagree. */
+export function trackingState(sync: MetaSyncState | null) {
+  const px = mainPixel(sync?.tracking?.pixels ?? []);
+  if (!px) return null;
   const purchases = px.events_7d?.Purchase ?? 0;
   const pSources = px.purchase_sources ?? {};
   const pBrowser = pct(pSources.BROWSER ?? 0, (pSources.BROWSER ?? 0) + (pSources.SERVER ?? 0));
@@ -73,12 +69,24 @@ function Tracking({ sync }: { sync: MetaSyncState }) {
      report without fbc means none carried the ad-click ID — 0%, not unknown. */
   const fbc = q ? (coverage(q, 'fbc') ?? 0) : null;
   const checkoutFbc = coverage(qualityFor(px, 'InitiateCheckout'), 'fbc');
-
   const weak = (fbc !== null && fbc < 30) || (fbc === null && pBrowser < 50);
-  const tone = purchases === 0 ? 'rose' : weak ? 'amber' : 'emerald';
+  const tone: 'rose' | 'amber' | 'emerald' = purchases === 0 ? 'rose' : weak ? 'amber' : 'emerald';
   const title = purchases === 0 ? 'No purchases reach Meta'
     : weak ? 'Meta can’t link sales to ads'
     : 'Purchase tracking works';
+  return { purchases, score, fbc, checkoutFbc, tone, title };
+}
+
+function Tracking({ sync }: { sync: MetaSyncState }) {
+  const t = trackingState(sync);
+  if (!t) {
+    return (
+      <Panel tone="slate" icon={<Clock size={16} />} title="Purchase tracking">
+        Not checked yet (checked every morning).
+      </Panel>
+    );
+  }
+  const { purchases, score, fbc, checkoutFbc, tone, title } = t;
 
   return (
     <Panel tone={tone} icon={tone === 'emerald' ? <CheckCircle2 size={16} /> : <AlertTriangle size={16} />} title={title}>

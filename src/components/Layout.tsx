@@ -68,10 +68,10 @@ const NAV_GROUPS: NavGroup[] = [
   {
     title: 'Media & Marketing',
     items: [
+      { to: '/marketing', label: 'Marketing Overview', icon: TrendingUp, roles: ['admin', 'manager', 'marketing'] },
       { to: '/instagram', label: 'Instagram Performance', icon: Instagram, roles: ['admin', 'manager', 'marketing', 'sales'] },
       // Content Planner hidden from the menu while unused (27 Sep: 0 items ever added; data and page kept)
-      { to: '/paid-ads', label: 'Paid Ads Tracker', icon: Megaphone, roles: ['admin', 'manager', 'marketing', 'sales'] },
-      { to: '/growth-review', label: 'Growth Review', icon: TrendingUp, roles: ['admin', 'manager', 'marketing'] },
+      { to: '/paid-ads', label: 'Paid Ads Tracker', icon: Megaphone, roles: ['admin', 'manager', 'marketing'] },
       { to: '/campaign-proposals', label: 'Campaign Proposals', icon: ClipboardList, roles: ['admin', 'manager', 'marketing'] },
       { to: '/meta-campaigns', label: 'Meta Campaigns', icon: Target, roles: ['admin', 'manager', 'marketing'] },
       { to: '/influencers', label: 'Influencer Tracker', icon: Sparkles, roles: ['admin', 'manager', 'marketing', 'sales'] },

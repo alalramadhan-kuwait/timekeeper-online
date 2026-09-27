@@ -32,9 +32,10 @@ export function MetaCampaignsPage() {
   const canSync = ['admin', 'manager', 'marketing'].includes(role ?? '');
   const [brands, setBrands] = useState<Brand[]>([]);
 
-  const [scope, setScope] = useState<CampaignScope>('recent');
-  // ?q= opens the page already searched (the Growth Review links here by campaign id)
+  // ?q= opens the page already searched and ?scope=untagged on "Needs a brand"
+  // (Marketing Overview links here both ways).
   const [params] = useSearchParams();
+  const [scope, setScope] = useState<CampaignScope>(params.get('scope') === 'untagged' ? 'untagged' : 'recent');
   const [search, setSearch] = useState(params.get('q') ?? '');
   const [term, setTerm] = useState(params.get('q') ?? '');   // what is actually queried
   const [rows, setRows] = useState<Record<string, any>[]>([]);
@@ -287,14 +288,14 @@ export function MetaCampaignsPage() {
  *  distinction is the whole point of the mapping table, so it is visible in the
  *  list rather than only inside the sheet. */
 function BrandCell({ r }: { r: Record<string, any> }) {
-  const a = attribute(r.name, r.__tag as StoredTag | null);
+  const a = attribute(r.name, r.__tag as StoredTag | null, r.__auto);
   const label = a.bucket === 'Several brands' && a.brands.length ? a.brands.join(' + ') : a.bucket;
   return (
     <span className="inline-flex items-center gap-1.5">
       <span className={a.kind === 'brand' ? 'text-slate-700' : 'text-slate-400 italic'}>{label}</span>
       {a.source === 'stored'
         ? <span className="text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200 rounded px-1 py-px">set</span>
-        : <span className="text-[10px] text-slate-400 bg-slate-50 border border-slate-200 rounded px-1 py-px">from name</span>}
+        : <span className="text-[10px] text-slate-400 bg-slate-50 border border-slate-200 rounded px-1 py-px">{a.source === 'ad' ? 'from ad' : 'from name'}</span>}
     </span>
   );
 }

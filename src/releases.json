@@ -1,5 +1,18 @@
 [
   {
+    "version": "1.2.0",
+    "date": "2026-09-27",
+    "title": "Marketing Overview",
+    "changes": [
+      "New first page in Media & Marketing: Marketing Overview replaces Growth Review.",
+      "See at a glance what needs you: tracking, when ads last ran, proposals to decide, and money clients still owe.",
+      "Four figures against last week, and a chart of ad spend next to online sales, day by day.",
+      "“What we’re pushing”: ad money per brand next to that brand’s sales, where the ads send people, and which page ran them.",
+      "Brands are now recognised in Arabic captions too, so far fewer campaigns show as unknown. “Needs a brand” lists only the ones left.",
+      "Paid Ads Tracker is no longer shown to sales staff."
+    ]
+  },
+  {
     "version": "1.1.7",
     "date": "2026-09-27",
     "title": "Media & Marketing fixes",

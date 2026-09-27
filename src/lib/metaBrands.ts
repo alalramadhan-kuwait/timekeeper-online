@@ -197,7 +197,7 @@ export function summarise(rows: Record<string, any>[], rate: DisplayRate = { kwd
     if (m.date_start && (!earliest || m.date_start < earliest)) earliest = m.date_start;
     if (m.date_stop && (!latest || m.date_stop > latest)) latest = m.date_stop;
 
-    const a = attribute(r.name, r.__tag as StoredTag | null | undefined);
+    const a = attribute(r.name, r.__tag as StoredTag | null | undefined, r.__auto as AutoBrand | null | undefined);
     if (a.source === 'stored') storedSpend += s;
 
     const row = byBrand.get(a.bucket)
@@ -330,8 +330,12 @@ export interface Attribution {
   /** The brands involved — one entry for a single brand, several for a campaign
    *  that genuinely covered more than one. */
   brands: string[];
-  source: 'stored' | 'name';
+  source: 'stored' | 'ad' | 'name';
 }
+
+/** The brand the database found in a campaign's ad text (Arabic spellings
+ *  included — see marketing_campaign_brands), when nobody has set one. */
+export interface AutoBrand { brand: string; source: 'ad text' | 'name' | 'set' | null }
 
 /**
  * Where a campaign's spend is counted, stored answer first.
@@ -343,13 +347,19 @@ export interface Attribution {
  * brand in it. The brands are named on the row and in the campaign's own sheet,
  * so nothing is lost; it is simply not claimed to be divisible.
  */
-export function attribute(name: string | null | undefined, stored?: StoredTag | null): Attribution {
+export function attribute(name: string | null | undefined, stored?: StoredTag | null, auto?: AutoBrand | null): Attribution {
   if (stored) {
     if (stored.kind === 'whole_shop') return { bucket: WHOLE_SHOP, kind: 'shop', brands: [], source: 'stored' };
     if (stored.kind === 'unknown') return { bucket: UNKNOWN_BRAND, kind: 'unknown', brands: [], source: 'stored' };
     const names = stored.brandNames;
     if (names.length === 1) return { bucket: names[0], kind: 'brand', brands: names, source: 'stored' };
     if (names.length > 1) return { bucket: SEVERAL_BRANDS, kind: 'shop', brands: names, source: 'stored' };
+  }
+  // The ads' own text names the brand more often than the campaign name does:
+  // 96% of this account's ads are in Arabic, and a boosted post is named
+  // after its caption's first words.
+  if (auto?.source === 'ad text' && auto.brand && auto.brand !== 'Unknown') {
+    return { bucket: auto.brand, kind: 'brand', brands: [auto.brand], source: 'ad' };
   }
   const { brand, kind } = brandOf(name);
   return { bucket: brand, kind, brands: kind === 'brand' ? [brand] : [], source: 'name' };

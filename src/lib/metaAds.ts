@@ -440,14 +440,19 @@ export async function loadCampaignPage(
   const rows = (camps ?? []) as any[];
   if (!rows.length) return [];
 
-  const [{ data: ins }, tags] = await Promise.all([
+  const campaignIds = rows.map((c) => c.id as string);
+  const [{ data: ins }, tags, { data: auto }] = await Promise.all([
     supabase.from('meta_insight_totals')
       .select(TOTALS_COLUMNS)
       .eq('level', 'campaign').in('campaign_id', rows.map((c) => c.id)),
     // What a person has said the campaign was for. Loaded here rather than in
     // the page so the brand figures and the list can never disagree.
-    loadCampaignTags(rows.map((c) => c.id as string)),
+    loadCampaignTags(campaignIds),
+    // The brand named in each campaign's ads, when nobody has set one.
+    supabase.rpc('marketing_campaign_brands', { p_campaigns: campaignIds }),
   ]);
+  const autoBy = new Map(((auto ?? []) as { campaign_id: string; brand: string; source: string | null }[])
+    .map((a) => [a.campaign_id, { brand: a.brand, source: a.source }]));
   const byCampaign = new Map((ins ?? []).map((r) => [r.campaign_id, r]));
 
   const lastOk = (cfg as { last_synced_at?: string } | null)?.last_synced_at;
@@ -469,11 +474,12 @@ export async function loadCampaignPage(
       date_start: i.date_start ?? null, date_stop: i.date_stop ?? null,
       synced_at: i.synced_at ?? c.synced_at ?? null,
     };
-    return { ...c, __meta: figures, __result: resultFor(figures), __tag: tags.get(c.id) ?? null };
+    return { ...c, __meta: figures, __result: resultFor(figures), __tag: tags.get(c.id) ?? null, __auto: autoBy.get(c.id) ?? null };
   });
 
-  // "Needs a brand" stays that way while searching, too.
-  return opts.scope === 'untagged' ? out.filter((r) => !r.__tag) : out;
+  // "Needs a brand": nobody set one and none was found in the ads or the
+  // name — the list an owner has to look at. It stays so while searching.
+  return opts.scope === 'untagged' ? out.filter((r) => !r.__tag && !r.__auto?.source) : out;
 }
 
 /** How many campaigns are offered at all — those that have ever spent. The
