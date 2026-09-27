@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Plus, Check, X, Play, Pause, Wallet, ShieldCheck, ExternalLink, History } from 'lucide-react';
+import { Plus, Check, X, Play, Pause, Wallet, ShieldCheck, ExternalLink, History, Instagram } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
@@ -97,9 +97,17 @@ export function CampaignProposalsPage({ embedded = false }: { embedded?: boolean
         .order('posted_at', { ascending: false }).limit(90),
       supabase.from('meta_ads_config').select('kwd_per_usd').eq('id', 1).maybeSingle(),
     ]);
-    setRows((p.data as Proposal[]) ?? []);
+    const props = (p.data as Proposal[]) ?? [];
+    let posts = (m.data as MediaOption[]) ?? [];
+    // A proposal's post may be older than the latest 90; fetch those too.
+    const missing = [...new Set(props.map((x) => x.instagram_media_id).filter((id): id is string => !!id && !posts.some((q) => q.media_id === id)))];
+    if (missing.length) {
+      const extra = await supabase.from('instagram_media').select('media_id, username, caption, posted_at, reach, permalink').in('media_id', missing);
+      posts = [...posts, ...((extra.data as MediaOption[]) ?? [])];
+    }
+    setRows(props);
     setEvents((e.data as Event[]) ?? []);
-    setMedia((m.data as MediaOption[]) ?? []);
+    setMedia(posts);
     setRate(c.data?.kwd_per_usd ? Number(c.data.kwd_per_usd) : null);
     setLoading(false);
   }, []);
@@ -204,19 +212,24 @@ function ProposalCard({ p, owner, mine, rate, media, events, focused, busy, msg,
         = <b className="tabular-nums">{total.toLocaleString('en-GB')} KD</b>
       </p>
       {p.kpi_target && <p className="text-xs text-slate-500">Target: {p.kpi_target.replace(/\s*\(.*\)$/, '')}</p>}
+      {media?.permalink && (
+        <a href={media.permalink} target="_blank" rel="noopener noreferrer"
+          className="mt-2 flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-xs text-slate-600 hover:bg-slate-50">
+          <Instagram size={14} className="shrink-0 text-slate-400" />
+          <span className="min-w-0 truncate" dir="auto">
+            <b className="text-slate-800">@{media.username}</b>
+            {media.posted_at && <> · {new Date(media.posted_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</>}
+            {media.caption && <> · {media.caption.replace(/\s+/g, ' ').slice(0, 60)}</>}
+          </span>
+          <span className="ml-auto shrink-0 font-semibold text-slate-800">Open post <ExternalLink size={11} className="inline" /></span>
+        </a>
+      )}
 
       {more && (
         <dl className="grid sm:grid-cols-2 gap-x-6 gap-y-2 mt-3 text-sm">
           <Field label="Audience">{p.audience} · {p.countries.join(', ')} · {p.age_min}–{p.age_max}</Field>
           <Field label="Budget in USD">{usd ? `≈ ${usd.toFixed(2)} USD/day` : '—'}</Field>
-          <Field label="Creative">
-            {p.creative}
-            {media && (
-              <a href={media.permalink ?? '#'} target="_blank" rel="noopener noreferrer" className="block text-xs text-slate-500 hover:text-slate-800 truncate">
-                Open the post <ExternalLink size={10} className="inline" />
-              </a>
-            )}
-          </Field>
+          <Field label="Creative">{p.creative}</Field>
           <Field label="Success measure">{p.success_kpi}{p.kpi_target && <> — {p.kpi_target}</>}</Field>
           <div className="sm:col-span-2"><Field label="Why">{p.reason}</Field></div>
           {p.decision_note && <div className="sm:col-span-2"><Field label="Owner’s note">{p.decision_note}</Field></div>}
