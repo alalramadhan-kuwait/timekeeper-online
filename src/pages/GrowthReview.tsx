@@ -72,7 +72,7 @@ export function GrowthReviewPage() {
   const improve = r.campaigns.filter((c) => c.verdict === 'Improve');
 
   return (
-    <div className="max-w-5xl">
+    <div className="max-w-5xl min-w-0">
       <div className="flex flex-wrap items-center justify-between gap-3 mb-1">
         <h1 className="text-xl font-bold text-slate-900">Weekly Growth Review</h1>
         <div className="flex items-center gap-1 text-sm">
@@ -96,7 +96,7 @@ export function GrowthReviewPage() {
           <Headline label="Online + WhatsApp (Lightspeed)" value={kd((r.shop.online?.kd ?? 0) + (r.shop.whatsapp?.kd ?? 0))}
             sub={`${(r.shop.online?.sales ?? 0) + (r.shop.whatsapp?.sales ?? 0)} sales`} />
         </dl>
-        <div className="mt-4 pt-4 border-t border-white/15 grid md:grid-cols-3 gap-3 text-sm">
+        <div className="mt-4 pt-4 border-t border-white/15 grid grid-cols-1 md:grid-cols-3 gap-3 text-sm [&>p]:min-w-0 [&>p]:break-words">
           <p><span className="text-white/50">Best product · </span>{bestProduct ? `${bestProduct.name} (${kd(bestProduct.kd)})` : '—'}</p>
           <p><span className="text-white/50">Best creative · </span>{bestCreative ? (bestCreative.body?.slice(0, 50) || bestCreative.name || 'ad') : 'no ad spent 5+ USD'}</p>
           <p><span className="text-white/50">Decision · </span>
@@ -146,7 +146,7 @@ export function GrowthReviewPage() {
               {r.campaigns.map((c) => (
                 <tr key={c.campaign_id}>
                   <td className="px-3 py-2"><Badge className={VERDICT[c.verdict]}>{c.verdict}</Badge></td>
-                  <td className="px-3 py-2 max-w-[340px] truncate text-slate-700">{c.name}</td>
+                  <td className="px-3 py-2 max-w-[180px] sm:max-w-[340px] truncate text-slate-700" title={c.name}>{c.name}</td>
                   <td className="px-3 py-2 text-right tabular-nums">{kd(usdToKd(c.spend_usd, rate))}</td>
                   <td className="px-3 py-2 text-right tabular-nums">{c.purchases || (c.conversations ? `${c.conversations} chats` : '—')}</td>
                   <td className="px-3 py-2 text-right tabular-nums">{c.roas != null ? `${c.roas}×` : '—'}</td>
@@ -158,27 +158,27 @@ export function GrowthReviewPage() {
         </div>
       )}
 
-      <div className="grid md:grid-cols-2 gap-4">
-        <section className="bg-white rounded-xl border border-slate-200 p-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <section className="min-w-0 bg-white rounded-xl border border-slate-200 p-4">
           <h2 className="text-sm font-semibold text-slate-700 mb-2">Best-selling online & WhatsApp</h2>
           {r.best_products.length ? (
             <ol className="space-y-1.5 text-sm">
               {r.best_products.map((p, i) => (
                 <li key={i} className="flex justify-between gap-3">
-                  <span className="truncate text-slate-700">{p.name}{p.brand && <span className="text-slate-400"> · {p.brand}</span>}</span>
+                  <span className="min-w-0 truncate text-slate-700">{p.name}{p.brand && <span className="text-slate-400"> · {p.brand}</span>}</span>
                   <span className="tabular-nums text-slate-500 shrink-0">{p.units} · {kd(p.kd)}</span>
                 </li>
               ))}
             </ol>
           ) : <p className="text-sm text-slate-400">No online or WhatsApp sales this week.</p>}
         </section>
-        <section className="bg-white rounded-xl border border-slate-200 p-4">
+        <section className="min-w-0 bg-white rounded-xl border border-slate-200 p-4">
           <h2 className="text-sm font-semibold text-slate-700 mb-2">Best creatives</h2>
           {r.best_creatives.length ? (
             <ol className="space-y-2 text-sm">
               {r.best_creatives.map((a) => (
                 <li key={a.ad_id} className="flex items-start justify-between gap-3">
-                  <span className="text-slate-700 line-clamp-2">{a.body || a.name || a.ad_id}</span>
+                  <span className="min-w-0 text-slate-700 line-clamp-2 break-words">{a.body || a.name || a.ad_id}</span>
                   <span className="text-right tabular-nums text-xs text-slate-500 shrink-0">
                     {a.purchases ? `${a.purchases} sold · ` : ''}{a.ctr != null ? `CTR ${a.ctr}%` : ''}
                     {a.permalink && <a href={a.permalink} target="_blank" rel="noopener noreferrer" className="block text-slate-400 hover:text-slate-700">post <ExternalLink size={10} className="inline" /></a>}

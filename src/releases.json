@@ -1,5 +1,14 @@
 [
   {
+    "version": "1.1.3",
+    "date": "2026-09-27",
+    "title": "Growth Review fits the phone",
+    "changes": [
+      "The Weekly Growth Review no longer slides sideways on a phone; long product names are shortened to fit.",
+      "Best-selling products now list only real products — charges such as delivery no longer appear as a nameless product."
+    ]
+  },
+  {
     "version": "1.1.2",
     "date": "2026-09-26",
     "title": "Campaign checks that tell you what to do",
