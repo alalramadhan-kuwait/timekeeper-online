@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, useAnimationControls, useDragControls, useReducedMotion, type PanInfo } from 'motion/react';
 import { X, ChevronLeft } from 'lucide-react';
 
@@ -115,7 +116,10 @@ export function Modal({ title, onClose, children }: { title: string; onClose: ()
     ? { drag: 'y' as const, dragControls: dragCtl, dragListener: false, dragConstraints: { top: 0, bottom: 0 }, dragElastic: { top: 0.12, bottom: 1 }, onDragEnd }
     : {};
 
-  return (
+  // Rendered on <body>: opened from inside the blurred phone header, a
+  // fixed sheet would otherwise be boxed into the header (backdrop-filter
+  // makes it the containing block) and the page would show through.
+  return createPortal(
     <motion.div className="fixed inset-0 z-50 bg-white flex flex-col" style={{ willChange: 'transform' }} animate={controls} {...dragProps}>
       <div
         onPointerDown={(e) => { if (mobile && !reduce && !(e.target as HTMLElement).closest('button')) dragCtl.start(e); }}
@@ -137,7 +141,8 @@ export function Modal({ title, onClose, children }: { title: string; onClose: ()
                       paddingLeft: 'calc(1.25rem + var(--sa-l))',
                       paddingRight: 'calc(1.25rem + var(--sa-r))' }}>{children}</div>
       </div>
-    </motion.div>
+    </motion.div>,
+    document.body,
   );
 }
 

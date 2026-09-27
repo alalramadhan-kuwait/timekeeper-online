@@ -1,5 +1,13 @@
 [
   {
+    "version": "1.1.6",
+    "date": "2026-09-27",
+    "title": "What's new opens properly on phones",
+    "changes": [
+      "Tapping the version at the top of the screen now opens What's new over the whole screen, instead of showing only its title."
+    ]
+  },
+  {
     "version": "1.1.5",
     "date": "2026-09-27",
     "title": "Less reading in Media & Marketing",
