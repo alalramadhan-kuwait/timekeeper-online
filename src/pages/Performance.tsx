@@ -31,7 +31,7 @@ const PAGE_LABEL: Record<string, string> = {
   '/': 'Dashboard', '/me': 'My Portal', '/sales': 'Sales', '/crm': 'CRM', '/follow-ups': 'Follow-ups', '/vip': 'VIP',
   '/waiting-list': 'Demand', '/stock': 'Stock', '/purchase-orders': 'Supplier Payments', '/consignments': 'Consignments',
   '/limited-projects': 'Limited Projects', '/repairs': 'Repairs', '/attendance': 'Attendance', '/hr': 'Employees',
-  '/leave': 'Leave', '/instagram': 'Instagram', '/content': 'Content', '/paid-ads': 'Paid Ads', '/client-ads': 'Client Ads', '/ads': 'Ads', '/marketing': 'Marketing Overview', '/influencers': 'Influencers',
+  '/leave': 'Leave', '/instagram': 'Instagram', '/content': 'Content', '/paid-ads': 'Paid Ads', '/client-ads': 'Client Ads', '/ads': 'Ads', '/marketing': 'Marketing Overview', '/owner': 'Owner view', '/influencers': 'Influencers',
   '/history': 'History', '/settings': 'Settings', '/activity': 'User Activity', '/performance': 'Performance',
 };
 

@@ -323,7 +323,7 @@ function WorkflowTasksCard() {
 }
 
 // ── Dashboard ─────────────────────────────────────────────────────────────────
-export default function Dashboard() {
+export default function Dashboard({ title = 'Dashboard' }: { title?: string }) {
   const { role, profile, pageAccess } = useAuth();
   const [d, setD] = useState<Record<string, number | null>>({});
   const [tillSyncedAt, setTillSyncedAt] = useState<string | null>(null);
@@ -679,7 +679,7 @@ export default function Dashboard() {
     <div>
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-bold text-slate-900">Dashboard</h1>
+          <h1 className="text-xl font-bold text-slate-900">{title}</h1>
           <p className="text-sm text-slate-500">Welcome back{profile ? `, ${profile.full_name}` : ''} — business health at a glance.</p>
         </div>
         {can('/sales') && (

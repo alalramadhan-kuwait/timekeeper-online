@@ -1,6 +1,6 @@
 import { NavLink, Outlet, useLocation, useSearchParams } from 'react-router-dom';
 import {
-  LayoutDashboard, TrendingUp, Hourglass, Truck, Handshake,
+  LayoutDashboard, Briefcase, TrendingUp, Hourglass, Truck, Handshake,
   Star, Users, CalendarRange, LogOut, Watch, Menu, Contact, Settings, Gem, ClipboardCheck, PhoneCall, Boxes, History, UserRound, Wrench, Instagram, Megaphone, Target, Sparkles, Activity, Gauge, Inbox, ClipboardList, ChevronDown, BellRing, Bell, Download, Share, type LucideIcon,
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
@@ -30,6 +30,7 @@ const NAV_GROUPS: NavGroup[] = [
     title: null,
     items: [
       { to: '/', label: 'Dashboard', icon: LayoutDashboard, roles: ['admin', 'manager', 'staff', 'hr', 'viewer', 'sales', 'operations'] },
+      { to: '/owner', label: 'Owner view', icon: Briefcase, roles: ['admin'] },
       { to: '/me', label: 'My Portal', icon: UserRound, roles: ['admin', 'manager', 'staff', 'hr', 'viewer', 'sales', 'operations'] },
       { to: '/inbox', label: 'Inbox', icon: Inbox, roles: ['admin', 'manager', 'staff', 'hr', 'viewer', 'sales', 'operations'] },
       { to: '/notifications', label: 'Notifications', icon: Bell, roles: ['admin', 'manager', 'staff', 'hr', 'viewer', 'sales', 'operations', 'marketing'] },

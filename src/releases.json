@@ -1,5 +1,18 @@
 [
   {
+    "version": "3.0.0",
+    "date": "2026-09-29",
+    "title": "A dashboard for the manager",
+    "changes": [
+      "The Dashboard is now built for the manager who runs the day: what needs fixing today, not how the company is doing.",
+      "Staffing shows who is not in yet, outlet by outlet. When everyone is in, it is one quiet line.",
+      "Each outlet’s sales sit against its target with a mark for where it should be today, so the outlet falling behind stands out.",
+      "“Waiting on you” puts approvals, overdue repairs, arrived pre-orders and follow-ups in one list, oldest first.",
+      "Watch shows lost sales, what customers asked for that we did not have, and late deliveries.",
+      "Supplier balance, stock value, ads and Instagram move to a new “Owner view” in the menu (owner only)."
+    ]
+  },
+  {
     "version": "2.0.3",
     "date": "2026-09-29",
     "title": "One PO notification a day",
