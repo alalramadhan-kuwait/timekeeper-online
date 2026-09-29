@@ -1,5 +1,13 @@
 [
   {
+    "version": "2.0.2",
+    "date": "2026-09-29",
+    "title": "Manager approval shown",
+    "changes": [
+      "Requests waiting for you now show which manager approved them and when, with their remarks."
+    ]
+  },
+  {
     "version": "2.0.1",
     "date": "2026-09-27",
     "title": "Proposals show their post",

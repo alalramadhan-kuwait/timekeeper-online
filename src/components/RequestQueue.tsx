@@ -17,7 +17,7 @@ import { supabase } from '../lib/supabase';
 import { Spinner, Badge } from './ui';
 import {
   loadRequests, decide, remind, applyScheduleChange, tabOf, counts, stageOf, standingLine,
-  waitedFor, fieldChanges, reminderState,
+  waitedFor, fieldChanges, reminderState, whenShort,
   type RequestRow, type Tab, type MyStage,
 } from '../shared/requests';
 import { applyCorrection, isApplicable, type CorrectionRequest } from '../lib/attendanceCorrection';
@@ -229,6 +229,14 @@ function RequestCard({ r, mine, busy, remark, onRemark, onDecide, onRemind, onOv
           )}
         </div>
       </div>
+
+      {r.stage_owner !== 'nobody' && r.manager_decided_at && r.manager_decided_name && (
+        <p className="mt-1.5 text-xs text-emerald-700">
+          <Check className="w-3.5 h-3.5 inline -mt-0.5 mr-1" />
+          Manager approved: <b className="font-semibold">{r.manager_decided_name}</b>, {whenShort(r.manager_decided_at)}
+          {r.manager_remarks && <span className="text-slate-500"> — “{r.manager_remarks}”</span>}
+        </p>
+      )}
 
       {r.on_behalf_name && (
         <p className="mt-1.5 text-xs text-slate-500">
