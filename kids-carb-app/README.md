@@ -20,3 +20,11 @@ Schema + seed: `supabase/migrations/`. First parent enters the one-time setup co
     cp .env.example .env.local   # URL + anon key
     npm install && npm run dev
     npm test                     # carb engine, suggestions, shopping list
+
+## Deploy
+The app is static (`dist/`), works under any sub-path (hash routing), and is a home-screen app on a phone.
+- **GitHub Pages:** put this folder at the root of its own repo, push to `main`, set Settings > Pages > Source to
+  *GitHub Actions*. `.github/workflows/deploy.yml` tests, builds and publishes.
+- **Fastest, no repo:** `npm run build`, then drag the `dist` folder onto app.netlify.com/drop.
+Do not deploy it from the company `timekeeper-online` repo: that repo's Pages site is the live staff app and is
+rebuilt from scratch on every push to `main`.
