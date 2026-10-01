@@ -13,10 +13,11 @@ import {
 } from '../lib/customers';
 import { caseLabel } from '../shared/caseLabels';
 import { displayPhone } from '../shared/phoneRules';
+import { groupOf, GROUP_LABEL, type CustomerGroup } from '../shared/customerTiers';
 import type { TemplateKey } from '../shared/messageRules';
 
 type SortKey = 'name' | 'visits' | 'purchasesKD' | 'openFollowups' | 'last';
-type Filter = 'all' | 'followups' | 'occasions' | 'vip' | 'unassigned';
+type Filter = 'top' | 'win_back' | 'new' | 'all' | 'followups' | 'occasions' | 'unassigned';
 
 const caseTypeColors: Record<string, string> = {
   Sale: 'bg-emerald-100 text-emerald-700 border-emerald-200',
@@ -57,7 +58,8 @@ export default function CrmPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
-  const [filter, setFilter] = useState<Filter>(params.get('tab') === 'occasions' ? 'occasions' : 'all');
+  /* A long list opens on the customers worth the day's attention; the rest are one search away. */
+  const [picked, setPicked] = useState<Filter | null>(params.get('tab') === 'occasions' ? 'occasions' : null);
   const [sortKey, setSortKey] = useState<SortKey>('last');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const openId = params.get('customer');
@@ -69,6 +71,29 @@ export default function CrmPage() {
   }, []);
   useEffect(() => { void load(); }, [load]);
 
+  const filter: Filter = picked ?? (rows.length > 300 ? 'top' : 'all');
+  function pick(f: Filter) {
+    setPicked(f);
+    // the best customers first: by what they have spent
+    if (f === 'top' || f === 'win_back') { setSortKey('purchasesKD'); setSortDir('desc'); }
+    else if (f === 'new' || f === 'all') { setSortKey('last'); setSortDir('desc'); }
+  }
+  const groups = useMemo(() => {
+    const now = new Date();
+    return new Map<string, CustomerGroup>(rows.map(r => [r.id, groupOf(r, now)]));
+  }, [rows]);
+  const counts = useMemo(() => {
+    const n = { top: 0, win_back: 0, new: 0 };
+    for (const g of groups.values()) if (g !== 'other') n[g]++;
+    return n;
+  }, [groups]);
+
+  // A long list opens on Top, so open it sorted by what they have spent.
+  const longList = rows.length > 300;
+  useEffect(() => {
+    if (picked === null && longList) { setSortKey('purchasesKD'); setSortDir('desc'); }
+  }, [picked, longList]);
+
   function toggleSort(key: SortKey) {
     if (sortKey === key) setSortDir(d => (d === 'asc' ? 'desc' : 'asc'));
     else { setSortKey(key); setSortDir(key === 'name' ? 'asc' : 'desc'); }
@@ -78,11 +103,14 @@ export default function CrmPage() {
     const q = search.trim().toLowerCase();
     const digits = q.replace(/\D/g, '');
     const p = rows.filter(r => {
-      if (filter === 'followups' && r.openFollowups === 0) return false;
-      if (filter === 'occasions' && (r.nextOccasionDays == null || r.nextOccasionDays > 30)) return false;
-      if (filter === 'vip' && !r.isVip) return false;
-      if (filter === 'unassigned' && r.responsibleEmployeeId) return false;
-      if (!q) return true;
+      /* A search looks at everybody, whichever group the list opened on. */
+      if (!q) {
+        if ((filter === 'top' || filter === 'win_back' || filter === 'new') && groups.get(r.id) !== filter) return false;
+        if (filter === 'followups' && r.openFollowups === 0) return false;
+        if (filter === 'occasions' && (r.nextOccasionDays == null || r.nextOccasionDays > 30)) return false;
+        if (filter === 'unassigned' && r.responsibleEmployeeId) return false;
+        return true;
+      }
       return r.name.toLowerCase().includes(q) || (r.responsible ?? '').toLowerCase().includes(q)
         || (digits.length >= 3 && ((r.phoneE164 ?? '').includes(digits) || r.contact.replace(/\D/g, '').includes(digits)));
     });
@@ -95,7 +123,7 @@ export default function CrmPage() {
       else cmp = last(a).localeCompare(last(b));
       return sortDir === 'asc' ? cmp : -cmp;
     });
-  }, [rows, search, filter, sortKey, sortDir]);
+  }, [rows, search, filter, sortKey, sortDir, groups]);
 
   const open = (id: string | null) => {
     const next = new URLSearchParams(params);
@@ -117,8 +145,13 @@ export default function CrmPage() {
     </th>
   );
   const chips: { key: Filter; label: string }[] = [
-    { key: 'all', label: 'All' }, { key: 'followups', label: 'Open follow-ups' }, { key: 'occasions', label: 'Occasions (30 days)' },
-    { key: 'vip', label: 'VIP' }, ...(canAssign ? [{ key: 'unassigned' as Filter, label: 'No responsible salesperson' }] : []),
+    ...(rows.length > 300 ? [
+      { key: 'top' as Filter, label: `Top ${counts.top.toLocaleString()}` },
+      { key: 'win_back' as Filter, label: `Win back ${counts.win_back.toLocaleString()}` },
+      { key: 'new' as Filter, label: `New ${counts.new.toLocaleString()}` },
+    ] : []),
+    { key: 'followups', label: 'Open follow-ups' }, { key: 'occasions', label: 'Occasions (30 days)' },
+    { key: 'all', label: 'All' }, ...(canAssign ? [{ key: 'unassigned' as Filter, label: 'No responsible salesperson' }] : []),
   ];
 
   return (
@@ -126,7 +159,7 @@ export default function CrmPage() {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-xl font-bold text-slate-900">CRM Customers</h1>
-          <p className="text-sm text-slate-500">{rows.length.toLocaleString()} customers · {formatKD(totals.kd)} KD in Lightspeed · {totals.followups} open follow-ups · {totals.soon} occasions this week</p>
+          <p className="text-sm text-slate-500">{search ? `${filtered.length.toLocaleString()} found in all ${rows.length.toLocaleString()} customers` : `${filtered.length.toLocaleString()} shown of ${rows.length.toLocaleString()} customers`} · {formatKD(totals.kd)} KD in Lightspeed · {totals.followups} open follow-ups · {totals.soon} occasions this week</p>
         </div>
         <div className="relative">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -136,7 +169,7 @@ export default function CrmPage() {
       </div>
       <div className="flex flex-wrap gap-1.5">
         {chips.map(c => (
-          <button key={c.key} onClick={() => setFilter(c.key)}
+          <button key={c.key} onClick={() => pick(c.key)}
             className={`px-3 py-1.5 rounded-full text-xs font-semibold border ${filter === c.key ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-600 border-slate-200'}`}>{c.label}</button>
         ))}
       </div>
@@ -160,7 +193,11 @@ export default function CrmPage() {
             {filtered.slice(0, 300).map(r => (
               <tr key={r.id} onClick={() => open(r.id)} className="hover:bg-slate-50 cursor-pointer">
                 <td className="px-4 py-2.5 font-medium text-slate-900">
-                  <span className="flex items-center gap-1.5">{r.isVip && <Star size={13} className="text-amber-500 fill-amber-400" />}{r.name}</span>
+                  <span className="flex items-center gap-1.5">{r.isVip && <Star size={13} className="text-amber-500 fill-amber-400" />}{r.name}
+                    {groups.get(r.id) && groups.get(r.id) !== 'other' && (
+                      <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${groups.get(r.id) === 'top' ? 'bg-slate-900 text-white' : groups.get(r.id) === 'win_back' ? 'bg-sky-50 text-sky-700' : 'bg-violet-50 text-violet-700'}`}>{GROUP_LABEL[groups.get(r.id)!]}</span>
+                    )}
+                  </span>
                 </td>
                 <td className="px-4 py-2.5 text-slate-600 whitespace-nowrap">{displayPhone(r.phoneE164) ?? r.contact}</td>
                 <td className="px-4 py-2.5 text-slate-600 whitespace-nowrap">{day(last(r) || null)}</td>
