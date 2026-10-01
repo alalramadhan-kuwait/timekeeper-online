@@ -1,5 +1,13 @@
 [
   {
+    "version": "3.0.1",
+    "date": "2026-10-01",
+    "title": "All customers now searchable",
+    "changes": [
+      "Customers: the list now loads every customer instead of the first 1,000, so searches find everyone and the Occasions filter shows the customers it counts."
+    ]
+  },
+  {
     "version": "3.0.0",
     "date": "2026-09-29",
     "title": "A dashboard for the manager",
