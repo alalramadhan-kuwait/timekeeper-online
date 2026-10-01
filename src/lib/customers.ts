@@ -126,6 +126,14 @@ export async function getRosterEmployees(): Promise<Map<string, string>> {
   return new Map(((data ?? []) as { employee_id: string; staff_name: string }[]).map(r => [r.staff_name, r.employee_id]));
 }
 
+/** Roster name → the name an Arabic message is signed with. Empty when none is saved. */
+export async function getRosterArabicNames(): Promise<Map<string, string>> {
+  const { data, error } = await supabase.rpc('roster_arabic_names');
+  if (error) throw new Error(error.message);
+  return new Map(((data ?? []) as { staff_name: string; name_ar: string | null }[])
+    .filter(r => r.name_ar).map(r => [r.staff_name, r.name_ar as string]));
+}
+
 export interface MessageTemplate { key: string; lang: 'en' | 'ar'; title: string; body: string }
 
 export async function getMessageTemplates(): Promise<MessageTemplate[]> {

@@ -1,5 +1,14 @@
 [
   {
+    "version": "3.2.0",
+    "date": "2026-10-01",
+    "title": "Arabic names for WhatsApp messages",
+    "changes": [
+      "HR → Employees has a new “Name in Arabic” field. Arabic WhatsApp messages are signed with it.",
+      "Arabic WhatsApp messages are rewritten to read naturally, name the shop in Arabic, and say “الساعة” when no product is named."
+    ]
+  },
+  {
     "version": "3.1.0",
     "date": "2026-10-01",
     "title": "Customers: focus on the ones that matter",

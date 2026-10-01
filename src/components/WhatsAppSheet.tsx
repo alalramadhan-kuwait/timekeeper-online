@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { MessageCircle, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { getMessageTemplates, getRosterEmployees, logWhatsAppHandoff, type MessageTemplate } from '../lib/customers';
-import { renderTemplate, greetingName, whatsappLink, type TemplateKey, type TemplateLang } from '../shared/messageRules';
+import { getMessageTemplates, getRosterEmployees, getRosterArabicNames, logWhatsAppHandoff, type MessageTemplate } from '../lib/customers';
+import { renderTemplate, greetingName, whatsappLink, DEFAULT_PRODUCT, type TemplateKey, type TemplateLang } from '../shared/messageRules';
+import { outletNameAr } from '../shared/outlets';
 
 export interface WhatsAppTarget { customerId: string; name: string | null; phone: string | null }
 
@@ -21,6 +22,7 @@ export function WhatsAppSheet({ target, caseId, product, store, defaultTemplate 
   const mustName = role === 'admin' || role === 'staff';
   const [templates, setTemplates] = useState<MessageTemplate[]>([]);
   const [roster, setRoster] = useState<Map<string, string>>(new Map());
+  const [arNames, setArNames] = useState<Map<string, string>>(new Map());
   const [sender, setSender] = useState(mustName ? '' : (profile?.sales_name ?? profile?.full_name ?? ''));
   const [key, setKey] = useState<string>(defaultTemplate);
   const [lang, setLang] = useState<TemplateLang>('en');
@@ -32,14 +34,21 @@ export function WhatsAppSheet({ target, caseId, product, store, defaultTemplate 
   useEffect(() => {
     void getMessageTemplates().then(setTemplates).catch(() => setTemplates([]));
     if (mustName) void getRosterEmployees().then(setRoster).catch(() => setRoster(new Map()));
+    void getRosterArabicNames().then(setArNames).catch(() => setArNames(new Map()));
   }, [mustName]);
 
   const keys = useMemo(() => Array.from(new Set(templates.map(t => t.key))), [templates]);
   const titleOf = (k: string) => templates.find(t => t.key === k && t.lang === 'en')?.title ?? k;
   const current = templates.find(t => t.key === key && t.lang === lang) ?? null;
+  /* An Arabic message is signed and addressed in Arabic: the sender's Arabic name when
+     one is saved (HR → employee), and the shop's Arabic name. A product that is not
+     named becomes "the watch" rather than leaving a hole in the sentence. */
   const rendered = useMemo(() => current ? renderTemplate(current.body, {
-    first_name: greetingName(target.name), salesperson: sender || null, store: store ?? null, product: product ?? null,
-  }) : '', [current, target.name, sender, store, product]);
+    first_name: greetingName(target.name),
+    salesperson: (lang === 'ar' ? arNames.get(sender) : null) || sender || null,
+    store: store ? (lang === 'ar' ? outletNameAr(store) : store) : null,
+    product: product ?? DEFAULT_PRODUCT[lang],
+  }) : '', [current, target.name, sender, store, product, lang, arNames]);
   useEffect(() => { if (!edited) setText(rendered); }, [rendered, edited]);
 
   const link = whatsappLink(target.phone, text);
@@ -101,6 +110,9 @@ export function WhatsAppSheet({ target, caseId, product, store, defaultTemplate 
             </div>
             <textarea value={text} onChange={e => { setText(e.target.value); setEdited(true); }} rows={6} dir={lang === 'ar' ? 'rtl' : 'ltr'}
               className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm leading-relaxed resize-none" />
+            {lang === 'ar' && sender && !arNames.get(sender) && (
+              <p className="text-[11px] text-amber-600 mt-1">No Arabic name is saved for {sender}, so the English one is used. Add it under HR → Employees.</p>
+            )}
             <p className="text-[11px] text-slate-400 mt-1">Read it before you send. WhatsApp opens with this typed in; nothing goes until Send is pressed there.</p>
           </div>
           {err && <p className="text-sm text-rose-600">{err}</p>}

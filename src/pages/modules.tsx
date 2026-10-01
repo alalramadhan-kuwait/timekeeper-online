@@ -538,6 +538,7 @@ const employees: CrudConfig = {
   stampCreatedBy: false,
   fields: [
     { key: 'full_name', label: 'Employee name', type: 'text', required: true },
+    { key: 'name_ar', label: 'Name in Arabic (signs Arabic WhatsApp messages)', type: 'text' },
     { key: 'civil_id', label: 'Civil ID', type: 'text' },
     { key: 'passport_number', label: 'Passport number', type: 'text' },
     { key: 'residency_expiry', label: 'Residency expiry', type: 'date' },
