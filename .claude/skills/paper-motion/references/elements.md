@@ -62,3 +62,11 @@ Easing names: `linear`, `outCubic`, `inCubic`, `inOutCubic` (default), `outBack`
 - **Before and after:** two mascots, one `look: "worried"` and one `"happy"`, a `shape` arrow between them.
 - **Verdict:** hero prop, then `stamp` with `slam` and a `sparkles` burst at the same time.
 - **Recap:** cork `card` (`tex: "cork"`) with `sticky` notes and a `list` that reveals rows on `stagger`.
+
+## Documentary elements (props-docu.js)
+
+**watch** `size`, `strap: false` (case only), `caseColor`, `dialColor`, `strapColor`, `handColor`, `markerColor`, `numerals: "arabic"`, `brand`, `date`, `time: [h, m, s]`, `rate` (seconds of watch time per scene second), `tick: false` for a smooth second hand. `assemble: { at, stagger, dur }` flies the parts in layer by layer. `explode` keyframes 0 to 1 pull it apart.
+**map** `w`, `h`, `view` (a `{lon, lat, span}` or keyframes `[[t, {lon, lat, span}, ease]]`, span in degrees of longitude), `pins: [{id, lon, lat, label, at}]`, `routes: [{from, to, at, dur, curve, plane, keep}]`, `highlight: [{n: "Kuwait", at, color}]`, `states: true`, `graticule`, `sea`, `land`, `unfold: {at, dur}`.
+**photo** a polaroid for real evidence: `src` or `asset`, `w`, `aspect`, `label`, `desc` (shown on the placeholder). **igpost** a generic social post card: `asset`/`src`, `avatar`, `handle`, `caption`, `empty`, `likeAt`. **notif** `text`, `name`, `initial`, `rtl`.
+**phone** `src`/`label`, `fold` keyframes (screen folds down). **door** `open` keyframes, `sign`, `src`/`asset`. **box** watch box (`lid` keyframes) or `kind: "parcel"`. **mic**, **waves** (`bars`, `level`), **cup**, **laptop**, **suitcase**, **pedestal**, **spotlight**, **towers** (Kuwait Towers).
+**puppet** `size`, `view: "front"|"side"`, `pose` (name or keyframes), `walk`, `talk`, `flip`, `skin`, `hair`, `top`, `bottom`, `initial` (stand-in badge), `character` (loads art), `parts` (explicit image paths). Poses: stand, hands, point, watch, phone, mic, cheer, wave, sit, sitTalk, sitWatch, side, sideWatch.

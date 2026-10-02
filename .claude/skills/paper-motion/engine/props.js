@@ -421,7 +421,7 @@
     box(node, { left: '0', top: '0', width: px(w), height: px(h), border: '5px solid ' + c, borderRadius: '10px' });
     box(node, { left: '8px', top: '8px', width: px(w - 16), height: px(h - 16), border: '2px solid ' + c, borderRadius: '6px' });
     text(node, str, { font: 'title', size, weight: sp.weight || 400, color: c, w, h, center: true, ls: .06 });
-    node.style.mixBlendMode = 'multiply';
+    node.style.mixBlendMode = sp.blend || 'multiply';
     return { node, w, h };
   };
 

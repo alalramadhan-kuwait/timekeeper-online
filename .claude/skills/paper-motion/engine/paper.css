@@ -26,8 +26,8 @@ html,body{margin:0;background:#000;overflow:hidden}
 .bg,.floor,.grain,.vignette{position:absolute;left:0;width:100%;pointer-events:none}
 .bg{top:0;height:100%;z-index:-5000}
 .floor-edge{position:absolute;left:0;width:100%;height:6px;background:rgba(255,255,255,.14)}
-.grain{top:0;height:100%;mix-blend-mode:multiply;opacity:.55}
-.vignette{top:0;height:100%;background:radial-gradient(ellipse at 50% 45%,rgba(0,0,0,0) 55%,rgba(0,0,0,.28) 100%)}
+.grain{top:0;height:100%;mix-blend-mode:multiply;opacity:var(--grain,.55)}
+.vignette{top:0;height:100%;background:radial-gradient(ellipse at 50% 45%,rgba(0,0,0,0) 55%,rgba(0,0,0,.28) 100%);opacity:var(--vignette,1)}
 .el{position:absolute;left:0;top:0;width:0;height:0}
 .el > .body{position:absolute}
 .piece{position:absolute}
@@ -36,10 +36,10 @@ html,body{margin:0;background:#000;overflow:hidden}
 
 /* banner */
 .banner{position:absolute;left:0;top:0;width:0;height:0;z-index:900}
-.banner .strip{position:absolute;display:flex;align-items:center;justify-content:center;background-color:#F2EBDA;
-  background-blend-mode:multiply;color:#1b1a18;font-family:var(--f-banner);font-weight:800;letter-spacing:-.02em;text-transform:uppercase;white-space:nowrap}
+.banner .strip{position:absolute;display:flex;align-items:center;justify-content:center;background-color:var(--banner-paper,#F2EBDA);
+  background-blend-mode:multiply;color:var(--banner-ink,#1b1a18);font-family:var(--banner-font,var(--f-banner));font-weight:800;letter-spacing:var(--banner-ls,-.02em);text-transform:var(--banner-case,uppercase);white-space:nowrap}
 .banner .tape{position:absolute;width:74px;height:34px;background:rgba(214,190,128,.82);box-shadow:0 1px 2px rgba(0,0,0,.25)}
 /* captions */
 .caps{position:absolute;left:0;width:100%;display:flex;justify-content:center;align-items:center;gap:6px;z-index:950;pointer-events:none}
-.cap{display:inline-block;padding:7px 14px 9px;font-family:var(--f-cap);font-weight:700;font-size:38px;line-height:1;color:#FFF4E2;
-  background-color:#DC7447;background-blend-mode:multiply;box-shadow:0 3px 0 rgba(0,0,0,.22),0 7px 10px rgba(0,0,0,.28)}
+.cap{display:inline-block;padding:7px 14px 9px;font-family:var(--cap-font,var(--f-cap));font-weight:700;font-size:38px;line-height:1.15;color:var(--cap-ink,#FFF4E2);
+  background-color:var(--cap-bg,#DC7447);background-blend-mode:multiply;box-shadow:0 3px 0 rgba(0,0,0,.22),0 7px 10px rgba(0,0,0,.28)}

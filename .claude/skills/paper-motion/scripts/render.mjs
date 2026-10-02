@@ -39,6 +39,8 @@ for (let i = 0; i < argv.length; i++) {
   else if (a === '--still') opt.still = next().split(',').map(Number);
   else if (a === '--sheet') opt.sheet = true;
   else if (a === '--keep-frames') opt.keep = true;
+  else if (a === '--review') opt.review = true;
+  else if (a === '--final') opt.final = true;
   else if (a === '--voice-gain') opt.voiceGain = +next();
   else if (a === '--music-gain') opt.musicGain = +next();
   else if (!sbPath) sbPath = a;
@@ -50,10 +52,36 @@ sbPath = path.resolve(sbPath);
 const sbDir = path.dirname(sbPath);
 const sb = JSON.parse(fs.readFileSync(sbPath, 'utf8'));
 const resolveFile = (p) => (/^(https?:|data:|file:)/.test(p) ? p : pathToFileURL(path.resolve(sbDir, p)).href);
-(function fix(o) { // make every "src" resolve relative to the storyboard
+// ---- asset resolution -------------------------------------------------------
+// 1. Relative paths in "src", "avatar" and puppet "parts" resolve against the storyboard folder.
+// 2. An element with "asset": "ep1_boulder_01" and no src picks up <storyboard folder>/assets/ep1_boulder_01.(jpg|png|webp)
+//    when that file exists, so real evidence replaces a placeholder just by being dropped into assets/.
+// 3. A puppet with "character": "ali" picks up assets/characters/ali/<front|side>/<part>.png for every part found.
+const placeholders = [];
+const PARTS = ['head', 'torso', 'armU', 'armL', 'hand', 'legU', 'legL', 'foot'];
+const findAsset = (id) => { for (const e of ['jpg', 'jpeg', 'png', 'webp']) { const f = path.join(sbDir, 'assets', id + '.' + e); if (fs.existsSync(f)) return f; } return null; };
+(function fix(o) {
   if (Array.isArray(o)) o.forEach(fix);
-  else if (o && typeof o === 'object') for (const k of Object.keys(o)) { if (k === 'src' && typeof o[k] === 'string') o[k] = resolveFile(o[k]); else fix(o[k]); }
+  else if (o && typeof o === 'object') {
+    for (const k of Object.keys(o)) {
+      if ((k === 'src' || k === 'avatar') && typeof o[k] === 'string') o[k] = resolveFile(o[k]);
+      else if (k === 'parts' && o[k] && typeof o[k] === 'object') for (const pk of Object.keys(o[k])) o[k][pk] = resolveFile(o[k][pk]);
+      else fix(o[k]);
+    }
+    if (typeof o.asset === 'string' && !o.src && ['photo', 'igpost', 'image', 'phone', 'door', 'laptop'].includes(o.type)) {
+      const f = findAsset(o.asset);
+      if (f) o.src = pathToFileURL(f).href; else placeholders.push(o.asset);
+    }
+    if (o.type === 'puppet' && typeof o.character === 'string') {
+      const dir = path.join(sbDir, 'assets', 'characters', o.character, o.view === 'side' ? 'side' : 'front');
+      const found = {};
+      for (const pn of PARTS) { const f = path.join(dir, pn + '.png'); if (fs.existsSync(f)) found[pn] = pathToFileURL(f).href; }
+      if (Object.keys(found).length) o.parts = Object.assign(found, o.parts || {});
+      else placeholders.push('character:' + o.character + (o.view === 'side' ? ' (side)' : ''));
+    }
+  }
 })(sb);
+if (opt.review) sb.review = true;
 const fps = opt.fps || sb.fps || 30;
 sb.fps = fps;
 const abs = (p) => (p ? path.resolve(sbDir, p) : p);
@@ -99,6 +127,15 @@ function chromiumPath() {
 }
 
 const ffmpeg = findFfmpeg();
+if (placeholders.length) {
+  console.warn(`placeholders still showing (${placeholders.length}): ${[...new Set(placeholders)].join(', ')}`);
+  if (opt.final) die('--final refused: real assets are missing for the placeholders above');
+}
+if (opt.final) {
+  const bad = sb.scenes.filter((s) => !s.status);
+  if (bad.length) die('--final refused: scenes without a truth status: ' + bad.map((s) => s.id || '?').join(', '));
+}
+
 function audioDuration(f) {
   const r = spawnSync(ffmpeg, ['-hide_banner', '-i', f], { encoding: 'utf8' });
   const m = /Duration: (\d+):(\d+):([\d.]+)/.exec(r.stderr || '');
@@ -122,7 +159,7 @@ const voiceClips = [];
   }
 }
 const pw = loadPlaywright();
-const browser = await pw.chromium.launch({ executablePath: chromiumPath(), args: ['--no-sandbox', '--font-render-hinting=none', '--disable-gpu-vsync'] }).catch((e) => die('could not launch Chromium: ' + e.message.split('\n')[0] + '\nTry: npx playwright-core install chromium'));
+const browser = await pw.chromium.launch({ executablePath: chromiumPath(), args: ['--no-sandbox', '--font-render-hinting=none', '--disable-gpu-vsync', '--allow-file-access-from-files'] }).catch((e) => die('could not launch Chromium: ' + e.message.split('\n')[0] + '\nTry: npx playwright-core install chromium'));
 
 async function newPage() {
   const W = sb.width || 720, H = sb.height || 1280;
@@ -189,28 +226,55 @@ const D = total / fps;
 const args = ['-y', '-v', 'error', '-framerate', String(fps), '-i', path.join(tmp, 'f_%06d.jpg')];
 const vg = opt.voiceGain != null ? opt.voiceGain : (sb.audio && sb.audio.voiceGain) || 0;
 const mg = opt.musicGain != null ? opt.musicGain : (sb.audio && sb.audio.musicGain != null ? sb.audio.musicGain : -18);
-const voices = [];
+// every audio source becomes { f, start, gain(dB), loop?, len? }; start is in output seconds
+const srcs = [];
 if (audio) {
   if (!fs.existsSync(audio)) die('audio not found: ' + audio);
   const ad = audioDuration(audio);
   if (ad && ad > D + 0.3) console.warn(`warning: voice-over is ${ad.toFixed(1)}s but the storyboard is ${D.toFixed(1)}s. Lengthen scene durations or the end will be cut.`);
-  voices.push({ f: audio, start: 0 });
+  srcs.push({ f: audio, start: 0, gain: vg });
 }
-voices.push(...voiceClips.filter((v) => v.start < t1).map((v) => ({ f: v.f, start: Math.max(0, v.start - t0) })));
-voices.forEach((v) => args.push('-i', v.f));
+voiceClips.filter((v) => v.start < t1).forEach((v) => srcs.push({ f: v.f, start: Math.max(0, v.start - t0), gain: vg }));
+// sound effects: scene.sfx = [{at, name, gain}], scene.beds = [{name, from, to, gain}], automatic paper sounds unless scene.silent
+const sfxFile = (name) => {
+  for (const d of [path.join(sbDir, 'sfx'), path.join(here, '..', 'assets', 'sfx')]) { const f = path.join(d, name.endsWith('.wav') ? name : name + '.wav'); if (fs.existsSync(f)) return f; }
+  die('sound effect not found: ' + name + ' (looked in <storyboard>/sfx and the skill assets/sfx)');
+};
+const autoSfx = !(sb.audio && sb.audio.autoSfx === false);
+let sfxCount = 0;
+{
+  let acc = 0;
+  for (const [i, sc] of sb.scenes.entries()) {
+    const cues = [];
+    if (autoSfx && !sc.silent) {
+      if (i > 0 && ['slide', 'push', 'rise', 'drop'].includes(sc.transition || 'slide')) cues.push({ at: 0, name: 'paper_slide', gain: -9 });
+      if (sc.banner !== undefined || i === 0) cues.push({ at: 0.3, name: 'paper_place', gain: -14 });
+    }
+    (sc.sfx || []).forEach((c) => cues.push(c));
+    for (const c of cues) { const st = acc + c.at - t0; if (st >= -0.01 && st < t1 - t0) { srcs.push({ f: c.file ? path.resolve(sbDir, c.file) : sfxFile(c.name), start: Math.max(0, st), gain: c.gain != null ? c.gain : -8 }); sfxCount++; } }
+    for (const bd of sc.beds || []) { const from = acc + (bd.from || 0) - t0, len = (bd.to != null ? bd.to : sc.dur) - (bd.from || 0); if (from < t1 - t0) srcs.push({ f: sfxFile(bd.name), start: Math.max(0, from), gain: bd.gain != null ? bd.gain : -22, loop: true, len, fade: 0.4 }); }
+    acc += sc.dur;
+  }
+}
+srcs.forEach((x) => { if (x.loop) args.push('-stream_loop', '-1'); args.push('-i', x.f); });
 if (music) { if (!fs.existsSync(music)) die('music not found: ' + music); args.push('-stream_loop', '-1', '-i', music); }
-if (voices.length || music) {
+if (srcs.length || music) {
   const chains = [], labels = [];
-  voices.forEach((v, i) => { chains.push(`[${i + 1}:a]adelay=${Math.round(v.start * 1000)}:all=1,volume=${vg}dB[v${i}]`); labels.push(`[v${i}]`); });
-  if (music) { const mi = voices.length + 1; chains.push(`[${mi}:a]volume=${mg + (voices.length ? 0 : 12)}dB,afade=t=in:d=1,afade=t=out:st=${Math.max(0, D - 1.5).toFixed(2)}:d=1.5[m]`); labels.push('[m]'); }
-  chains.push(labels.length === 1 ? `${labels[0]}anull[a]` : `${labels.join('')}amix=inputs=${labels.length}:duration=longest:normalize=0[a]`);
+  srcs.forEach((x, i) => {
+    let c = `[${i + 1}:a]`;
+    if (x.loop) c += `atrim=0:${x.len.toFixed(3)},asetpts=PTS-STARTPTS,afade=t=in:d=${x.fade},afade=t=out:st=${Math.max(0, x.len - x.fade).toFixed(3)}:d=${x.fade},`;
+    c += `adelay=${Math.round(x.start * 1000)}:all=1,volume=${x.gain}dB[a${i}]`;
+    chains.push(c); labels.push(`[a${i}]`);
+  });
+  if (music) { const mi = srcs.length + 1; chains.push(`[${mi}:a]volume=${mg}dB,afade=t=in:d=1.5,afade=t=out:st=${Math.max(0, D - 2.5).toFixed(2)}:d=2.5[m]`); labels.push('[m]'); }
+  chains.push(labels.length === 1 ? `${labels[0]}anull[a]` : `${labels.join('')}amix=inputs=${labels.length}:duration=longest:normalize=0,loudnorm=I=-18:TP=-2:LRA=11[a]`);
   args.push('-filter_complex', chains.join(';'), '-map', '0:v', '-map', '[a]');
 }
 args.push('-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', String(opt.crf), '-preset', 'medium', '-r', String(fps), '-movflags', '+faststart');
-if (voices.length || music) args.push('-c:a', 'aac', '-b:a', '160k');
+if (srcs.length || music) args.push('-c:a', 'aac', '-b:a', '160k');
 args.push('-t', D.toFixed(3), out);
 const enc = spawnSync(ffmpeg, args, { stdio: 'inherit' });
 if (enc.status !== 0) die('ffmpeg encode failed');
 if (!opt.keep) fs.rmSync(tmp, { recursive: true, force: true }); else console.log('frames kept in ' + tmp);
 const mb = (fs.statSync(out).size / 1048576).toFixed(1);
-console.log(`done: ${out}  ${outW}x${outH}  ${D.toFixed(1)}s  ${mb} MB${voices.length || music ? '' : '  (no audio)'}`);
+console.log(`done: ${out}  ${outW}x${outH}  ${D.toFixed(1)}s  ${mb} MB${srcs.length || music ? '' : '  (no audio)'}`);

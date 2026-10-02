@@ -222,10 +222,10 @@
   });
 
   // ------------------------------------------------------------------ init
-  let S, stage, scenes, groups, capsRoot;
+  let S, stage, scenes, groups, capsRoot, reviewEl;
 
   function normalize(sb) {
-    const o = Object.assign({ width: 720, height: 1280, fps: 30, floorY: 960, captionY: 1004, boil: true, lang: 'en', maxWords: 3, themes: {} }, sb);
+    const o = Object.assign({ width: 720, height: 1280, fps: 30, floorY: 960, captionY: 1004, boil: true, lang: 'en', maxWords: 3, themes: {}, style: {} }, sb);
     o.scenes = (sb.scenes || []).map((s, i) => Object.assign({ dur: 4, transition: i === 0 ? 'cut' : 'slide' }, s));
     let t = 0;
     for (const s of o.scenes) { s.start = t; t += s.dur; }
@@ -386,7 +386,7 @@
     span.style.unicodeBidi = 'plaintext';
     span.textContent = text;
     strip.appendChild(span);
-    let size = 33;
+    let size = (S.style.banner && S.style.banner.size) || 33;
     strip.style.fontSize = size + 'px';
     strip.style.padding = '0 34px';
     // measure single-line width and shrink to fit; wrap to 2 lines if still too wide
@@ -408,7 +408,8 @@
     strip.style.height = h + 'px';
     strip.style.left = -w / 2 + 'px';
     strip.style.top = -h / 2 + 'px';
-    strip.style.clipPath = cutPoly(w, h, 2, hash(text), [2.6, 1.3, 2.6, 1.3]);
+    const tz = (S.style.banner && S.style.banner.torn != null) ? S.style.banner.torn : 1;
+    strip.style.clipPath = cutPoly(w, h, 2, hash(text), [2.6 * tz, 1.3 * tz, 2.6 * tz, 1.3 * tz]);
     const wrap = div('', { position: 'absolute', left: 0, top: 0, filter: 'drop-shadow(0 5px 5px rgba(0,0,0,.35))' });
     wrap.appendChild(strip);
     for (const side of [-1, 1]) {
@@ -417,6 +418,8 @@
       tp.style.top = -h / 2 - 12 + 'px';
       tp.style.transform = 'rotate(' + side * 32 + 'deg)';
       tp.style.clipPath = 'polygon(0 12%,6% 0,12% 14%,18% 0,100% 0,100% 100%,18% 100%,12% 86%,6% 100%,0 88%)';
+      if (S.style.banner && S.style.banner.tape) tp.style.backgroundColor = S.style.banner.tape;
+      if (S.style.banner && S.style.banner.tape === 'none') tp.style.display = 'none';
       tp.style.backgroundImage = tex('paper');
       tp.style.backgroundBlendMode = 'multiply';
       wrap.appendChild(tp);
@@ -477,6 +480,9 @@
         const r = rng('cap' + gi + '-' + wi);
         const tag = div('cap');
         tag.textContent = w.text;
+        const gth = scenes[g.scene].th;
+        if (gth.capBg) tag.style.backgroundColor = gth.capBg;
+        if (gth.capInk) tag.style.color = gth.capInk;
         tag.style.backgroundImage = tex('paper');
         tag.style.backgroundSize = '256px 256px';
         tag.style.fontSize = (S.captionSize || 38) + 'px';
@@ -526,6 +532,13 @@
     S = PM.S = normalize(sb);
     stage = document.getElementById('stage');
     stage.style.width = S.width + 'px';
+    // brand overrides: storyboard.style = { banner:{paper,ink,upper,ls,tape,torn,size}, caption:{bg,ink,font,size}, grain, vignette }
+    const st = S.style, sb_ = st.banner || {}, sc_ = st.caption || {};
+    const setv = (k, v) => { if (v != null) stage.style.setProperty(k, v); };
+    setv('--banner-paper', sb_.paper); setv('--banner-ink', sb_.ink); setv('--banner-ls', sb_.ls != null ? sb_.ls + 'em' : null);
+    setv('--banner-case', sb_.upper === false ? 'none' : null); setv('--banner-font', sb_.font);
+    setv('--cap-bg', sc_.bg); setv('--cap-ink', sc_.ink); setv('--cap-font', sc_.font);
+    setv('--grain', st.grain); setv('--vignette', st.vignette);
     stage.style.height = S.height + 'px';
     stage.innerHTML = '';
     // make sure every face is loaded before anything is measured
@@ -557,12 +570,16 @@
         sc.bannerY = (typeof btxt === 'object' && btxt.y) || spec.bannerY || S.bannerY || 215;
         sc.bannerTilt = (typeof btxt === 'object' && btxt.tilt != null ? btxt.tilt : ((hash(sc.bannerText) % 7) - 3) * 0.35);
       }
-      const gr = div('grain'); gr.style.backgroundImage = tex('paper'); gr.style.backgroundSize = '256px 256px'; root.appendChild(gr);
+      const gr = div('grain'); if (S.style.grain != null) gr.style.opacity = S.style.grain; gr.style.backgroundImage = tex('paper'); gr.style.backgroundSize = '256px 256px'; root.appendChild(gr);
       scenes.push(sc);
       stage.appendChild(root);
     });
     stage.appendChild(buildCaptions());
-    const vg = div('vignette'); vg.style.zIndex = 990; stage.appendChild(vg);
+    const vg = div('vignette'); vg.style.zIndex = 990; if (S.style.vignette != null) vg.style.opacity = S.style.vignette; stage.appendChild(vg);
+    if (S.review) {
+      reviewEl = div('', { position: 'absolute', left: '14px', bottom: '14px', zIndex: 999, font: '700 15px/1.25 var(--f-mono)', color: '#fff', background: 'rgba(0,0,0,.72)', padding: '6px 9px', borderRadius: '5px', maxWidth: (S.width - 28) + 'px', whiteSpace: 'pre-wrap', direction: 'ltr' });
+      stage.appendChild(reviewEl);
+    }
     PM.duration = S.duration;
     PM.ready = true;
     PM.setTime(0);
@@ -611,5 +628,11 @@
       }
     });
     setCaptions(t);
+    if (reviewEl) {
+      const cur = scenes.find((sc) => t >= sc.start && t < sc.start + sc.spec.dur) || scenes[scenes.length - 1];
+      const sp = cur.spec;
+      reviewEl.textContent = (sp.id || ('S' + (cur.si + 1))) + '  ' + (sp.status || 'NO STATUS') + (sp.note ? '\n' + sp.note : '');
+      reviewEl.style.background = !sp.status ? 'rgba(180,0,0,.85)' : sp.status === 'CONFIRMED' ? 'rgba(20,110,60,.85)' : sp.status === 'FOUNDER' ? 'rgba(30,70,150,.85)' : 'rgba(90,90,90,.85)';
+    }
   };
 })();

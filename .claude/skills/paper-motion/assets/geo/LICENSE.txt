@@ -1,0 +1,3 @@
+world.json is derived from Natural Earth (public domain) via the world-atlas package and from US Census
+cartographic boundary files via the us-atlas package (public domain). Outlines are simplified for stylised maps
+and are not survey-accurate. Borders shown are as in the source data and carry no political statement.
