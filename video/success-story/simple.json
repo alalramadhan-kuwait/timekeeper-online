@@ -93,6 +93,306 @@
    "floor": false,
    "elements": [
     {
+     "type": "image",
+     "src": "assets/founders_group.jpg",
+     "x": 360,
+     "y": 330,
+     "w": 960,
+     "h": 549,
+     "frame": false,
+     "fit": "cover",
+     "opacity": 0.38,
+     "behind": true,
+     "scale": [
+      [
+       0.0,
+       1.1
+      ],
+      [
+       0.4878048780487805,
+       1.0
+      ]
+     ],
+     "in": {
+      "type": "none",
+      "at": 0.0
+     },
+     "out": {
+      "at": 0.4878048780487805,
+      "type": "fade",
+      "dur": 0.02
+     }
+    },
+    {
+     "type": "image",
+     "src": "assets/avenues_store.jpg",
+     "x": 360,
+     "y": 640,
+     "w": 760,
+     "h": 1340,
+     "frame": false,
+     "fit": "cover",
+     "opacity": 0.38,
+     "behind": true,
+     "scale": [
+      [
+       0.4878048780487805,
+       1.1
+      ],
+      [
+       0.975609756097561,
+       1.0
+      ]
+     ],
+     "in": {
+      "type": "none",
+      "at": 0.4878048780487805
+     },
+     "out": {
+      "at": 0.975609756097561,
+      "type": "fade",
+      "dur": 0.02
+     }
+    },
+    {
+     "type": "image",
+     "src": "assets/posts/auction.jpg",
+     "x": 360,
+     "y": 640,
+     "w": 760,
+     "h": 1340,
+     "frame": false,
+     "fit": "cover",
+     "opacity": 0.38,
+     "behind": true,
+     "scale": [
+      [
+       0.975609756097561,
+       1.1
+      ],
+      [
+       1.4634146341463414,
+       1.0
+      ]
+     ],
+     "in": {
+      "type": "none",
+      "at": 0.975609756097561
+     },
+     "out": {
+      "at": 1.4634146341463414,
+      "type": "fade",
+      "dur": 0.02
+     }
+    },
+    {
+     "type": "image",
+     "src": "assets/ep3_timegallery_store.jpg",
+     "x": 360,
+     "y": 640,
+     "w": 760,
+     "h": 1340,
+     "frame": false,
+     "fit": "cover",
+     "opacity": 0.38,
+     "behind": true,
+     "scale": [
+      [
+       1.4634146341463414,
+       1.1
+      ],
+      [
+       1.951219512195122,
+       1.0
+      ]
+     ],
+     "in": {
+      "type": "none",
+      "at": 1.4634146341463414
+     },
+     "out": {
+      "at": 1.951219512195122,
+      "type": "fade",
+      "dur": 0.02
+     }
+    },
+    {
+     "type": "image",
+     "src": "assets/posts/geraldcharles.jpg",
+     "x": 360,
+     "y": 640,
+     "w": 760,
+     "h": 1340,
+     "frame": false,
+     "fit": "cover",
+     "opacity": 0.38,
+     "behind": true,
+     "scale": [
+      [
+       1.951219512195122,
+       1.1
+      ],
+      [
+       2.4390243902439024,
+       1.0
+      ]
+     ],
+     "in": {
+      "type": "none",
+      "at": 1.951219512195122
+     },
+     "out": {
+      "at": 2.4390243902439024,
+      "type": "fade",
+      "dur": 0.02
+     }
+    },
+    {
+     "type": "image",
+     "src": "assets/founders_group.jpg",
+     "x": 360,
+     "y": 330,
+     "w": 960,
+     "h": 549,
+     "frame": false,
+     "fit": "cover",
+     "opacity": 0.38,
+     "behind": true,
+     "scale": [
+      [
+       2.4390243902439024,
+       1.1
+      ],
+      [
+       2.926829268292683,
+       1.0
+      ]
+     ],
+     "in": {
+      "type": "none",
+      "at": 2.4390243902439024
+     }
+    },
+    {
+     "type": "text",
+     "text": "3 أصدقاء…",
+     "x": 360,
+     "y": 520,
+     "size": 112,
+     "font": "banner",
+     "weight": 900,
+     "color": "#111111",
+     "paper": "#F3F0E8",
+     "rot": -2,
+     "in": {
+      "type": "slam",
+      "at": 0.0,
+      "dur": 0.25
+     },
+     "out": {
+      "at": 2.3,
+      "type": "slideU",
+      "from": 700,
+      "dur": 0.3
+     },
+     "z": 50
+    },
+    {
+     "type": "text",
+     "text": "وفكرة بسيطة",
+     "x": 360,
+     "y": 700,
+     "size": 96,
+     "font": "banner",
+     "weight": 900,
+     "color": "#FFFFFF",
+     "upper": false,
+     "in": {
+      "type": "rise",
+      "at": 0.12,
+      "dur": 0.3
+     },
+     "out": {
+      "at": 2.33,
+      "type": "slideU",
+      "from": 700,
+      "dur": 0.3
+     },
+     "z": 50
+    },
+    {
+     "type": "text",
+     "text": "غيّرت كل شي",
+     "x": 360,
+     "y": 820,
+     "size": 96,
+     "font": "banner",
+     "weight": 900,
+     "color": "#FFFFFF",
+     "upper": false,
+     "in": {
+      "type": "rise",
+      "at": 0.2,
+      "dur": 0.3
+     },
+     "out": {
+      "at": 2.36,
+      "type": "slideU",
+      "from": 700,
+      "dur": 0.3
+     },
+     "z": 50
+    },
+    {
+     "type": "shape",
+     "kind": "rect",
+     "x": 360,
+     "y": 885,
+     "w": 380,
+     "h": 10,
+     "color": "#F3F0E8",
+     "in": {
+      "type": "flip",
+      "at": 0.45,
+      "dur": 0.35
+     },
+     "out": {
+      "at": 2.36,
+      "type": "slideU",
+      "from": 700,
+      "dur": 0.3
+     },
+     "z": 49
+    }
+   ],
+   "dur": 2.6,
+   "sfx": [
+    {
+     "at": 0.0,
+     "name": "stamp",
+     "gain": -6
+    },
+    {
+     "at": 0.06,
+     "name": "paper_place",
+     "gain": -10
+    },
+    {
+     "at": 2.25,
+     "name": "whoosh",
+     "gain": -7
+    }
+   ],
+   "silent": true,
+   "hook": true,
+   "transition": "cut"
+  },
+  {
+   "theme": "tk-black",
+   "banner": "",
+   "floor": false,
+   "elements": [
+    {
      "type": "watch",
      "x": 360,
      "y": 600,
@@ -133,7 +433,8 @@
      "to": 5,
      "gain": -18
     }
-   ]
+   ],
+   "transition": "cut"
   },
   {
    "theme": "tk-ink",
@@ -1810,6 +2111,8 @@
    "captions": "فكتبوا… | وترجموا الأخبار… | وصوّروا الساعات… | وسوّوا مقابلات.",
    "captionStart": 0.15000000000000002,
    "captionEnd": 5.659999999999999,
+   "voice": "voice/clips/5b.wav",
+   "voiceAt": 0.1,
    "sfx": [
     {
      "at": 0.2,
