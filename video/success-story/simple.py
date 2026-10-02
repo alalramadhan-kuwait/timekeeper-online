@@ -9,7 +9,7 @@
   Build:     python3 simple.py && node ../../.claude/skills/paper-motion/scripts/render.mjs simple.json -o renders/time-keeper-story.mp4 --scale 1.5
 """
 import json, os
-from landmarks import boulder, san_diego, kuwait_dusk, coffee_tray, geneva
+from landmarks import boulder, san_diego, kuwait_dusk, coffee_tray, geneva, bookcase, arabic_shelf, bulb, notebook, pen, camera_rig, ring_light
 from PIL import Image
 H = os.path.dirname(os.path.abspath(__file__)); ST = json.load(open(os.path.join(H, 'tk-style.json')))
 # One clip per narration piece, cut from the Andre track by voice/cut-andre.py (lines 2, 3 and 10 are split at their pauses)
@@ -57,7 +57,7 @@ def S(n, minDur, theme, caption='', banner='', els=None, floor=False, sfx=None, 
         sc["dur"] = round(max(voiceAt + d + 0.6, minDur), 2)
         sc["captions"] = caption; sc["captionStart"] = voiceAt + 0.05; sc["captionEnd"] = voiceAt + d
         f = os.path.join(H, 'voice', VO[n]['file'])
-        if os.path.exists(f): sc["voice"] = 'voice/' + VO[n]['file']; sc["voiceAt"] = voiceAt
+        if os.path.exists(f) and not os.environ.get('NO_VOICE'): sc["voice"] = 'voice/' + VO[n]['file']; sc["voiceAt"] = voiceAt
     else:
         sc["dur"] = minDur
     if sfx: sc["sfx"] = sfx
@@ -80,17 +80,30 @@ kw_ = HAVE['kuwaiti']
 S('3a', 4.0, 'tk-ink', 'وبعد الدراسة… | رجعوا الكويت.', banner='KUWAIT', sfx=[{"at": 0.6, "name": "plane", "gain": -14}],
   els=[MAP([[0, V(-60, 38, 150)], [2.6, V(48, 29.4, 30), "inOutCubic"]], pins=[pin(SD, 0), pin(KW, 2.8)], routes=[{"from": "sd", "to": "kw", "at": 0.4, "dur": 2.2, "curve": .18}],
            highlight=[{"n": "Kuwait", "at": 2.6, "color": "#111111"}], y=590, h=860)])
-S('3b', 4.8, 'tk-ink', 'والساعات، | دايماً حاضرة بجلساتهم.', floor=True, voiceAt=0.5, sfx=[{"at": 1.0, "name": "paper_place", "gain": -12}, {"at": 1.7, "name": "clasp", "gain": -12}],
+S('3b', 4.8, 'tk-ink', 'والساعات… | دايماً حاضرة بقعداتهم.', floor=True, voiceAt=0.5, sfx=[{"at": 1.0, "name": "paper_place", "gain": -12}, {"at": 1.7, "name": "clasp", "gain": -12}],
   els=kuwait_dusk(FLOOR) + fig('kuwaiti', h=470, at=0.4) + [coffee_tray(360, FLOOR + 6, at=0.9)] + [
       {"type": "watch", "x": 438 + i * 50, "y": FLOOR - 40, "size": 64, "strap": False, "dialColor": ['#17171A', '#F1EEE6', '#B9BDC4'][i], "z": 41, "in": {"type": "pop", "at": 1.6 + i * 0.35}} for i in range(3)])
 S(4, 7.0, 'tk-graphite', 'ولاحظوا شي… | المعلومات عن الساعات كثيرة، | بس أغلبها بالإنجليزي. | وبالعربي؟ | قليل.',
-  sfx=[{"at": 2.0 + i * 0.45, "name": "paper_place", "gain": -15} for i in range(6)],
-  els=[{"type": "text", "text": "ENGLISH", "x": 215, "y": 360, "size": 38, "font": "banner", "weight": 800, "color": "#F3F0E8", "ls": .12, "upper": False, "shadow": False, "in": {"type": "fade", "at": 1.6}},
-       {"type": "text", "text": "عربي", "x": 560, "y": 360, "size": 38, "font": "banner", "weight": 800, "color": "#F3F0E8", "shadow": False, "in": {"type": "fade", "at": 1.6}}] + [
-      {"type": "card", "x": 215 + (i % 2) * 14 - 7, "y": 940 - i * 76, "w": 330, "h": 64, "label": ["WATCH GUIDE", "MOVEMENTS", "REVIEWS", "HISTORY", "BUYING TIPS", "BRAND STORIES"][i], "labelSize": 24, "color": "#F3F0E8", "rot": ((i * 37) % 7 - 3) * 0.8, "in": {"type": "drop", "at": 2.0 + i * 0.45, "dur": 0.45}} for i in range(6)] + [
-      {"type": "card", "x": 560, "y": 940, "w": 130, "h": 46, "label": "بالعربي", "labelSize": 18, "color": "#F3F0E8", "rot": 2, "in": {"type": "drop", "at": 5.6, "dur": 0.45}}])
-S(5, 4.2, 'tk-ink', 'فقالوا… | ليش ما نبسطها؟', silent=True,
-  els=[{"type": "image", "x": 360, "y": 560, "w": 300, "h": 300, "src": LOGO, "pad": 14, "rot": -2, "in": {"type": "pop", "at": 2.0, "dur": 0.7}}])
+  sfx=[{"at": 1.0 + i * 0.55, "name": "paper_place", "gain": -13} for i in range(4)] + [{"at": 4.8, "name": "paper_place", "gain": -11}],
+  els=[{"type": "text", "text": "ENGLISH", "x": 245, "y": 250, "size": 40, "font": "banner", "weight": 800, "color": "#F3F0E8", "ls": .12, "upper": False, "shadow": False, "in": {"type": "fade", "at": 0.8}},
+       {"type": "text", "text": "عربي", "x": 590, "y": 700, "size": 40, "font": "banner", "weight": 800, "color": "#F3F0E8", "shadow": False, "in": {"type": "fade", "at": 4.5}}]
+      + bookcase(245, FLOOR, rows=4, w=400, at=1.0, step=0.55) + arabic_shelf(590, FLOOR, at=4.6))
+# "why don't we make it simple?" then the work: writing, filming, late nights, until Time Keeper stands on its own
+S(5, 10.68, 'tk-ink', 'فقالوا… | ليش ما نبسطها؟', silent=True, floor=cas, captionClear=2.9,
+  sfx=[{"at": 1.5, "name": "pin", "gain": -10}, {"at": 2.8, "name": "paper_place", "gain": -11}, {"at": 3.2, "name": "click", "gain": -12}, {"at": 3.6, "name": "click", "gain": -12},
+       {"at": 4.8, "name": "shutter", "gain": -9}, {"at": 5.6, "name": "shutter", "gain": -9}, {"at": 6.9, "name": "click", "gain": -12}, {"at": 7.1, "name": "click", "gain": -12},
+       {"at": 7.4, "name": "click", "gain": -12}, {"at": 8.6, "name": "stamp", "gain": -7}, {"at": 9.1, "name": "paper_slide", "gain": -10}],
+  els=fig('casual', h=380, at=0.3) + [bulb(360, 430, 1.4, 2.6),
+      notebook(250, 400, 2.7, 4.6), pen(170, 330, 470, 2.9, 4.6)] + [
+      {"type": "card", "x": 560, "y": 300 + i * 92, "w": 220, "h": 70, "label": t, "labelSize": 26, "color": "#F3F0E8", "rot": (i - 1) * 4, "in": {"type": "drop", "at": 3.2 + i * 0.4, "dur": .45}, "out": {"at": 4.6, "type": "fade", "dur": .25}, "z": 32}
+      for i, t in enumerate(['فكرة', 'سكربت', 'مراجعة'])] + [
+      camera_rig(210, 640, 4.7, 6.6), ring_light(560, 640, 4.8, 6.6),
+      {"type": "card", "x": 210, "y": 250, "w": 120, "h": 46, "style": "dark", "label": "● REC", "labelSize": 20, "ink": "#E8574B", "in": {"type": "pop", "at": 5.0}, "out": {"at": 6.6, "type": "fade", "dur": .25}, "idle": {"type": "pulse", "amp": .06, "speed": 1.5}, "z": 33},
+      {"type": "moon", "x": 600, "y": 200, "size": 80, "in": {"type": "fade", "at": 6.7}, "out": {"at": 8.4, "type": "fade", "dur": .25}, "z": 20},
+      {"type": "laptop", "x": 360, "y": 600, "w": 360, "in": {"type": "rise", "at": 6.7}, "out": {"at": 8.4, "type": "fade", "dur": .25}, "z": 30}] + [
+      {"type": "cup", "x": 140 + i * 70, "y": 600, "size": .5, "in": {"type": "pop", "at": 7.0 + i * 0.3}, "out": {"at": 8.4, "type": "fade", "dur": .25}, "z": 31} for i in range(3)] + [
+      {"type": "image", "x": 360, "y": 360, "w": 280, "h": 280, "src": LOGO, "pad": 14, "rot": -2, "in": {"type": "slam", "at": 8.5, "dur": 0.5}, "z": 40},
+      {"type": "card", "x": 360, "y": 580, "w": 620, "h": 84, "style": "dark", "label": "أكبر منصة عربية للساعات", "labelSize": 38, "ink": "#F3F0E8", "in": {"type": "pop", "at": 9.1}, "z": 41}])
 S(6, 5.5, 'tk-bone', 'وفي ٢٠١٨… | بدأ تايم كيبر. | بوست بعد بوست… | نشرح الساعات بالعربي.', banner='2018',
   sfx=[{"at": 0.8, "name": "paper_place", "gain": -11}, {"at": 1.8, "name": "paper_place", "gain": -11}, {"at": 2.8, "name": "paper_place", "gain": -11}],
   els=[POST('auction', x=205, y=520, w=330, rot=-4, at=0.8), POST('interview', x=515, y=600, w=330, rot=3, at=1.8),
@@ -119,8 +132,8 @@ S(11, 5.5, 'tk-graphite', 'وفي ٢٠٢٢… | فتحنا صالة تايم ك�
 S(12, 4.4, 'tk-linen', 'وبعدها… | تايم غاليري.', floor=True, banner='TIME GALLERY', sfx=[{"at": 1.0, "name": "paper_place", "gain": -10}],
   els=[{"type": "photo", "src": "assets/ep3_timegallery_store.jpg", "x": 360, "y": 560, "w": 660, "aspect": 1.589, "label": "تايم غاليري", "rot": [[0, -8], [0.9, -2.5, "outBack"]], "in": {"type": "drop", "at": 0.5, "dur": 0.6}}])
 S(13, 4.0, 'tk-bone', 'والأفنيوز.', floor=True, banner='THE AVENUES', sfx=[{"at": 0.6, "name": "paper_slide", "gain": -12}, {"at": 2.4, "name": "door_chime", "gain": -12}],
-  els=[{"type": "building", "x": 360, "y": FLOOR, "w": 460 if fo else 380, "h": 820, "z": 5, "color": "#D2CABA", "cols": 3, "rows": 7, "lit": .25, "glass": "#C9CDD2", "litColor": "#EFE8D5", "in": {"type": "rise", "at": 0.3, "dur": 1.0}},
-       {"type": "card", "x": 360, "y": 300, "w": 300, "h": 64, "style": "dark", "label": "TIME KEEPER", "labelSize": 22, "ink": "#EDE9E0", "in": {"type": "pop", "at": 1.4}, "z": 40}] + fig('formal', h=520, at=1.8, z=20))
+  els=[{"type": "photo", "src": "assets/avenues_store.jpg", "x": 360, "y": 560, "w": 430, "aspect": 0.5628, "rot": [[0, 6], [0.9, 1.5, "outBack"]], "in": {"type": "drop", "at": 0.3, "dur": 0.6}, "z": 5}]
+      + fig('formal', h=360, at=1.4, z=20))
 table = [{"type": "watch", "x": 360, "y": 400, "size": 560, "strap": False, "numerals": "arabic", "date": False, "opacity": .2, "behind": True, "still": True, "time": [10, 9, 0]},
          {"type": "card", "x": 360, "y": 905, "w": 640, "h": 36, "tex": "wood", "color": "#fff", "z": 20},
          {"type": "card", "x": 80, "y": 968, "w": 22, "h": 90, "tex": "wood", "color": "#fff", "z": 19}, {"type": "card", "x": 640, "y": 968, "w": 22, "h": 90, "tex": "wood", "color": "#fff", "z": 19}]
@@ -138,3 +151,14 @@ json.dump({"title": "قصة تايم كيبر", "width": 720, "height": 1280, "f
            "audio": {"autoSfx": True, "music": "renders/simple_score.wav", "musicGain": MUSIC_GAIN, "voiceGain": 0}, "scenes": SC}, open(os.path.join(H, 'simple.json'), 'w'), ensure_ascii=False, indent=1)
 nv = sum(1 for s in SC if 'voice' in s)
 print('simple.json  %d scenes  %.1fs  narration clips present: %d/15  figures: %s' % (len(SC), total, nv, ', '.join(k for k, v in HAVE.items() if v) or 'none yet'))
+
+# ---- cover (Reel thumbnail): python3 simple.py && node render.mjs cover.json --still 1.6 -o renders/cover/
+cover = {"theme": "tk-black", "banner": "", "floor": True, "dur": 2.0, "elements": [
+    {"type": "watch", "x": 360, "y": 560, "size": 700, "strap": False, "numerals": "arabic", "date": False, "opacity": .14, "behind": True, "still": True, "time": [10, 9, 0]},
+    {"type": "image", "x": 360, "y": 190, "w": 170, "h": 170, "src": LOGO, "pad": 10, "rot": -2},
+    {"type": "text", "text": "قصة تايم كيبر", "x": 360, "y": 360, "size": 96, "font": "banner", "weight": 800, "color": "#F3F0E8", "shadow": False},
+    {"type": "card", "x": 360, "y": 470, "w": 600, "h": 70, "label": "من ثلاثة أصدقاء… لأكبر منصة عربية للساعات", "labelSize": 28, "color": "#F3F0E8", "rot": -1.5}]
+    + fig('kuwaiti', h=520, at=0)}
+for e in cover["elements"]: e.pop("in", None)
+json.dump({"title": "غلاف قصة تايم كيبر", "width": 720, "height": 1280, "fps": 30, "floorY": FLOOR, "captionY": FLOOR + 38, "style": ST['style'], "themes": ST['themes'],
+           "audio": {"autoSfx": False}, "scenes": [cover]}, open(os.path.join(H, 'cover.json'), 'w'), ensure_ascii=False, indent=1)

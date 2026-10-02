@@ -244,3 +244,82 @@ def geneva(FLOOR, t0=0.0):
     els.append(svg(300, 130, clock, 160, FLOOR - 8, z=30, at=t0 + .6, kind='pop', dur=.7))
     els.append(birds(330, 260, at=t0 + .5))
     return els
+
+
+# ------------------------------------------------------------------------------------------------ the books gap
+EN_TITLES = ['HOROLOGY', 'THE WATCH BOOK', 'MOVEMENTS', 'COMPLICATIONS', 'VINTAGE', 'CHRONOGRAPHS', 'TOURBILLON', 'WATCHMAKING',
+             'DIVE WATCHES', 'DRESS WATCHES', 'ICONS', 'TIME', 'CALIBRES', 'COLLECTING', 'ESCAPEMENTS', 'MASTERS', 'DIALS', 'HISTORY']
+SPINES = ['#2F3A4A', '#6B2E2A', '#2E4A3C', '#5A4A32', '#1F1F22', '#7A6A55', '#3D3550', '#8A7B62', '#44505C']
+
+
+def shelf_row(w, seed, titles=EN_TITLES, n=None, arabic=False):
+    """One shelf of standing books with titles on the spines."""
+    r = random.Random(seed); h = 150; b = ''; x = 8; k = 0
+    while x < w - 30 and (n is None or k < n):
+        bw = r.randint(26, 40); bh = r.randint(104, 138); c = SPINES[r.randrange(len(SPINES))]
+        b += '<rect x="%d" y="%d" width="%d" height="%d" fill="%s"/>' % (x, h - bh, bw, bh, c)
+        b += '<rect x="%d" y="%d" width="%d" height="4" fill="#C9A35F" opacity=".8"/>' % (x + 3, h - bh + 12, bw - 6)
+        t = titles[(seed * 5 + k) % len(titles)]
+        if arabic:
+            b += '<text x="%.1f" y="%.1f" font-family="var(--f-banner),sans-serif" font-size="17" font-weight="800" fill="#F3EFE6" text-anchor="middle" transform="rotate(-90 %.1f %.1f)">%s</text>' % (x + bw / 2 + 6, h - bh / 2, x + bw / 2, h - bh / 2, t)
+        else:
+            b += '<text x="%.1f" y="%.1f" font-family="sans-serif" font-size="%d" font-weight="700" letter-spacing="1" fill="#EDE6D6" text-anchor="middle" transform="rotate(-90 %.1f %.1f)">%s</text>' % (x + bw / 2 + 4, h - bh / 2, min(12, int(bh / max(1, len(t)) * 1.5)), x + bw / 2, h - bh / 2, t)
+        x += bw + r.randint(1, 3); k += 1
+    b += '<rect x="0" y="%d" width="%d" height="12" fill="#8A6A48"/>' % (h, w)
+    return b
+
+
+def bookcase(x, FLOOR, rows=4, w=400, at=1.0, step=0.55, z=10):
+    """Tall case: frame first, then each shelf fills with English books, bottom to top."""
+    H = rows * 162 + 30
+    frame = '<rect width="%d" height="%d" fill="#5C4632"/><rect x="10" y="10" width="%d" height="%d" fill="#3A2C20"/>' % (w + 20, H, w, H - 20)
+    els = [svg(w + 20, H, frame, x, FLOOR, z=z, at=at - .4, kind='rise')]
+    for i in range(rows):
+        els.append(svg(w, 162, shelf_row(w, i + 2), x, FLOOR - 10 - i * 162, z=z + 1, at=at + i * step, kind='drop', dur=.5, shadow=False))
+    return els
+
+
+def arabic_shelf(x, FLOOR, at=4.6, z=10):
+    w = 210; H = 190
+    frame = '<rect width="%d" height="%d" fill="#5C4632"/><rect x="10" y="10" width="%d" height="%d" fill="#3A2C20"/>' % (w + 20, H, w, H - 20)
+    return [svg(w + 20, H, frame, x, FLOOR, z=z, at=at - .3, kind='rise'),
+            svg(w, 162, shelf_row(w, 1, titles=['ساعات', 'الوقت'], n=2, arabic=True), x, FLOOR - 10, z=z + 1, at=at + .2, kind='drop', dur=.5, shadow=False)]
+
+
+# ------------------------------------------------------------------------------------------------ the work montage
+def bulb(x, y, at, out):
+    b = ('<circle cx="60" cy="60" r="44" fill="#F4E3A1"/><path d="M40 96 h40 v18 h-40z" fill="#9A9488"/><rect x="44" y="116" width="32" height="8" fill="#6F6A60"/>'
+         + ''.join('<line x1="%.0f" y1="%.0f" x2="%.0f" y2="%.0f" stroke="#F4E3A1" stroke-width="6" stroke-linecap="round"/>'
+                   % (60 + math.cos(a) * 56, 60 + math.sin(a) * 56, 60 + math.cos(a) * 74, 60 + math.sin(a) * 74) for a in [math.radians(d) for d in (-160, -125, -90, -55, -20)]))
+    return svg(120, 130, b, x, y, anchor='c', z=30, at=at, kind='pop', out={"at": out, "type": "fade", "dur": .25})
+
+
+def notebook(x, y, at, out):
+    r = random.Random(2)
+    lines = ''.join('<path d="M%d %d %s" stroke="#3A3A3A" stroke-width="3" fill="none" stroke-linecap="round"/>'
+                    % (x0, y0, ' '.join('q6 %d 12 0' % r.choice((-5, 5)) for _ in range(r.randint(7, 11))))
+                    for x0 in (28, 188) for y0 in range(40, 200, 26))
+    b = ('<rect x="0" y="0" width="340" height="230" rx="8" fill="#E9E4D8"/><rect x="10" y="8" width="155" height="214" fill="#FBF9F3"/>'
+         '<rect x="175" y="8" width="155" height="214" fill="#FBF9F3"/><rect x="166" y="8" width="8" height="214" fill="#CFC8B8"/>' + lines)
+    return svg(340, 230, b, x, y, anchor='c', z=30, at=at, kind='pop', out={"at": out, "type": "fade", "dur": .25}, rot=-3)
+
+
+def pen(x0, x1, y, at, out):
+    b = '<rect x="0" y="0" width="16" height="130" rx="6" fill="#1F1F22"/><polygon points="0,130 16,130 8,152" fill="#C9A35F"/><rect x="2" y="16" width="12" height="6" fill="#C9A35F"/>'
+    return svg(16, 152, b, [[at, x0], [at + .5, x0 + 60], [at + 1.0, x0 + 20], [at + 1.4, x1]], [[at, y], [at + .5, y + 30], [at + 1.0, y + 60], [at + 1.4, y + 30]],
+               anchor='b', z=31, at=at, kind='fade', dur=.2, out={"at": out, "type": "fade", "dur": .25}, rot=28)
+
+
+def camera_rig(x, y, at, out):
+    b = ('<line x1="110" y1="150" x2="40" y2="330" stroke="#2A2A2D" stroke-width="8"/><line x1="110" y1="150" x2="180" y2="330" stroke="#2A2A2D" stroke-width="8"/>'
+         '<line x1="110" y1="150" x2="110" y2="330" stroke="#2A2A2D" stroke-width="8"/>'
+         '<rect x="40" y="70" width="140" height="86" rx="10" fill="#26272B"/><rect x="180" y="92" width="34" height="44" fill="#26272B"/>'
+         '<circle cx="232" cy="114" r="30" fill="#1A1A1D"/><circle cx="232" cy="114" r="18" fill="#3E4652"/><circle cx="225" cy="107" r="5" fill="#9FB2C4"/>'
+         '<rect x="60" y="52" width="40" height="20" fill="#26272B"/><circle cx="160" cy="88" r="8" fill="#C8102E"/>')
+    return svg(270, 330, b, x, y, anchor='b', z=30, at=at, kind='rise', out={"at": out, "type": "fade", "dur": .25})
+
+
+def ring_light(x, y, at, out):
+    b = ('<circle cx="80" cy="80" r="70" fill="none" stroke="#F6F0DC" stroke-width="18"/><circle cx="80" cy="80" r="70" fill="none" stroke="#FFFFFF" stroke-width="6" opacity=".8"/>'
+         '<line x1="80" y1="150" x2="80" y2="330" stroke="#2A2A2D" stroke-width="7"/><line x1="80" y1="330" x2="30" y2="360" stroke="#2A2A2D" stroke-width="7"/><line x1="80" y1="330" x2="130" y2="360" stroke="#2A2A2D" stroke-width="7"/>')
+    return svg(160, 360, b, x, y, anchor='b', z=29, at=at, kind='rise', out={"at": out, "type": "fade", "dur": .25})

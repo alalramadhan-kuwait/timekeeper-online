@@ -25,5 +25,10 @@ for n in sorted(CUTS):
                         '-af', 'afade=t=in:d=0.012,areverse,afade=t=in:d=0.03,areverse', '-ar', '44100', '-ac', '1',
                         os.path.join(H, f)], check=True)
         out[cid] = {'file': f, 'seconds': round(b - a, 2), 'line': n}
+# 3b was re-recorded with the Kuwaiti word: "والساعات... دايماً حاضرة بقعداتهم." (Higgsfield job b6b99ff2, 3.55 s)
+NEW_3B = os.path.join(H, 'andre', '3b-qaadat.mp3')
+if os.path.exists(NEW_3B):
+    subprocess.run([FF, '-v', 'error', '-y', '-i', NEW_3B, '-ar', '44100', '-ac', '1', os.path.join(H, 'clips', '3b.wav')], check=True)
+out['3b']['seconds'] = 3.55
 json.dump(out, open(os.path.join(H, 'clips.json'), 'w'), indent=1)
 print('%d clips -> voice/clips/' % len(out))

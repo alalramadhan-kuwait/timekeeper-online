@@ -512,7 +512,8 @@
     groups.forEach((g, gi) => {
       const next = groups[gi + 1];
       const sc = scenes[g.scene];
-      const endT = Math.min(next && next.scene === g.scene ? next.t0 : sc.start + sc.spec.dur, sc.start + sc.spec.dur);
+      // captionClear (scene seconds) takes the last tag off early, e.g. before a wordless montage
+      const endT = Math.min(next && next.scene === g.scene ? next.t0 : sc.start + sc.spec.dur, sc.start + (sc.spec.captionClear != null ? sc.spec.captionClear : sc.spec.dur));
       const on = t >= g.t0 && t < endT;
       g.el.style.display = on ? 'flex' : 'none';
       if (!on) return;
