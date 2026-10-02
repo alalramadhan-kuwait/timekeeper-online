@@ -7,3 +7,4 @@ renders/
 *.mp3
 !sfx/.gitkeep
 __pycache__/
+opening-preview.json

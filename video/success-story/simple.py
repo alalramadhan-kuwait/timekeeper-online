@@ -68,8 +68,35 @@ def S(n, minDur, theme, caption='', banner='', els=None, floor=False, sfx=None, 
     if beds: sc["beds"] = beds
     sc.update(kw); SC.append(sc)
 
-S(1, 4.6, 'tk-black', 'تايم كيبر… | ما بدأ كمحل ساعات.', silent=True, voiceAt=1.4, beds=[{"name": "watch_run", "from": 0, "to": 5, "gain": -18}],
-  els=[{"type": "watch", "x": 360, "y": 600, "size": 660, "strap": False, "numerals": "arabic", "date": False, "scale": [[0, 1.75], [3.8, 1.0, "inOutCubic"]], "time": [10, 8, 40], "still": True}])
+# ---- opening (scene 1): "تايم كيبر… ما بدأ كمحل ساعات." voice at 1.4 s; the scene stays 4.98 s so nothing after it moves
+def opening(kind):
+    if kind == 'tear':      # today's Avenues store, torn away on "ما بدأ كمحل ساعات" to show the three friends
+        half = lambda side, x1, r1: {"type": "cutout", "src": "assets/avenues_tear_%s.png" % side, "x": [[0, 360], [2.7, 360], [3.5, x1]], "y": 1010, "h": 860, "aspect": 0.5628,
+                                     "edge": 3, "rot": [[2.7, 0], [3.5, r1]], "z": 30, "in": {"type": "none", "at": 2.68}, "out": {"at": 3.4, "type": "fade", "dur": 0.2}}
+        whole = {"type": "cutout", "src": "assets/avenues_store.jpg", "x": 360, "y": 1010, "h": 860, "aspect": 0.5628, "edge": 3, "z": 29,
+                 "in": {"type": "drop", "at": 0.1, "dur": 0.6}, "out": {"at": 2.68, "type": "fade", "dur": 0.02}}
+        return 'tk-ink', [whole, half('L', -260, -18), half('R', 980, 18),
+                          {"type": "spotlight", "x": 360, "y": 300, "w": 620, "h": 760, "in": {"type": "fade", "at": 2.8}, "z": 5}] + fig('casual', h=400, at=2.9), \
+               [{"at": 0.25, "name": "paper_place", "gain": -10}, {"at": 2.65, "name": "paper_tear", "gain": -6}]
+    if kind == 'rewind':    # a watch running backwards while the years flip back to the start
+        yrs = [('2026', 0.2), ('2022', 0.75), ('2019', 1.25), ('2018', 1.75), ('؟', 2.6)]
+        return 'tk-black', [{"type": "watch", "x": 360, "y": 640, "size": 600, "strap": False, "numerals": "arabic", "date": False, "time": [10, 9, 0], "rate": -2400, "tick": False}] + [
+            {"type": "card", "x": 360, "y": 210, "w": 260, "h": 110, "style": "dark", "label": y, "labelSize": 64, "ink": "#F3F0E8", "rot": (k % 2 - .5) * 4,
+             "in": {"type": "flip", "at": t, "dur": .25}, **({"out": {"at": yrs[k + 1][1], "type": "fade", "dur": .1}} if k + 1 < len(yrs) else {}), "z": 40 + k}
+            for k, (y, t) in enumerate(yrs)], [{"at": t, "name": "tick", "gain": -8} for _, t in yrs]
+    if kind == 'numbers':   # what was built, fast; then swept away: it did not start as a shop
+        chips = [('+266K متابع', 200, 260, -4), ('بودكاست', 520, 360, 3), ('جنيف', 190, 470, 2), ('تايم غاليري', 500, 580, -3), ('الأفنيوز', 260, 700, 4)]
+        return 'tk-black', [{"type": "card", "x": x, "y": y, "w": 60 + 26 * len(t), "h": 84, "label": t, "labelSize": 40,
+                             "ink": "#111111", "color": "#F3F0E8", "rot": r, "in": {"type": "slam", "at": 0.1 + k * 0.24, "dur": .3},
+                             "out": {"at": 2.6 + k * 0.05, "type": "slideL" if k % 2 else "slideR", "from": 900, "dur": .35}, "z": 30 + k}
+                            for k, (t, x, y, r) in enumerate(chips)] + [
+            {"type": "image", "x": 360, "y": 480, "w": 300, "h": 300, "src": LOGO, "pad": 14, "rot": -2, "in": {"type": "pop", "at": 3.0, "dur": .6}, "z": 50}], \
+            [{"at": 0.1 + k * 0.24, "name": "stamp", "gain": -11} for k in range(5)] + [{"at": 2.6, "name": "whoosh", "gain": -8}]
+    # 'watch': the original big watch settling in
+    return 'tk-black', [{"type": "watch", "x": 360, "y": 600, "size": 660, "strap": False, "numerals": "arabic", "date": False, "scale": [[0, 1.75], [3.8, 1.0, "inOutCubic"]], "time": [10, 8, 40], "still": True}], []
+OPENING = os.environ.get('OPENING', 'watch')
+_th, _els, _sfx = opening(OPENING)
+S(1, 4.6, _th, 'تايم كيبر… | ما بدأ كمحل ساعات.', silent=True, voiceAt=1.4, sfx=_sfx or None, beds=[{"name": "watch_run", "from": 0, "to": 5, "gain": -18}] if OPENING in ('watch', 'rewind') else None, els=_els)
 cas = HAVE['casual']
 S('2a', 6.0, 'tk-ink', 'بدأ بثلاثة أصدقاء… | التقوا وهم يدرسون في أمريكا.', floor=cas,
   sfx=[{"at": 0.2, "name": "paper_tear", "gain": -14}, {"at": 2.4, "name": "plane", "gain": -16}],
@@ -171,3 +198,9 @@ cover = {"theme": "tk-black", "banner": "", "floor": True, "dur": 2.0, "elements
 for e in cover["elements"]: e.pop("in", None)
 json.dump({"title": "غلاف قصة تايم كيبر", "width": 720, "height": 1280, "fps": 30, "floorY": FLOOR, "captionY": FLOOR + 38, "style": ST['style'], "themes": ST['themes'],
            "audio": {"autoSfx": False}, "scenes": [cover]}, open(os.path.join(H, 'cover.json'), 'w'), ensure_ascii=False, indent=1)
+
+# ---- opening preview: OPENING=tear PREVIEW=1 python3 simple.py  ->  opening-preview.json (scene 1 only, with music)
+if os.environ.get('PREVIEW'):
+    json.dump({"title": "opening", "width": 720, "height": 1280, "fps": 30, "floorY": FLOOR, "captionY": FLOOR + 38, "bannerY": 110, "style": ST['style'], "themes": ST['themes'],
+               "audio": {"autoSfx": True, "music": "assets/audio/music-option1.m4a", "musicGain": -14, "voiceGain": 0}, "scenes": SC[:1]},
+              open(os.path.join(H, 'opening-preview.json'), 'w'), ensure_ascii=False, indent=1)
