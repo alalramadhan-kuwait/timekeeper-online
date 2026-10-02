@@ -25,10 +25,20 @@ for n in sorted(CUTS):
                         '-af', 'afade=t=in:d=0.012,areverse,afade=t=in:d=0.03,areverse', '-ar', '44100', '-ac', '1',
                         os.path.join(H, f)], check=True)
         out[cid] = {'file': f, 'seconds': round(b - a, 2), 'line': n}
-# 3b was re-recorded with the Kuwaiti word: "والساعات... دايماً حاضرة بقعداتهم." (Higgsfield job b6b99ff2, 3.55 s)
-NEW_3B = os.path.join(H, 'andre', '3b-qaadat.mp3')
-if os.path.exists(NEW_3B):
-    subprocess.run([FF, '-v', 'error', '-y', '-i', NEW_3B, '-ar', '44100', '-ac', '1', os.path.join(H, 'clips', '3b.wav')], check=True)
-out['3b']['seconds'] = 3.55
+# Lines re-recorded later in the same voice (Higgsfield text2speech, Andre). Each is levelled to the piece of the
+# original track it replaces, so the narration keeps one loudness.
+#   2c  ولوس أنجلوس.                                       job af48e350 (was «وسان دييغو.»)
+#   3b  والساعات... دايماً حاضرة بقعداتهم.                  job b6b99ff2 (was «بجلساتهم»)
+#   5b  فكتبوا... وترجموا الأخبار... وصوّروا الساعات... وسوّوا مقابلات.   job 561baff3 (new line)
+REDO = {'2c': ('2c-la.mp3', '2c'), '3b': ('3b-qaadat.mp3', '3b'), '5b': ('5b-work.mp3', '5')}
+def rms_db(f):
+    r = subprocess.run([FF, '-hide_banner', '-nostats', '-i', f, '-af', 'volumedetect', '-f', 'null', '-'], capture_output=True, text=True).stderr
+    return float(r.split('mean_volume:')[1].split('dB')[0])
+for cid, (src, ref) in REDO.items():
+    f = os.path.join(H, 'andre', src)
+    if not os.path.exists(f): continue
+    gain = rms_db(os.path.join(H, 'clips', '%s.wav' % ref)) - rms_db(f)
+    subprocess.run([FF, '-v', 'error', '-y', '-i', f, '-af', 'volume=%.2fdB' % gain, '-ar', '44100', '-ac', '1', os.path.join(H, 'clips', '%s.wav' % cid)], check=True)
+    out[cid] = {'file': 'clips/%s.wav' % cid, 'seconds': {'2c': 1.49, '3b': 3.55, '5b': 5.56}[cid], 'line': out.get(cid, {}).get('line', cid), 'note': 'Re-recorded line, levelled to the original track'}
 json.dump(out, open(os.path.join(H, 'clips.json'), 'w'), indent=1)
 print('%d clips -> voice/clips/' % len(out))

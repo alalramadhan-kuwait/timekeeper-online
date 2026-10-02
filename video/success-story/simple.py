@@ -94,9 +94,27 @@ def opening(kind):
             [{"at": 0.1 + k * 0.24, "name": "stamp", "gain": -11} for k in range(5)] + [{"at": 2.6, "name": "whoosh", "gain": -8}]
     # 'watch': the original big watch settling in
     return 'tk-black', [{"type": "watch", "x": 360, "y": 600, "size": 660, "strap": False, "numerals": "arabic", "date": False, "scale": [[0, 1.75], [3.8, 1.0, "inOutCubic"]], "time": [10, 8, 40], "still": True}], []
+# ---- hook (before scene 1): a written line on screen from the first frame, over the music's drop, real photos
+# flashing behind it on the beat (123 bpm, 0.488 s). No narration; mix-music.py plays the drop under it.
+HOOK = 2.6
+BEAT = 60 / 123.0
+flashes = ['assets/founders_group.jpg', 'assets/avenues_store.jpg', 'assets/posts/auction.jpg', 'assets/ep3_timegallery_store.jpg', 'assets/posts/geraldcharles.jpg', 'assets/founders_group.jpg']
+S(0, HOOK, 'tk-black', silent=True, hook=True, transition='cut',
+  sfx=[{"at": 0.0, "name": "stamp", "gain": -6}, {"at": 0.06, "name": "paper_place", "gain": -10}, {"at": 2.25, "name": "whoosh", "gain": -7}],
+  els=[{"type": "image", "src": f, "x": 360, **({"y": 330, "w": 960, "h": 549} if 'group' in f else {"y": 640, "w": 760, "h": 1340}), "frame": False, "fit": "cover", "opacity": .38, "behind": True,
+        "scale": [[k * BEAT, 1.1], [(k + 1) * BEAT, 1.0]], "in": {"type": "none", "at": k * BEAT},
+        **({"out": {"at": (k + 1) * BEAT, "type": "fade", "dur": .02}} if k + 1 < len(flashes) else {})} for k, f in enumerate(flashes)] + [
+       {"type": "text", "text": "3 أصدقاء…", "x": 360, "y": 520, "size": 112, "font": "banner", "weight": 900, "color": "#111111", "paper": "#F3F0E8", "rot": -2,
+        "in": {"type": "slam", "at": 0.0, "dur": .25}, "out": {"at": 2.3, "type": "slideU", "from": 700, "dur": .3}, "z": 50},
+       {"type": "text", "text": "وفكرة بسيطة", "x": 360, "y": 700, "size": 96, "font": "banner", "weight": 900, "color": "#FFFFFF", "upper": False,
+        "in": {"type": "rise", "at": 0.12, "dur": .3}, "out": {"at": 2.33, "type": "slideU", "from": 700, "dur": .3}, "z": 50},
+       {"type": "text", "text": "غيّرت كل شي", "x": 360, "y": 820, "size": 96, "font": "banner", "weight": 900, "color": "#FFFFFF", "upper": False,
+        "in": {"type": "rise", "at": 0.2, "dur": .3}, "out": {"at": 2.36, "type": "slideU", "from": 700, "dur": .3}, "z": 50},
+       {"type": "shape", "kind": "rect", "x": 360, "y": 885, "w": 380, "h": 10, "color": "#F3F0E8", "in": {"type": "flip", "at": 0.45, "dur": .35},
+        "out": {"at": 2.36, "type": "slideU", "from": 700, "dur": .3}, "z": 49}])
 OPENING = os.environ.get('OPENING', 'watch')
 _th, _els, _sfx = opening(OPENING)
-S(1, 4.6, _th, 'تايم كيبر… | ما بدأ كمحل ساعات.', silent=True, voiceAt=1.4, sfx=_sfx or None, beds=[{"name": "watch_run", "from": 0, "to": 5, "gain": -18}] if OPENING in ('watch', 'rewind') else None, els=_els)
+S(1, 4.6, _th, 'تايم كيبر… | ما بدأ كمحل ساعات.', silent=True, voiceAt=1.4, transition='cut', sfx=_sfx or None, beds=[{"name": "watch_run", "from": 0, "to": 5, "gain": -18}] if OPENING in ('watch', 'rewind') else None, els=_els)
 cas = HAVE['casual']
 S('2a', 6.0, 'tk-ink', 'بدأ بثلاثة أصدقاء… | التقوا وهم يدرسون في أمريكا.', floor=cas,
   sfx=[{"at": 0.2, "name": "paper_tear", "gain": -14}, {"at": 2.4, "name": "plane", "gain": -16}],

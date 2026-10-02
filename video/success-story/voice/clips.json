@@ -18,7 +18,7 @@
   "file": "clips/2c.wav",
   "seconds": 1.49,
   "line": 2,
-  "note": "re-recorded: \u0648\u0644\u0648\u0633 \u0623\u0646\u062c\u0644\u0648\u0633 (Higgsfield job af48e350)"
+  "note": "Re-recorded line, levelled to the original track"
  },
  "3a": {
   "file": "clips/3a.wav",
@@ -28,7 +28,8 @@
  "3b": {
   "file": "clips/3b.wav",
   "seconds": 3.55,
-  "line": 3
+  "line": 3,
+  "note": "Re-recorded line, levelled to the original track"
  },
  "4": {
   "file": "clips/4.wav",
@@ -98,6 +99,7 @@
  "5b": {
   "file": "clips/5b.wav",
   "seconds": 5.56,
-  "line": "5b"
+  "line": "5b",
+  "note": "Re-recorded line, levelled to the original track"
  }
 }
