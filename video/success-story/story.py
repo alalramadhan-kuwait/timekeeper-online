@@ -196,7 +196,7 @@ S(4, 7.0, 'tk-graphite', 'ولاحظوا شي… | المعلومات عن ال�
 
 # 8  «ليش ما نبسطها؟»: the three close, talking; questions come up between them and turn into the idea
 els = [plate('#24262B'), {"type": "spotlight", "x": 360, "y": 0, "w": 720, "h": 1100, "z": 2, "depth": 0}]
-els += [pose('brainstorm', 360, 1300, 800 * 867 / 896, at=0.1, z=20, inn='rise', idle={"type": "sway", "amp": 1.2, "speed": .5})]
+els += [pose('brainstorm', 360, 1310, 760 * 957 / 873, at=0.1, z=20, inn='rise', idle={"type": "sway", "amp": 1.2, "speed": .5})]
 qs = [('ليش؟', 250, 420, .5), ('بالعربي؟', 490, 340, 1.1), ('نبسطها؟', 330, 250, 1.7)]
 els += [{"type": "text", "text": t, "x": [[a, x], [2.6, x], [3.0, 360]], "y": [[a, y], [2.6, y], [3.0, 300]], "size": 54, "font": "banner", "weight": 900, "color": "#111111", "paper": "#F3F0E8",
          "rot": (k - 1) * 5, "z": 40, "in": {"type": "pop", "at": a, "dur": .3}, "out": {"at": 2.95, "type": "fade", "dur": .1}} for k, (t, x, y, a) in enumerate(qs)]
@@ -302,8 +302,8 @@ els += [pose('podcast', 1250, 1560, 1150, at=0.3, z=18), guest(1580, 1110, at=0.
         {"type": "waves", "x": 1380, "y": 470, "bars": 21, "h": 120, "color": "#F3F0E8", "z": 29, "level": [[4.0, 0], [4.6, 1]]}]
 S(9, 9.0, 'tk-ink', 'وفي ٢٠١٩… | جاء البودكاست. | وصرنا نتكلم مع ناس | من قلب عالم الساعات.', banner='2019', transition='slide', els=els,
   sfx=[E('paper_place', .2), E('paper_slide', 2.6, -12), E('shutter', 4.0, -12), E('mic_tap', 5.6, -9)],
-  camera={"zoom": [[0, 1.7], [2.2, 1.35, "inOutCubic"], [4.6, 1.2], [6.8, 1.3, "inOutCubic"], [9.0, 1.45]], "x": [[0, 260], [2.4, 330], [4.6, 820, "inOutCubic"], [6.8, 1330, "inOutCubic"], [9.0, 1330]],
-          "y": [[0, 880], [2.2, 820, "inOutCubic"], [4.6, 760], [6.8, 720, "inOutCubic"], [9.0, 700]]})
+  camera={"zoom": [[0, 1.45], [2.2, 1.3, "inOutCubic"], [4.6, 1.2], [6.8, 1.3, "inOutCubic"], [9.0, 1.45]], "x": [[0, 270], [2.4, 330], [4.6, 820, "inOutCubic"], [6.8, 1330, "inOutCubic"], [9.0, 1330]],
+          "y": [[0, 720], [2.2, 740, "inOutCubic"], [4.6, 740], [6.8, 720, "inOutCubic"], [9.0, 700]]})   # heads stay clear of the 2019 banner
 
 # 14  Kuwait to Geneva, short: the line runs and the map dives into Geneva
 S('10a', 2.2, 'tk-ink', 'ووصلنا جنيف…', transition='slide', sfx=[E('plane', .2, -12), E('whoosh', 1.8, -10)],
@@ -360,14 +360,14 @@ S(13, 4.2, 'tk-bone', 'والأفنيوز.', banner='THE AVENUES', transition='s
 
 # 19  Back to the three: start on real watches on the table, rise to them, then a slow push in on «بدأت بثلاثة أصدقاء…»
 els = [plate('#E6DFD0'), rect('#D9CFBC', 360, 420, 760, 900, z=1)]
-TOP = 1330 - 1000 + 0.62 * 1000                     # the tabletop in the table pose (931 px tall, top at 0.60-0.66)
+TOP = 1330 - 1000 + 0.68 * 1000                     # where things stand on the table pose's tabletop (0.62-0.70 of its height)
 els += [pose('table', 360, 1330, 1000, z=10, inn=None)]
-els += [watch('w3', 260, TOP, 64, z=25, rot=-6), watch('w1', 365, TOP + 3, 62, z=25, rot=4), watch('w5', 465, TOP, 58, z=25, rot=-3)]
-els += [{"type": "cup", "x": x, "y": TOP + 2, "size": .45, "z": 24, "anchor": "b"} for x in (150, 575)] + steam(150, TOP - 40, 8.6) + steam(575, TOP - 40, 8.6, at=.5)
+els += [watch('w3', 225, TOP, 125, z=25, rot=-6), watch('w1', 362, TOP + 4, 120, z=25, rot=3), watch('w5', 500, TOP, 115, z=25, rot=-3)]
+els += [{"type": "cup", "x": x, "y": TOP + 2, "size": .45, "z": 24, "anchor": "b"} for x in (95, 630)] + steam(95, TOP - 40, 8.6) + steam(630, TOP - 40, 8.6, at=.5)
 S(14, 8.6, 'tk-bone', 'بس القصة ما بدأت بمحل… | ولا بخطة عمل. | بدأت بثلاثة أصدقاء… | يحبون الساعات.', transition='slide', els=els,
   sfx=[E('paper_place', .2, -12), E('clasp', 1.0, -11)],
-  camera={"zoom": [[0, 2.6], [1.0, 2.6], [3.4, 1.0, "inOutCubic"], [4.6, 1.0], [8.6, 1.25, "inOutSine"]], "x": [[0, 365], [3.4, 360]],
-          "y": [[0, TOP - 50], [1.0, TOP - 50], [3.4, 640, "inOutCubic"], [8.6, 620]]})
+  camera={"zoom": [[0, 2.0], [1.0, 2.1], [3.4, 1.0, "inOutCubic"], [4.6, 1.0], [8.6, 1.25, "inOutSine"]], "x": [[0, 362], [3.4, 360]],
+          "y": [[0, TOP - 60], [1.0, TOP - 60], [3.4, 640, "inOutCubic"], [8.6, 620]]})
 
 # 20  The logo, drawn by a sweeping hand, then into black on the last tick
 hand = svg(40, 300, '<rect x="16" y="0" width="8" height="300" rx="4" fill="#C9A35F"/><circle cx="20" cy="290" r="14" fill="#C9A35F"/>', 360, 560, anchor='b', z=30, kind=None, shadow=False,
