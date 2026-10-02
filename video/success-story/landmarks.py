@@ -351,3 +351,61 @@ def los_angeles(FLOOR, t0=0.0):
     els.append(svg(720, 150, walk, 360, FLOOR, z=6, at=t0, kind='fade', dur=.3, shadow=False))
     els.append(birds(260, 300, at=t0 + .6, drift=-50))
     return els
+
+
+# ------------------------------------------------------------------------------------------------ balance wheel (opening)
+def balance_wheel(x, y, D=560, dur=5.0, hz=2.5, amp=150, at=0.0):
+    """A watch movement close up: perlage plate, escape wheel stepping, the balance swinging on its hairspring
+    and the balance cock with its jewel on top. Motion is keyframed from time, so wheel and spring stay in phase."""
+    R = D / 2
+    osc = lambda a: [[round(k / 60, 4), round(a * math.sin(2 * math.pi * hz * k / 60), 2)] for k in range(int(dur * 60) + 1)]
+    # plate with perlage (overlapping circular graining) and a few screws
+    r = random.Random(3); W, Hh = 720, 980
+    plate = '<rect width="%d" height="%d" rx="40" fill="#3A3B3F"/>' % (W, Hh)
+    for gy in range(30, Hh, 46):
+        for gx in range(20 + (gy // 46 % 2) * 23, W, 46):
+            plate += '<circle cx="%d" cy="%d" r="26" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="10"/>' % (gx, gy)
+    for sx, sy in [(90, 120), (630, 160), (110, 860), (610, 820)]:
+        plate += '<circle cx="%d" cy="%d" r="20" fill="#B9BDC4"/><rect x="%d" y="%d" width="30" height="5" fill="#5E6168" transform="rotate(%d %d %d)"/>' % (sx, sy, sx - 15, sy - 2, r.randint(0, 180), sx, sy)
+    els = [svg(W, Hh, plate, 360, 560, anchor='c', z=2, at=at, kind='fade', dur=.3, shadow=False, still=True)]
+    # escape wheel: 15 club teeth, one step each half swing
+    esc = '<circle cx="110" cy="110" r="96" fill="none" stroke="#C9CCD1" stroke-width="6"/>'
+    for k in range(15):
+        a = 2 * math.pi * k / 15
+        esc += '<polygon points="%s" fill="#C9CCD1"/>' % ' '.join('%.1f,%.1f' % (110 + math.cos(a + da) * rr, 110 + math.sin(a + da) * rr) for da, rr in [(-.06, 92), (.0, 110), (.12, 108), (.1, 92)])
+    for k in range(4):
+        a = math.pi / 2 * k + .3
+        esc += '<line x1="110" y1="110" x2="%.1f" y2="%.1f" stroke="#C9CCD1" stroke-width="10"/>' % (110 + math.cos(a) * 92, 110 + math.sin(a) * 92)
+    esc += '<circle cx="110" cy="110" r="16" fill="#9C2A35"/>'
+    steps = []
+    for k in range(int(dur * hz * 2) + 1):
+        t0 = k / (hz * 2); steps += [[round(t0, 3), k * 12], [round(t0 + .03, 3), (k + 1) * 12]]
+    els.append(svg(220, 220, esc, 170, 860, anchor='c', z=3, at=at, kind='fade', dur=.3, still=True, rot=steps))
+    # hairspring: flat spiral, swings a little with the balance
+    pts_ = []
+    for k in range(560):
+        th = k / 560 * 2 * math.pi * 11; rr = 14 + k / 560 * (R * .52)
+        pts_.append('%.1f,%.1f' % (R + math.cos(th) * rr, R + math.sin(th) * rr))
+    spring = '<polyline points="%s" fill="none" stroke="#7C9CCB" stroke-width="3"/>' % ' '.join(pts_)
+    els.append(svg(D, D, spring, x, y, anchor='c', z=4, at=at, kind='fade', dur=.3, shadow=False, still=True, rot=osc(amp * .18)))
+    # balance wheel: gold rim with timing screws, three arms, hub
+    rim = '<circle cx="%d" cy="%d" r="%d" fill="none" stroke="#C9A35F" stroke-width="%d"/>' % (R, R, R * .9, R * .1)
+    rim += '<circle cx="%d" cy="%d" r="%d" fill="none" stroke="#E2C27E" stroke-width="3"/>' % (R, R, R * .95)
+    for k in range(3):
+        a = 2 * math.pi * k / 3 + .4
+        rim += '<line x1="%d" y1="%d" x2="%.1f" y2="%.1f" stroke="#C9A35F" stroke-width="%d" stroke-linecap="round"/>' % (R, R, R + math.cos(a) * R * .86, R + math.sin(a) * R * .86, R * .07)
+    for k in range(10):
+        a = 2 * math.pi * k / 10
+        rim += '<circle cx="%.1f" cy="%.1f" r="%.1f" fill="#D9DCE0"/><circle cx="%.1f" cy="%.1f" r="%.1f" fill="#9EA3AA"/>' % (
+            R + math.cos(a) * R * .99, R + math.sin(a) * R * .99, R * .055, R + math.cos(a) * R * .99, R + math.sin(a) * R * .99, R * .025)
+    rim += '<circle cx="%d" cy="%d" r="%d" fill="#B48A4C"/><circle cx="%d" cy="%d" r="%d" fill="#9C2A35"/>' % (R, R, R * .13, R, R, R * .06)
+    els.append(svg(D, D, rim, x, y, anchor='c', z=5, at=at, kind='fade', dur=.3, still=True, rot=osc(amp)))
+    # balance cock over it: steel bridge with côtes de Genève and a ruby jewel at the pivot
+    cock = ('<defs><clipPath id="ckc"><path d="M40 300 Q20 250 70 230 L%d 70 Q%d 40 %d 70 L%d 120 Q%d 150 %d 160 L120 300 Q90 330 40 300Z"/></clipPath></defs>'
+            % (R * .9, R, R * 1.1, R * 1.16, R * 1.16, R * 1.08))
+    cock += '<path d="M40 300 Q20 250 70 230 L%d 70 Q%d 40 %d 70 L%d 120 Q%d 150 %d 160 L120 300 Q90 330 40 300Z" fill="#AEB3B9"/>' % (R * .9, R, R * 1.1, R * 1.16, R * 1.16, R * 1.08)
+    cock += '<g clip-path="url(#ckc)">' + ''.join('<rect x="%d" y="0" width="14" height="400" fill="rgba(255,255,255,.18)" transform="rotate(-35 %d 200)"/>' % (sx, sx) for sx in range(-100, 700, 34)) + '</g>'
+    cock += '<circle cx="%d" cy="%d" r="30" fill="#E6E8EB"/><circle cx="%d" cy="%d" r="15" fill="#9C2A35"/><circle cx="%d" cy="%d" r="5" fill="#E8A0A8"/>' % (R, 95, R, 95, R - 4, 91)
+    cock += '<circle cx="80" cy="268" r="20" fill="#D9DCE0"/><rect x="66" y="265" width="28" height="6" fill="#6E7279" transform="rotate(30 80 268)"/>'
+    els.append(svg(int(R * 1.25), 330, cock, x - R, y - 95, anchor='tl', z=6, at=at + .1, kind='fade', dur=.4, still=True))  # pivot jewel (R, 95) sits on the balance staff
+    return els
