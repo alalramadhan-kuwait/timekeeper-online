@@ -12,7 +12,11 @@ Classes: `authorized_retailer`, `collaboration`, `interview_content`, `manufactu
 | Audemars Piguet | UNCLASSIFIED | | | No |
 | Hublot | UNCLASSIFIED | | | No |
 | Bulgari | UNCLASSIFIED | | | No |
-| Gerald Charles | UNCLASSIFIED (the brief says a retail or collaboration relationship may be described more specifically where supported) | | | No |
+| Gerald Charles | `authorized_retailer` (provisional) | Time Keeper's own product pages list the brand; a sponsored Time Gallery launch article calls it an authorized-dealer brand (search results, pages not opened) | "نبيع ساعات جيرالد تشارلز" only after Time Keeper confirms authorization | Only with permission |
+| Lebois & Co | `collaboration` (provisional) | The brand's own site lists a Heritage Chronograph Time Keeper Edition, 50 pieces (search result) | Name the edition only after Time Keeper confirms what it contributed | Only with permission |
+| West End Watch Co | `collaboration` (provisional) | time-keeper.com lists a Bairak Kuwait Limited Edition by West End, 150 pieces (search result) | As above | Only with permission |
+| Dubai Watch Week | `event_access` (provisional) | The event's own page lists a TK Collectors Session in 2021 (search result) | "كنا في…" only after confirmation | n/a |
+| Time Gallery brands (Behrens, ClockClock24, Graham, Ikepod, Raketa, Nivada Grenchen) | `authorized_retailer` (provisional) | Sponsored launch article (search result) | Generic "independent brands" until a current list is confirmed | No |
 | Independent watchmakers | UNCLASSIFIED, one row per maker | | | No |
 
 ## Wording guide (Arabic)
