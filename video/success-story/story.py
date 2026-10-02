@@ -296,14 +296,14 @@ els = [plate('#2B2D32'), rect('#3A3C42', 750, 420, 1700, 700, z=2, depth=1.0)]
 els += [pose('writer', 190, 1310, 860, at=0.1, z=18), wood(250, 520), papers(150, 1060, at=0.2), monitor(370, 1060, at=0.3, w=300)]
 els += [pose('designer', 720, 1380, 880, at=0.2, z=18)] + design_board(560, 1000, LOGO, at=1.2, w=200) + [
         camera_rig(880, 1100, 1.0, 99), ring_light(970, 1050, 1.0, 99)]
-els += [pose('podcast', 1270, 1420, 900, at=0.3, z=18), guest(1540, 1110, at=0.4, scale=1.3), wood(1400, 760),
-        {"type": "mic", "x": 1480, "y": 1060, "size": 1.0, "z": 30, "in": {"type": "drop", "at": 0.6}},
+els += [pose('podcast', 1250, 1560, 1150, at=0.3, z=18), guest(1580, 1110, at=0.4, scale=1.4), wood(1420, 760),
+        {"type": "mic", "x": 1520, "y": 1060, "size": 1.0, "z": 30, "in": {"type": "drop", "at": 0.6}},
         {"type": "card", "x": 1370, "y": 300, "w": 190, "h": 60, "style": "dark", "label": "ON AIR", "labelSize": 26, "ink": "#E8574B", "z": 30, "in": {"type": "pop", "at": 0.5}, "idle": {"type": "pulse", "amp": .05, "speed": 1.4}},
         {"type": "waves", "x": 1380, "y": 470, "bars": 21, "h": 120, "color": "#F3F0E8", "z": 29, "level": [[4.0, 0], [4.6, 1]]}]
 S(9, 9.0, 'tk-ink', 'وفي ٢٠١٩… | جاء البودكاست. | وصرنا نتكلم مع ناس | من قلب عالم الساعات.', banner='2019', transition='slide', els=els,
   sfx=[E('paper_place', .2), E('paper_slide', 2.6, -12), E('shutter', 4.0, -12), E('mic_tap', 5.6, -9)],
-  camera={"zoom": [[0, 1.7], [2.2, 1.35, "inOutCubic"], [4.6, 1.2], [7.0, 1.1], [9.0, 1.05]], "x": [[0, 260], [2.4, 330], [4.6, 820, "inOutCubic"], [6.8, 1360, "inOutCubic"], [9.0, 1380]],
-          "y": [[0, 880], [2.2, 820, "inOutCubic"], [4.6, 760], [9.0, 760]]})
+  camera={"zoom": [[0, 1.7], [2.2, 1.35, "inOutCubic"], [4.6, 1.2], [6.8, 1.3, "inOutCubic"], [9.0, 1.45]], "x": [[0, 260], [2.4, 330], [4.6, 820, "inOutCubic"], [6.8, 1330, "inOutCubic"], [9.0, 1330]],
+          "y": [[0, 880], [2.2, 820, "inOutCubic"], [4.6, 760], [6.8, 720, "inOutCubic"], [9.0, 700]]})
 
 # 14  Kuwait to Geneva, short: the line runs and the map dives into Geneva
 S('10a', 2.2, 'tk-ink', 'ووصلنا جنيف…', transition='slide', sfx=[E('plane', .2, -12), E('whoosh', 1.8, -10)],
