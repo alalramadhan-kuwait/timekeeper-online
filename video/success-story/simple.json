@@ -195,7 +195,7 @@
     {
      "type": "cutout",
      "src": "assets/figures/ali-alramadhan_casual.png",
-     "x": 281.8,
+     "x": 203.6,
      "y": 960,
      "h": 340,
      "aspect": 0.3584672435105068,
@@ -215,11 +215,11 @@
     {
      "type": "cutout",
      "src": "assets/figures/mohammad-alyousifi_casual.png",
-     "x": 438.2,
+     "x": 360,
      "y": 960,
      "h": 340,
      "aspect": 0.36079900124843944,
-     "z": 12,
+     "z": 13,
      "edge": 0,
      "in": {
       "type": "rise",
@@ -230,6 +230,26 @@
       "amp": 2,
       "speed": 0.5,
       "phase": 0.3
+     }
+    },
+    {
+     "type": "cutout",
+     "src": "assets/figures/ali-alyousifi_casual.png",
+     "x": 516.4,
+     "y": 960,
+     "h": 340,
+     "aspect": 0.4014962593516209,
+     "z": 12,
+     "edge": 0,
+     "in": {
+      "type": "rise",
+      "at": 1.4
+     },
+     "idle": {
+      "type": "bob",
+      "amp": 2,
+      "speed": 0.5,
+      "phase": 0.6
      }
     }
    ],
@@ -315,7 +335,7 @@
     {
      "type": "cutout",
      "src": "assets/figures/ali-alramadhan_kuwaiti.png",
-     "x": 221.8,
+     "x": 143.6,
      "y": 960,
      "h": 340,
      "aspect": 0.419740777666999,
@@ -335,11 +355,11 @@
     {
      "type": "cutout",
      "src": "assets/figures/mohammad-alyousifi_kuwaiti.png",
-     "x": 378.2,
+     "x": 300,
      "y": 960,
      "h": 340,
      "aspect": 0.4110429447852761,
-     "z": 12,
+     "z": 13,
      "edge": 0,
      "in": {
       "type": "rise",
@@ -350,6 +370,26 @@
       "amp": 2,
       "speed": 0.5,
       "phase": 0.3
+     }
+    },
+    {
+     "type": "cutout",
+     "src": "assets/figures/ali-alyousifi_kuwaiti.png",
+     "x": 456.4,
+     "y": 960,
+     "h": 340,
+     "aspect": 0.4068891280947255,
+     "z": 12,
+     "edge": 0,
+     "in": {
+      "type": "rise",
+      "at": 3.8
+     },
+     "idle": {
+      "type": "bob",
+      "amp": 2,
+      "speed": 0.5,
+      "phase": 0.6
      }
     }
    ],
@@ -858,7 +898,7 @@
     {
      "type": "cutout",
      "src": "assets/figures/ali-alramadhan_formal.png",
-     "x": 171.8,
+     "x": 93.6,
      "y": 960,
      "h": 340,
      "aspect": 0.3944615384615385,
@@ -878,11 +918,11 @@
     {
      "type": "cutout",
      "src": "assets/figures/mohammad-alyousifi_formal.png",
-     "x": 328.2,
+     "x": 250,
      "y": 960,
      "h": 340,
      "aspect": 0.35889377749842866,
-     "z": 12,
+     "z": 13,
      "edge": 0,
      "in": {
       "type": "rise",
@@ -893,6 +933,26 @@
       "amp": 2,
       "speed": 0.5,
       "phase": 0.3
+     }
+    },
+    {
+     "type": "cutout",
+     "src": "assets/figures/ali-alyousifi_formal.png",
+     "x": 406.4,
+     "y": 960,
+     "h": 340,
+     "aspect": 0.3995021779713752,
+     "z": 12,
+     "edge": 0,
+     "in": {
+      "type": "rise",
+      "at": 1.6
+     },
+     "idle": {
+      "type": "bob",
+      "amp": 2,
+      "speed": 0.5,
+      "phase": 0.6
      }
     }
    ],
@@ -989,7 +1049,7 @@
     {
      "type": "cutout",
      "src": "assets/figures/ali-alramadhan_formal.png",
-     "x": 281.8,
+     "x": 203.6,
      "y": 960,
      "h": 340,
      "aspect": 0.3944615384615385,
@@ -1009,11 +1069,11 @@
     {
      "type": "cutout",
      "src": "assets/figures/mohammad-alyousifi_formal.png",
-     "x": 438.2,
+     "x": 360,
      "y": 960,
      "h": 340,
      "aspect": 0.35889377749842866,
-     "z": 12,
+     "z": 13,
      "edge": 0,
      "in": {
       "type": "rise",
@@ -1024,6 +1084,26 @@
       "amp": 2,
       "speed": 0.5,
       "phase": 0.3
+     }
+    },
+    {
+     "type": "cutout",
+     "src": "assets/figures/ali-alyousifi_formal.png",
+     "x": 516.4,
+     "y": 960,
+     "h": 340,
+     "aspect": 0.3995021779713752,
+     "z": 12,
+     "edge": 0,
+     "in": {
+      "type": "rise",
+      "at": 3.0
+     },
+     "idle": {
+      "type": "bob",
+      "amp": 2,
+      "speed": 0.5,
+      "phase": 0.6
      }
     }
    ],
@@ -1046,10 +1126,10 @@
    "elements": [
     {
      "type": "door",
-     "x": 470,
-     "y": 600,
-     "w": 250,
-     "h": 450,
+     "x": 535,
+     "y": 620,
+     "w": 220,
+     "h": 420,
      "sign": "TIME KEEPER LOUNGE",
      "open": [
       [
@@ -1071,9 +1151,9 @@
     {
      "type": "cutout",
      "src": "assets/figures/ali-alramadhan_formal.png",
-     "x": 116.0,
+     "x": 86.19999999999999,
      "y": 960,
-     "h": 300,
+     "h": 280,
      "aspect": 0.3944615384615385,
      "z": 12,
      "edge": 0,
@@ -1091,11 +1171,11 @@
     {
      "type": "cutout",
      "src": "assets/figures/mohammad-alyousifi_formal.png",
-     "x": 254.0,
+     "x": 215,
      "y": 960,
-     "h": 300,
+     "h": 280,
      "aspect": 0.35889377749842866,
-     "z": 12,
+     "z": 13,
      "edge": 0,
      "in": {
       "type": "rise",
@@ -1106,6 +1186,26 @@
       "amp": 2,
       "speed": 0.5,
       "phase": 0.3
+     }
+    },
+    {
+     "type": "cutout",
+     "src": "assets/figures/ali-alyousifi_formal.png",
+     "x": 343.8,
+     "y": 960,
+     "h": 280,
+     "aspect": 0.3995021779713752,
+     "z": 12,
+     "edge": 0,
+     "in": {
+      "type": "rise",
+      "at": 3.8
+     },
+     "idle": {
+      "type": "bob",
+      "amp": 2,
+      "speed": 0.5,
+      "phase": 0.6
      }
     }
    ],
@@ -1176,9 +1276,9 @@
    "elements": [
     {
      "type": "building",
-     "x": 470,
+     "x": 525,
      "y": 960,
-     "w": 330,
+     "w": 290,
      "h": 600,
      "color": "#D2CABA",
      "cols": 3,
@@ -1194,9 +1294,9 @@
     },
     {
      "type": "card",
-     "x": 470,
+     "x": 525,
      "y": 410,
-     "w": 260,
+     "w": 250,
      "h": 58,
      "style": "dark",
      "label": "TIME KEEPER",
@@ -1211,9 +1311,9 @@
     {
      "type": "cutout",
      "src": "assets/figures/ali-alramadhan_formal.png",
-     "x": 101.0,
+     "x": 76.19999999999999,
      "y": 960,
-     "h": 300,
+     "h": 280,
      "aspect": 0.3944615384615385,
      "z": 12,
      "edge": 0,
@@ -1231,11 +1331,11 @@
     {
      "type": "cutout",
      "src": "assets/figures/mohammad-alyousifi_formal.png",
-     "x": 239.0,
+     "x": 205,
      "y": 960,
-     "h": 300,
+     "h": 280,
      "aspect": 0.35889377749842866,
-     "z": 12,
+     "z": 13,
      "edge": 0,
      "in": {
       "type": "rise",
@@ -1246,6 +1346,26 @@
       "amp": 2,
       "speed": 0.5,
       "phase": 0.3
+     }
+    },
+    {
+     "type": "cutout",
+     "src": "assets/figures/ali-alyousifi_formal.png",
+     "x": 333.8,
+     "y": 960,
+     "h": 280,
+     "aspect": 0.3995021779713752,
+     "z": 12,
+     "edge": 0,
+     "in": {
+      "type": "rise",
+      "at": 2.2
+     },
+     "idle": {
+      "type": "bob",
+      "amp": 2,
+      "speed": 0.5,
+      "phase": 0.6
      }
     }
    ],
@@ -1321,7 +1441,7 @@
     {
      "type": "cutout",
      "src": "assets/figures/ali-alramadhan_kuwaiti.png",
-     "x": 258.8,
+     "x": 157.6,
      "y": 960,
      "h": 440,
      "aspect": 0.419740777666999,
@@ -1341,11 +1461,11 @@
     {
      "type": "cutout",
      "src": "assets/figures/mohammad-alyousifi_kuwaiti.png",
-     "x": 461.2,
+     "x": 360,
      "y": 960,
      "h": 440,
      "aspect": 0.4110429447852761,
-     "z": 10,
+     "z": 11,
      "edge": 0,
      "in": {
       "type": "rise",
@@ -1356,6 +1476,26 @@
       "amp": 2,
       "speed": 0.5,
       "phase": 0.3
+     }
+    },
+    {
+     "type": "cutout",
+     "src": "assets/figures/ali-alyousifi_kuwaiti.png",
+     "x": 562.4,
+     "y": 960,
+     "h": 440,
+     "aspect": 0.4068891280947255,
+     "z": 10,
+     "edge": 0,
+     "in": {
+      "type": "rise",
+      "at": 0.8
+     },
+     "idle": {
+      "type": "bob",
+      "amp": 2,
+      "speed": 0.5,
+      "phase": 0.6
      }
     },
     {
