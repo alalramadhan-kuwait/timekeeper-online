@@ -1,0 +1,1215 @@
+{
+ "title": "قصة تايم كيبر",
+ "width": 720,
+ "height": 1280,
+ "fps": 30,
+ "maxWords": 4,
+ "style": {
+  "banner": {
+   "paper": "#F3F0E8",
+   "ink": "#111111",
+   "upper": false,
+   "ls": 0,
+   "tape": "rgba(186,182,172,.88)",
+   "torn": 0.5,
+   "size": 34
+  },
+  "caption": {
+   "font": "var(--f-banner)"
+  },
+  "grain": 0.42,
+  "vignette": 0.8
+ },
+ "themes": {
+  "tk-bone": {
+   "bg": "#E4DFD3",
+   "blot": [
+    "#EFEBE1",
+    "#D5CFC1"
+   ],
+   "floor": "#C9C3B4",
+   "floorTop": "#DDD7C9",
+   "capBg": "#111111",
+   "capInk": "#FFFFFF"
+  },
+  "tk-linen": {
+   "bg": "#CFC7B5",
+   "blot": [
+    "#DDD6C6",
+    "#BDB5A2"
+   ],
+   "floor": "#B3AB98",
+   "floorTop": "#C7BFAD",
+   "capBg": "#111111",
+   "capInk": "#FFFFFF"
+  },
+  "tk-graphite": {
+   "bg": "#34373E",
+   "blot": [
+    "#43474F",
+    "#25272C"
+   ],
+   "floor": "#222428",
+   "floorTop": "#383B42",
+   "capBg": "#F3F0E8",
+   "capInk": "#111111"
+  },
+  "tk-ink": {
+   "bg": "#16181C",
+   "blot": [
+    "#22252B",
+    "#0D0E11"
+   ],
+   "floor": "#0F1013",
+   "floorTop": "#272A31",
+   "capBg": "#F3F0E8",
+   "capInk": "#111111"
+  },
+  "tk-black": {
+   "bg": "#050505",
+   "blot": [
+    "#0B0B0B",
+    "#000000"
+   ],
+   "floor": "#050505",
+   "floorTop": "#111111",
+   "capBg": "#F3F0E8",
+   "capInk": "#111111"
+  }
+ },
+ "audio": {
+  "autoSfx": true,
+  "music": "renders/simple_score.wav",
+  "musicGain": -17
+ },
+ "scenes": [
+  {
+   "dur": 4.2,
+   "theme": "tk-black",
+   "banner": "",
+   "floor": false,
+   "elements": [
+    {
+     "type": "watch",
+     "x": 360,
+     "y": 640,
+     "size": 560,
+     "strap": false,
+     "numerals": "arabic",
+     "date": false,
+     "scale": [
+      [
+       0,
+       1.75
+      ],
+      [
+       3.8,
+       1.0,
+       "inOutCubic"
+      ]
+     ],
+     "time": [
+      10,
+      8,
+      40
+     ],
+     "still": true
+    }
+   ],
+   "captions": "تايم كيبر… | ما بدأ كمحل ساعات.",
+   "silent": true,
+   "beds": [
+    {
+     "name": "watch_run",
+     "from": 0,
+     "to": 4.2,
+     "gain": -14
+    }
+   ],
+   "captionStart": 1.6
+  },
+  {
+   "dur": 6.0,
+   "theme": "tk-ink",
+   "banner": "",
+   "floor": false,
+   "elements": [
+    {
+     "type": "map",
+     "x": 360,
+     "y": 580,
+     "w": 660,
+     "h": 680,
+     "view": [
+      [
+       0,
+       {
+        "lon": -98,
+        "lat": 38.5,
+        "span": 58
+       }
+      ],
+      [
+       2.0,
+       {
+        "lon": -111,
+        "lat": 36.5,
+        "span": 30
+       },
+       "inOutCubic"
+      ]
+     ],
+     "sea": "#CCC6B7",
+     "land": "#F4F1E8",
+     "pins": [
+      {
+       "id": "bou",
+       "lon": -105.27,
+       "lat": 40.01,
+       "label": "BOULDER",
+       "at": 1.2
+      },
+      {
+       "id": "sd",
+       "lon": -117.16,
+       "lat": 32.72,
+       "label": "SAN DIEGO",
+       "at": 2.4
+      }
+     ],
+     "routes": [
+      {
+       "from": "bou",
+       "to": "sd",
+       "at": 2.2,
+       "dur": 1.2
+      }
+     ],
+     "states": true,
+     "unfold": {
+      "at": 0.2,
+      "dur": 1.2
+     }
+    }
+   ],
+   "captions": "ثلاثة أصدقاء… | التقوا وهم يدرسون في أمريكا.",
+   "sfx": [
+    {
+     "at": 0.2,
+     "name": "paper_tear",
+     "gain": -12
+    },
+    {
+     "at": 2.2,
+     "name": "plane",
+     "gain": -14
+    }
+   ]
+  },
+  {
+   "dur": 5.0,
+   "theme": "tk-ink",
+   "banner": "KUWAIT",
+   "floor": false,
+   "elements": [
+    {
+     "type": "map",
+     "x": 360,
+     "y": 560,
+     "w": 660,
+     "h": 620,
+     "view": [
+      [
+       0,
+       {
+        "lon": -60,
+        "lat": 38,
+        "span": 150
+       }
+      ],
+      [
+       2.6,
+       {
+        "lon": 48,
+        "lat": 29.4,
+        "span": 30
+       },
+       "inOutCubic"
+      ]
+     ],
+     "sea": "#CCC6B7",
+     "land": "#F4F1E8",
+     "pins": [
+      {
+       "id": "kw",
+       "lon": 47.98,
+       "lat": 29.37,
+       "label": "KUWAIT",
+       "at": 2.8
+      }
+     ],
+     "routes": [],
+     "highlight": [
+      {
+       "n": "Kuwait",
+       "at": 2.6,
+       "color": "#111111"
+      }
+     ]
+    },
+    {
+     "type": "towers",
+     "x": 560,
+     "y": 960,
+     "h": 330,
+     "in": {
+      "type": "rise",
+      "at": 3.0,
+      "dur": 0.8
+     },
+     "z": 30
+    }
+   ],
+   "captions": "ورجعوا الكويت.",
+   "sfx": [
+    {
+     "at": 0.9,
+     "name": "plane",
+     "gain": -12
+    }
+   ]
+  },
+  {
+   "dur": 7.0,
+   "theme": "tk-graphite",
+   "banner": "",
+   "floor": false,
+   "elements": [
+    {
+     "type": "text",
+     "text": "ENGLISH",
+     "x": 215,
+     "y": 330,
+     "size": 38,
+     "font": "banner",
+     "weight": 800,
+     "color": "#F3F0E8",
+     "ls": 0.12,
+     "upper": false,
+     "shadow": false,
+     "in": {
+      "type": "fade",
+      "at": 1.6
+     }
+    },
+    {
+     "type": "text",
+     "text": "عربي",
+     "x": 560,
+     "y": 330,
+     "size": 38,
+     "font": "banner",
+     "weight": 800,
+     "color": "#F3F0E8",
+     "shadow": false,
+     "in": {
+      "type": "fade",
+      "at": 1.6
+     }
+    },
+    {
+     "type": "card",
+     "x": 208,
+     "y": 880,
+     "w": 270,
+     "h": 56,
+     "label": "WATCH GUIDE",
+     "labelSize": 20,
+     "color": "#F3F0E8",
+     "rot": -2.4000000000000004,
+     "in": {
+      "type": "drop",
+      "at": 2.0,
+      "dur": 0.45
+     }
+    },
+    {
+     "type": "card",
+     "x": 222,
+     "y": 818,
+     "w": 270,
+     "h": 56,
+     "label": "MOVEMENTS",
+     "labelSize": 20,
+     "color": "#F3F0E8",
+     "rot": -0.8,
+     "in": {
+      "type": "drop",
+      "at": 2.45,
+      "dur": 0.45
+     }
+    },
+    {
+     "type": "card",
+     "x": 208,
+     "y": 756,
+     "w": 270,
+     "h": 56,
+     "label": "REVIEWS",
+     "labelSize": 20,
+     "color": "#F3F0E8",
+     "rot": 0.8,
+     "in": {
+      "type": "drop",
+      "at": 2.9,
+      "dur": 0.45
+     }
+    },
+    {
+     "type": "card",
+     "x": 222,
+     "y": 694,
+     "w": 270,
+     "h": 56,
+     "label": "HISTORY",
+     "labelSize": 20,
+     "color": "#F3F0E8",
+     "rot": 2.4000000000000004,
+     "in": {
+      "type": "drop",
+      "at": 3.35,
+      "dur": 0.45
+     }
+    },
+    {
+     "type": "card",
+     "x": 208,
+     "y": 632,
+     "w": 270,
+     "h": 56,
+     "label": "BUYING TIPS",
+     "labelSize": 20,
+     "color": "#F3F0E8",
+     "rot": -1.6,
+     "in": {
+      "type": "drop",
+      "at": 3.8,
+      "dur": 0.45
+     }
+    },
+    {
+     "type": "card",
+     "x": 222,
+     "y": 570,
+     "w": 270,
+     "h": 56,
+     "label": "BRAND STORIES",
+     "labelSize": 20,
+     "color": "#F3F0E8",
+     "rot": 0.0,
+     "in": {
+      "type": "drop",
+      "at": 4.25,
+      "dur": 0.45
+     }
+    },
+    {
+     "type": "card",
+     "x": 560,
+     "y": 880,
+     "w": 130,
+     "h": 46,
+     "label": "بالعربي",
+     "labelSize": 18,
+     "color": "#F3F0E8",
+     "rot": 2,
+     "in": {
+      "type": "drop",
+      "at": 5.2,
+      "dur": 0.45
+     }
+    }
+   ],
+   "captions": "لاحظوا إن أغلب المعلومات عن الساعات بالإنجليزي. | وبالعربي… | قليل.",
+   "sfx": [
+    {
+     "at": 2.0,
+     "name": "paper_place",
+     "gain": -13
+    },
+    {
+     "at": 2.45,
+     "name": "paper_place",
+     "gain": -13
+    },
+    {
+     "at": 2.9,
+     "name": "paper_place",
+     "gain": -13
+    },
+    {
+     "at": 3.35,
+     "name": "paper_place",
+     "gain": -13
+    },
+    {
+     "at": 3.8,
+     "name": "paper_place",
+     "gain": -13
+    },
+    {
+     "at": 4.25,
+     "name": "paper_place",
+     "gain": -13
+    }
+   ]
+  },
+  {
+   "dur": 4.5,
+   "theme": "tk-ink",
+   "banner": "",
+   "floor": false,
+   "elements": [
+    {
+     "type": "image",
+     "x": 360,
+     "y": 560,
+     "w": 210,
+     "h": 210,
+     "src": "../../public/icon-512.png",
+     "pad": 12,
+     "rot": -2,
+     "in": {
+      "type": "pop",
+      "at": 1.6,
+      "dur": 0.7
+     }
+    }
+   ],
+   "captions": "فقرروا… | يبسطونها.",
+   "silent": true,
+   "captionStart": 0.4
+  },
+  {
+   "dur": 5.5,
+   "theme": "tk-bone",
+   "banner": "2018",
+   "floor": false,
+   "elements": [
+    {
+     "type": "igpost",
+     "empty": true,
+     "avatar": "../../public/icon-512.png",
+     "x": 200,
+     "y": 600,
+     "w": 300,
+     "rot": -4,
+     "in": {
+      "type": "drop",
+      "at": 0.8
+     }
+    },
+    {
+     "type": "igpost",
+     "empty": true,
+     "avatar": "../../public/icon-512.png",
+     "x": 500,
+     "y": 680,
+     "w": 300,
+     "rot": 3,
+     "in": {
+      "type": "drop",
+      "at": 1.8
+     }
+    },
+    {
+     "type": "igpost",
+     "empty": true,
+     "avatar": "../../public/icon-512.png",
+     "x": 330,
+     "y": 800,
+     "w": 300,
+     "rot": -1,
+     "likeAt": 3.6,
+     "in": {
+      "type": "drop",
+      "at": 2.8
+     }
+    }
+   ],
+   "captions": "٢٠١٨… | بدأ تايم كيبر. | نشرح الساعات بالعربي.",
+   "sfx": [
+    {
+     "at": 0.8,
+     "name": "paper_place",
+     "gain": -9
+    },
+    {
+     "at": 1.8,
+     "name": "paper_place",
+     "gain": -9
+    },
+    {
+     "at": 2.8,
+     "name": "paper_place",
+     "gain": -9
+    }
+   ]
+  },
+  {
+   "dur": 6.0,
+   "theme": "tk-graphite",
+   "banner": "",
+   "floor": false,
+   "elements": [
+    {
+     "type": "notif",
+     "x": 346,
+     "y": 420,
+     "w": 560,
+     "name": "timekeeperkw",
+     "initial": "؟",
+     "text": "وين أحصلها؟",
+     "size": 30,
+     "in": {
+      "type": "slideD",
+      "at": 1.4,
+      "from": 600
+     },
+     "z": 30
+    },
+    {
+     "type": "notif",
+     "x": 360,
+     "y": 595,
+     "w": 560,
+     "name": "timekeeperkw",
+     "initial": "؟",
+     "text": "تقدرون توفرونها؟",
+     "size": 30,
+     "in": {
+      "type": "slideD",
+      "at": 3.0,
+      "from": 600
+     },
+     "z": 31
+    },
+    {
+     "type": "notif",
+     "x": 374,
+     "y": 770,
+     "w": 560,
+     "name": "timekeeperkw",
+     "initial": "؟",
+     "text": "من وين نشتريها؟",
+     "size": 30,
+     "in": {
+      "type": "slideD",
+      "at": 4.6,
+      "from": 600
+     },
+     "z": 32
+    }
+   ],
+   "captions": "والناس بدت تسأل… | وين أحصلها؟",
+   "sfx": [
+    {
+     "at": 1.4,
+     "name": "notif",
+     "gain": -9
+    },
+    {
+     "at": 3.0,
+     "name": "notif",
+     "gain": -9
+    },
+    {
+     "at": 4.6,
+     "name": "notif",
+     "gain": -9
+    }
+   ]
+  },
+  {
+   "dur": 4.5,
+   "theme": "tk-bone",
+   "banner": "",
+   "floor": false,
+   "elements": [
+    {
+     "type": "igpost",
+     "empty": true,
+     "avatar": "../../public/icon-512.png",
+     "x": 360,
+     "y": 600,
+     "w": 340,
+     "scale": [
+      [
+       0.4,
+       1
+      ],
+      [
+       1.4,
+       0.35,
+       "inCubic"
+      ]
+     ],
+     "rot": [
+      [
+       0.4,
+       0
+      ],
+      [
+       1.4,
+       8
+      ]
+     ],
+     "out": {
+      "at": 1.35,
+      "type": "fade",
+      "dur": 0.15
+     }
+    },
+    {
+     "type": "box",
+     "x": 360,
+     "y": 680,
+     "w": 340,
+     "h": 240,
+     "lid": [
+      [
+       2.2,
+       0
+      ],
+      [
+       3.2,
+       1,
+       "outBack"
+      ]
+     ],
+     "in": {
+      "type": "pop",
+      "at": 1.4
+     }
+    },
+    {
+     "type": "watch",
+     "x": 360,
+     "y": 650,
+     "size": 150,
+     "strap": false,
+     "numerals": "arabic",
+     "in": {
+      "type": "pop",
+      "at": 3.0
+     },
+     "z": 40
+    }
+   ],
+   "captions": "فصرنا نوفر ساعات نحبها.",
+   "sfx": [
+    {
+     "at": 0.8,
+     "name": "fold",
+     "gain": -8
+    },
+    {
+     "at": 1.6,
+     "name": "paper_place",
+     "gain": -8
+    },
+    {
+     "at": 2.4,
+     "name": "clasp",
+     "gain": -8
+    }
+   ],
+   "silent": true
+  },
+  {
+   "dur": 5.0,
+   "theme": "tk-ink",
+   "banner": "2019",
+   "floor": false,
+   "elements": [
+    {
+     "type": "mic",
+     "x": 360,
+     "y": 960,
+     "size": 1.1,
+     "in": {
+      "type": "drop",
+      "at": 0.3
+     },
+     "z": 30
+    },
+    {
+     "type": "waves",
+     "x": 360,
+     "y": 450,
+     "bars": 25,
+     "h": 150,
+     "color": "#F3F0E8",
+     "level": [
+      [
+       1.0,
+       0
+      ],
+      [
+       1.6,
+       1
+      ]
+     ]
+    }
+   ],
+   "captions": "٢٠١٩… | جاء البودكاست.",
+   "sfx": [
+    {
+     "at": 0.6,
+     "name": "mic_tap",
+     "gain": -6
+    }
+   ]
+  },
+  {
+   "dur": 5.0,
+   "theme": "tk-ink",
+   "banner": "GENEVA",
+   "floor": false,
+   "elements": [
+    {
+     "type": "map",
+     "x": 360,
+     "y": 580,
+     "w": 660,
+     "h": 640,
+     "view": [
+      [
+       0,
+       {
+        "lon": 48,
+        "lat": 29.4,
+        "span": 30
+       }
+      ],
+      [
+       1.2,
+       {
+        "lon": 26,
+        "lat": 38,
+        "span": 70
+       },
+       "inOutCubic"
+      ],
+      [
+       3.0,
+       {
+        "lon": 10,
+        "lat": 44,
+        "span": 26
+       },
+       "inOutCubic"
+      ]
+     ],
+     "sea": "#CCC6B7",
+     "land": "#F4F1E8",
+     "pins": [
+      {
+       "id": "kw",
+       "lon": 47.98,
+       "lat": 29.37,
+       "label": "KUWAIT",
+       "at": 0
+      },
+      {
+       "id": "gva",
+       "lon": 6.14,
+       "lat": 46.2,
+       "label": "GENEVA",
+       "at": 2.8
+      }
+     ],
+     "routes": [
+      {
+       "from": "kw",
+       "to": "gva",
+       "at": 0.6,
+       "dur": 2.2,
+       "curve": 0.14
+      }
+     ],
+     "highlight": [
+      {
+       "n": "Kuwait",
+       "color": "#111111"
+      },
+      {
+       "n": "Switzerland",
+       "at": 3.0,
+       "color": "#111111"
+      }
+     ]
+    }
+   ],
+   "captions": "وسافرنا… | لجنيف، بسويسرا.",
+   "sfx": [
+    {
+     "at": 0.6,
+     "name": "plane",
+     "gain": -12
+    }
+   ]
+  },
+  {
+   "dur": 5.5,
+   "theme": "tk-graphite",
+   "banner": "2022",
+   "floor": false,
+   "elements": [
+    {
+     "type": "door",
+     "x": 360,
+     "y": 620,
+     "w": 300,
+     "h": 540,
+     "sign": "TIME KEEPER LOUNGE",
+     "open": [
+      [
+       2.6,
+       0
+      ],
+      [
+       4.2,
+       1,
+       "outBack"
+      ]
+     ],
+     "in": {
+      "type": "rise",
+      "at": 0.5,
+      "dur": 0.7
+     }
+    }
+   ],
+   "captions": "٢٠٢٢… | فتحنا صالة تايم كيبر. | بموعد… | وفيها ناس.",
+   "sfx": [
+    {
+     "at": 1.4,
+     "name": "paper_place",
+     "gain": -8
+    },
+    {
+     "at": 3.6,
+     "name": "door_chime",
+     "gain": -10
+    }
+   ]
+  },
+  {
+   "dur": 5.0,
+   "theme": "tk-linen",
+   "banner": "TIME GALLERY",
+   "floor": true,
+   "elements": [
+    {
+     "type": "photo",
+     "src": "assets/ep3_timegallery_store.jpg",
+     "x": 360,
+     "y": 560,
+     "w": 560,
+     "aspect": 1.589,
+     "label": "تايم غاليري",
+     "rot": [
+      [
+       0,
+       -8
+      ],
+      [
+       0.9,
+       -2.5,
+       "outBack"
+      ]
+     ],
+     "in": {
+      "type": "drop",
+      "at": 0.5,
+      "dur": 0.6
+     }
+    }
+   ],
+   "captions": "وبعدها… | تايم غاليري.",
+   "sfx": [
+    {
+     "at": 1.0,
+     "name": "paper_place",
+     "gain": -8
+    }
+   ]
+  },
+  {
+   "dur": 4.5,
+   "theme": "tk-bone",
+   "banner": "THE AVENUES",
+   "floor": true,
+   "elements": [
+    {
+     "type": "building",
+     "x": 360,
+     "y": 960,
+     "w": 380,
+     "h": 600,
+     "color": "#D2CABA",
+     "cols": 3,
+     "rows": 7,
+     "lit": 0.25,
+     "glass": "#C9CDD2",
+     "litColor": "#EFE8D5",
+     "in": {
+      "type": "rise",
+      "at": 0.3,
+      "dur": 1.0
+     }
+    },
+    {
+     "type": "card",
+     "x": 360,
+     "y": 410,
+     "w": 280,
+     "h": 58,
+     "style": "dark",
+     "label": "TIME KEEPER",
+     "labelSize": 22,
+     "ink": "#EDE9E0",
+     "in": {
+      "type": "pop",
+      "at": 1.4
+     },
+     "z": 40
+    }
+   ],
+   "captions": "والأفنيوز.",
+   "sfx": [
+    {
+     "at": 0.6,
+     "name": "paper_slide",
+     "gain": -10
+    },
+    {
+     "at": 2.6,
+     "name": "door_chime",
+     "gain": -10
+    }
+   ]
+  },
+  {
+   "dur": 8.0,
+   "theme": "tk-bone",
+   "banner": "",
+   "floor": true,
+   "elements": [
+    {
+     "type": "watch",
+     "x": 360,
+     "y": 430,
+     "size": 440,
+     "strap": false,
+     "numerals": "arabic",
+     "date": false,
+     "opacity": 0.2,
+     "behind": true,
+     "still": true,
+     "time": [
+      10,
+      9,
+      0
+     ]
+    },
+    {
+     "type": "card",
+     "x": 360,
+     "y": 845,
+     "w": 560,
+     "h": 34,
+     "tex": "wood",
+     "color": "#fff",
+     "z": 20
+    },
+    {
+     "type": "card",
+     "x": 120.0,
+     "y": 907,
+     "w": 22,
+     "h": 90,
+     "tex": "wood",
+     "color": "#fff",
+     "z": 19
+    },
+    {
+     "type": "card",
+     "x": 600.0,
+     "y": 907,
+     "w": 22,
+     "h": 90,
+     "tex": "wood",
+     "color": "#fff",
+     "z": 19
+    },
+    {
+     "type": "puppet",
+     "x": 150,
+     "y": 960,
+     "size": 1.1,
+     "top": "#43464D",
+     "pose": "sitTalk",
+     "talk": true,
+     "initial": "ع ر"
+    },
+    {
+     "type": "puppet",
+     "x": 360,
+     "y": 960,
+     "size": 1.1,
+     "top": "#6C7078",
+     "pose": "sit",
+     "initial": "م ي"
+    },
+    {
+     "type": "puppet",
+     "x": 570,
+     "y": 960,
+     "size": 1.1,
+     "top": "#8D9198",
+     "pose": "sit",
+     "flip": true,
+     "initial": "ع ي"
+    },
+    {
+     "type": "cup",
+     "x": 200,
+     "y": 832,
+     "size": 0.6,
+     "z": 25
+    },
+    {
+     "type": "cup",
+     "x": 360,
+     "y": 832,
+     "size": 0.6,
+     "z": 25
+    },
+    {
+     "type": "cup",
+     "x": 520,
+     "y": 832,
+     "size": 0.6,
+     "z": 25
+    },
+    {
+     "type": "watch",
+     "x": 270,
+     "y": 828,
+     "size": 96,
+     "strap": false,
+     "anchor": "b",
+     "z": 25,
+     "dialColor": "#17171A",
+     "in": {
+      "type": "pop",
+      "at": 5.0
+     }
+    },
+    {
+     "type": "watch",
+     "x": 360,
+     "y": 828,
+     "size": 96,
+     "strap": false,
+     "anchor": "b",
+     "z": 25,
+     "dialColor": "#F1EEE6",
+     "in": {
+      "type": "pop",
+      "at": 5.5
+     }
+    },
+    {
+     "type": "watch",
+     "x": 450,
+     "y": 828,
+     "size": 96,
+     "strap": false,
+     "anchor": "b",
+     "z": 25,
+     "dialColor": "#B9BDC4",
+     "in": {
+      "type": "pop",
+      "at": 6.0
+     }
+    }
+   ],
+   "captions": "القصة ما بدأت بمحل… | ولا بخطة عمل. | بدأت بثلاثة أصدقاء… | يحبون الساعات.",
+   "sfx": [
+    {
+     "at": 1.0,
+     "name": "paper_place",
+     "gain": -10
+    },
+    {
+     "at": 5.0,
+     "name": "clasp",
+     "gain": -9
+    }
+   ]
+  },
+  {
+   "dur": 4.5,
+   "theme": "tk-ink",
+   "banner": "",
+   "floor": false,
+   "elements": [
+    {
+     "type": "image",
+     "x": 360,
+     "y": 560,
+     "w": 230,
+     "h": 230,
+     "src": "../../public/icon-512.png",
+     "pad": 14,
+     "rot": -2,
+     "in": {
+      "type": "pop",
+      "at": 0.3,
+      "dur": 0.8
+     }
+    }
+   ],
+   "captions": "والوقت… | كان مجرد البداية.",
+   "sfx": [
+    {
+     "at": 3.4,
+     "name": "tick_pair",
+     "gain": -8
+    }
+   ],
+   "silent": true,
+   "tr": "fade",
+   "captionStart": 0.4
+  },
+  {
+   "dur": 2.5,
+   "theme": "tk-black",
+   "banner": "",
+   "floor": false,
+   "elements": [],
+   "sfx": [
+    {
+     "at": 0.8,
+     "name": "tick_pair",
+     "gain": -8
+    }
+   ],
+   "silent": true,
+   "tr": "fade"
+  }
+ ]
+}
