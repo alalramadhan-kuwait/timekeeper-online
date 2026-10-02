@@ -83,7 +83,7 @@
  "audio": {
   "autoSfx": true,
   "music": "renders/simple_score.wav",
-  "musicGain": -90.0,
+  "musicGain": -24.0,
   "voiceGain": 0
  },
  "scenes": [
