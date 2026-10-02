@@ -33,10 +33,11 @@ def MAP(view, **kw):
 # ---- founders -------------------------------------------------------------------------------------------------------
 HEIGHT = {'ali-alramadhan': 1.0, 'mohammad-alyousifi': 0.955, 'ali-alyousifi': 0.905}   # from a group photo
 AR, MY, AY = 'ali-alramadhan', 'mohammad-alyousifi', 'ali-alyousifi'
+SLIM = {AY: 0.93}                       # his cut-outs read broader than he is
 def person(p, outfit, x, bottom, h, at=0.3, z=12, flip=False, depth=None, inn='rise', walk=None, **kw):
     """One founder. h is the tallest founder's height in this shot; walk=(t0, t1, x0, x1) walks him in."""
     rel = 'assets/figures/%s_%s.png' % (p, outfit); w, hh = Image.open(os.path.join(H, rel)).size
-    d = {"type": "cutout", "src": rel, "x": x, "y": bottom, "h": round(h * HEIGHT[p]), "aspect": w / hh, "z": z, "edge": 0}
+    d = {"type": "cutout", "src": rel, "x": x, "y": bottom, "h": round(h * HEIGHT[p]), "aspect": w / hh * SLIM.get(p, 1), "z": z, "edge": 0}
     if flip: d["flip"] = True
     if depth is not None: d["depth"] = depth
     if walk:
