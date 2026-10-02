@@ -93,5 +93,10 @@
   "file": "clips/15.wav",
   "seconds": 2.82,
   "line": 15
+ },
+ "5b": {
+  "file": "clips/5b.wav",
+  "seconds": 5.56,
+  "line": "5b"
  }
 }

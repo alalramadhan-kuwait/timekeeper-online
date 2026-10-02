@@ -1373,9 +1373,81 @@
       "dur": 0.6
      },
      "out": {
-      "at": 2.6,
+      "at": 3.2,
       "type": "fade",
       "dur": 0.25
+     }
+    }
+   ],
+   "dur": 3.07,
+   "captions": "فقالوا… | ليش ما نبسطها؟",
+   "captionStart": 0.2,
+   "captionEnd": 2.4699999999999998,
+   "voice": "voice/clips/5.wav",
+   "voiceAt": 0.15,
+   "sfx": [
+    {
+     "at": 1.5,
+     "name": "pin",
+     "gain": -10
+    }
+   ],
+   "silent": true
+  },
+  {
+   "theme": "tk-ink",
+   "banner": "",
+   "floor": true,
+   "elements": [
+    {
+     "type": "cutout",
+     "src": "assets/figures/ali-alramadhan_casual.png",
+     "x": 185.2,
+     "y": 1020,
+     "h": 380,
+     "aspect": 0.3584672435105068,
+     "z": 12,
+     "edge": 0,
+     "in": null,
+     "idle": {
+      "type": "bob",
+      "amp": 2,
+      "speed": 0.5,
+      "phase": 0.0
+     }
+    },
+    {
+     "type": "cutout",
+     "src": "assets/figures/mohammad-alyousifi_casual.png",
+     "x": 360,
+     "y": 1020,
+     "h": 380,
+     "aspect": 0.36079900124843944,
+     "z": 13,
+     "edge": 0,
+     "in": null,
+     "idle": {
+      "type": "bob",
+      "amp": 2,
+      "speed": 0.5,
+      "phase": 0.3
+     }
+    },
+    {
+     "type": "cutout",
+     "src": "assets/figures/ali-alyousifi_casual.png",
+     "x": 534.8,
+     "y": 1020,
+     "h": 380,
+     "aspect": 0.4014962593516209,
+     "z": 12,
+     "edge": 0,
+     "in": null,
+     "idle": {
+      "type": "bob",
+      "amp": 2,
+      "speed": 0.5,
+      "phase": 0.6
      }
     },
     {
@@ -1383,17 +1455,17 @@
      "w": 340,
      "h": 230,
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"340\" height=\"230\" viewBox=\"0 0 340 230\" style=\"overflow:visible;filter:drop-shadow(0 4px 3px rgba(0,0,0,.28))\"><rect x=\"0\" y=\"0\" width=\"340\" height=\"230\" rx=\"8\" fill=\"#E9E4D8\"/><rect x=\"10\" y=\"8\" width=\"155\" height=\"214\" fill=\"#FBF9F3\"/><rect x=\"175\" y=\"8\" width=\"155\" height=\"214\" fill=\"#FBF9F3\"/><rect x=\"166\" y=\"8\" width=\"8\" height=\"214\" fill=\"#CFC8B8\"/><path d=\"M28 40 q6 -5 12 0 q6 -5 12 0 q6 5 12 0 q6 -5 12 0 q6 5 12 0 q6 5 12 0 q6 -5 12 0\" stroke=\"#3A3A3A\" stroke-width=\"3\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M28 66 q6 -5 12 0 q6 -5 12 0 q6 5 12 0 q6 5 12 0 q6 5 12 0 q6 5 12 0 q6 5 12 0 q6 -5 12 0 q6 -5 12 0 q6 5 12 0 q6 5 12 0\" stroke=\"#3A3A3A\" stroke-width=\"3\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M28 92 q6 5 12 0 q6 5 12 0 q6 -5 12 0 q6 -5 12 0 q6 -5 12 0 q6 -5 12 0 q6 -5 12 0 q6 -5 12 0 q6 5 12 0\" stroke=\"#3A3A3A\" stroke-width=\"3\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M28 118 q6 -5 12 0 q6 5 12 0 q6 -5 12 0 q6 5 12 0 q6 5 12 0 q6 5 12 0 q6 5 12 0 q6 5 12 0\" stroke=\"#3A3A3A\" stroke-width=\"3\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M28 144 q6 -5 12 0 q6 5 12 0 q6 5 12 0 q6 -5 12 0 q6 5 12 0 q6 5 12 0 q6 5 12 0 q6 5 12 0 q6 5 12 0 q6 5 12 0\" stroke=\"#3A3A3A\" stroke-width=\"3\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M28 170 q6 5 12 0 q6 5 12 0 q6 -5 12 0 q6 5 12 0 q6 -5 12 0 q6 5 12 0 q6 5 12 0 q6 5 12 0 q6 5 12 0\" stroke=\"#3A3A3A\" stroke-width=\"3\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M28 196 q6 5 12 0 q6 5 12 0 q6 -5 12 0 q6 5 12 0 q6 5 12 0 q6 -5 12 0 q6 5 12 0 q6 -5 12 0 q6 -5 12 0 q6 -5 12 0 q6 -5 12 0\" stroke=\"#3A3A3A\" stroke-width=\"3\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M188 40 q6 -5 12 0 q6 5 12 0 q6 -5 12 0 q6 -5 12 0 q6 -5 12 0 q6 5 12 0 q6 -5 12 0 q6 -5 12 0 q6 -5 12 0 q6 5 12 0 q6 -5 12 0\" stroke=\"#3A3A3A\" stroke-width=\"3\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M188 66 q6 5 12 0 q6 5 12 0 q6 -5 12 0 q6 -5 12 0 q6 -5 12 0 q6 -5 12 0 q6 -5 12 0\" stroke=\"#3A3A3A\" stroke-width=\"3\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M188 92 q6 -5 12 0 q6 -5 12 0 q6 -5 12 0 q6 5 12 0 q6 5 12 0 q6 -5 12 0 q6 -5 12 0\" stroke=\"#3A3A3A\" stroke-width=\"3\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M188 118 q6 -5 12 0 q6 5 12 0 q6 -5 12 0 q6 -5 12 0 q6 -5 12 0 q6 -5 12 0 q6 -5 12 0 q6 5 12 0\" stroke=\"#3A3A3A\" stroke-width=\"3\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M188 144 q6 -5 12 0 q6 5 12 0 q6 5 12 0 q6 5 12 0 q6 -5 12 0 q6 5 12 0 q6 5 12 0 q6 -5 12 0 q6 5 12 0 q6 5 12 0 q6 -5 12 0\" stroke=\"#3A3A3A\" stroke-width=\"3\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M188 170 q6 -5 12 0 q6 -5 12 0 q6 5 12 0 q6 -5 12 0 q6 -5 12 0 q6 5 12 0 q6 -5 12 0 q6 5 12 0 q6 5 12 0 q6 5 12 0\" stroke=\"#3A3A3A\" stroke-width=\"3\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M188 196 q6 5 12 0 q6 5 12 0 q6 5 12 0 q6 5 12 0 q6 -5 12 0 q6 -5 12 0 q6 -5 12 0 q6 5 12 0\" stroke=\"#3A3A3A\" stroke-width=\"3\" fill=\"none\" stroke-linecap=\"round\"/></svg>",
-     "x": 250,
+     "x": 300,
      "y": 400,
      "anchor": "c",
      "z": 30,
      "in": {
       "type": "pop",
-      "at": 2.7,
+      "at": 0.05,
       "dur": 0.6
      },
      "out": {
-      "at": 4.6,
+      "at": 1.0,
       "type": "fade",
       "dur": 0.25
      },
@@ -1406,37 +1478,37 @@
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"152\" viewBox=\"0 0 16 152\" style=\"overflow:visible;filter:drop-shadow(0 4px 3px rgba(0,0,0,.28))\"><rect x=\"0\" y=\"0\" width=\"16\" height=\"130\" rx=\"6\" fill=\"#1F1F22\"/><polygon points=\"0,130 16,130 8,152\" fill=\"#C9A35F\"/><rect x=\"2\" y=\"16\" width=\"12\" height=\"6\" fill=\"#C9A35F\"/></svg>",
      "x": [
       [
-       2.9,
-       170
+       0.15,
+       220
       ],
       [
-       3.4,
-       230
+       0.65,
+       280
       ],
       [
-       3.9,
-       190
+       1.15,
+       240
       ],
       [
-       4.3,
-       330
+       1.5499999999999998,
+       380
       ]
      ],
      "y": [
       [
-       2.9,
+       0.15,
        470
       ],
       [
-       3.4,
+       0.65,
        500
       ],
       [
-       3.9,
+       1.15,
        530
       ],
       [
-       4.3,
+       1.5499999999999998,
        500
       ]
      ],
@@ -1444,11 +1516,11 @@
      "z": 31,
      "in": {
       "type": "fade",
-      "at": 2.9,
+      "at": 0.15,
       "dur": 0.2
      },
      "out": {
-      "at": 4.6,
+      "at": 1.0,
       "type": "fade",
       "dur": 0.25
      },
@@ -1456,67 +1528,65 @@
     },
     {
      "type": "card",
-     "x": 560,
+     "x": 360,
      "y": 300,
-     "w": 220,
-     "h": 70,
-     "label": "فكرة",
-     "labelSize": 26,
+     "w": 420,
+     "h": 80,
+     "label": "WATCH NEWS",
+     "labelSize": 32,
      "color": "#F3F0E8",
-     "rot": -4,
+     "rot": -2,
      "in": {
       "type": "drop",
-      "at": 3.2,
-      "dur": 0.45
+      "at": 1.05,
+      "dur": 0.4
      },
      "out": {
-      "at": 4.6,
+      "at": 2.45,
       "type": "fade",
-      "dur": 0.25
+      "dur": 0.2
+     },
+     "z": 32
+    },
+    {
+     "type": "shape",
+     "kind": "arrow",
+     "x": 360,
+     "y": 410,
+     "w": 90,
+     "h": 60,
+     "color": "#C9A35F",
+     "rot": 90,
+     "in": {
+      "type": "pop",
+      "at": 1.45
+     },
+     "out": {
+      "at": 2.45,
+      "type": "fade",
+      "dur": 0.2
      },
      "z": 32
     },
     {
      "type": "card",
-     "x": 560,
-     "y": 392,
-     "w": 220,
-     "h": 70,
-     "label": "سكربت",
-     "labelSize": 26,
+     "x": 360,
+     "y": 520,
+     "w": 420,
+     "h": 80,
+     "label": "أخبار الساعات",
+     "labelSize": 36,
      "color": "#F3F0E8",
-     "rot": 0,
+     "rot": 2,
      "in": {
-      "type": "drop",
-      "at": 3.6,
-      "dur": 0.45
+      "type": "flip",
+      "at": 1.7,
+      "dur": 0.4
      },
      "out": {
-      "at": 4.6,
+      "at": 2.45,
       "type": "fade",
-      "dur": 0.25
-     },
-     "z": 32
-    },
-    {
-     "type": "card",
-     "x": 560,
-     "y": 484,
-     "w": 220,
-     "h": 70,
-     "label": "مراجعة",
-     "labelSize": 26,
-     "color": "#F3F0E8",
-     "rot": 4,
-     "in": {
-      "type": "drop",
-      "at": 4.0,
-      "dur": 0.45
-     },
-     "out": {
-      "at": 4.6,
-      "type": "fade",
-      "dur": 0.25
+      "dur": 0.2
      },
      "z": 32
     },
@@ -1525,17 +1595,17 @@
      "w": 270,
      "h": 330,
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"270\" height=\"330\" viewBox=\"0 0 270 330\" style=\"overflow:visible;filter:drop-shadow(0 4px 3px rgba(0,0,0,.28))\"><line x1=\"110\" y1=\"150\" x2=\"40\" y2=\"330\" stroke=\"#2A2A2D\" stroke-width=\"8\"/><line x1=\"110\" y1=\"150\" x2=\"180\" y2=\"330\" stroke=\"#2A2A2D\" stroke-width=\"8\"/><line x1=\"110\" y1=\"150\" x2=\"110\" y2=\"330\" stroke=\"#2A2A2D\" stroke-width=\"8\"/><rect x=\"40\" y=\"70\" width=\"140\" height=\"86\" rx=\"10\" fill=\"#26272B\"/><rect x=\"180\" y=\"92\" width=\"34\" height=\"44\" fill=\"#26272B\"/><circle cx=\"232\" cy=\"114\" r=\"30\" fill=\"#1A1A1D\"/><circle cx=\"232\" cy=\"114\" r=\"18\" fill=\"#3E4652\"/><circle cx=\"225\" cy=\"107\" r=\"5\" fill=\"#9FB2C4\"/><rect x=\"60\" y=\"52\" width=\"40\" height=\"20\" fill=\"#26272B\"/><circle cx=\"160\" cy=\"88\" r=\"8\" fill=\"#C8102E\"/></svg>",
-     "x": 210,
+     "x": 190,
      "y": 640,
      "anchor": "b",
      "z": 30,
      "in": {
       "type": "rise",
-      "at": 4.7,
+      "at": 2.5,
       "dur": 0.6
      },
      "out": {
-      "at": 6.6,
+      "at": 4.0,
       "type": "fade",
       "dur": 0.25
      }
@@ -1545,24 +1615,78 @@
      "w": 160,
      "h": 360,
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"160\" height=\"360\" viewBox=\"0 0 160 360\" style=\"overflow:visible;filter:drop-shadow(0 4px 3px rgba(0,0,0,.28))\"><circle cx=\"80\" cy=\"80\" r=\"70\" fill=\"none\" stroke=\"#F6F0DC\" stroke-width=\"18\"/><circle cx=\"80\" cy=\"80\" r=\"70\" fill=\"none\" stroke=\"#FFFFFF\" stroke-width=\"6\" opacity=\".8\"/><line x1=\"80\" y1=\"150\" x2=\"80\" y2=\"330\" stroke=\"#2A2A2D\" stroke-width=\"7\"/><line x1=\"80\" y1=\"330\" x2=\"30\" y2=\"360\" stroke=\"#2A2A2D\" stroke-width=\"7\"/><line x1=\"80\" y1=\"330\" x2=\"130\" y2=\"360\" stroke=\"#2A2A2D\" stroke-width=\"7\"/></svg>",
-     "x": 560,
+     "x": 600,
      "y": 640,
      "anchor": "b",
      "z": 29,
      "in": {
       "type": "rise",
-      "at": 4.8,
+      "at": 2.55,
       "dur": 0.6
      },
      "out": {
-      "at": 6.6,
+      "at": 4.0,
       "type": "fade",
       "dur": 0.25
      }
     },
     {
+     "type": "watch",
+     "x": 420,
+     "y": 420,
+     "size": 180,
+     "strap": true,
+     "dialColor": "#17171A",
+     "in": {
+      "type": "pop",
+      "at": 2.6
+     },
+     "out": {
+      "at": 4.0,
+      "type": "fade",
+      "dur": 0.2
+     },
+     "z": 31
+    },
+    {
+     "type": "burst",
+     "x": 420,
+     "y": 420,
+     "size": 260,
+     "color": "#FFFFFF",
+     "in": {
+      "type": "pop",
+      "at": 2.9,
+      "dur": 0.2
+     },
+     "out": {
+      "at": 3.15,
+      "type": "fade",
+      "dur": 0.15
+     },
+     "z": 29
+    },
+    {
+     "type": "burst",
+     "x": 420,
+     "y": 420,
+     "size": 260,
+     "color": "#FFFFFF",
+     "in": {
+      "type": "pop",
+      "at": 3.4,
+      "dur": 0.2
+     },
+     "out": {
+      "at": 3.65,
+      "type": "fade",
+      "dur": 0.15
+     },
+     "z": 29
+    },
+    {
      "type": "card",
-     "x": 210,
+     "x": 190,
      "y": 250,
      "w": 120,
      "h": 46,
@@ -1572,12 +1696,12 @@
      "ink": "#E8574B",
      "in": {
       "type": "pop",
-      "at": 5.0
+      "at": 2.7
      },
      "out": {
-      "at": 6.6,
+      "at": 4.0,
       "type": "fade",
-      "dur": 0.25
+      "dur": 0.2
      },
      "idle": {
       "type": "pulse",
@@ -1587,84 +1711,45 @@
      "z": 33
     },
     {
-     "type": "moon",
-     "x": 600,
-     "y": 200,
-     "size": 80,
-     "in": {
-      "type": "fade",
-      "at": 6.7
-     },
-     "out": {
-      "at": 8.4,
-      "type": "fade",
-      "dur": 0.25
-     },
-     "z": 20
-    },
-    {
-     "type": "laptop",
+     "type": "svg",
+     "w": 480,
+     "h": 180,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"480\" height=\"180\" viewBox=\"0 0 480 180\" style=\"overflow:visible;filter:drop-shadow(0 4px 3px rgba(0,0,0,.28))\"><g transform=\"translate(80 0)\"><rect x=\"-60\" y=\"90\" width=\"120\" height=\"60\" rx=\"14\" fill=\"#6B5A48\"/><rect x=\"-66\" y=\"20\" width=\"34\" height=\"130\" rx=\"14\" fill=\"#5A4A3A\"/><rect x=\"-60\" y=\"140\" width=\"10\" height=\"34\" fill=\"#3A2F25\"/><rect x=\"40\" y=\"140\" width=\"10\" height=\"34\" fill=\"#3A2F25\"/></g><g transform=\"translate(400 0) scale(-1 1)\"><rect x=\"-60\" y=\"90\" width=\"120\" height=\"60\" rx=\"14\" fill=\"#6B5A48\"/><rect x=\"-66\" y=\"20\" width=\"34\" height=\"130\" rx=\"14\" fill=\"#5A4A3A\"/><rect x=\"-60\" y=\"140\" width=\"10\" height=\"34\" fill=\"#3A2F25\"/><rect x=\"40\" y=\"140\" width=\"10\" height=\"34\" fill=\"#3A2F25\"/></g><rect x=\"190\" y=\"140\" width=\"100\" height=\"12\" fill=\"#8A6A48\"/><rect x=\"232\" y=\"152\" width=\"16\" height=\"22\" fill=\"#5C4632\"/><line x1=\"214\" y1=\"150\" x2=\"214\" y2=\"78\" stroke=\"#2A2A2D\" stroke-width=\"5\"/><rect x=\"205\" y=\"52\" width=\"18\" height=\"32\" rx=\"9\" fill=\"#1F1F22\"/><line x1=\"266\" y1=\"150\" x2=\"266\" y2=\"78\" stroke=\"#2A2A2D\" stroke-width=\"5\"/><rect x=\"257\" y=\"52\" width=\"18\" height=\"32\" rx=\"9\" fill=\"#1F1F22\"/><rect x=\"0\" y=\"174\" width=\"480\" height=\"6\" fill=\"#2A2A2D\" opacity=\".25\"/></svg>",
      "x": 360,
      "y": 600,
-     "w": 360,
+     "anchor": "b",
+     "z": 30,
      "in": {
       "type": "rise",
-      "at": 6.7
+      "at": 4.05,
+      "dur": 0.6
      },
      "out": {
-      "at": 8.4,
+      "at": 5.75,
       "type": "fade",
       "dur": 0.25
-     },
-     "z": 30
+     }
     },
     {
-     "type": "cup",
-     "x": 140,
-     "y": 600,
-     "size": 0.5,
+     "type": "card",
+     "x": 360,
+     "y": 330,
+     "w": 260,
+     "h": 60,
+     "style": "dark",
+     "label": "INTERVIEW",
+     "labelSize": 24,
+     "ink": "#EDE9E0",
      "in": {
       "type": "pop",
-      "at": 7.0
+      "at": 4.3
      },
      "out": {
-      "at": 8.4,
+      "at": 5.75,
       "type": "fade",
-      "dur": 0.25
+      "dur": 0.2
      },
-     "z": 31
-    },
-    {
-     "type": "cup",
-     "x": 210,
-     "y": 600,
-     "size": 0.5,
-     "in": {
-      "type": "pop",
-      "at": 7.3
-     },
-     "out": {
-      "at": 8.4,
-      "type": "fade",
-      "dur": 0.25
-     },
-     "z": 31
-    },
-    {
-     "type": "cup",
-     "x": 280,
-     "y": 600,
-     "size": 0.5,
-     "in": {
-      "type": "pop",
-      "at": 7.6
-     },
-     "out": {
-      "at": 8.4,
-      "type": "fade",
-      "dur": 0.25
-     },
-     "z": 31
+     "z": 33
     },
     {
      "type": "image",
@@ -1677,7 +1762,7 @@
      "rot": -2,
      "in": {
       "type": "slam",
-      "at": 8.5,
+      "at": 5.8,
       "dur": 0.5
      },
      "z": 40
@@ -1694,76 +1779,60 @@
      "ink": "#F3F0E8",
      "in": {
       "type": "pop",
-      "at": 9.1
+      "at": 6.3
      },
      "z": 41
     }
    ],
-   "dur": 10.68,
-   "captions": "فقالوا… | ليش ما نبسطها؟",
-   "captionStart": 0.2,
-   "captionEnd": 2.4699999999999998,
-   "voice": "voice/clips/5.wav",
-   "voiceAt": 0.15,
+   "dur": 7.61,
+   "captions": "فكتبوا… | وترجموا الأخبار… | وصوّروا الساعات… | وسوّوا مقابلات.",
+   "captionStart": 0.15000000000000002,
+   "captionEnd": 5.659999999999999,
    "sfx": [
     {
-     "at": 1.5,
-     "name": "pin",
-     "gain": -10
-    },
-    {
-     "at": 2.8,
+     "at": 0.2,
      "name": "paper_place",
      "gain": -11
     },
     {
-     "at": 3.2,
-     "name": "click",
-     "gain": -12
+     "at": 1.1,
+     "name": "paper_slide",
+     "gain": -11
     },
     {
-     "at": 3.6,
-     "name": "click",
-     "gain": -12
+     "at": 1.8,
+     "name": "paper_place",
+     "gain": -11
     },
     {
-     "at": 4.8,
+     "at": 2.9,
      "name": "shutter",
-     "gain": -9
+     "gain": -8
     },
     {
-     "at": 5.6,
+     "at": 3.4,
      "name": "shutter",
-     "gain": -9
+     "gain": -8
     },
     {
-     "at": 6.9,
-     "name": "click",
-     "gain": -12
+     "at": 4.2,
+     "name": "mic_tap",
+     "gain": -10
     },
     {
-     "at": 7.1,
-     "name": "click",
-     "gain": -12
-    },
-    {
-     "at": 7.4,
-     "name": "click",
-     "gain": -12
-    },
-    {
-     "at": 8.6,
+     "at": 5.8,
      "name": "stamp",
      "gain": -7
     },
     {
-     "at": 9.1,
+     "at": 6.3,
      "name": "paper_slide",
      "gain": -10
     }
    ],
    "silent": true,
-   "captionClear": 2.9
+   "transition": "cut",
+   "captionClear": 5.75
   },
   {
    "theme": "tk-bone",

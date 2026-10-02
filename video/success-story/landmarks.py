@@ -323,3 +323,14 @@ def ring_light(x, y, at, out):
     b = ('<circle cx="80" cy="80" r="70" fill="none" stroke="#F6F0DC" stroke-width="18"/><circle cx="80" cy="80" r="70" fill="none" stroke="#FFFFFF" stroke-width="6" opacity=".8"/>'
          '<line x1="80" y1="150" x2="80" y2="330" stroke="#2A2A2D" stroke-width="7"/><line x1="80" y1="330" x2="30" y2="360" stroke="#2A2A2D" stroke-width="7"/><line x1="80" y1="330" x2="130" y2="360" stroke="#2A2A2D" stroke-width="7"/>')
     return svg(160, 360, b, x, y, anchor='b', z=29, at=at, kind='rise', out={"at": out, "type": "fade", "dur": .25})
+
+
+def interview_set(x, y, at, out):
+    """Two armchairs facing each other with a mic on a low table between them."""
+    chair = lambda cx, flip: ('<g transform="translate(%d 0)%s">' % (cx, ' scale(-1 1)' if flip else '') +
+                              '<rect x="-60" y="90" width="120" height="60" rx="14" fill="#6B5A48"/><rect x="-66" y="20" width="34" height="130" rx="14" fill="#5A4A3A"/>'
+                              '<rect x="-60" y="140" width="10" height="34" fill="#3A2F25"/><rect x="40" y="140" width="10" height="34" fill="#3A2F25"/></g>')
+    mic = lambda mx: ('<line x1="%d" y1="150" x2="%d" y2="78" stroke="#2A2A2D" stroke-width="5"/><rect x="%d" y="52" width="18" height="32" rx="9" fill="#1F1F22"/>' % (mx, mx, mx - 9))
+    b = (chair(80, False) + chair(400, True) + '<rect x="190" y="140" width="100" height="12" fill="#8A6A48"/><rect x="232" y="152" width="16" height="22" fill="#5C4632"/>'
+         + mic(214) + mic(266) + '<rect x="0" y="174" width="480" height="6" fill="#2A2A2D" opacity=".25"/>')
+    return svg(480, 180, b, x, y, anchor='b', z=30, at=at, kind='rise', out={"at": out, "type": "fade", "dur": .25})

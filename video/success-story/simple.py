@@ -9,7 +9,7 @@
   Build:     python3 simple.py && node ../../.claude/skills/paper-motion/scripts/render.mjs simple.json -o renders/time-keeper-story.mp4 --scale 1.5
 """
 import json, os
-from landmarks import boulder, san_diego, kuwait_dusk, coffee_tray, geneva, bookcase, arabic_shelf, bulb, notebook, pen, camera_rig, ring_light
+from landmarks import boulder, san_diego, kuwait_dusk, coffee_tray, geneva, bookcase, arabic_shelf, bulb, notebook, pen, camera_rig, ring_light, interview_set
 from PIL import Image
 H = os.path.dirname(os.path.abspath(__file__)); ST = json.load(open(os.path.join(H, 'tk-style.json')))
 # One clip per narration piece, cut from the Andre track by voice/cut-andre.py (lines 2, 3 and 10 are split at their pauses)
@@ -88,22 +88,28 @@ S(4, 7.0, 'tk-graphite', 'ولاحظوا شي… | المعلومات عن ال�
   els=[{"type": "text", "text": "ENGLISH", "x": 245, "y": 250, "size": 40, "font": "banner", "weight": 800, "color": "#F3F0E8", "ls": .12, "upper": False, "shadow": False, "in": {"type": "fade", "at": 0.8}},
        {"type": "text", "text": "عربي", "x": 590, "y": 700, "size": 40, "font": "banner", "weight": 800, "color": "#F3F0E8", "shadow": False, "in": {"type": "fade", "at": 4.5}}]
       + bookcase(245, FLOOR, rows=4, w=400, at=1.0, step=0.55) + arabic_shelf(590, FLOOR, at=4.6))
-# "why don't we make it simple?" then the work: writing, filming, late nights, until Time Keeper stands on its own
-S(5, 10.68, 'tk-ink', 'فقالوا… | ليش ما نبسطها؟', silent=True, floor=cas, captionClear=2.9,
-  sfx=[{"at": 1.5, "name": "pin", "gain": -10}, {"at": 2.8, "name": "paper_place", "gain": -11}, {"at": 3.2, "name": "click", "gain": -12}, {"at": 3.6, "name": "click", "gain": -12},
-       {"at": 4.8, "name": "shutter", "gain": -9}, {"at": 5.6, "name": "shutter", "gain": -9}, {"at": 6.9, "name": "click", "gain": -12}, {"at": 7.1, "name": "click", "gain": -12},
-       {"at": 7.4, "name": "click", "gain": -12}, {"at": 8.6, "name": "stamp", "gain": -7}, {"at": 9.1, "name": "paper_slide", "gain": -10}],
-  els=fig('casual', h=380, at=0.3) + [bulb(360, 430, 1.4, 2.6),
-      notebook(250, 400, 2.7, 4.6), pen(170, 330, 470, 2.9, 4.6)] + [
-      {"type": "card", "x": 560, "y": 300 + i * 92, "w": 220, "h": 70, "label": t, "labelSize": 26, "color": "#F3F0E8", "rot": (i - 1) * 4, "in": {"type": "drop", "at": 3.2 + i * 0.4, "dur": .45}, "out": {"at": 4.6, "type": "fade", "dur": .25}, "z": 32}
-      for i, t in enumerate(['فكرة', 'سكربت', 'مراجعة'])] + [
-      camera_rig(210, 640, 4.7, 6.6), ring_light(560, 640, 4.8, 6.6),
-      {"type": "card", "x": 210, "y": 250, "w": 120, "h": 46, "style": "dark", "label": "● REC", "labelSize": 20, "ink": "#E8574B", "in": {"type": "pop", "at": 5.0}, "out": {"at": 6.6, "type": "fade", "dur": .25}, "idle": {"type": "pulse", "amp": .06, "speed": 1.5}, "z": 33},
-      {"type": "moon", "x": 600, "y": 200, "size": 80, "in": {"type": "fade", "at": 6.7}, "out": {"at": 8.4, "type": "fade", "dur": .25}, "z": 20},
-      {"type": "laptop", "x": 360, "y": 600, "w": 360, "in": {"type": "rise", "at": 6.7}, "out": {"at": 8.4, "type": "fade", "dur": .25}, "z": 30}] + [
-      {"type": "cup", "x": 140 + i * 70, "y": 600, "size": .5, "in": {"type": "pop", "at": 7.0 + i * 0.3}, "out": {"at": 8.4, "type": "fade", "dur": .25}, "z": 31} for i in range(3)] + [
-      {"type": "image", "x": 360, "y": 360, "w": 280, "h": 280, "src": LOGO, "pad": 14, "rot": -2, "in": {"type": "slam", "at": 8.5, "dur": 0.5}, "z": 40},
-      {"type": "card", "x": 360, "y": 580, "w": 620, "h": 84, "style": "dark", "label": "أكبر منصة عربية للساعات", "labelSize": 38, "ink": "#F3F0E8", "in": {"type": "pop", "at": 9.1}, "z": 41}])
+# "why don't we make it simple?" then the work (5b): writing, translating news, filming watches, interviews,
+# until Time Keeper stands on its own. 5 + 5b together keep the 10.68 s the music drop was timed to.
+S(5, 3.0, 'tk-ink', 'فقالوا… | ليش ما نبسطها؟', silent=True, floor=cas, sfx=[{"at": 1.5, "name": "pin", "gain": -10}],
+  els=fig('casual', h=380, at=0.3) + [bulb(360, 430, 1.4, 3.2)])
+steady = [dict(e, **{"in": None}) for e in fig('casual', h=380)]
+S('5b', 7.61, 'tk-ink', 'فكتبوا… | وترجموا الأخبار… | وصوّروا الساعات… | وسوّوا مقابلات.', silent=True, floor=cas, transition='cut', voiceAt=0.1, captionClear=5.75,
+  sfx=[{"at": 0.2, "name": "paper_place", "gain": -11}, {"at": 1.1, "name": "paper_slide", "gain": -11}, {"at": 1.8, "name": "paper_place", "gain": -11},
+       {"at": 2.9, "name": "shutter", "gain": -8}, {"at": 3.4, "name": "shutter", "gain": -8}, {"at": 4.2, "name": "mic_tap", "gain": -10},
+       {"at": 5.8, "name": "stamp", "gain": -7}, {"at": 6.3, "name": "paper_slide", "gain": -10}],
+  els=steady + [notebook(300, 400, 0.05, 1.0), pen(220, 380, 470, 0.15, 1.0),
+      {"type": "card", "x": 360, "y": 300, "w": 420, "h": 80, "label": "WATCH NEWS", "labelSize": 32, "color": "#F3F0E8", "rot": -2, "in": {"type": "drop", "at": 1.05, "dur": .4}, "out": {"at": 2.45, "type": "fade", "dur": .2}, "z": 32},
+      {"type": "shape", "kind": "arrow", "x": 360, "y": 410, "w": 90, "h": 60, "color": "#C9A35F", "rot": 90, "in": {"type": "pop", "at": 1.45}, "out": {"at": 2.45, "type": "fade", "dur": .2}, "z": 32},
+      {"type": "card", "x": 360, "y": 520, "w": 420, "h": 80, "label": "أخبار الساعات", "labelSize": 36, "color": "#F3F0E8", "rot": 2, "in": {"type": "flip", "at": 1.7, "dur": .4}, "out": {"at": 2.45, "type": "fade", "dur": .2}, "z": 32},
+      camera_rig(190, 640, 2.5, 4.0), ring_light(600, 640, 2.55, 4.0),
+      {"type": "watch", "x": 420, "y": 420, "size": 180, "strap": True, "dialColor": "#17171A", "in": {"type": "pop", "at": 2.6}, "out": {"at": 4.0, "type": "fade", "dur": .2}, "z": 31},
+      {"type": "burst", "x": 420, "y": 420, "size": 260, "color": "#FFFFFF", "in": {"type": "pop", "at": 2.9, "dur": .2}, "out": {"at": 3.15, "type": "fade", "dur": .15}, "z": 29},
+      {"type": "burst", "x": 420, "y": 420, "size": 260, "color": "#FFFFFF", "in": {"type": "pop", "at": 3.4, "dur": .2}, "out": {"at": 3.65, "type": "fade", "dur": .15}, "z": 29},
+      {"type": "card", "x": 190, "y": 250, "w": 120, "h": 46, "style": "dark", "label": "● REC", "labelSize": 20, "ink": "#E8574B", "in": {"type": "pop", "at": 2.7}, "out": {"at": 4.0, "type": "fade", "dur": .2}, "idle": {"type": "pulse", "amp": .06, "speed": 1.5}, "z": 33},
+      interview_set(360, 600, 4.05, 5.75),
+      {"type": "card", "x": 360, "y": 330, "w": 260, "h": 60, "style": "dark", "label": "INTERVIEW", "labelSize": 24, "ink": "#EDE9E0", "in": {"type": "pop", "at": 4.3}, "out": {"at": 5.75, "type": "fade", "dur": .2}, "z": 33},
+      {"type": "image", "x": 360, "y": 360, "w": 280, "h": 280, "src": LOGO, "pad": 14, "rot": -2, "in": {"type": "slam", "at": 5.8, "dur": 0.5}, "z": 40},
+      {"type": "card", "x": 360, "y": 580, "w": 620, "h": 84, "style": "dark", "label": "أكبر منصة عربية للساعات", "labelSize": 38, "ink": "#F3F0E8", "in": {"type": "pop", "at": 6.3}, "z": 41}])
 S(6, 5.5, 'tk-bone', 'وفي ٢٠١٨… | بدأ تايم كيبر. | بوست بعد بوست… | نشرح الساعات بالعربي.', banner='2018',
   sfx=[{"at": 0.8, "name": "paper_place", "gain": -11}, {"at": 1.8, "name": "paper_place", "gain": -11}, {"at": 2.8, "name": "paper_place", "gain": -11}],
   els=[POST('auction', x=205, y=520, w=330, rot=-4, at=0.8), POST('interview', x=515, y=600, w=330, rot=3, at=1.8),
