@@ -6,3 +6,4 @@ renders/
 *.wav
 *.mp3
 !sfx/.gitkeep
+__pycache__/
