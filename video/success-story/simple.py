@@ -37,6 +37,13 @@ def fig(outfit, x=360, h=340, at=0.5, z=12):
     return [one('assets/figures/%s_%s.png' % (p, outfit), x + o, i * 0.2, z + (1 if o == 0 else 0), i * .3) for i, (p, o) in enumerate(zip(have, offs))]
 HAVE = {o: bool(fig(o)) for o in ('casual', 'formal', 'kuwaiti')}
 
+# Real Time Keeper posts (screenshots cropped by hand, git-ignored under assets/posts/)
+ASPECT = lambda n: (lambda im: im.size[0] / im.size[1])(Image.open(os.path.join(H, 'assets', 'posts', n + '.jpg')))
+def POST(name, x, y, w, rot=0, at=0.8, **kw):
+    d = {"type": "igpost", "src": "assets/posts/%s.jpg" % name, "avatar": LOGO, "sub": "Time Keeper", "x": x, "y": y, "w": w, "imgH": round(w / ASPECT(name)), "rot": rot}
+    if at is not None: d["in"] = {"type": "drop", "at": at}
+    d.update(kw); return d
+
 SC = []
 def S(n, minDur, theme, caption='', banner='', els=None, floor=False, sfx=None, silent=False, beds=None, voiceAt=0.15, **kw):
     """n = narration line number in voice/manifest.json (0 = no narration)."""
@@ -75,14 +82,14 @@ S(5, 4.2, 'tk-ink', 'فقالوا… | ليش ما نبسطها؟', silent=True,
   els=[{"type": "image", "x": 360, "y": 560, "w": 210, "h": 210, "src": LOGO, "pad": 12, "rot": -2, "in": {"type": "pop", "at": 2.0, "dur": 0.7}}])
 S(6, 5.5, 'tk-bone', 'وفي ٢٠١٨… | بدأ تايم كيبر. | بوست بعد بوست… | نشرح الساعات بالعربي.', banner='2018',
   sfx=[{"at": 0.8, "name": "paper_place", "gain": -11}, {"at": 1.8, "name": "paper_place", "gain": -11}, {"at": 2.8, "name": "paper_place", "gain": -11}],
-  els=[{"type": "igpost", "empty": True, "avatar": LOGO, "x": 200, "y": 600, "w": 300, "rot": -4, "in": {"type": "drop", "at": 0.8}},
-       {"type": "igpost", "empty": True, "avatar": LOGO, "x": 500, "y": 680, "w": 300, "rot": 3, "in": {"type": "drop", "at": 1.8}},
-       {"type": "igpost", "empty": True, "avatar": LOGO, "x": 330, "y": 800, "w": 300, "rot": -1, "likeAt": 4.2, "in": {"type": "drop", "at": 2.8}}])
+  els=[POST('auction', x=200, y=560, w=290, rot=-4, at=0.8), POST('interview', x=510, y=640, w=290, rot=3, at=1.8),
+       POST('reel', x=345, y=760, w=290, rot=-1, at=2.8, likeAt=4.2)])
 S(7, 5.5, 'tk-graphite', 'والناس بدت تتابع… | وتسأل: | وين أحصل هالساعة؟', sfx=[{"at": 1.2, "name": "notif", "gain": -11}, {"at": 2.6, "name": "notif", "gain": -11}, {"at": 4.0, "name": "notif", "gain": -11}],
-  els=[{"type": "notif", "x": 360 + (i - 1) * 14, "y": 420 + i * 175, "w": 560, "name": "timekeeperkw", "initial": "؟", "text": t, "size": 30, "in": {"type": "slideD", "at": 1.2 + i * 1.4, "from": 600}, "z": 30 + i}
+  els=[{"type": "image", "src": "assets/posts/profile.jpg", "x": 360, "y": 330, "w": 600, "h": round(600 / ASPECT('profile')), "pad": 10, "rot": -1.5, "in": {"type": "drop", "at": 0.3, "dur": 0.6}, "z": 20}] +
+      [{"type": "notif", "x": 360 + (i - 1) * 14, "y": 590 + i * 135, "w": 560, "name": "timekeeperkw", "initial": "؟", "text": t, "size": 30, "in": {"type": "slideD", "at": 1.2 + i * 1.4, "from": 600}, "z": 30 + i}
        for i, t in enumerate(['وين أحصلها؟', 'تقدرون توفرونها؟', 'من وين نشتريها؟'])])
 S(8, 4.5, 'tk-bone', 'فبدينا نوفر ساعات نحبها… | ونثق فيها.', silent=True, sfx=[{"at": 0.8, "name": "fold", "gain": -10}, {"at": 1.6, "name": "paper_place", "gain": -10}, {"at": 2.4, "name": "clasp", "gain": -10}],
-  els=[{"type": "igpost", "empty": True, "avatar": LOGO, "x": 360, "y": 600, "w": 340, "scale": [[0.4, 1], [1.4, 0.35, "inCubic"]], "rot": [[0.4, 0], [1.4, 8]], "out": {"at": 1.35, "type": "fade", "dur": 0.15}},
+  els=[{**POST('geraldcharles', x=360, y=600, w=340, at=None), "scale": [[0.4, 1], [1.4, 0.35, "inCubic"]], "rot": [[0.4, 0], [1.4, 8]], "out": {"at": 1.35, "type": "fade", "dur": 0.15}},
        {"type": "box", "x": 360, "y": 680, "w": 340, "h": 240, "lid": [[2.2, 0], [3.2, 1, "outBack"]], "in": {"type": "pop", "at": 1.4}},
        {"type": "watch", "x": 360, "y": 650, "size": 150, "strap": False, "numerals": "arabic", "in": {"type": "pop", "at": 3.0}, "z": 40}])
 fo = HAVE['formal']

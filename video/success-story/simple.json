@@ -626,11 +626,13 @@
    "elements": [
     {
      "type": "igpost",
-     "empty": true,
+     "src": "assets/posts/auction.jpg",
      "avatar": "../../public/icon-512.png",
+     "sub": "Time Keeper",
      "x": 200,
-     "y": 600,
-     "w": 300,
+     "y": 560,
+     "w": 290,
+     "imgH": 362,
      "rot": -4,
      "in": {
       "type": "drop",
@@ -639,11 +641,13 @@
     },
     {
      "type": "igpost",
-     "empty": true,
+     "src": "assets/posts/interview.jpg",
      "avatar": "../../public/icon-512.png",
-     "x": 500,
-     "y": 680,
-     "w": 300,
+     "sub": "Time Keeper",
+     "x": 510,
+     "y": 640,
+     "w": 290,
+     "imgH": 362,
      "rot": 3,
      "in": {
       "type": "drop",
@@ -652,17 +656,19 @@
     },
     {
      "type": "igpost",
-     "empty": true,
+     "src": "assets/posts/reel.jpg",
      "avatar": "../../public/icon-512.png",
-     "x": 330,
-     "y": 800,
-     "w": 300,
+     "sub": "Time Keeper",
+     "x": 345,
+     "y": 760,
+     "w": 290,
+     "imgH": 399,
      "rot": -1,
-     "likeAt": 4.2,
      "in": {
       "type": "drop",
       "at": 2.8
-     }
+     },
+     "likeAt": 4.2
     }
    ],
    "dur": 8.72,
@@ -693,9 +699,25 @@
    "floor": false,
    "elements": [
     {
+     "type": "image",
+     "src": "assets/posts/profile.jpg",
+     "x": 360,
+     "y": 330,
+     "w": 600,
+     "h": 255,
+     "pad": 10,
+     "rot": -1.5,
+     "in": {
+      "type": "drop",
+      "at": 0.3,
+      "dur": 0.6
+     },
+     "z": 20
+    },
+    {
      "type": "notif",
      "x": 346,
-     "y": 420,
+     "y": 590,
      "w": 560,
      "name": "timekeeperkw",
      "initial": "؟",
@@ -711,7 +733,7 @@
     {
      "type": "notif",
      "x": 360,
-     "y": 595,
+     "y": 725,
      "w": 560,
      "name": "timekeeperkw",
      "initial": "؟",
@@ -727,7 +749,7 @@
     {
      "type": "notif",
      "x": 374,
-     "y": 770,
+     "y": 860,
      "w": 560,
      "name": "timekeeperkw",
      "initial": "؟",
@@ -770,11 +792,23 @@
    "elements": [
     {
      "type": "igpost",
-     "empty": true,
+     "src": "assets/posts/geraldcharles.jpg",
      "avatar": "../../public/icon-512.png",
+     "sub": "Time Keeper",
      "x": 360,
      "y": 600,
      "w": 340,
+     "imgH": 425,
+     "rot": [
+      [
+       0.4,
+       0
+      ],
+      [
+       1.4,
+       8
+      ]
+     ],
      "scale": [
       [
        0.4,
@@ -784,16 +818,6 @@
        1.4,
        0.35,
        "inCubic"
-      ]
-     ],
-     "rot": [
-      [
-       0.4,
-       0
-      ],
-      [
-       1.4,
-       8
       ]
      ],
      "out": {
