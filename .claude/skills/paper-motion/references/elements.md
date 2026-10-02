@@ -29,7 +29,7 @@ Easing names: `linear`, `outCubic`, `inCubic`, `inOutCubic` (default), `outBack`
 **text** `text`, `font` (`title` default, `banner`, `cap`, `mono`, `ui`), `size` 90, `color`, `ls`, `upper`, `w` (wraps), `align`, `outline`, `shadow`, `paper` (`true` or a colour puts it on a paper strip).
 **bubble** `text`, `w`, `h`, `kind` (`speech`, `thought`), `tail` (`l`, `r`), `size`.
 **chip** terminal prompt. `text`, `prefix` (`>`), `size`, `typeAt`, `typeDur`, `type: false` (show fully).
-**list** recap card. `title`, `rows: [{ label, color, note? }]`, `w`, `rowH`, `at` (first row time), `stagger`.
+**list** recap card. `title`, `rows: [{ label, color, note? }]`, `w`, `rowH`, `at` (first row time), `stagger`, `rtl: true` for Arabic (dots on the right, text right-aligned).
 
 ## Instruments and data
 
@@ -53,7 +53,7 @@ Easing names: `linear`, `outCubic`, `inCubic`, `inOutCubic` (default), `outBack`
 
 ## Your own art
 
-**image** `src` (path relative to the storyboard), `w`, `h`, `frame: false` for no paper border, `fit`. Use it for the user's logo.
+**image** `src` (path relative to the storyboard), `w`, `h`, `frame: false` for no paper border, `fit`, `pos` (crop focus such as `"50% 20%"`). Use it for the user's logo. For photos add `polaroid: true` (taped paper frame with a caption strip), `aspect` (the photo's width divided by height, so the frame fits it and nothing is cropped), `label` (caption text under the photo), `bottom` (strip height).
 **svg** / **html** `svg` or `html` string with `w`, `h`. Use `PM.piece` in `engine/props.js` to add a reusable prop instead.
 
 ## Recipes

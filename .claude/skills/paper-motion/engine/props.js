@@ -420,24 +420,25 @@
     const node = PM.div('', { position: 'relative', width: px(w), height: px(h), opacity: .92 });
     box(node, { left: '0', top: '0', width: px(w), height: px(h), border: '5px solid ' + c, borderRadius: '10px' });
     box(node, { left: '8px', top: '8px', width: px(w - 16), height: px(h - 16), border: '2px solid ' + c, borderRadius: '6px' });
-    text(node, str, { font: 'title', size, weight: 400, color: c, w, h, center: true, ls: .06 });
+    text(node, str, { font: 'title', size, weight: sp.weight || 400, color: c, w, h, center: true, ls: .06 });
     node.style.mixBlendMode = 'multiply';
     return { node, w, h };
   };
 
   B.list = (sp, ctx) => {
-    const rows = sp.rows || [], w = sp.w || 300, rh = sp.rowH || 52;
+    const rows = sp.rows || [], w = sp.w || 300, rh = sp.rowH || 52, rtl = !!sp.rtl;
     const h = (sp.header === false ? 20 : 66) + rows.length * rh + 14;
     const node = PM.div('', { position: 'relative', width: px(w), height: px(h) });
     put(node, { w, h, color: '#F6EEDD', j: 1.4 });
-    if (sp.title) text(node, sp.title, { font: 'banner', size: 20, color: '#1E1C1A', x: 18, y: 20, upper: true, ls: .01 });
+    if (sp.title) text(node, sp.title, { font: 'banner', size: 20, color: '#1E1C1A', x: 18, y: 20, w: w - 36, align: rtl ? 'right' : 'left', upper: true, ls: .01 });
     if (sp.title) box(node, { left: '14px', top: '52px', width: px(w - 28), height: '2px', background: '#1E1C1A' });
     const els = rows.map((r, i) => {
       const row = box(node, { left: '0', top: px(66 + i * rh), width: px(w), height: px(rh) });
-      box(row, { left: '18px', top: px(rh / 2 - 17), width: '34px', height: '34px', borderRadius: '50%', background: r.color || '#2AA6A6', boxShadow: 'inset -3px -3px 0 rgba(0,0,0,.18)' });
-      text(row, r.label, { font: 'banner', size: 20, color: '#1E1C1A', x: 66, y: rh / 2 - 11 });
-      if (r.note) text(row, r.note, { font: 'ui', size: 15, weight: 700, color: '#6b6258', x: 66, y: rh / 2 + 8 });
-      else box(row, { left: '66px', top: px(rh / 2 + 10), width: px(w - 100 - (i % 3) * 30), height: '7px', borderRadius: '4px', background: '#E3DACA' });
+      box(row, { left: px(rtl ? w - 18 - 34 : 18), top: px(rh / 2 - 17), width: '34px', height: '34px', borderRadius: '50%', background: r.color || '#2AA6A6', boxShadow: 'inset -3px -3px 0 rgba(0,0,0,.18)' });
+      const tx = rtl ? 18 : 66, tw = w - 18 - 66 + (rtl ? 0 : 0);
+      text(row, r.label, { font: 'banner', size: 20, color: '#1E1C1A', x: tx, y: rh / 2 - 11, w: w - 84, align: rtl ? 'right' : 'left' });
+      if (r.note) text(row, r.note, { font: 'ui', size: 15, weight: 700, color: '#6b6258', x: tx, y: rh / 2 + 8, w: w - 84, align: rtl ? 'right' : 'left' });
+      else box(row, { left: px(rtl ? w - 66 - (w - 100 - (i % 3) * 30) : 66), top: px(rh / 2 + 10), width: px(w - 100 - (i % 3) * 30), height: '7px', borderRadius: '4px', background: '#E3DACA' });
       return row;
     });
     return {
@@ -446,7 +447,7 @@
         const at = sp.at || 0, st = sp.stagger != null ? sp.stagger : 0.3;
         els.forEach((e, i) => {
           const p = clamp((lt - at - i * st) / 0.3);
-          e.style.opacity = p; e.style.transform = 'translateX(' + (1 - PM.E.outCubic(p)) * 40 + 'px)';
+          e.style.opacity = p; e.style.transform = 'translateX(' + (rtl ? -1 : 1) * (1 - PM.E.outCubic(p)) * 40 + 'px)';
         });
       },
     };
@@ -545,14 +546,21 @@
   };
 
   B.image = (sp, ctx) => {
-    const w = sp.w || 200, h = sp.h || 200;
+    const polaroid = !!sp.polaroid;
+    const w = sp.w || 200;
+    const pad = sp.frame === false ? 0 : (sp.pad == null ? (polaroid ? 14 : 10) : sp.pad);
+    const bottom = polaroid ? (sp.bottom || 58) : pad;
+    // `aspect` (width / height of the photo) sizes the frame so the picture is never cropped
+    const h = sp.aspect ? Math.round((w - pad * 2) / sp.aspect + pad + bottom) : (sp.h || 200);
     const node = PM.div('', { position: 'relative', width: px(w), height: px(h) });
-    const pad = sp.frame === false ? 0 : (sp.pad == null ? 10 : sp.pad);
     if (pad) put(node, { w, h, color: sp.color || '#F6EEDD', j: 1.2 });
     const img = document.createElement('img');
     img.src = sp.src;
-    Object.assign(img.style, { position: 'absolute', left: px(pad), top: px(pad), width: px(w - pad * 2), height: px(h - pad * 2), objectFit: sp.fit || 'contain' });
+    Object.assign(img.style, { position: 'absolute', left: px(pad), top: px(pad), width: px(w - pad * 2), height: px(h - pad - bottom),
+      objectFit: sp.fit || (sp.aspect ? 'cover' : 'contain'), objectPosition: sp.pos || '50% 50%' });
     node.appendChild(img);
+    if (sp.label) text(node, sp.label, { font: 'cap', size: sp.labelSize || 24, color: '#2A2622', w, h: bottom, y: h - bottom, center: true });
+    if (polaroid || sp.tape) put(node, { w: 84, h: 30, x: w / 2 - 42, y: -15, color: 'rgb(214,190,128)', rot: sp.tapeRot == null ? -3 : sp.tapeRot, j: .8, bevel: false });
     return { node, w, h };
   };
 
