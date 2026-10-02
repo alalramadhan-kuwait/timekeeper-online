@@ -7,7 +7,7 @@ export a transparent PNG from the image tool instead.
 import sys, argparse
 from collections import deque
 from PIL import Image, ImageFilter
-ap = argparse.ArgumentParser(); ap.add_argument('src'); ap.add_argument('out'); ap.add_argument('--tol', type=float, default=8); ap.add_argument('--feather', type=float, default=1.5)
+ap = argparse.ArgumentParser(); ap.add_argument('src'); ap.add_argument('out'); ap.add_argument('--tol', type=float, default=8); ap.add_argument('--feather', type=float, default=1.5); ap.add_argument('--ntol', type=float, default=9); ap.add_argument('--checker', action='store_true')
 a = ap.parse_args()
 im = Image.open(a.src).convert('RGBA'); W, H = im.size; px = im.load()
 if any(px[x, y][3] < 250 for x, y in [(0, 0), (W - 1, 0), (0, H - 1), (W - 1, H - 1)]):
@@ -16,7 +16,15 @@ if any(px[x, y][3] < 250 for x, y in [(0, 0), (W - 1, 0), (0, H - 1), (W - 1, H 
 else:
     border = [px[x, 0] for x in range(0, W, 7)] + [px[x, H - 1] for x in range(0, W, 7)] + [px[0, y] for y in range(0, H, 7)] + [px[W - 1, y] for y in range(0, H, 7)]
     bg = tuple(sorted(c[i] for c in border)[len(border) // 2] for i in range(3))
-    near = lambda c: ((c[0] - bg[0]) ** 2 + (c[1] - bg[1]) ** 2 + (c[2] - bg[2]) ** 2) ** .5 <= a.tol
+    neutral = lambda c: max(c[:3]) - min(c[:3]) <= a.ntol
+    lum = sorted(sum(c[:3]) / 3 for c in border)
+    checker = a.checker or (all(neutral(c) for c in border) and lum[int(len(lum) * .9)] - lum[int(len(lum) * .1)] > 25)
+    if checker:
+        # a fake-transparency checkerboard baked into the pixels: every grey or white pixel connected to the edge is background;
+        # the figure's coloured paper border stops the fill, so white clothing inside it is kept
+        near = neutral
+    else:
+        near = lambda c: ((c[0] - bg[0]) ** 2 + (c[1] - bg[1]) ** 2 + (c[2] - bg[2]) ** 2) ** .5 <= a.tol
     seen = bytearray(W * H); q = deque()
     for x in range(W):
         for y in (0, H - 1): q.append((x, y))
@@ -31,7 +39,7 @@ else:
         if y > 0: q.append((x, y - 1))
         if y < H - 1: q.append((x, y + 1))
     mask = Image.frombytes('L', (W, H), bytes(0 if v else 255 for v in seen)).filter(ImageFilter.GaussianBlur(a.feather))
-    print('background', '#%02X%02X%02X' % bg, 'removed')
+    print('checkerboard background removed' if checker else 'background #%02X%02X%02X removed' % bg)
 im.putalpha(mask)
 box = mask.point(lambda v: 255 if v > 24 else 0).getbbox()
 im = im.crop(box) if box else im

@@ -22,21 +22,19 @@ def MAP(view, pins=None, routes=None, y=580, h=680, **kw):
 
 # ---- paper-cut figures --------------------------------------------------------------------------------------------
 FIGDIR = os.path.join(H, 'assets', 'figures')
+PEOPLE = ['ali-alramadhan', 'mohammad-alyousifi', 'ali-alyousifi']   # left to right
 def fig(outfit, x=360, h=340, at=0.5, z=12):
-    g = os.path.join(FIGDIR, outfit + '.png')
-    if os.path.exists(g):
-        w, hh = Image.open(g).size
-        return [{"type": "cutout", "src": "assets/figures/%s.png" % outfit, "x": x, "y": 960, "h": h, "aspect": w / hh, "z": z,
-                 "in": {"type": "rise", "at": at}, "idle": {"type": "bob", "amp": 2, "speed": .5}}]
-    ind = [os.path.join(FIGDIR, '%s_%d.png' % (outfit, i)) for i in (1, 2, 3)]
-    if all(os.path.exists(p) for p in ind):
-        out = []
-        for i, p in enumerate(ind):
-            w, hh = Image.open(p).size
-            out.append({"type": "cutout", "src": "assets/figures/%s_%d.png" % (outfit, i + 1), "x": x + (i - 1) * 150, "y": 960, "h": h, "aspect": w / hh, "z": z + (1 if i == 1 else 0),
-                        "in": {"type": "rise", "at": at + i * 0.2}, "idle": {"type": "bob", "amp": 2, "speed": .5, "phase": i * .3}})
-        return out
-    return []
+    """Paper-cut figures for one outfit: a group PNG <outfit>.png, or one PNG per founder <person>_<outfit>.png."""
+    def one(rel, xx, delay, zz, ph):
+        w, hh = Image.open(os.path.join(H, rel)).size
+        return {"type": "cutout", "src": rel, "x": xx, "y": 960, "h": h, "aspect": w / hh, "z": zz, "edge": 0,
+                "in": {"type": "rise", "at": at + delay}, "idle": {"type": "bob", "amp": 2, "speed": .5, "phase": ph}}
+    if os.path.exists(os.path.join(FIGDIR, outfit + '.png')):
+        return [one('assets/figures/%s.png' % outfit, x, 0, z, 0)]
+    have = [p for p in PEOPLE if os.path.exists(os.path.join(FIGDIR, '%s_%s.png' % (p, outfit)))]
+    gap = h * 0.46
+    offs = {1: [0], 2: [-gap / 2, gap / 2], 3: [-gap, 0, gap]}.get(len(have), [])
+    return [one('assets/figures/%s_%s.png' % (p, outfit), x + o, i * 0.2, z + (1 if o == 0 else 0), i * .3) for i, (p, o) in enumerate(zip(have, offs))]
 HAVE = {o: bool(fig(o)) for o in ('casual', 'formal', 'kuwaiti')}
 
 SC = []

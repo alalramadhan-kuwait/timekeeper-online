@@ -133,14 +133,14 @@
   {
    "theme": "tk-ink",
    "banner": "",
-   "floor": false,
+   "floor": true,
    "elements": [
     {
      "type": "map",
      "x": 360,
-     "y": 580,
+     "y": 450,
      "w": 660,
-     "h": 680,
+     "h": 460,
      "view": [
       [
        0,
@@ -191,6 +191,26 @@
       "at": 0.2,
       "dur": 1.2
      }
+    },
+    {
+     "type": "cutout",
+     "src": "assets/figures/mohammad-alyousifi_casual.png",
+     "x": 360,
+     "y": 960,
+     "h": 340,
+     "aspect": 0.36079900124843944,
+     "z": 13,
+     "edge": 0,
+     "in": {
+      "type": "rise",
+      "at": 1.0
+     },
+     "idle": {
+      "type": "bob",
+      "amp": 2,
+      "speed": 0.5,
+      "phase": 0.0
+     }
     }
    ],
    "dur": 7.15,
@@ -213,14 +233,14 @@
   {
    "theme": "tk-ink",
    "banner": "KUWAIT",
-   "floor": false,
+   "floor": true,
    "elements": [
     {
      "type": "map",
      "x": 360,
-     "y": 560,
+     "y": 470,
      "w": 660,
-     "h": 620,
+     "h": 460,
      "view": [
       [
        0,
@@ -262,15 +282,35 @@
     },
     {
      "type": "towers",
-     "x": 560,
+     "x": 610,
      "y": 960,
-     "h": 330,
+     "h": 300,
      "in": {
       "type": "rise",
       "at": 3.0,
       "dur": 0.8
      },
      "z": 30
+    },
+    {
+     "type": "cutout",
+     "src": "assets/figures/mohammad-alyousifi_kuwaiti.png",
+     "x": 300,
+     "y": 960,
+     "h": 340,
+     "aspect": 0.4110429447852761,
+     "z": 13,
+     "edge": 0,
+     "in": {
+      "type": "rise",
+      "at": 3.4
+     },
+     "idle": {
+      "type": "bob",
+      "amp": 2,
+      "speed": 0.5,
+      "phase": 0.0
+     }
     }
    ],
    "dur": 7.23,
@@ -744,13 +784,13 @@
   {
    "theme": "tk-ink",
    "banner": "2019",
-   "floor": false,
+   "floor": true,
    "elements": [
     {
      "type": "mic",
-     "x": 360,
+     "x": 520,
      "y": 960,
-     "size": 1.1,
+     "size": 1.0,
      "in": {
       "type": "drop",
       "at": 0.3
@@ -774,6 +814,26 @@
        1
       ]
      ]
+    },
+    {
+     "type": "cutout",
+     "src": "assets/figures/mohammad-alyousifi_formal.png",
+     "x": 250,
+     "y": 960,
+     "h": 340,
+     "aspect": 0.35889377749842866,
+     "z": 13,
+     "edge": 0,
+     "in": {
+      "type": "rise",
+      "at": 1.2
+     },
+     "idle": {
+      "type": "bob",
+      "amp": 2,
+      "speed": 0.5,
+      "phase": 0.0
+     }
     }
    ],
    "dur": 8.43,
@@ -791,14 +851,14 @@
   {
    "theme": "tk-ink",
    "banner": "GENEVA",
-   "floor": false,
+   "floor": true,
    "elements": [
     {
      "type": "map",
      "x": 360,
-     "y": 580,
+     "y": 450,
      "w": 660,
-     "h": 640,
+     "h": 460,
      "view": [
       [
        0,
@@ -865,6 +925,26 @@
        "color": "#111111"
       }
      ]
+    },
+    {
+     "type": "cutout",
+     "src": "assets/figures/mohammad-alyousifi_formal.png",
+     "x": 360,
+     "y": 960,
+     "h": 340,
+     "aspect": 0.35889377749842866,
+     "z": 13,
+     "edge": 0,
+     "in": {
+      "type": "rise",
+      "at": 2.6
+     },
+     "idle": {
+      "type": "bob",
+      "amp": 2,
+      "speed": 0.5,
+      "phase": 0.0
+     }
     }
    ],
    "dur": 5.0,
@@ -882,14 +962,14 @@
   {
    "theme": "tk-graphite",
    "banner": "2022",
-   "floor": false,
+   "floor": true,
    "elements": [
     {
      "type": "door",
-     "x": 360,
-     "y": 620,
-     "w": 300,
-     "h": 540,
+     "x": 470,
+     "y": 600,
+     "w": 250,
+     "h": 450,
      "sign": "TIME KEEPER LOUNGE",
      "open": [
       [
@@ -906,6 +986,26 @@
       "type": "rise",
       "at": 0.5,
       "dur": 0.7
+     }
+    },
+    {
+     "type": "cutout",
+     "src": "assets/figures/mohammad-alyousifi_formal.png",
+     "x": 210,
+     "y": 960,
+     "h": 330,
+     "aspect": 0.35889377749842866,
+     "z": 13,
+     "edge": 0,
+     "in": {
+      "type": "rise",
+      "at": 3.4
+     },
+     "idle": {
+      "type": "bob",
+      "amp": 2,
+      "speed": 0.5,
+      "phase": 0.0
      }
     }
    ],
@@ -976,9 +1076,9 @@
    "elements": [
     {
      "type": "building",
-     "x": 360,
+     "x": 470,
      "y": 960,
-     "w": 380,
+     "w": 330,
      "h": 600,
      "color": "#D2CABA",
      "cols": 3,
@@ -994,7 +1094,7 @@
     },
     {
      "type": "card",
-     "x": 360,
+     "x": 470,
      "y": 410,
      "w": 260,
      "h": 58,
@@ -1007,6 +1107,26 @@
       "at": 1.4
      },
      "z": 40
+    },
+    {
+     "type": "cutout",
+     "src": "assets/figures/mohammad-alyousifi_formal.png",
+     "x": 190,
+     "y": 960,
+     "h": 320,
+     "aspect": 0.35889377749842866,
+     "z": 13,
+     "edge": 0,
+     "in": {
+      "type": "rise",
+      "at": 1.8
+     },
+     "idle": {
+      "type": "bob",
+      "amp": 2,
+      "speed": 0.5,
+      "phase": 0.0
+     }
     }
    ],
    "dur": 4.0,
@@ -1079,34 +1199,24 @@
      "z": 19
     },
     {
-     "type": "puppet",
-     "x": 150,
-     "y": 960,
-     "size": 1.1,
-     "top": "#43464D",
-     "pose": "sitTalk",
-     "flip": false,
-     "initial": "ع ر"
-    },
-    {
-     "type": "puppet",
+     "type": "cutout",
+     "src": "assets/figures/mohammad-alyousifi_kuwaiti.png",
      "x": 360,
      "y": 960,
-     "size": 1.1,
-     "top": "#6C7078",
-     "pose": "sit",
-     "flip": false,
-     "initial": "م ي"
-    },
-    {
-     "type": "puppet",
-     "x": 570,
-     "y": 960,
-     "size": 1.1,
-     "top": "#8D9198",
-     "pose": "sit",
-     "flip": true,
-     "initial": "ع ي"
+     "h": 440,
+     "aspect": 0.4110429447852761,
+     "z": 11,
+     "edge": 0,
+     "in": {
+      "type": "rise",
+      "at": 0.4
+     },
+     "idle": {
+      "type": "bob",
+      "amp": 2,
+      "speed": 0.5,
+      "phase": 0.0
+     }
     },
     {
      "type": "cup",
