@@ -84,7 +84,7 @@
  "audio": {
   "autoSfx": true,
   "music": "renders/simple_score.wav",
-  "musicGain": -24.0,
+  "musicGain": -90.0,
   "voiceGain": 0
  },
  "scenes": [
@@ -3269,7 +3269,50 @@
       "type": "bob",
       "amp": 2,
       "speed": 0.5,
-      "phase": 0.0
+      "phase": 0.3
+     },
+     "out": {
+      "at": 2.6,
+      "type": "fade",
+      "dur": 0.2
+     }
+    },
+    {
+     "type": "cutout",
+     "src": "assets/figures/ali-alyousifi_casual.png",
+     "x": [
+      [
+       1.0,
+       900
+      ],
+      [
+       2.5,
+       440,
+       "outSine"
+      ]
+     ],
+     "y": 1170,
+     "h": 579,
+     "aspect": 0.4014962593516209,
+     "z": 13,
+     "edge": 0,
+     "flip": true,
+     "in": {
+      "type": "fade",
+      "at": 1.0,
+      "dur": 0.15
+     },
+     "idle": {
+      "type": "bob",
+      "amp": 7,
+      "speed": 2.4,
+      "from": 1.0,
+      "until": 2.5
+     },
+     "out": {
+      "at": 2.6,
+      "type": "fade",
+      "dur": 0.2
      },
      "rot": [
       [
@@ -3292,35 +3335,22 @@
     },
     {
      "type": "cutout",
-     "src": "assets/figures/ali-alyousifi_casual.png",
-     "x": [
-      [
-       1.0,
-       900
-      ],
-      [
-       2.5,
-       470,
-       "outSine"
-      ]
-     ],
-     "y": 1170,
-     "h": 579,
-     "aspect": 0.4014962593516209,
-     "z": 13,
+     "src": "assets/gen/boulder_handshake_cut.png",
+     "x": 345,
+     "y": 1172,
+     "h": 690,
+     "aspect": 0.5687550854353133,
+     "z": 14,
      "edge": 0,
-     "flip": true,
-     "in": {
-      "type": "fade",
-      "at": 1.0,
-      "dur": 0.15
-     },
      "idle": {
       "type": "bob",
-      "amp": 7,
-      "speed": 2.4,
-      "from": 1.0,
-      "until": 2.5
+      "amp": 2,
+      "speed": 0.5
+     },
+     "in": {
+      "type": "fade",
+      "at": 2.5,
+      "dur": 0.2
      },
      "rot": [
       [
@@ -3690,12 +3720,13 @@
     {
      "type": "cutout",
      "src": "assets/figures/ali-alyousifi_casual.png",
-     "x": 430,
+     "x": 400,
      "y": 1160,
      "h": 543,
      "aspect": 0.4014962593516209,
      "z": 13,
      "edge": 0,
+     "flip": true,
      "in": {
       "type": "rise",
       "at": 0.2
@@ -3704,7 +3735,12 @@
       "type": "bob",
       "amp": 2,
       "speed": 0.5,
-      "phase": 1.2
+      "phase": 0.3
+     },
+     "out": {
+      "at": 1.9,
+      "type": "fade",
+      "dur": 0.2
      }
     },
     {
@@ -3712,74 +3748,74 @@
      "src": "assets/figures/mohammad-alyousifi_casual.png",
      "x": [
       [
-       0.6,
+       0.4,
        -220
       ],
       [
        1.8,
-       240,
+       250,
        "outSine"
       ]
      ],
-     "y": [
-      [
-       0,
-       1400
-      ],
-      [
-       3.0,
-       1400
-      ],
-      [
-       4.2,
-       1160,
-       "inOutCubic"
-      ]
-     ],
+     "y": 1160,
      "h": 573,
      "aspect": 0.36079900124843944,
      "z": 16,
      "edge": 0,
      "in": {
       "type": "fade",
-      "at": 0.6,
+      "at": 0.4,
       "dur": 0.15
      },
      "idle": {
       "type": "bob",
       "amp": 7,
       "speed": 2.4,
-      "from": 0.6,
+      "from": 0.4,
       "until": 1.8
      },
-     "scale": [
-      [
-       0,
-       1.5
-      ],
-      [
-       3.0,
-       1.5
-      ],
-      [
-       4.2,
-       1.0,
-       "inOutCubic"
-      ]
-     ],
-     "depth": 1.15
+     "out": {
+      "at": 1.9,
+      "type": "fade",
+      "dur": 0.2
+     }
+    },
+    {
+     "type": "cutout",
+     "src": "assets/gen/la_greet_cut.png",
+     "x": 320,
+     "y": 1162,
+     "h": 620,
+     "aspect": 0.5334909377462569,
+     "z": 15,
+     "edge": 0,
+     "idle": {
+      "type": "bob",
+      "amp": 2,
+      "speed": 0.5
+     },
+     "in": {
+      "type": "fade",
+      "at": 1.8,
+      "dur": 0.2
+     },
+     "out": {
+      "at": 4.8,
+      "type": "fade",
+      "dur": 0.2
+     }
     },
     {
      "type": "cutout",
      "src": "assets/figures/ali-alramadhan_casual.png",
      "x": [
       [
-       3.6,
+       3.4,
        960
       ],
       [
-       4.7,
-       610,
+       4.6,
+       600,
        "outSine"
       ]
      ],
@@ -3788,17 +3824,43 @@
      "aspect": 0.3584672435105068,
      "z": 14,
      "edge": 0,
+     "flip": true,
      "in": {
       "type": "fade",
-      "at": 3.6,
+      "at": 3.4,
       "dur": 0.15
      },
      "idle": {
       "type": "bob",
       "amp": 7,
       "speed": 2.4,
-      "from": 3.6,
-      "until": 4.7
+      "from": 3.4,
+      "until": 4.6
+     },
+     "out": {
+      "at": 4.8,
+      "type": "fade",
+      "dur": 0.2
+     }
+    },
+    {
+     "type": "cutout",
+     "src": "assets/gen/la_three_cut.png",
+     "x": 400,
+     "y": 1164,
+     "h": 640,
+     "aspect": 0.7941454202077431,
+     "z": 16,
+     "edge": 0,
+     "idle": {
+      "type": "bob",
+      "amp": 2,
+      "speed": 0.5
+     },
+     "in": {
+      "type": "fade",
+      "at": 4.7,
+      "dur": 0.2
      }
     },
     {
@@ -3890,56 +3952,70 @@
     "zoom": [
      [
       0,
-      1.25
+      1.0
      ],
      [
-      3.0,
-      1.25
+      1.8,
+      1.3,
+      "inOutCubic"
      ],
      [
-      4.4,
+      3.2,
+      1.35
+     ],
+     [
+      4.6,
       1.0,
       "inOutCubic"
      ],
      [
       6.2,
-      1.12
+      1.15
      ]
     ],
     "x": [
      [
       0,
-      300
+      360
      ],
      [
-      3.0,
+      1.8,
+      320
+     ],
+     [
+      3.2,
       330
      ],
      [
-      4.4,
+      4.6,
       400
      ],
      [
       6.2,
-      420
+      400
      ]
     ],
     "y": [
      [
       0,
-      760
+      700
      ],
      [
-      3.0,
-      760
+      1.8,
+      800,
+      "inOutCubic"
      ],
      [
-      4.4,
+      3.2,
+      800
+     ],
+     [
+      4.6,
       700
      ],
      [
       6.2,
-      720
+      760
      ]
     ]
    },
@@ -4346,65 +4422,22 @@
     },
     {
      "type": "cutout",
-     "src": "assets/figures/ali-alyousifi_kuwaiti.png",
-     "x": 110,
-     "y": 1560,
-     "h": 996,
-     "aspect": 0.4068891280947255,
-     "z": 30,
-     "edge": 0,
-     "flip": true,
-     "depth": 1.25,
-     "in": {
-      "type": "rise",
-      "at": 0.2
-     },
-     "idle": {
-      "type": "bob",
-      "amp": 2,
-      "speed": 0.5,
-      "phase": 1.2
-     }
-    },
-    {
-     "type": "cutout",
-     "src": "assets/figures/mohammad-alyousifi_kuwaiti.png",
-     "x": 380,
-     "y": 1200,
-     "h": 649,
-     "aspect": 0.4110429447852761,
+     "src": "assets/gen/diwaniya_cut.png",
+     "x": 360,
+     "y": 1240,
+     "h": 423,
+     "aspect": 2.031716417910448,
      "z": 14,
      "edge": 0,
-     "in": {
-      "type": "rise",
-      "at": 0.35
-     },
      "idle": {
       "type": "bob",
       "amp": 2,
-      "speed": 0.5,
-      "phase": 0.3
-     }
-    },
-    {
-     "type": "cutout",
-     "src": "assets/figures/ali-alramadhan_kuwaiti.png",
-     "x": 610,
-     "y": 1210,
-     "h": 690,
-     "aspect": 0.419740777666999,
-     "z": 15,
-     "edge": 0,
-     "flip": true,
+      "speed": 0.5
+     },
      "in": {
       "type": "rise",
-      "at": 0.5
-     },
-     "idle": {
-      "type": "bob",
-      "amp": 2,
-      "speed": 0.5,
-      "phase": 0.0
+      "at": 0.2,
+      "dur": 0.2
      }
     },
     {
@@ -4412,8 +4445,8 @@
      "w": 380,
      "h": 180,
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"380\" height=\"180\" viewBox=\"0 0 380 180\" style=\"overflow:visible;filter:drop-shadow(0 4px 3px rgba(0,0,0,.28))\"><ellipse cx=\"190\" cy=\"150\" rx=\"186\" ry=\"30\" fill=\"#8E6F3E\"/><ellipse cx=\"190\" cy=\"144\" rx=\"178\" ry=\"26\" fill=\"#C29B5C\"/><path d=\"M70 140 C52 112 56 74 74 58 L70 40 H96 L92 58 C110 74 114 112 96 140Z\" fill=\"#C9A35F\"/><path d=\"M70 70 C40 64 26 40 14 22 L22 18 C36 34 50 52 72 60Z\" fill=\"#B48A4C\"/><path d=\"M74 40 Q83 18 92 40Z\" fill=\"#B48A4C\"/><circle cx=\"83\" cy=\"16\" r=\"5\" fill=\"#B48A4C\"/><path d=\"M98 70 C122 78 122 116 98 122\" stroke=\"#9C7840\" stroke-width=\"7\" fill=\"none\"/><path d=\"M140 132 h26 l-4 14 h-18z\" fill=\"#F2EFE6\"/><rect x=\"140\" y=\"130\" width=\"26\" height=\"4\" fill=\"#C9A35F\"/><path d=\"M178 132 h26 l-4 14 h-18z\" fill=\"#F2EFE6\"/><rect x=\"178\" y=\"130\" width=\"26\" height=\"4\" fill=\"#C9A35F\"/></svg>",
-     "x": 400,
-     "y": 1260,
+     "x": 360,
+     "y": 1300,
      "anchor": "b",
      "z": 40,
      "in": {
@@ -4421,7 +4454,7 @@
       "at": 0.6,
       "dur": 0.6
      },
-     "scale": 1.35,
+     "scale": 1.2,
      "depth": 1.1
     },
     {
@@ -4429,87 +4462,87 @@
      "w": 28,
      "h": 84,
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"28\" height=\"84\" viewBox=\"0 0 28 84\" style=\"overflow:visible;\"><path d=\"M14 80 q-12 -14 0 -28 q12 -14 0 -28 q-12 -12 0 -24\" stroke=\"#F4F1EA\" stroke-width=\"5\" fill=\"none\" stroke-linecap=\"round\"/></svg>",
-     "x": 286,
+     "x": 256,
      "y": [
       [
        0.6,
-       1150
+       1200
       ],
       [
        1.0,
-       1132
+       1182
       ],
       [
        1.8,
-       1096
+       1146
       ],
       [
        2.2,
-       1080
+       1130
       ],
       [
        2.2,
-       1150
+       1200
       ],
       [
        2.6,
-       1132
+       1182
       ],
       [
        3.4,
-       1096
+       1146
       ],
       [
        3.8,
-       1080
+       1130
       ],
       [
        3.8,
-       1150
+       1200
       ],
       [
        4.2,
-       1132
+       1182
       ],
       [
        5.0,
-       1096
+       1146
       ],
       [
        5.4,
-       1080
+       1130
       ],
       [
        5.4,
-       1150
+       1200
       ],
       [
        5.8,
-       1132
+       1182
       ],
       [
        6.6,
-       1096
+       1146
       ],
       [
        7.0,
-       1080
+       1130
       ],
       [
        7.0,
-       1150
+       1200
       ],
       [
        7.4,
-       1132
+       1182
       ],
       [
        8.2,
-       1096
+       1146
       ],
       [
        8.6,
-       1080
+       1130
       ]
      ],
      "anchor": "b",
@@ -4603,87 +4636,87 @@
      "w": 28,
      "h": 84,
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"28\" height=\"84\" viewBox=\"0 0 28 84\" style=\"overflow:visible;\"><path d=\"M14 80 q-12 -14 0 -28 q12 -14 0 -28 q-12 -12 0 -24\" stroke=\"#F4F1EA\" stroke-width=\"5\" fill=\"none\" stroke-linecap=\"round\"/></svg>",
-     "x": 300,
+     "x": 270,
      "y": [
       [
        0.067,
-       1150
+       1200
       ],
       [
        0.467,
-       1132
+       1182
       ],
       [
        1.267,
-       1096
+       1146
       ],
       [
        1.667,
-       1080
+       1130
       ],
       [
        1.667,
-       1150
+       1200
       ],
       [
        2.067,
-       1132
+       1182
       ],
       [
        2.867,
-       1096
+       1146
       ],
       [
        3.267,
-       1080
+       1130
       ],
       [
        3.267,
-       1150
+       1200
       ],
       [
        3.667,
-       1132
+       1182
       ],
       [
        4.467,
-       1096
+       1146
       ],
       [
        4.867,
-       1080
+       1130
       ],
       [
        4.867,
-       1150
+       1200
       ],
       [
        5.267,
-       1132
+       1182
       ],
       [
        6.067,
-       1096
+       1146
       ],
       [
        6.467,
-       1080
+       1130
       ],
       [
        6.467,
-       1150
+       1200
       ],
       [
        6.867,
-       1132
+       1182
       ],
       [
        7.667,
-       1096
+       1146
       ],
       [
        8.067,
-       1080
+       1130
       ]
      ],
      "anchor": "b",
@@ -4777,79 +4810,79 @@
      "w": 28,
      "h": 84,
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"28\" height=\"84\" viewBox=\"0 0 28 84\" style=\"overflow:visible;\"><path d=\"M14 80 q-12 -14 0 -28 q12 -14 0 -28 q-12 -12 0 -24\" stroke=\"#F4F1EA\" stroke-width=\"5\" fill=\"none\" stroke-linecap=\"round\"/></svg>",
-     "x": 314,
+     "x": 284,
      "y": [
       [
        0.733,
-       1096
+       1146
       ],
       [
        1.133,
-       1080
+       1130
       ],
       [
        1.133,
-       1150
+       1200
       ],
       [
        1.533,
-       1132
+       1182
       ],
       [
        2.333,
-       1096
+       1146
       ],
       [
        2.733,
-       1080
+       1130
       ],
       [
        2.733,
-       1150
+       1200
       ],
       [
        3.133,
-       1132
+       1182
       ],
       [
        3.933,
-       1096
+       1146
       ],
       [
        4.333,
-       1080
+       1130
       ],
       [
        4.333,
-       1150
+       1200
       ],
       [
        4.733,
-       1132
+       1182
       ],
       [
        5.533,
-       1096
+       1146
       ],
       [
        5.933,
-       1080
+       1130
       ],
       [
        5.933,
-       1150
+       1200
       ],
       [
        6.333,
-       1132
+       1182
       ],
       [
        7.133,
-       1096
+       1146
       ],
       [
        7.533,
-       1080
+       1130
       ]
      ],
      "anchor": "b",
@@ -4935,71 +4968,71 @@
      "w": 28,
      "h": 84,
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"28\" height=\"84\" viewBox=\"0 0 28 84\" style=\"overflow:visible;\"><path d=\"M14 80 q-12 -14 0 -28 q12 -14 0 -28 q-12 -12 0 -24\" stroke=\"#F4F1EA\" stroke-width=\"5\" fill=\"none\" stroke-linecap=\"round\"/></svg>",
-     "x": 381,
+     "x": 341,
      "y": [
       [
        1.1,
-       1150
+       1200
       ],
       [
        1.5,
-       1132
+       1182
       ],
       [
        2.3,
-       1096
+       1146
       ],
       [
        2.7,
-       1080
+       1130
       ],
       [
        2.7,
-       1150
+       1200
       ],
       [
        3.1,
-       1132
+       1182
       ],
       [
        3.9,
-       1096
+       1146
       ],
       [
        4.3,
-       1080
+       1130
       ],
       [
        4.3,
-       1150
+       1200
       ],
       [
        4.7,
-       1132
+       1182
       ],
       [
        5.5,
-       1096
+       1146
       ],
       [
        5.9,
-       1080
+       1130
       ],
       [
        5.9,
-       1150
+       1200
       ],
       [
        6.3,
-       1132
+       1182
       ],
       [
        7.1,
-       1096
+       1146
       ],
       [
        7.5,
-       1080
+       1130
       ]
      ],
      "anchor": "b",
@@ -5077,87 +5110,87 @@
      "w": 28,
      "h": 84,
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"28\" height=\"84\" viewBox=\"0 0 28 84\" style=\"overflow:visible;\"><path d=\"M14 80 q-12 -14 0 -28 q12 -14 0 -28 q-12 -12 0 -24\" stroke=\"#F4F1EA\" stroke-width=\"5\" fill=\"none\" stroke-linecap=\"round\"/></svg>",
-     "x": 395,
+     "x": 355,
      "y": [
       [
        0.567,
-       1150
+       1200
       ],
       [
        0.967,
-       1132
+       1182
       ],
       [
        1.767,
-       1096
+       1146
       ],
       [
        2.167,
-       1080
+       1130
       ],
       [
        2.167,
-       1150
+       1200
       ],
       [
        2.567,
-       1132
+       1182
       ],
       [
        3.367,
-       1096
+       1146
       ],
       [
        3.767,
-       1080
+       1130
       ],
       [
        3.767,
-       1150
+       1200
       ],
       [
        4.167,
-       1132
+       1182
       ],
       [
        4.967,
-       1096
+       1146
       ],
       [
        5.367,
-       1080
+       1130
       ],
       [
        5.367,
-       1150
+       1200
       ],
       [
        5.767,
-       1132
+       1182
       ],
       [
        6.567,
-       1096
+       1146
       ],
       [
        6.967,
-       1080
+       1130
       ],
       [
        6.967,
-       1150
+       1200
       ],
       [
        7.367,
-       1132
+       1182
       ],
       [
        8.167,
-       1096
+       1146
       ],
       [
        8.567,
-       1080
+       1130
       ]
      ],
      "anchor": "b",
@@ -5251,87 +5284,87 @@
      "w": 28,
      "h": 84,
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"28\" height=\"84\" viewBox=\"0 0 28 84\" style=\"overflow:visible;\"><path d=\"M14 80 q-12 -14 0 -28 q12 -14 0 -28 q-12 -12 0 -24\" stroke=\"#F4F1EA\" stroke-width=\"5\" fill=\"none\" stroke-linecap=\"round\"/></svg>",
-     "x": 409,
+     "x": 369,
      "y": [
       [
        0.033,
-       1150
+       1200
       ],
       [
        0.433,
-       1132
+       1182
       ],
       [
        1.233,
-       1096
+       1146
       ],
       [
        1.633,
-       1080
+       1130
       ],
       [
        1.633,
-       1150
+       1200
       ],
       [
        2.033,
-       1132
+       1182
       ],
       [
        2.833,
-       1096
+       1146
       ],
       [
        3.233,
-       1080
+       1130
       ],
       [
        3.233,
-       1150
+       1200
       ],
       [
        3.633,
-       1132
+       1182
       ],
       [
        4.433,
-       1096
+       1146
       ],
       [
        4.833,
-       1080
+       1130
       ],
       [
        4.833,
-       1150
+       1200
       ],
       [
        5.233,
-       1132
+       1182
       ],
       [
        6.033,
-       1096
+       1146
       ],
       [
        6.433,
-       1080
+       1130
       ],
       [
        6.433,
-       1150
+       1200
       ],
       [
        6.833,
-       1132
+       1182
       ],
       [
        7.633,
-       1096
+       1146
       ],
       [
        8.033,
-       1080
+       1130
       ]
      ],
      "anchor": "b",
@@ -5426,57 +5459,56 @@
      "x": [
       [
        0,
-       470
+       348.5491276400367
       ],
       [
        2.3,
-       470
+       348.5491276400367
       ],
       [
        3.2,
-       570,
+       413.3057851239669,
        "inOutCubic"
       ]
      ],
      "y": [
       [
        0,
-       1205
+       1047.309458218549
       ],
       [
        2.3,
-       1205
+       1047.309458218549
       ],
       [
        2.75,
-       1060
+       1006.2442607897153
       ],
       [
        3.2,
-       1150
+       1028.356290174472
       ]
      ],
-     "h": 170,
+     "h": 42,
      "aspect": 0.53,
      "edge": 3,
      "z": 42,
-     "depth": 1.1,
      "rot": [
       [
        0,
-       -80
+       -70
       ],
       [
        2.3,
-       -80
+       -70
       ],
       [
        3.2,
-       -20
+       -25
       ],
       [
        5.6,
-       -15
+       -20
       ]
      ],
      "in": {
@@ -5513,20 +5545,20 @@
     "zoom": [
      [
       0,
-      1.0
+      1.3
      ],
      [
       0.6,
-      1.0
+      1.3
      ],
      [
       2.2,
-      1.55,
+      2.1,
       "inOutCubic"
      ],
      [
       4.4,
-      1.6
+      2.2
      ],
      [
       5.6,
@@ -5540,34 +5572,42 @@
       360
      ],
      [
+      0.6,
+      360
+     ],
+     [
       2.2,
-      470
+      372.2405876951331
      ],
      [
       4.4,
-      540
+      388.03489439853075
      ],
      [
       5.6,
-      470
+      380
      ]
     ],
     "y": [
      [
       0,
-      640
+      980
+     ],
+     [
+      0.6,
+      990
      ],
      [
       2.2,
-      1060
+      1014.1414141414141
      ],
      [
       4.4,
-      1050
+      1010.1928374655647
      ],
      [
       5.6,
-      960
+      900
      ]
     ]
    },
@@ -6188,65 +6228,22 @@
     },
     {
      "type": "cutout",
-     "src": "assets/figures/ali-alramadhan_casual.png",
-     "x": 120,
-     "y": 1760,
-     "h": 1350,
-     "aspect": 0.3584672435105068,
+     "src": "assets/gen/brainstorm_cut.png",
+     "x": 360,
+     "y": 1300,
+     "h": 774,
+     "aspect": 1.0334486735870818,
      "z": 20,
      "edge": 0,
-     "flip": true,
-     "depth": 1.1,
-     "in": {
-      "type": "rise",
-      "at": 0.1
-     },
-     "idle": {
-      "type": "sway",
-      "amp": 1.5,
-      "speed": 0.6
-     }
-    },
-    {
-     "type": "cutout",
-     "src": "assets/figures/ali-alyousifi_casual.png",
-     "x": 380,
-     "y": 1580,
-     "h": 1041,
-     "aspect": 0.4014962593516209,
-     "z": 12,
-     "edge": 0,
-     "depth": 0.9,
-     "in": {
-      "type": "rise",
-      "at": 0.25
-     },
      "idle": {
       "type": "sway",
       "amp": 1.2,
-      "speed": 0.5,
-      "phase": 1
-     }
-    },
-    {
-     "type": "cutout",
-     "src": "assets/figures/mohammad-alyousifi_casual.png",
-     "x": 610,
-     "y": 1740,
-     "h": 1280,
-     "aspect": 0.36079900124843944,
-     "z": 21,
-     "edge": 0,
-     "depth": 1.1,
+      "speed": 0.5
+     },
      "in": {
       "type": "rise",
-      "at": 0.4
-     },
-     "idle": {
-      "type": "sway",
-      "amp": 1.5,
-      "speed": 0.55,
-      "phase": 2
+      "at": 0.1,
+      "dur": 0.2
      }
     },
     {
@@ -6517,51 +6514,28 @@
     },
     {
      "type": "cutout",
-     "src": "assets/figures/ali-alramadhan_formal.png",
-     "x": 560,
-     "y": 1800,
-     "h": 1300,
-     "aspect": 0.3944615384615385,
+     "src": "assets/gen/writer_cut.png",
+     "x": 400,
+     "y": 1330,
+     "h": 1250,
+     "aspect": 0.5714285714285714,
      "z": 10,
      "edge": 0,
-     "depth": 1.0,
-     "in": {
-      "type": "fade",
-      "at": 0.05
-     },
      "idle": {
       "type": "bob",
       "amp": 2,
-      "speed": 0.5,
-      "phase": 0.0
+      "speed": 0.5
+     },
+     "in": {
+      "type": "fade",
+      "at": 0.05,
+      "dur": 0.2
      },
      "out": {
       "at": 1.25,
       "type": "fade",
       "dur": 0.05
      }
-    },
-    {
-     "type": "svg",
-     "w": 340,
-     "h": 230,
-     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"340\" height=\"230\" viewBox=\"0 0 340 230\" style=\"overflow:visible;filter:drop-shadow(0 4px 3px rgba(0,0,0,.28))\"><rect x=\"0\" y=\"0\" width=\"340\" height=\"230\" rx=\"8\" fill=\"#E9E4D8\"/><rect x=\"10\" y=\"8\" width=\"155\" height=\"214\" fill=\"#FBF9F3\"/><rect x=\"175\" y=\"8\" width=\"155\" height=\"214\" fill=\"#FBF9F3\"/><rect x=\"166\" y=\"8\" width=\"8\" height=\"214\" fill=\"#CFC8B8\"/><path d=\"M28 40 q6 -5 12 0 q6 -5 12 0 q6 5 12 0 q6 -5 12 0 q6 5 12 0 q6 5 12 0 q6 -5 12 0\" stroke=\"#3A3A3A\" stroke-width=\"3\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M28 66 q6 -5 12 0 q6 -5 12 0 q6 5 12 0 q6 5 12 0 q6 5 12 0 q6 5 12 0 q6 5 12 0 q6 -5 12 0 q6 -5 12 0 q6 5 12 0 q6 5 12 0\" stroke=\"#3A3A3A\" stroke-width=\"3\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M28 92 q6 5 12 0 q6 5 12 0 q6 -5 12 0 q6 -5 12 0 q6 -5 12 0 q6 -5 12 0 q6 -5 12 0 q6 -5 12 0 q6 5 12 0\" stroke=\"#3A3A3A\" stroke-width=\"3\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M28 118 q6 -5 12 0 q6 5 12 0 q6 -5 12 0 q6 5 12 0 q6 5 12 0 q6 5 12 0 q6 5 12 0 q6 5 12 0\" stroke=\"#3A3A3A\" stroke-width=\"3\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M28 144 q6 -5 12 0 q6 5 12 0 q6 5 12 0 q6 -5 12 0 q6 5 12 0 q6 5 12 0 q6 5 12 0 q6 5 12 0 q6 5 12 0 q6 5 12 0\" stroke=\"#3A3A3A\" stroke-width=\"3\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M28 170 q6 5 12 0 q6 5 12 0 q6 -5 12 0 q6 5 12 0 q6 -5 12 0 q6 5 12 0 q6 5 12 0 q6 5 12 0 q6 5 12 0\" stroke=\"#3A3A3A\" stroke-width=\"3\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M28 196 q6 5 12 0 q6 5 12 0 q6 -5 12 0 q6 5 12 0 q6 5 12 0 q6 -5 12 0 q6 5 12 0 q6 -5 12 0 q6 -5 12 0 q6 -5 12 0 q6 -5 12 0\" stroke=\"#3A3A3A\" stroke-width=\"3\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M188 40 q6 -5 12 0 q6 5 12 0 q6 -5 12 0 q6 -5 12 0 q6 -5 12 0 q6 5 12 0 q6 -5 12 0 q6 -5 12 0 q6 -5 12 0 q6 5 12 0 q6 -5 12 0\" stroke=\"#3A3A3A\" stroke-width=\"3\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M188 66 q6 5 12 0 q6 5 12 0 q6 -5 12 0 q6 -5 12 0 q6 -5 12 0 q6 -5 12 0 q6 -5 12 0\" stroke=\"#3A3A3A\" stroke-width=\"3\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M188 92 q6 -5 12 0 q6 -5 12 0 q6 -5 12 0 q6 5 12 0 q6 5 12 0 q6 -5 12 0 q6 -5 12 0\" stroke=\"#3A3A3A\" stroke-width=\"3\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M188 118 q6 -5 12 0 q6 5 12 0 q6 -5 12 0 q6 -5 12 0 q6 -5 12 0 q6 -5 12 0 q6 -5 12 0 q6 5 12 0\" stroke=\"#3A3A3A\" stroke-width=\"3\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M188 144 q6 -5 12 0 q6 5 12 0 q6 5 12 0 q6 5 12 0 q6 -5 12 0 q6 5 12 0 q6 5 12 0 q6 -5 12 0 q6 5 12 0 q6 5 12 0 q6 -5 12 0\" stroke=\"#3A3A3A\" stroke-width=\"3\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M188 170 q6 -5 12 0 q6 -5 12 0 q6 5 12 0 q6 -5 12 0 q6 -5 12 0 q6 5 12 0 q6 -5 12 0 q6 5 12 0 q6 5 12 0 q6 5 12 0\" stroke=\"#3A3A3A\" stroke-width=\"3\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M188 196 q6 5 12 0 q6 5 12 0 q6 5 12 0 q6 5 12 0 q6 -5 12 0 q6 -5 12 0 q6 -5 12 0 q6 5 12 0\" stroke=\"#3A3A3A\" stroke-width=\"3\" fill=\"none\" stroke-linecap=\"round\"/></svg>",
-     "x": 300,
-     "y": 560,
-     "anchor": "c",
-     "z": 30,
-     "in": {
-      "type": "pop",
-      "at": 0.05,
-      "dur": 0.6
-     },
-     "out": {
-      "at": 1.25,
-      "type": "fade",
-      "dur": 0.25
-     },
-     "rot": -3,
-     "scale": 1.9
     },
     {
      "type": "svg",
@@ -6744,7 +6718,7 @@
       "type": "bob",
       "amp": 2,
       "speed": 0.5,
-      "phase": 0.0
+      "phase": 0.3
      },
      "out": {
       "at": 2.75,
@@ -6860,22 +6834,22 @@
     },
     {
      "type": "cutout",
-     "src": "assets/figures/mohammad-alyousifi_formal.png",
-     "x": 610,
-     "y": 1760,
-     "h": 1098,
-     "aspect": 0.35889377749842866,
+     "src": "assets/gen/designer_cut.png",
+     "x": 520,
+     "y": 1700,
+     "h": 1300,
+     "aspect": 0.45468509984639016,
      "z": 58,
      "edge": 0,
-     "in": {
-      "type": "fade",
-      "at": 3.6
-     },
      "idle": {
       "type": "bob",
       "amp": 2,
-      "speed": 0.5,
-      "phase": 0.3
+      "speed": 0.5
+     },
+     "in": {
+      "type": "fade",
+      "at": 3.6,
+      "dur": 0.2
      },
      "out": {
       "at": 4.2,
@@ -6946,22 +6920,22 @@
     },
     {
      "type": "cutout",
-     "src": "assets/figures/ali-alyousifi_formal.png",
-     "x": 230,
-     "y": 1500,
-     "h": 905,
-     "aspect": 0.3995021779713752,
+     "src": "assets/gen/presenter_cut.png",
+     "x": 240,
+     "y": 1650,
+     "h": 1250,
+     "aspect": 0.40077220077220077,
      "z": 20,
      "edge": 0,
-     "in": {
-      "type": "fade",
-      "at": 4.25
-     },
      "idle": {
       "type": "bob",
       "amp": 2,
-      "speed": 0.5,
-      "phase": 1.2
+      "speed": 0.5
+     },
+     "in": {
+      "type": "fade",
+      "at": 4.25,
+      "dur": 0.2
      },
      "out": {
       "at": 6.35,
@@ -7004,33 +6978,6 @@
      "in": {
       "type": "none",
       "at": 4.2
-     },
-     "out": {
-      "at": 6.35,
-      "type": "fade",
-      "dur": 0.05
-     }
-    },
-    {
-     "type": "mic",
-     "x": 300,
-     "y": [
-      [
-       4.3,
-       1600
-      ],
-      [
-       4.8,
-       1160,
-       "outBack"
-      ]
-     ],
-     "size": 1.9,
-     "z": 40,
-     "depth": 1.5,
-     "in": {
-      "type": "none",
-      "at": 4.3
      },
      "out": {
       "at": 6.35,
@@ -9034,22 +8981,22 @@
     },
     {
      "type": "cutout",
-     "src": "assets/figures/ali-alramadhan_formal.png",
-     "x": 230,
-     "y": 1450,
-     "h": 900,
-     "aspect": 0.3944615384615385,
+     "src": "assets/gen/writer_cut.png",
+     "x": 190,
+     "y": 1310,
+     "h": 860,
+     "aspect": 0.5714285714285714,
      "z": 18,
      "edge": 0,
-     "in": {
-      "type": "rise",
-      "at": 0.1
-     },
      "idle": {
       "type": "bob",
       "amp": 2,
-      "speed": 0.5,
-      "phase": 0.0
+      "speed": 0.5
+     },
+     "in": {
+      "type": "fade",
+      "at": 0.1,
+      "dur": 0.2
      }
     },
     {
@@ -9095,22 +9042,22 @@
     },
     {
      "type": "cutout",
-     "src": "assets/figures/mohammad-alyousifi_formal.png",
-     "x": 760,
-     "y": 1350,
-     "h": 783,
-     "aspect": 0.35889377749842866,
+     "src": "assets/gen/designer_cut.png",
+     "x": 720,
+     "y": 1380,
+     "h": 880,
+     "aspect": 0.45468509984639016,
      "z": 18,
      "edge": 0,
-     "in": {
-      "type": "rise",
-      "at": 0.2
-     },
      "idle": {
       "type": "bob",
       "amp": 2,
-      "speed": 0.5,
-      "phase": 0.3
+      "speed": 0.5
+     },
+     "in": {
+      "type": "fade",
+      "at": 0.2,
+      "dur": 0.2
      }
     },
     {
@@ -9118,7 +9065,7 @@
      "w": 200,
      "h": 250,
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"200\" height=\"250\" viewBox=\"0 0 200 250\" style=\"overflow:visible;filter:drop-shadow(0 4px 3px rgba(0,0,0,.28))\"><rect width=\"200\" height=\"250\" fill=\"#F4F1EA\"/><rect x=\"0\" y=\"0\" width=\"200\" height=\"14\" fill=\"#C9A35F\"/><rect x=\"40\" y=\"30\" width=\"120\" height=\"120\" fill=\"#FFFFFF\"/><rect x=\"18\" y=\"186\" width=\"35\" height=\"44\" fill=\"#111111\"/><rect x=\"59\" y=\"186\" width=\"35\" height=\"44\" fill=\"#F3F0E8\"/><rect x=\"100\" y=\"186\" width=\"35\" height=\"44\" fill=\"#C9A35F\"/><rect x=\"141\" y=\"186\" width=\"35\" height=\"44\" fill=\"#7E848B\"/></svg>",
-     "x": 600,
+     "x": 560,
      "y": 1000,
      "anchor": "b",
      "z": 22,
@@ -9131,7 +9078,7 @@
     {
      "type": "image",
      "src": "../../public/icon-512.png",
-     "x": 600,
+     "x": 560,
      "y": 840.0,
      "w": 120.0,
      "h": 120.0,
@@ -9148,7 +9095,7 @@
      "w": 270,
      "h": 330,
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"270\" height=\"330\" viewBox=\"0 0 270 330\" style=\"overflow:visible;filter:drop-shadow(0 4px 3px rgba(0,0,0,.28))\"><line x1=\"110\" y1=\"150\" x2=\"40\" y2=\"330\" stroke=\"#2A2A2D\" stroke-width=\"8\"/><line x1=\"110\" y1=\"150\" x2=\"180\" y2=\"330\" stroke=\"#2A2A2D\" stroke-width=\"8\"/><line x1=\"110\" y1=\"150\" x2=\"110\" y2=\"330\" stroke=\"#2A2A2D\" stroke-width=\"8\"/><rect x=\"40\" y=\"70\" width=\"140\" height=\"86\" rx=\"10\" fill=\"#26272B\"/><rect x=\"180\" y=\"92\" width=\"34\" height=\"44\" fill=\"#26272B\"/><circle cx=\"232\" cy=\"114\" r=\"30\" fill=\"#1A1A1D\"/><circle cx=\"232\" cy=\"114\" r=\"18\" fill=\"#3E4652\"/><circle cx=\"225\" cy=\"107\" r=\"5\" fill=\"#9FB2C4\"/><rect x=\"60\" y=\"52\" width=\"40\" height=\"20\" fill=\"#26272B\"/><circle cx=\"160\" cy=\"88\" r=\"8\" fill=\"#C8102E\"/></svg>",
-     "x": 930,
+     "x": 880,
      "y": 1100,
      "anchor": "b",
      "z": 30,
@@ -9168,7 +9115,7 @@
      "w": 160,
      "h": 360,
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"160\" height=\"360\" viewBox=\"0 0 160 360\" style=\"overflow:visible;filter:drop-shadow(0 4px 3px rgba(0,0,0,.28))\"><circle cx=\"80\" cy=\"80\" r=\"70\" fill=\"none\" stroke=\"#F6F0DC\" stroke-width=\"18\"/><circle cx=\"80\" cy=\"80\" r=\"70\" fill=\"none\" stroke=\"#FFFFFF\" stroke-width=\"6\" opacity=\".8\"/><line x1=\"80\" y1=\"150\" x2=\"80\" y2=\"330\" stroke=\"#2A2A2D\" stroke-width=\"7\"/><line x1=\"80\" y1=\"330\" x2=\"30\" y2=\"360\" stroke=\"#2A2A2D\" stroke-width=\"7\"/><line x1=\"80\" y1=\"330\" x2=\"130\" y2=\"360\" stroke=\"#2A2A2D\" stroke-width=\"7\"/></svg>",
-     "x": 1060,
+     "x": 970,
      "y": 1050,
      "anchor": "b",
      "z": 29,
@@ -9185,22 +9132,22 @@
     },
     {
      "type": "cutout",
-     "src": "assets/figures/ali-alyousifi_formal.png",
-     "x": 1250,
-     "y": 1450,
-     "h": 796,
-     "aspect": 0.3995021779713752,
+     "src": "assets/gen/podcast_cut.png",
+     "x": 1270,
+     "y": 1420,
+     "h": 900,
+     "aspect": 0.5781499202551834,
      "z": 18,
      "edge": 0,
-     "in": {
-      "type": "rise",
-      "at": 0.3
-     },
      "idle": {
       "type": "bob",
       "amp": 2,
-      "speed": 0.5,
-      "phase": 1.2
+      "speed": 0.5
+     },
+     "in": {
+      "type": "fade",
+      "at": 0.3,
+      "dur": 0.2
      }
     },
     {
@@ -9208,7 +9155,7 @@
      "w": 220,
      "h": 330,
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"220\" height=\"330\" viewBox=\"0 0 220 330\" style=\"overflow:visible;filter:drop-shadow(0 4px 3px rgba(0,0,0,.28))\"><g transform=\"translate(220 0) scale(-1 1)\"><ellipse cx=\"110\" cy=\"70\" rx=\"52\" ry=\"60\" fill=\"#3D3F45\"/><path d=\"M10 330 Q10 170 110 150 Q210 170 210 330Z\" fill=\"#3D3F45\"/><path d=\"M70 165 L110 230 L150 165\" fill=\"none\" stroke=\"#F3F0E8\" stroke-width=\"6\"/></g></svg>",
-     "x": 1500,
+     "x": 1540,
      "y": 1110,
      "anchor": "b",
      "z": 14,
@@ -9224,7 +9171,7 @@
      "w": 760,
      "h": 260,
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"760\" height=\"260\" viewBox=\"0 0 760 260\" style=\"overflow:visible;\"><rect width=\"760\" height=\"260\" fill=\"#7A5C42\"/></svg>",
-     "x": 1370,
+     "x": 1400,
      "y": 1170,
      "anchor": "c",
      "z": 25,
@@ -9232,18 +9179,7 @@
     },
     {
      "type": "mic",
-     "x": 1330,
-     "y": 1060,
-     "size": 1.0,
-     "z": 30,
-     "in": {
-      "type": "drop",
-      "at": 0.5
-     }
-    },
-    {
-     "type": "mic",
-     "x": 1450,
+     "x": 1480,
      "y": 1060,
      "size": 1.0,
      "z": 30,
@@ -9373,7 +9309,7 @@
     "y": [
      [
       0,
-      1000
+      880
      ],
      [
       2.2,
@@ -10561,80 +10497,25 @@
     },
     {
      "type": "cutout",
-     "src": "assets/figures/ali-alramadhan_kuwaiti.png",
-     "x": 130,
-     "y": 1500,
-     "h": 1050,
-     "aspect": 0.419740777666999,
+     "src": "assets/gen/table_cut.png",
+     "x": 360,
+     "y": 1330,
+     "h": 1000,
+     "aspect": 0.916219119226638,
      "z": 10,
      "edge": 0,
      "idle": {
       "type": "bob",
       "amp": 2,
-      "speed": 0.5,
-      "phase": 0.0
+      "speed": 0.5
      }
-    },
-    {
-     "type": "cutout",
-     "src": "assets/figures/mohammad-alyousifi_kuwaiti.png",
-     "x": 360,
-     "y": 1440,
-     "h": 955,
-     "aspect": 0.4110429447852761,
-     "z": 9,
-     "edge": 0,
-     "idle": {
-      "type": "bob",
-      "amp": 2,
-      "speed": 0.5,
-      "phase": 0.3
-     }
-    },
-    {
-     "type": "cutout",
-     "src": "assets/figures/ali-alyousifi_kuwaiti.png",
-     "x": 590,
-     "y": 1500,
-     "h": 950,
-     "aspect": 0.4068891280947255,
-     "z": 10,
-     "edge": 0,
-     "idle": {
-      "type": "bob",
-      "amp": 2,
-      "speed": 0.5,
-      "phase": 1.2
-     }
-    },
-    {
-     "type": "svg",
-     "w": 760,
-     "h": 36,
-     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"760\" height=\"36\" viewBox=\"0 0 760 36\" style=\"overflow:visible;\"><rect width=\"760\" height=\"36\" fill=\"#8A6A48\"/></svg>",
-     "x": 360,
-     "y": 1068,
-     "anchor": "c",
-     "z": 20,
-     "still": true
-    },
-    {
-     "type": "svg",
-     "w": 760,
-     "h": 210,
-     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"760\" height=\"210\" viewBox=\"0 0 760 210\" style=\"overflow:visible;\"><rect width=\"760\" height=\"210\" fill=\"#6E5238\"/></svg>",
-     "x": 360,
-     "y": 1190,
-     "anchor": "c",
-     "z": 20,
-     "still": true
     },
     {
      "type": "cutout",
      "src": "assets/watches/w3.png",
-     "x": 250,
-     "y": 1062,
-     "h": 200,
+     "x": 260,
+     "y": 950.0,
+     "h": 64,
      "aspect": 0.53,
      "edge": 3,
      "z": 25,
@@ -10643,9 +10524,9 @@
     {
      "type": "cutout",
      "src": "assets/watches/w1.png",
-     "x": 400,
-     "y": 1062,
-     "h": 190,
+     "x": 365,
+     "y": 953.0,
+     "h": 62,
      "aspect": 0.597,
      "edge": 3,
      "z": 25,
@@ -10654,9 +10535,9 @@
     {
      "type": "cutout",
      "src": "assets/watches/w5.png",
-     "x": 530,
-     "y": 1062,
-     "h": 180,
+     "x": 465,
+     "y": 950.0,
+     "h": 58,
      "aspect": 0.473,
      "edge": 3,
      "z": 25,
@@ -10664,17 +10545,17 @@
     },
     {
      "type": "cup",
-     "x": 110,
-     "y": 1060,
-     "size": 0.6,
+     "x": 150,
+     "y": 952.0,
+     "size": 0.45,
      "z": 24,
      "anchor": "b"
     },
     {
      "type": "cup",
-     "x": 620,
-     "y": 1060,
-     "size": 0.6,
+     "x": 575,
+     "y": 952.0,
+     "size": 0.45,
      "z": 24,
      "anchor": "b"
     },
@@ -10683,119 +10564,119 @@
      "w": 28,
      "h": 84,
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"28\" height=\"84\" viewBox=\"0 0 28 84\" style=\"overflow:visible;\"><path d=\"M14 80 q-12 -14 0 -28 q12 -14 0 -28 q-12 -12 0 -24\" stroke=\"#F4F1EA\" stroke-width=\"5\" fill=\"none\" stroke-linecap=\"round\"/></svg>",
-     "x": 96,
+     "x": 136,
      "y": [
       [
        0.0,
-       1010
+       910.0
       ],
       [
        0.4,
-       992
+       892.0
       ],
       [
        1.2,
-       956
+       856.0
       ],
       [
        1.6,
-       940
+       840.0
       ],
       [
        1.6,
-       1010
+       910.0
       ],
       [
        2.0,
-       992
+       892.0
       ],
       [
        2.8,
-       956
+       856.0
       ],
       [
        3.2,
-       940
+       840.0
       ],
       [
        3.2,
-       1010
+       910.0
       ],
       [
        3.6,
-       992
+       892.0
       ],
       [
        4.4,
-       956
+       856.0
       ],
       [
        4.8,
-       940
+       840.0
       ],
       [
        4.8,
-       1010
+       910.0
       ],
       [
        5.2,
-       992
+       892.0
       ],
       [
        6.0,
-       956
+       856.0
       ],
       [
        6.4,
-       940
+       840.0
       ],
       [
        6.4,
-       1010
+       910.0
       ],
       [
        6.8,
-       992
+       892.0
       ],
       [
        7.6,
-       956
+       856.0
       ],
       [
        8.0,
-       940
+       840.0
       ],
       [
        8.0,
-       1010
+       910.0
       ],
       [
        8.4,
-       992
+       892.0
       ],
       [
        9.2,
-       956
+       856.0
       ],
       [
        9.6,
-       940
+       840.0
       ],
       [
        9.6,
-       1010
+       910.0
       ],
       [
        10.0,
-       992
+       892.0
       ],
       [
        10.8,
-       956
+       856.0
       ],
       [
        11.2,
-       940
+       840.0
       ]
      ],
      "anchor": "b",
@@ -10921,111 +10802,111 @@
      "w": 28,
      "h": 84,
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"28\" height=\"84\" viewBox=\"0 0 28 84\" style=\"overflow:visible;\"><path d=\"M14 80 q-12 -14 0 -28 q12 -14 0 -28 q-12 -12 0 -24\" stroke=\"#F4F1EA\" stroke-width=\"5\" fill=\"none\" stroke-linecap=\"round\"/></svg>",
-     "x": 110,
+     "x": 150,
      "y": [
       [
        0.667,
-       956
+       856.0
       ],
       [
        1.067,
-       940
+       840.0
       ],
       [
        1.067,
-       1010
+       910.0
       ],
       [
        1.467,
-       992
+       892.0
       ],
       [
        2.267,
-       956
+       856.0
       ],
       [
        2.667,
-       940
+       840.0
       ],
       [
        2.667,
-       1010
+       910.0
       ],
       [
        3.067,
-       992
+       892.0
       ],
       [
        3.867,
-       956
+       856.0
       ],
       [
        4.267,
-       940
+       840.0
       ],
       [
        4.267,
-       1010
+       910.0
       ],
       [
        4.667,
-       992
+       892.0
       ],
       [
        5.467,
-       956
+       856.0
       ],
       [
        5.867,
-       940
+       840.0
       ],
       [
        5.867,
-       1010
+       910.0
       ],
       [
        6.267,
-       992
+       892.0
       ],
       [
        7.067,
-       956
+       856.0
       ],
       [
        7.467,
-       940
+       840.0
       ],
       [
        7.467,
-       1010
+       910.0
       ],
       [
        7.867,
-       992
+       892.0
       ],
       [
        8.667,
-       956
+       856.0
       ],
       [
        9.067,
-       940
+       840.0
       ],
       [
        9.067,
-       1010
+       910.0
       ],
       [
        9.467,
-       992
+       892.0
       ],
       [
        10.267,
-       956
+       856.0
       ],
       [
        10.667,
-       940
+       840.0
       ]
      ],
      "anchor": "b",
@@ -11143,127 +11024,127 @@
      "w": 28,
      "h": 84,
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"28\" height=\"84\" viewBox=\"0 0 28 84\" style=\"overflow:visible;\"><path d=\"M14 80 q-12 -14 0 -28 q12 -14 0 -28 q-12 -12 0 -24\" stroke=\"#F4F1EA\" stroke-width=\"5\" fill=\"none\" stroke-linecap=\"round\"/></svg>",
-     "x": 124,
+     "x": 164,
      "y": [
       [
        0.133,
-       956
+       856.0
       ],
       [
        0.533,
-       940
+       840.0
       ],
       [
        0.533,
-       1010
+       910.0
       ],
       [
        0.933,
-       992
+       892.0
       ],
       [
        1.733,
-       956
+       856.0
       ],
       [
        2.133,
-       940
+       840.0
       ],
       [
        2.133,
-       1010
+       910.0
       ],
       [
        2.533,
-       992
+       892.0
       ],
       [
        3.333,
-       956
+       856.0
       ],
       [
        3.733,
-       940
+       840.0
       ],
       [
        3.733,
-       1010
+       910.0
       ],
       [
        4.133,
-       992
+       892.0
       ],
       [
        4.933,
-       956
+       856.0
       ],
       [
        5.333,
-       940
+       840.0
       ],
       [
        5.333,
-       1010
+       910.0
       ],
       [
        5.733,
-       992
+       892.0
       ],
       [
        6.533,
-       956
+       856.0
       ],
       [
        6.933,
-       940
+       840.0
       ],
       [
        6.933,
-       1010
+       910.0
       ],
       [
        7.333,
-       992
+       892.0
       ],
       [
        8.133,
-       956
+       856.0
       ],
       [
        8.533,
-       940
+       840.0
       ],
       [
        8.533,
-       1010
+       910.0
       ],
       [
        8.933,
-       992
+       892.0
       ],
       [
        9.733,
-       956
+       856.0
       ],
       [
        10.133,
-       940
+       840.0
       ],
       [
        10.133,
-       1010
+       910.0
       ],
       [
        10.533,
-       992
+       892.0
       ],
       [
        11.333,
-       956
+       856.0
       ],
       [
        11.733,
-       940
+       840.0
       ]
      ],
      "anchor": "b",
@@ -11397,119 +11278,119 @@
      "w": 28,
      "h": 84,
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"28\" height=\"84\" viewBox=\"0 0 28 84\" style=\"overflow:visible;\"><path d=\"M14 80 q-12 -14 0 -28 q12 -14 0 -28 q-12 -12 0 -24\" stroke=\"#F4F1EA\" stroke-width=\"5\" fill=\"none\" stroke-linecap=\"round\"/></svg>",
-     "x": 606,
+     "x": 561,
      "y": [
       [
        0.5,
-       1010
+       910.0
       ],
       [
        0.9,
-       992
+       892.0
       ],
       [
        1.7,
-       956
+       856.0
       ],
       [
        2.1,
-       940
+       840.0
       ],
       [
        2.1,
-       1010
+       910.0
       ],
       [
        2.5,
-       992
+       892.0
       ],
       [
        3.3,
-       956
+       856.0
       ],
       [
        3.7,
-       940
+       840.0
       ],
       [
        3.7,
-       1010
+       910.0
       ],
       [
        4.1,
-       992
+       892.0
       ],
       [
        4.9,
-       956
+       856.0
       ],
       [
        5.3,
-       940
+       840.0
       ],
       [
        5.3,
-       1010
+       910.0
       ],
       [
        5.7,
-       992
+       892.0
       ],
       [
        6.5,
-       956
+       856.0
       ],
       [
        6.9,
-       940
+       840.0
       ],
       [
        6.9,
-       1010
+       910.0
       ],
       [
        7.3,
-       992
+       892.0
       ],
       [
        8.1,
-       956
+       856.0
       ],
       [
        8.5,
-       940
+       840.0
       ],
       [
        8.5,
-       1010
+       910.0
       ],
       [
        8.9,
-       992
+       892.0
       ],
       [
        9.7,
-       956
+       856.0
       ],
       [
        10.1,
-       940
+       840.0
       ],
       [
        10.1,
-       1010
+       910.0
       ],
       [
        10.5,
-       992
+       892.0
       ],
       [
        11.3,
-       956
+       856.0
       ],
       [
        11.7,
-       940
+       840.0
       ]
      ],
      "anchor": "b",
@@ -11635,115 +11516,115 @@
      "w": 28,
      "h": 84,
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"28\" height=\"84\" viewBox=\"0 0 28 84\" style=\"overflow:visible;\"><path d=\"M14 80 q-12 -14 0 -28 q12 -14 0 -28 q-12 -12 0 -24\" stroke=\"#F4F1EA\" stroke-width=\"5\" fill=\"none\" stroke-linecap=\"round\"/></svg>",
-     "x": 620,
+     "x": 575,
      "y": [
       [
        0.367,
-       992
+       892.0
       ],
       [
        1.167,
-       956
+       856.0
       ],
       [
        1.567,
-       940
+       840.0
       ],
       [
        1.567,
-       1010
+       910.0
       ],
       [
        1.967,
-       992
+       892.0
       ],
       [
        2.767,
-       956
+       856.0
       ],
       [
        3.167,
-       940
+       840.0
       ],
       [
        3.167,
-       1010
+       910.0
       ],
       [
        3.567,
-       992
+       892.0
       ],
       [
        4.367,
-       956
+       856.0
       ],
       [
        4.767,
-       940
+       840.0
       ],
       [
        4.767,
-       1010
+       910.0
       ],
       [
        5.167,
-       992
+       892.0
       ],
       [
        5.967,
-       956
+       856.0
       ],
       [
        6.367,
-       940
+       840.0
       ],
       [
        6.367,
-       1010
+       910.0
       ],
       [
        6.767,
-       992
+       892.0
       ],
       [
        7.567,
-       956
+       856.0
       ],
       [
        7.967,
-       940
+       840.0
       ],
       [
        7.967,
-       1010
+       910.0
       ],
       [
        8.367,
-       992
+       892.0
       ],
       [
        9.167,
-       956
+       856.0
       ],
       [
        9.567,
-       940
+       840.0
       ],
       [
        9.567,
-       1010
+       910.0
       ],
       [
        9.967,
-       992
+       892.0
       ],
       [
        10.767,
-       956
+       856.0
       ],
       [
        11.167,
-       940
+       840.0
       ]
      ],
      "anchor": "b",
@@ -11865,111 +11746,111 @@
      "w": 28,
      "h": 84,
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"28\" height=\"84\" viewBox=\"0 0 28 84\" style=\"overflow:visible;\"><path d=\"M14 80 q-12 -14 0 -28 q12 -14 0 -28 q-12 -12 0 -24\" stroke=\"#F4F1EA\" stroke-width=\"5\" fill=\"none\" stroke-linecap=\"round\"/></svg>",
-     "x": 634,
+     "x": 589,
      "y": [
       [
        0.633,
-       956
+       856.0
       ],
       [
        1.033,
-       940
+       840.0
       ],
       [
        1.033,
-       1010
+       910.0
       ],
       [
        1.433,
-       992
+       892.0
       ],
       [
        2.233,
-       956
+       856.0
       ],
       [
        2.633,
-       940
+       840.0
       ],
       [
        2.633,
-       1010
+       910.0
       ],
       [
        3.033,
-       992
+       892.0
       ],
       [
        3.833,
-       956
+       856.0
       ],
       [
        4.233,
-       940
+       840.0
       ],
       [
        4.233,
-       1010
+       910.0
       ],
       [
        4.633,
-       992
+       892.0
       ],
       [
        5.433,
-       956
+       856.0
       ],
       [
        5.833,
-       940
+       840.0
       ],
       [
        5.833,
-       1010
+       910.0
       ],
       [
        6.233,
-       992
+       892.0
       ],
       [
        7.033,
-       956
+       856.0
       ],
       [
        7.433,
-       940
+       840.0
       ],
       [
        7.433,
-       1010
+       910.0
       ],
       [
        7.833,
-       992
+       892.0
       ],
       [
        8.633,
-       956
+       856.0
       ],
       [
        9.033,
-       940
+       840.0
       ],
       [
        9.033,
-       1010
+       910.0
       ],
       [
        9.433,
-       992
+       892.0
       ],
       [
        10.233,
-       956
+       856.0
       ],
       [
        10.633,
-       940
+       840.0
       ]
      ],
      "anchor": "b",
@@ -12123,14 +12004,14 @@
      ],
      [
       8.6,
-      1.18,
+      1.25,
       "inOutSine"
      ]
     ],
     "x": [
      [
       0,
-      390
+      365
      ],
      [
       3.4,
@@ -12140,11 +12021,11 @@
     "y": [
      [
       0,
-      1010
+      900.0
      ],
      [
       1.0,
-      1010
+      900.0
      ],
      [
       3.4,
@@ -12153,7 +12034,7 @@
      ],
      [
       8.6,
-      600
+      620
      ]
     ]
    },
