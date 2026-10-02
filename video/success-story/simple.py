@@ -94,12 +94,12 @@ S(10, 5.0, 'tk-ink', 'ووصلنا جنيف… | قلب صناعة الساعا�
            highlight=[{"n": "Kuwait", "color": "#111111"}, {"n": "Switzerland", "at": 3.0, "color": "#111111"}], y=450 if fo else 580, h=460 if fo else 640)] + fig('formal', at=2.6))
 S(11, 5.5, 'tk-graphite', 'وفي ٢٠٢٢… | فتحنا صالة تايم كيبر. | مكان يجتمع فيه | محبين الساعات.', banner='2022', floor=fo,
   sfx=[{"at": 1.4, "name": "paper_place", "gain": -10}, {"at": 3.6, "name": "door_chime", "gain": -12}],
-  els=[{"type": "door", "x": 470 if fo else 360, "y": 600 if fo else 620, "w": 250 if fo else 300, "h": 450 if fo else 540, "sign": "TIME KEEPER LOUNGE", "open": [[2.6, 0], [4.2, 1, "outBack"]], "in": {"type": "rise", "at": 0.5, "dur": 0.7}}] + fig('formal', x=210, h=330, at=3.4))
+  els=[{"type": "door", "x": 470 if fo else 360, "y": 600 if fo else 620, "w": 250 if fo else 300, "h": 450 if fo else 540, "sign": "TIME KEEPER LOUNGE", "open": [[2.6, 0], [4.2, 1, "outBack"]], "in": {"type": "rise", "at": 0.5, "dur": 0.7}}] + fig('formal', x=185, h=300, at=3.4))
 S(12, 4.4, 'tk-linen', 'وبعدها… | تايم غاليري.', floor=True, banner='TIME GALLERY', sfx=[{"at": 1.0, "name": "paper_place", "gain": -10}],
   els=[{"type": "photo", "src": "assets/ep3_timegallery_store.jpg", "x": 360, "y": 560, "w": 560, "aspect": 1.589, "label": "تايم غاليري", "rot": [[0, -8], [0.9, -2.5, "outBack"]], "in": {"type": "drop", "at": 0.5, "dur": 0.6}}])
 S(13, 4.0, 'tk-bone', 'والأفنيوز.', floor=True, banner='THE AVENUES', sfx=[{"at": 0.6, "name": "paper_slide", "gain": -12}, {"at": 2.4, "name": "door_chime", "gain": -12}],
   els=[{"type": "building", "x": 470 if fo else 360, "y": 960, "w": 330 if fo else 380, "h": 600, "color": "#D2CABA", "cols": 3, "rows": 7, "lit": .25, "glass": "#C9CDD2", "litColor": "#EFE8D5", "in": {"type": "rise", "at": 0.3, "dur": 1.0}},
-       {"type": "card", "x": 470 if fo else 360, "y": 410, "w": 260, "h": 58, "style": "dark", "label": "TIME KEEPER", "labelSize": 22, "ink": "#EDE9E0", "in": {"type": "pop", "at": 1.4}, "z": 40}] + fig('formal', x=190, h=320, at=1.8))
+       {"type": "card", "x": 470 if fo else 360, "y": 410, "w": 260, "h": 58, "style": "dark", "label": "TIME KEEPER", "labelSize": 22, "ink": "#EDE9E0", "in": {"type": "pop", "at": 1.4}, "z": 40}] + fig('formal', x=170, h=300, at=1.8))
 table = [{"type": "watch", "x": 360, "y": 430, "size": 440, "strap": False, "numerals": "arabic", "date": False, "opacity": .2, "behind": True, "still": True, "time": [10, 9, 0]},
          {"type": "card", "x": 360, "y": 845, "w": 560, "h": 34, "tex": "wood", "color": "#fff", "z": 20},
          {"type": "card", "x": 120, "y": 907, "w": 22, "h": 90, "tex": "wood", "color": "#fff", "z": 19}, {"type": "card", "x": 600, "y": 907, "w": 22, "h": 90, "tex": "wood", "color": "#fff", "z": 19}]

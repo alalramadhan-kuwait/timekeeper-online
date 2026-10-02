@@ -194,12 +194,12 @@
     },
     {
      "type": "cutout",
-     "src": "assets/figures/mohammad-alyousifi_casual.png",
-     "x": 360,
+     "src": "assets/figures/ali-alramadhan_casual.png",
+     "x": 281.8,
      "y": 960,
      "h": 340,
-     "aspect": 0.36079900124843944,
-     "z": 13,
+     "aspect": 0.3584672435105068,
+     "z": 12,
      "edge": 0,
      "in": {
       "type": "rise",
@@ -210,6 +210,26 @@
       "amp": 2,
       "speed": 0.5,
       "phase": 0.0
+     }
+    },
+    {
+     "type": "cutout",
+     "src": "assets/figures/mohammad-alyousifi_casual.png",
+     "x": 438.2,
+     "y": 960,
+     "h": 340,
+     "aspect": 0.36079900124843944,
+     "z": 12,
+     "edge": 0,
+     "in": {
+      "type": "rise",
+      "at": 1.2
+     },
+     "idle": {
+      "type": "bob",
+      "amp": 2,
+      "speed": 0.5,
+      "phase": 0.3
      }
     }
    ],
@@ -294,12 +314,12 @@
     },
     {
      "type": "cutout",
-     "src": "assets/figures/mohammad-alyousifi_kuwaiti.png",
-     "x": 300,
+     "src": "assets/figures/ali-alramadhan_kuwaiti.png",
+     "x": 221.8,
      "y": 960,
      "h": 340,
-     "aspect": 0.4110429447852761,
-     "z": 13,
+     "aspect": 0.419740777666999,
+     "z": 12,
      "edge": 0,
      "in": {
       "type": "rise",
@@ -310,6 +330,26 @@
       "amp": 2,
       "speed": 0.5,
       "phase": 0.0
+     }
+    },
+    {
+     "type": "cutout",
+     "src": "assets/figures/mohammad-alyousifi_kuwaiti.png",
+     "x": 378.2,
+     "y": 960,
+     "h": 340,
+     "aspect": 0.4110429447852761,
+     "z": 12,
+     "edge": 0,
+     "in": {
+      "type": "rise",
+      "at": 3.6
+     },
+     "idle": {
+      "type": "bob",
+      "amp": 2,
+      "speed": 0.5,
+      "phase": 0.3
      }
     }
    ],
@@ -817,12 +857,12 @@
     },
     {
      "type": "cutout",
-     "src": "assets/figures/mohammad-alyousifi_formal.png",
-     "x": 250,
+     "src": "assets/figures/ali-alramadhan_formal.png",
+     "x": 171.8,
      "y": 960,
      "h": 340,
-     "aspect": 0.35889377749842866,
-     "z": 13,
+     "aspect": 0.3944615384615385,
+     "z": 12,
      "edge": 0,
      "in": {
       "type": "rise",
@@ -833,6 +873,26 @@
       "amp": 2,
       "speed": 0.5,
       "phase": 0.0
+     }
+    },
+    {
+     "type": "cutout",
+     "src": "assets/figures/mohammad-alyousifi_formal.png",
+     "x": 328.2,
+     "y": 960,
+     "h": 340,
+     "aspect": 0.35889377749842866,
+     "z": 12,
+     "edge": 0,
+     "in": {
+      "type": "rise",
+      "at": 1.4
+     },
+     "idle": {
+      "type": "bob",
+      "amp": 2,
+      "speed": 0.5,
+      "phase": 0.3
      }
     }
    ],
@@ -928,12 +988,12 @@
     },
     {
      "type": "cutout",
-     "src": "assets/figures/mohammad-alyousifi_formal.png",
-     "x": 360,
+     "src": "assets/figures/ali-alramadhan_formal.png",
+     "x": 281.8,
      "y": 960,
      "h": 340,
-     "aspect": 0.35889377749842866,
-     "z": 13,
+     "aspect": 0.3944615384615385,
+     "z": 12,
      "edge": 0,
      "in": {
       "type": "rise",
@@ -944,6 +1004,26 @@
       "amp": 2,
       "speed": 0.5,
       "phase": 0.0
+     }
+    },
+    {
+     "type": "cutout",
+     "src": "assets/figures/mohammad-alyousifi_formal.png",
+     "x": 438.2,
+     "y": 960,
+     "h": 340,
+     "aspect": 0.35889377749842866,
+     "z": 12,
+     "edge": 0,
+     "in": {
+      "type": "rise",
+      "at": 2.8000000000000003
+     },
+     "idle": {
+      "type": "bob",
+      "amp": 2,
+      "speed": 0.5,
+      "phase": 0.3
      }
     }
    ],
@@ -990,12 +1070,12 @@
     },
     {
      "type": "cutout",
-     "src": "assets/figures/mohammad-alyousifi_formal.png",
-     "x": 210,
+     "src": "assets/figures/ali-alramadhan_formal.png",
+     "x": 116.0,
      "y": 960,
-     "h": 330,
-     "aspect": 0.35889377749842866,
-     "z": 13,
+     "h": 300,
+     "aspect": 0.3944615384615385,
+     "z": 12,
      "edge": 0,
      "in": {
       "type": "rise",
@@ -1006,6 +1086,26 @@
       "amp": 2,
       "speed": 0.5,
       "phase": 0.0
+     }
+    },
+    {
+     "type": "cutout",
+     "src": "assets/figures/mohammad-alyousifi_formal.png",
+     "x": 254.0,
+     "y": 960,
+     "h": 300,
+     "aspect": 0.35889377749842866,
+     "z": 12,
+     "edge": 0,
+     "in": {
+      "type": "rise",
+      "at": 3.6
+     },
+     "idle": {
+      "type": "bob",
+      "amp": 2,
+      "speed": 0.5,
+      "phase": 0.3
      }
     }
    ],
@@ -1110,12 +1210,12 @@
     },
     {
      "type": "cutout",
-     "src": "assets/figures/mohammad-alyousifi_formal.png",
-     "x": 190,
+     "src": "assets/figures/ali-alramadhan_formal.png",
+     "x": 101.0,
      "y": 960,
-     "h": 320,
-     "aspect": 0.35889377749842866,
-     "z": 13,
+     "h": 300,
+     "aspect": 0.3944615384615385,
+     "z": 12,
      "edge": 0,
      "in": {
       "type": "rise",
@@ -1126,6 +1226,26 @@
       "amp": 2,
       "speed": 0.5,
       "phase": 0.0
+     }
+    },
+    {
+     "type": "cutout",
+     "src": "assets/figures/mohammad-alyousifi_formal.png",
+     "x": 239.0,
+     "y": 960,
+     "h": 300,
+     "aspect": 0.35889377749842866,
+     "z": 12,
+     "edge": 0,
+     "in": {
+      "type": "rise",
+      "at": 2.0
+     },
+     "idle": {
+      "type": "bob",
+      "amp": 2,
+      "speed": 0.5,
+      "phase": 0.3
      }
     }
    ],
@@ -1200,12 +1320,12 @@
     },
     {
      "type": "cutout",
-     "src": "assets/figures/mohammad-alyousifi_kuwaiti.png",
-     "x": 360,
+     "src": "assets/figures/ali-alramadhan_kuwaiti.png",
+     "x": 258.8,
      "y": 960,
      "h": 440,
-     "aspect": 0.4110429447852761,
-     "z": 11,
+     "aspect": 0.419740777666999,
+     "z": 10,
      "edge": 0,
      "in": {
       "type": "rise",
@@ -1216,6 +1336,26 @@
       "amp": 2,
       "speed": 0.5,
       "phase": 0.0
+     }
+    },
+    {
+     "type": "cutout",
+     "src": "assets/figures/mohammad-alyousifi_kuwaiti.png",
+     "x": 461.2,
+     "y": 960,
+     "h": 440,
+     "aspect": 0.4110429447852761,
+     "z": 10,
+     "edge": 0,
+     "in": {
+      "type": "rise",
+      "at": 0.6000000000000001
+     },
+     "idle": {
+      "type": "bob",
+      "amp": 2,
+      "speed": 0.5,
+      "phase": 0.3
      }
     },
     {

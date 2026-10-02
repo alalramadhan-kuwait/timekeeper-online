@@ -18,7 +18,9 @@ else:
     bg = tuple(sorted(c[i] for c in border)[len(border) // 2] for i in range(3))
     neutral = lambda c: max(c[:3]) - min(c[:3]) <= a.ntol
     lum = sorted(sum(c[:3]) / 3 for c in border)
-    checker = a.checker or (all(neutral(c) for c in border) and lum[int(len(lum) * .9)] - lum[int(len(lum) * .1)] > 25)
+    neut = [c for c in border if neutral(c)]
+    nl = sorted(sum(c[:3]) / 3 for c in neut)
+    checker = a.checker or (len(neut) >= .9 * len(border) and nl and nl[int(len(nl) * .95)] - nl[int(len(nl) * .05)] > 30)
     if checker:
         # a fake-transparency checkerboard baked into the pixels: every grey or white pixel connected to the edge is background;
         # the figure's coloured paper border stops the fill, so white clothing inside it is kept
@@ -40,6 +42,28 @@ else:
         if y < H - 1: q.append((x, y + 1))
     mask = Image.frombytes('L', (W, H), bytes(0 if v else 255 for v in seen)).filter(ImageFilter.GaussianBlur(a.feather))
     print('checkerboard background removed' if checker else 'background #%02X%02X%02X removed' % bg)
+# keep only the largest connected piece, so slivers of a neighbouring figure at the edge are dropped
+small = mask.point(lambda v: 255 if v > 24 else 0).resize((max(1, W // 4), max(1, H // 4)))
+sw, sh = small.size; sp = small.load(); lab = [[0] * sw for _ in range(sh)]; sizes = {}; n = 0
+for y0 in range(sh):
+    for x0 in range(sw):
+        if sp[x0, y0] and not lab[y0][x0]:
+            n += 1; lab[y0][x0] = n; q = deque([(x0, y0)]); c = 0
+            while q:
+                x, y = q.popleft(); c += 1
+                for nx, ny in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
+                    if 0 <= nx < sw and 0 <= ny < sh and sp[nx, ny] and not lab[ny][nx]:
+                        lab[ny][nx] = n; q.append((nx, ny))
+            sizes[n] = c
+if len(sizes) > 1:
+    keep = max(sizes, key=sizes.get)
+    keepmask = Image.new('L', (sw, sh), 0); kp = keepmask.load()
+    for y in range(sh):
+        for x in range(sw):
+            if lab[y][x] == keep: kp[x, y] = 255
+    keepmask = keepmask.resize((W, H)).filter(ImageFilter.MaxFilter(9))
+    mask = Image.composite(mask, Image.new('L', (W, H), 0), keepmask)
+    print('dropped', len(sizes) - 1, 'small piece(s) at the edges')
 im.putalpha(mask)
 box = mask.point(lambda v: 255 if v > 24 else 0).getbbox()
 im = im.crop(box) if box else im
