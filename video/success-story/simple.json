@@ -4710,75 +4710,150 @@
    "floor": false,
    "elements": [
     {
-     "type": "igpost",
-     "src": "assets/posts/geraldcharles.jpg",
-     "avatar": "../../public/icon-512.png",
-     "sub": "Time Keeper",
-     "x": 360,
-     "y": 560,
-     "w": 420,
-     "imgH": 525,
-     "rot": [
-      [
-       0.4,
-       0
-      ],
-      [
-       1.4,
-       8
-      ]
-     ],
-     "scale": [
-      [
-       0.4,
-       1
-      ],
-      [
-       1.4,
-       0.35,
-       "inCubic"
-      ]
-     ],
-     "out": {
-      "at": 1.35,
-      "type": "fade",
-      "dur": 0.15
-     }
-    },
-    {
      "type": "box",
      "x": 360,
-     "y": 720,
-     "w": 540,
-     "h": 380,
+     "y": 900,
+     "w": 600,
+     "h": 300,
      "lid": [
       [
-       2.2,
+       0.8,
        0
       ],
       [
-       3.2,
+       1.3,
        1,
        "outBack"
       ]
      ],
      "in": {
-      "type": "pop",
-      "at": 1.4
+      "type": "rise",
+      "at": 0.2
+     },
+     "z": 40
+    },
+    {
+     "type": "cutout",
+     "src": "assets/watches/w1.png",
+     "x": 124,
+     "y": 963,
+     "h": 374,
+     "aspect": 0.597,
+     "edge": 3,
+     "rot": -6,
+     "z": 28,
+     "in": {
+      "type": "rise",
+      "at": 1.2,
+      "dur": 0.5
+     },
+     "idle": {
+      "type": "bob",
+      "amp": 3,
+      "speed": 0.6,
+      "phase": 0.0
      }
     },
     {
-     "type": "watch",
-     "x": 360,
-     "y": 660,
-     "size": 270,
-     "strap": false,
-     "numerals": "arabic",
+     "type": "cutout",
+     "src": "assets/watches/w2.png",
+     "x": 242,
+     "y": 949,
+     "h": 412,
+     "aspect": 0.61,
+     "edge": 3,
+     "rot": -3,
+     "z": 29,
      "in": {
-      "type": "pop",
-      "at": 3.0
+      "type": "rise",
+      "at": 1.45,
+      "dur": 0.5
      },
-     "z": 40
+     "idle": {
+      "type": "bob",
+      "amp": 3,
+      "speed": 0.6,
+      "phase": 0.4
+     }
+    },
+    {
+     "type": "cutout",
+     "src": "assets/watches/w3.png",
+     "x": 360,
+     "y": 935,
+     "h": 450,
+     "aspect": 0.53,
+     "edge": 3,
+     "rot": 0,
+     "z": 30,
+     "in": {
+      "type": "rise",
+      "at": 1.7,
+      "dur": 0.5
+     },
+     "idle": {
+      "type": "bob",
+      "amp": 3,
+      "speed": 0.6,
+      "phase": 0.8
+     }
+    },
+    {
+     "type": "cutout",
+     "src": "assets/watches/w4.png",
+     "x": 478,
+     "y": 949,
+     "h": 412,
+     "aspect": 0.496,
+     "edge": 3,
+     "rot": 3,
+     "z": 29,
+     "in": {
+      "type": "rise",
+      "at": 1.95,
+      "dur": 0.5
+     },
+     "idle": {
+      "type": "bob",
+      "amp": 3,
+      "speed": 0.6,
+      "phase": 1.2000000000000002
+     }
+    },
+    {
+     "type": "cutout",
+     "src": "assets/watches/w5.png",
+     "x": 596,
+     "y": 963,
+     "h": 374,
+     "aspect": 0.473,
+     "edge": 3,
+     "rot": 6,
+     "z": 28,
+     "in": {
+      "type": "rise",
+      "at": 2.2,
+      "dur": 0.5
+     },
+     "idle": {
+      "type": "bob",
+      "amp": 3,
+      "speed": 0.6,
+      "phase": 1.6
+     }
+    },
+    {
+     "type": "sparkles",
+     "x": 360,
+     "y": 480,
+     "radius": 300,
+     "count": 14,
+     "color": "#C9A35F",
+     "in": {
+      "type": "fade",
+      "at": 2.6
+     },
+     "z": 45
     }
    ],
    "dur": 4.5,
@@ -4789,19 +4864,44 @@
    "voiceAt": 0.15,
    "sfx": [
     {
-     "at": 0.8,
-     "name": "fold",
-     "gain": -10
-    },
-    {
-     "at": 1.6,
+     "at": 0.4,
      "name": "paper_place",
      "gain": -10
     },
     {
-     "at": 2.4,
-     "name": "clasp",
+     "at": 0.9,
+     "name": "fold",
      "gain": -10
+    },
+    {
+     "at": 1.2,
+     "name": "paper_slide",
+     "gain": -13
+    },
+    {
+     "at": 1.45,
+     "name": "paper_slide",
+     "gain": -13
+    },
+    {
+     "at": 1.7,
+     "name": "paper_slide",
+     "gain": -13
+    },
+    {
+     "at": 1.95,
+     "name": "paper_slide",
+     "gain": -13
+    },
+    {
+     "at": 2.2,
+     "name": "paper_slide",
+     "gain": -13
+    },
+    {
+     "at": 2.7,
+     "name": "clasp",
+     "gain": -9
     }
    ],
    "silent": true

@@ -151,10 +151,15 @@ S(7, 5.5, 'tk-graphite', 'والناس بدت تتابع… | وتسأل: | وي
   els=[{"type": "image", "src": "assets/posts/profile.jpg", "x": 360, "y": 300, "w": 660, "h": round(660 / ASPECT('profile')), "pad": 10, "rot": -1.5, "in": {"type": "drop", "at": 0.3, "dur": 0.6}, "z": 20}] +
       [{"type": "notif", "x": 360 + (i - 1) * 14, "y": 600 + i * 150, "w": 620, "name": "timekeeperkw", "initial": "؟", "text": t, "size": 30, "in": {"type": "slideD", "at": 1.2 + i * 1.4, "from": 600}, "z": 30 + i}
        for i, t in enumerate(['وين أحصلها؟', 'تقدرون توفرونها؟', 'من وين نشتريها؟'])])
-S(8, 4.5, 'tk-bone', 'فبدينا نوفر ساعات نحبها… | ونثق فيها.', silent=True, sfx=[{"at": 0.8, "name": "fold", "gain": -10}, {"at": 1.6, "name": "paper_place", "gain": -10}, {"at": 2.4, "name": "clasp", "gain": -10}],
-  els=[{**POST('geraldcharles', x=360, y=560, w=420, at=None), "scale": [[0.4, 1], [1.4, 0.35, "inCubic"]], "rot": [[0.4, 0], [1.4, 8]], "out": {"at": 1.35, "type": "fade", "dur": 0.15}},
-       {"type": "box", "x": 360, "y": 720, "w": 540, "h": 380, "lid": [[2.2, 0], [3.2, 1, "outBack"]], "in": {"type": "pop", "at": 1.4}},
-       {"type": "watch", "x": 360, "y": 660, "size": 270, "strap": False, "numerals": "arabic", "in": {"type": "pop", "at": 3.0}, "z": 40}])
+# watches the founders chose (product photos, cut out of their white backgrounds into assets/watches/)
+WATCHES = [('w1', 0.597), ('w2', 0.610), ('w3', 0.530), ('w4', 0.496), ('w5', 0.473)]
+S(8, 4.5, 'tk-bone', 'فبدينا نوفر ساعات نحبها… | ونثق فيها.', silent=True,
+  sfx=[{"at": 0.4, "name": "paper_place", "gain": -10}, {"at": 0.9, "name": "fold", "gain": -10}] + [{"at": 1.2 + k * 0.25, "name": "paper_slide", "gain": -13} for k in range(5)] + [{"at": 2.7, "name": "clasp", "gain": -9}],
+  els=[{"type": "box", "x": 360, "y": 900, "w": 600, "h": 300, "lid": [[0.8, 0], [1.3, 1, "outBack"]], "in": {"type": "rise", "at": 0.2}, "z": 40}] + [
+      {"type": "cutout", "src": "assets/watches/%s.png" % w, "x": 360 + (k - 2) * 118, "y": 935 + abs(k - 2) * 14, "h": 450 - abs(k - 2) * 38, "aspect": a, "edge": 3,
+       "rot": (k - 2) * 3, "z": 30 - abs(k - 2), "in": {"type": "rise", "at": 1.2 + k * 0.25, "dur": .5}, "idle": {"type": "bob", "amp": 3, "speed": .6, "phase": k * .4}}
+      for k, (w, a) in enumerate(WATCHES)] + [
+      {"type": "sparkles", "x": 360, "y": 480, "radius": 300, "count": 14, "color": "#C9A35F", "in": {"type": "fade", "at": 2.6}, "z": 45}])
 fo = HAVE['formal']
 S(9, 5.0, 'tk-ink', 'وفي ٢٠١٩… | جاء البودكاست. | وصرنا نتكلم مع ناس | من قلب عالم الساعات.', banner='2019', floor=fo, sfx=[{"at": 0.6, "name": "mic_tap", "gain": -8}],
   els=[{"type": "mic", "x": 360, "y": 470 if fo else FLOOR, "size": 0.8 if fo else 1.1, "in": {"type": "drop", "at": 0.3}, "z": 30},
