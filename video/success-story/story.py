@@ -49,6 +49,21 @@ def person(p, outfit, x, bottom, h, at=0.3, z=12, flip=False, depth=None, inn='r
         d["idle"] = {"type": "bob", "amp": 2, "speed": .5, "phase": hash(p) % 5 * .3}
     d.update(kw); return d
 
+def pose(name, x, bottom, h, at=0.3, until=None, z=12, inn='fade', depth=None, **kw):
+    """A generated pose of the founders (assets/gen/<name>_cut.png, made on Higgsfield from their own cut-outs):
+    shaking hands, sitting, at the mic. at/until swap it in and out with the single figures."""
+    rel = 'assets/gen/%s_cut.png' % name; w, hh = Image.open(os.path.join(H, rel)).size
+    d = {"type": "cutout", "src": rel, "x": x, "y": bottom, "h": round(h), "aspect": w / hh, "z": z, "edge": 0,
+         "idle": {"type": "bob", "amp": 2, "speed": .5}}
+    if inn: d["in"] = {"type": inn, "at": at, "dur": .2}
+    if until is not None: d["out"] = {"at": until, "type": "fade", "dur": .2}
+    if depth is not None: d["depth"] = depth
+    d.update(kw); return d
+
+def gone(d, t):
+    """Fade a single figure out as its pose takes over."""
+    d["out"] = {"at": t, "type": "fade", "dur": .2}; return d
+
 def depths(els, table):
     """Parallax: give each place layer a depth from its z (0 = still sky, 1 = the figures' plane)."""
     for e in els:
@@ -104,8 +119,9 @@ S('2a', 5.5, 'tk-ink', 'بدأ بثلاثة أصدقاء… | التقوا وه�
 # 3  Boulder: wide, then push in. Ali Al-Ramadhan is there; Ali Al-Yousifi walks in from the right; they meet.
 els = depths(boulder(F), {1: .15, 2: .35, 3: .55, 4: .8, 5: .9, 6: 1.0})
 els += [rect('#B0AA80', 360, 1150, 760, 280, z=6, depth=1.0)]
-els += [person(AR, 'casual', 250, 1170, 640, at=0.4, z=12),
-        person(AY, 'casual', 470, 1170, 640, z=13, flip=True, walk=(1.0, 2.5, 900, 470)),
+els += [gone(person(AR, 'casual', 250, 1170, 640, at=0.4, z=12), 2.6),
+        gone(person(AY, 'casual', 440, 1170, 640, z=13, flip=True, walk=(1.0, 2.5, 900, 440)), 2.6),
+        pose('boulder_handshake', 345, 1172, 690, at=2.5, z=14),
         bubble('هلا!', 540, 500, 2.6, 4.4, tail='r'), bubble('أهلين!', 200, 490, 3.1, 4.6)]
 els[-4]['rot'] = [[2.5, 0], [2.9, 3], [4.4, 3], [4.9, 0]]
 els[-3]['rot'] = [[2.5, 0], [2.8, -3], [4.4, -3], [4.9, 0]]
@@ -119,16 +135,17 @@ els = depths(los_angeles(F), {1: .15, 2: .35, 3: .5, 4: .7, 5: .9, 6: 1.0})
 for e in els:
     if e.get('z') == 3 and e.get('w') == 330: e['in'] = {"type": "pop", "at": 3.3, "dur": .5}      # HOLLYWOOD arrives late
 els += [rect('#BDB6AA', 360, 1150, 760, 280, z=6, depth=1.0)]
-my = person(MY, 'casual', 220, 1160, 600, z=16, walk=(0.6, 1.8, -220, 240))
-my["scale"] = [[0, 1.5], [3.0, 1.5], [4.2, 1.0, "inOutCubic"]]; my["y"] = [[0, 1400], [3.0, 1400], [4.2, 1160, "inOutCubic"]]; my["depth"] = 1.15
-els += [person(AY, 'casual', 430, 1160, 600, at=0.2, z=13), my,
-        person(AR, 'casual', 610, 1160, 600, z=14, walk=(3.6, 4.7, 960, 610)),
+els += [gone(person(AY, 'casual', 400, 1160, 600, at=0.2, z=13, flip=True), 1.9),
+        gone(person(MY, 'casual', 250, 1160, 600, z=16, walk=(0.4, 1.8, -220, 250)), 1.9),
+        pose('la_greet', 320, 1162, 620, at=1.8, until=4.8, z=15),
+        gone(person(AR, 'casual', 600, 1160, 600, z=14, flip=True, walk=(3.4, 4.6, 960, 600)), 4.8),
+        pose('la_three', 400, 1164, 640, at=4.7, z=16),
         bubble('هلا والله!', 280, 520, 1.9, 3.2), bubble('حيّاك!', 470, 560, 2.3, 3.4, tail='r'),
         {"type": "sparkles", "x": 420, "y": 640, "radius": 300, "count": 14, "color": "#F4E3B0", "in": {"type": "fade", "at": 4.8}, "z": 40}]
 S('2c', 6.2, 'tk-linen', 'ولوس أنجلوس.', banner='LOS ANGELES', voiceAt=0.6, transition='slide', els=els,
   sfx=[E('paper_place', .3, -12), E('paper_slide', .6, -12), E('paper_slide', 3.6, -12), E('clasp', 4.8, -10)],
-  camera={"zoom": [[0, 1.25], [3.0, 1.25], [4.4, 1.0, "inOutCubic"], [6.2, 1.12]], "x": [[0, 300], [3.0, 330], [4.4, 400], [6.2, 420]],
-          "y": [[0, 760], [3.0, 760], [4.4, 700], [6.2, 720]]})
+  camera={"zoom": [[0, 1.0], [1.8, 1.3, "inOutCubic"], [3.2, 1.35], [4.6, 1.0, "inOutCubic"], [6.2, 1.15]], "x": [[0, 360], [1.8, 320], [3.2, 330], [4.6, 400], [6.2, 400]],
+          "y": [[0, 700], [1.8, 800, "inOutCubic"], [3.2, 800], [4.6, 700], [6.2, 760]]})
 
 # 5  Back to Kuwait: suitcases, the plane through the clouds (the camera follows it), the towers come up
 cloud = lambda x, y, w, d, z: {"type": "cloud", "w": w, "color": "#F6F3EC", "x": x, "y": y, "z": z, "depth": d}
@@ -149,17 +166,18 @@ S('3a', 3.4, 'tk-ink', 'وبعد الدراسة… | رجعوا الكويت.', 
 #    down to the watch on «والساعات…»
 els = depths(kuwait_dusk(F), {1: 0, 2: .35, 3: .5, 4: .6, 5: .7, 6: 1.0})
 els += [rect('#6B4E3A', 360, 1150, 760, 280, z=6, depth=1.0)]
-els += [person(AY, 'kuwaiti', 110, 1560, 1100, at=0.2, z=30, depth=1.25, flip=True),
-        person(MY, 'kuwaiti', 380, 1200, 680, at=0.35, z=14),
-        person(AR, 'kuwaiti', 610, 1210, 690, at=0.5, z=15, flip=True)]
-tray = coffee_tray(400, 1260, at=0.6, z=40); tray['scale'] = 1.35; tray['depth'] = 1.1
-els += [tray] + steam(300, 1150, 5.6, at=0.6) + steam(395, 1150, 5.6, at=1.1)
-els += [watch('w3', 470, 1200, 170, z=42, depth=1.1, rot=[[0, -80], [2.3, -80], [3.2, -20], [5.6, -15]],
-              **{"in": {"type": "pop", "at": 1.2}, "x": [[0, 470], [2.3, 470], [3.2, 570, "inOutCubic"]], "y": [[0, 1205], [2.3, 1205], [2.75, 1060], [3.2, 1150]]})]
+DW = 860 / 1089                                     # diwaniya pose: 1089 px wide, shown 860 wide from x = -70
+dx = lambda px: -70 + px * DW; dy = lambda py: 1240 - 536 * DW + py * DW
+els += [pose('diwaniya', 360, 1240, 536 * DW, at=0.2, z=14, inn='rise')]
+tray = coffee_tray(360, 1300, at=0.6, z=40); tray['scale'] = 1.2; tray['depth'] = 1.1
+els += [tray] + steam(270, 1200, 5.6, at=0.6) + steam(355, 1200, 5.6, at=1.1)
+els += [watch('w3', dx(530), dy(292), 42, z=42, rot=[[0, -70], [2.3, -70], [3.2, -25], [5.6, -20]],
+              **{"in": {"type": "pop", "at": 1.2}, "x": [[0, dx(530)], [2.3, dx(530)], [3.2, dx(612), "inOutCubic"]],
+                 "y": [[0, dy(292)], [2.3, dy(292)], [2.75, dy(240)], [3.2, dy(268)]]})]
 S('3b', 5.6, 'tk-ink', 'والساعات… | دايماً حاضرة بقعداتهم.', voiceAt=0.5, transition='cut', els=els,
   sfx=[E('paper_place', .6, -12), E('clasp', 2.4, -11), E('paper_place', 3.2, -13)],
-  camera={"zoom": [[0, 1.0], [0.6, 1.0], [2.2, 1.55, "inOutCubic"], [4.4, 1.6], [5.6, 1.35, "inOutCubic"]],
-          "x": [[0, 360], [2.2, 470], [4.4, 540], [5.6, 470]], "y": [[0, 640], [2.2, 1060], [4.4, 1050], [5.6, 960]]})
+  camera={"zoom": [[0, 1.3], [0.6, 1.3], [2.2, 2.1, "inOutCubic"], [4.4, 2.2], [5.6, 1.35, "inOutCubic"]],
+          "x": [[0, 360], [0.6, 360], [2.2, dx(560)], [4.4, dx(580)], [5.6, 380]], "y": [[0, 980], [0.6, 990], [2.2, dy(250)], [4.4, dy(245)], [5.6, 900]]})
 
 # 7  English shelves for days, then the Arabic shelf, almost empty (no founders)
 els = [plate('#3A3D44')]
@@ -178,9 +196,7 @@ S(4, 7.0, 'tk-graphite', 'ولاحظوا شي… | المعلومات عن ال�
 
 # 8  «ليش ما نبسطها؟»: the three close, talking; questions come up between them and turn into the idea
 els = [plate('#24262B'), {"type": "spotlight", "x": 360, "y": 0, "w": 720, "h": 1100, "z": 2, "depth": 0}]
-els += [person(AR, 'casual', 120, 1760, 1350, at=0.1, z=20, depth=1.1, flip=True, idle={"type": "sway", "amp": 1.5, "speed": .6}),
-        person(AY, 'casual', 380, 1580, 1150, at=0.25, z=12, depth=.9, idle={"type": "sway", "amp": 1.2, "speed": .5, "phase": 1}),
-        person(MY, 'casual', 610, 1740, 1340, at=0.4, z=21, depth=1.1, idle={"type": "sway", "amp": 1.5, "speed": .55, "phase": 2})]
+els += [pose('brainstorm', 360, 1300, 800 * 867 / 896, at=0.1, z=20, inn='rise', idle={"type": "sway", "amp": 1.2, "speed": .5})]
 qs = [('ليش؟', 250, 420, .5), ('بالعربي؟', 490, 340, 1.1), ('نبسطها؟', 330, 250, 1.7)]
 els += [{"type": "text", "text": t, "x": [[a, x], [2.6, x], [3.0, 360]], "y": [[a, y], [2.6, y], [3.0, 300]], "size": 54, "font": "banner", "weight": 900, "color": "#111111", "paper": "#F3F0E8",
          "rot": (k - 1) * 5, "z": 40, "in": {"type": "pop", "at": a, "dur": .3}, "out": {"at": 2.95, "type": "fade", "dur": .1}} for k, (t, x, y, a) in enumerate(qs)]
@@ -193,8 +209,7 @@ S(5, 4.3, 'tk-ink', 'فقالوا… | ليش ما نبسطها؟', transition='
 #    macro, a mic in the foreground, the interview. Roles show without titles. Ends on the logo and the claim.
 M = []
 # writing (Ali Al-Ramadhan)
-M += [plate('#EFE9DC', z=1), person(AR, 'formal', 560, 1800, 1300, at=0.05, z=10, depth=1.0, inn='fade', out={"at": 1.25, "type": "fade", "dur": .05})]
-nb = notebook(300, 560, 0.05, 1.25); nb['scale'] = 1.9; M += [nb]
+M += [plate('#EFE9DC', z=1), pose('writer', 400, 1330, 1250, at=0.05, z=10, out={"at": 1.25, "type": "fade", "dur": .05})]
 pn = pen(-100, 800, 900, 0.1, 1.25); pn['scale'] = 3.2; pn['depth'] = 1.6; pn['z'] = 35; M += [pn]
 M += [{"type": "card", "x": 360, "y": 640, "w": 720, "h": 1280, "color": "#FBF9F3", "z": 40, "depth": 0, "in": {"type": "flip", "at": 1.05, "dur": .25}, "out": {"at": 1.3, "type": "fade", "dur": .05}}]
 # translating the news (still Ali Al-Ramadhan, at the monitor)
@@ -206,14 +221,13 @@ M += [plate('#D9D3C5', at=1.3, out=2.75, z=2),
 # filming a real watch (Mohammad on the visual side), through a flash
 M += [plate('#FFFFFF', at=2.75, out=2.95, z=70),
       macro('m1', 2.95, 3.6, z=45), macro('m5', 3.6, 4.2, z=45), viewfinder(2.95, 4.2, z=62),
-      person(MY, 'formal', 610, 1760, 1150, at=3.6, z=58, inn='fade', out={"at": 4.2, "type": "fade", "dur": .05}),
+      pose('designer', 520, 1700, 1300, at=3.6, z=58, out={"at": 4.2, "type": "fade", "dur": .05}),
       ] + design_board(140, 1180, LOGO, at=3.65, z=59, w=220, out={"at": 4.2, "type": "fade", "dur": .05})
 # the interview (Ali Al-Yousifi on camera, with a guest)
 M += [plate('#2B2D32', at=4.2, out=6.35, z=3),
-      person(AY, 'formal', 230, 1500, 1000, at=4.25, z=20, inn='fade', out={"at": 6.35, "type": "fade", "dur": .05}),
+      pose('presenter', 240, 1650, 1250, at=4.25, z=20, out={"at": 6.35, "type": "fade", "dur": .05}),
       guest(560, 1120, at=4.35, z=19, scale=1.5, out={"at": 6.35, "type": "fade", "dur": .05}),
       rect('#5C4632', 360, 1180, 760, 220, z=25, depth=1.0, **{"in": {"type": "none", "at": 4.2}, "out": {"at": 6.35, "type": "fade", "dur": .05}}),
-      {"type": "mic", "x": 300, "y": [[4.3, 1600], [4.8, 1160, "outBack"]], "size": 1.9, "z": 40, "depth": 1.5, "in": {"type": "none", "at": 4.3}, "out": {"at": 6.35, "type": "fade", "dur": .05}},
       {"type": "card", "x": 560, "y": 260, "w": 190, "h": 60, "style": "dark", "label": "ON AIR", "labelSize": 26, "ink": "#E8574B", "z": 41, "in": {"type": "pop", "at": 4.6}, "out": {"at": 6.35, "type": "fade", "dur": .05}, "idle": {"type": "pulse", "amp": .05, "speed": 1.4}}]
 # the result
 M += [plate('#111111', at=6.35, z=4),
@@ -279,18 +293,17 @@ S(8, 6.2, 'tk-bone', 'فبدينا نوفر ساعات نحبها… | ونثق 
 #     of the episode -> Ali Al-Yousifi at the mic with the guest
 wood = lambda x, w: rect('#7A5C42', x, 1170, w, 260, z=25)
 els = [plate('#2B2D32'), rect('#3A3C42', 750, 420, 1700, 700, z=2, depth=1.0)]
-els += [person(AR, 'formal', 230, 1450, 900, at=0.1, z=18), wood(250, 520), papers(150, 1060, at=0.2), monitor(370, 1060, at=0.3, w=300)]
-els += [person(MY, 'formal', 760, 1350, 820, at=0.2, z=18)] + design_board(600, 1000, LOGO, at=1.2, w=200) + [
-        camera_rig(930, 1100, 1.0, 99), ring_light(1060, 1050, 1.0, 99)]
-els += [person(AY, 'formal', 1250, 1450, 880, at=0.3, z=18), guest(1500, 1110, at=0.4, scale=1.3), wood(1370, 760),
-        {"type": "mic", "x": 1330, "y": 1060, "size": 1.0, "z": 30, "in": {"type": "drop", "at": 0.5}},
-        {"type": "mic", "x": 1450, "y": 1060, "size": 1.0, "z": 30, "in": {"type": "drop", "at": 0.6}},
+els += [pose('writer', 190, 1310, 860, at=0.1, z=18), wood(250, 520), papers(150, 1060, at=0.2), monitor(370, 1060, at=0.3, w=300)]
+els += [pose('designer', 720, 1380, 880, at=0.2, z=18)] + design_board(560, 1000, LOGO, at=1.2, w=200) + [
+        camera_rig(880, 1100, 1.0, 99), ring_light(970, 1050, 1.0, 99)]
+els += [pose('podcast', 1270, 1420, 900, at=0.3, z=18), guest(1540, 1110, at=0.4, scale=1.3), wood(1400, 760),
+        {"type": "mic", "x": 1480, "y": 1060, "size": 1.0, "z": 30, "in": {"type": "drop", "at": 0.6}},
         {"type": "card", "x": 1370, "y": 300, "w": 190, "h": 60, "style": "dark", "label": "ON AIR", "labelSize": 26, "ink": "#E8574B", "z": 30, "in": {"type": "pop", "at": 0.5}, "idle": {"type": "pulse", "amp": .05, "speed": 1.4}},
         {"type": "waves", "x": 1380, "y": 470, "bars": 21, "h": 120, "color": "#F3F0E8", "z": 29, "level": [[4.0, 0], [4.6, 1]]}]
 S(9, 9.0, 'tk-ink', 'وفي ٢٠١٩… | جاء البودكاست. | وصرنا نتكلم مع ناس | من قلب عالم الساعات.', banner='2019', transition='slide', els=els,
   sfx=[E('paper_place', .2), E('paper_slide', 2.6, -12), E('shutter', 4.0, -12), E('mic_tap', 5.6, -9)],
   camera={"zoom": [[0, 1.7], [2.2, 1.35, "inOutCubic"], [4.6, 1.2], [7.0, 1.1], [9.0, 1.05]], "x": [[0, 260], [2.4, 330], [4.6, 820, "inOutCubic"], [6.8, 1360, "inOutCubic"], [9.0, 1380]],
-          "y": [[0, 1000], [2.2, 820, "inOutCubic"], [4.6, 760], [9.0, 760]]})
+          "y": [[0, 880], [2.2, 820, "inOutCubic"], [4.6, 760], [9.0, 760]]})
 
 # 14  Kuwait to Geneva, short: the line runs and the map dives into Geneva
 S('10a', 2.2, 'tk-ink', 'ووصلنا جنيف…', transition='slide', sfx=[E('plane', .2, -12), E('whoosh', 1.8, -10)],
@@ -347,15 +360,14 @@ S(13, 4.2, 'tk-bone', 'والأفنيوز.', banner='THE AVENUES', transition='s
 
 # 19  Back to the three: start on real watches on the table, rise to them, then a slow push in on «بدأت بثلاثة أصدقاء…»
 els = [plate('#E6DFD0'), rect('#D9CFBC', 360, 420, 760, 900, z=1)]
-els += [person(AR, 'kuwaiti', 130, 1500, 1050, at=0.0, z=10, inn=None), person(MY, 'kuwaiti', 360, 1440, 1000, at=0.0, z=9, inn=None),
-        person(AY, 'kuwaiti', 590, 1500, 1050, at=0.0, z=10, inn=None)]
-els += [rect('#8A6A48', 360, 1068, 760, 36, z=20), rect('#6E5238', 360, 1190, 760, 210, z=20)]
-els += [watch('w3', 250, 1062, 200, z=25, rot=-6), watch('w1', 400, 1062, 190, z=25, rot=4), watch('w5', 530, 1062, 180, z=25, rot=-3)]
-els += [{"type": "cup", "x": x, "y": 1060, "size": .6, "z": 24, "anchor": "b"} for x in (110, 620)] + steam(110, 1010, 8.6) + steam(620, 1010, 8.6, at=.5)
+TOP = 1330 - 1000 + 0.62 * 1000                     # the tabletop in the table pose (931 px tall, top at 0.60-0.66)
+els += [pose('table', 360, 1330, 1000, z=10, inn=None)]
+els += [watch('w3', 260, TOP, 64, z=25, rot=-6), watch('w1', 365, TOP + 3, 62, z=25, rot=4), watch('w5', 465, TOP, 58, z=25, rot=-3)]
+els += [{"type": "cup", "x": x, "y": TOP + 2, "size": .45, "z": 24, "anchor": "b"} for x in (150, 575)] + steam(150, TOP - 40, 8.6) + steam(575, TOP - 40, 8.6, at=.5)
 S(14, 8.6, 'tk-bone', 'بس القصة ما بدأت بمحل… | ولا بخطة عمل. | بدأت بثلاثة أصدقاء… | يحبون الساعات.', transition='slide', els=els,
   sfx=[E('paper_place', .2, -12), E('clasp', 1.0, -11)],
-  camera={"zoom": [[0, 2.6], [1.0, 2.6], [3.4, 1.0, "inOutCubic"], [4.6, 1.0], [8.6, 1.18, "inOutSine"]], "x": [[0, 390], [3.4, 360]],
-          "y": [[0, 1010], [1.0, 1010], [3.4, 640, "inOutCubic"], [8.6, 600]]})
+  camera={"zoom": [[0, 2.6], [1.0, 2.6], [3.4, 1.0, "inOutCubic"], [4.6, 1.0], [8.6, 1.25, "inOutSine"]], "x": [[0, 365], [3.4, 360]],
+          "y": [[0, TOP - 50], [1.0, TOP - 50], [3.4, 640, "inOutCubic"], [8.6, 620]]})
 
 # 20  The logo, drawn by a sweeping hand, then into black on the last tick
 hand = svg(40, 300, '<rect x="16" y="0" width="8" height="300" rx="4" fill="#C9A35F"/><circle cx="20" cy="290" r="14" fill="#C9A35F"/>', 360, 560, anchor='b', z=30, kind=None, shadow=False,
