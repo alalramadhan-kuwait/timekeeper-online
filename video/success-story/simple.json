@@ -80,11 +80,11 @@
  "audio": {
   "autoSfx": true,
   "music": "renders/simple_score.wav",
-  "musicGain": -17
+  "musicGain": -24,
+  "voiceGain": 2
  },
  "scenes": [
   {
-   "dur": 4.2,
    "theme": "tk-black",
    "banner": "",
    "floor": false,
@@ -116,20 +116,21 @@
      "still": true
     }
    ],
+   "dur": 4.96,
    "captions": "تايم كيبر… | ما بدأ كمحل ساعات.",
+   "captionStart": 1.45,
+   "captionEnd": 4.359999999999999,
    "silent": true,
    "beds": [
     {
      "name": "watch_run",
      "from": 0,
-     "to": 4.2,
-     "gain": -14
+     "to": 5,
+     "gain": -18
     }
-   ],
-   "captionStart": 1.6
+   ]
   },
   {
-   "dur": 6.0,
    "theme": "tk-ink",
    "banner": "",
    "floor": false,
@@ -192,22 +193,24 @@
      }
     }
    ],
-   "captions": "ثلاثة أصدقاء… | التقوا وهم يدرسون في أمريكا.",
+   "dur": 7.15,
+   "captions": "بدأ بثلاثة أصدقاء… | التقوا وهم يدرسون في أمريكا. | في بولدر… | وسان دييغو.",
+   "captionStart": 0.2,
+   "captionEnd": 6.550000000000001,
    "sfx": [
     {
      "at": 0.2,
      "name": "paper_tear",
-     "gain": -12
+     "gain": -14
     },
     {
-     "at": 2.2,
+     "at": 2.4,
      "name": "plane",
-     "gain": -14
+     "gain": -16
     }
    ]
   },
   {
-   "dur": 5.0,
    "theme": "tk-ink",
    "banner": "KUWAIT",
    "floor": false,
@@ -270,17 +273,19 @@
      "z": 30
     }
    ],
-   "captions": "ورجعوا الكويت.",
+   "dur": 7.23,
+   "captions": "وبعد الدراسة… | رجعوا الكويت. | والساعات، دايماً حاضرة بجلساتهم.",
+   "captionStart": 0.2,
+   "captionEnd": 6.630000000000001,
    "sfx": [
     {
      "at": 0.9,
      "name": "plane",
-     "gain": -12
+     "gain": -14
     }
    ]
   },
   {
-   "dur": 7.0,
    "theme": "tk-graphite",
    "banner": "",
    "floor": false,
@@ -425,47 +430,49 @@
      "rot": 2,
      "in": {
       "type": "drop",
-      "at": 5.2,
+      "at": 5.6,
       "dur": 0.45
      }
     }
    ],
-   "captions": "لاحظوا إن أغلب المعلومات عن الساعات بالإنجليزي. | وبالعربي… | قليل.",
+   "dur": 7.39,
+   "captions": "ولاحظوا شي… | المعلومات عن الساعات كثيرة، | بس أغلبها بالإنجليزي. | وبالعربي؟ | قليل.",
+   "captionStart": 0.2,
+   "captionEnd": 6.79,
    "sfx": [
     {
      "at": 2.0,
      "name": "paper_place",
-     "gain": -13
+     "gain": -15
     },
     {
      "at": 2.45,
      "name": "paper_place",
-     "gain": -13
+     "gain": -15
     },
     {
      "at": 2.9,
      "name": "paper_place",
-     "gain": -13
+     "gain": -15
     },
     {
      "at": 3.35,
      "name": "paper_place",
-     "gain": -13
+     "gain": -15
     },
     {
      "at": 3.8,
      "name": "paper_place",
-     "gain": -13
+     "gain": -15
     },
     {
      "at": 4.25,
      "name": "paper_place",
-     "gain": -13
+     "gain": -15
     }
    ]
   },
   {
-   "dur": 4.5,
    "theme": "tk-ink",
    "banner": "",
    "floor": false,
@@ -481,17 +488,18 @@
      "rot": -2,
      "in": {
       "type": "pop",
-      "at": 1.6,
+      "at": 2.0,
       "dur": 0.7
      }
     }
    ],
-   "captions": "فقرروا… | يبسطونها.",
-   "silent": true,
-   "captionStart": 0.4
+   "dur": 4.2,
+   "captions": "فقالوا… | ليش ما نبسطها؟",
+   "captionStart": 0.2,
+   "captionEnd": 2.31,
+   "silent": true
   },
   {
-   "dur": 5.5,
    "theme": "tk-bone",
    "banner": "2018",
    "floor": false,
@@ -530,34 +538,36 @@
      "y": 800,
      "w": 300,
      "rot": -1,
-     "likeAt": 3.6,
+     "likeAt": 4.2,
      "in": {
       "type": "drop",
       "at": 2.8
      }
     }
    ],
-   "captions": "٢٠١٨… | بدأ تايم كيبر. | نشرح الساعات بالعربي.",
+   "dur": 8.03,
+   "captions": "وفي ٢٠١٨… | بدأ تايم كيبر. | بوست بعد بوست… | نشرح الساعات بالعربي.",
+   "captionStart": 0.2,
+   "captionEnd": 7.430000000000001,
    "sfx": [
     {
      "at": 0.8,
      "name": "paper_place",
-     "gain": -9
+     "gain": -11
     },
     {
      "at": 1.8,
      "name": "paper_place",
-     "gain": -9
+     "gain": -11
     },
     {
      "at": 2.8,
      "name": "paper_place",
-     "gain": -9
+     "gain": -11
     }
    ]
   },
   {
-   "dur": 6.0,
    "theme": "tk-graphite",
    "banner": "",
    "floor": false,
@@ -573,7 +583,7 @@
      "size": 30,
      "in": {
       "type": "slideD",
-      "at": 1.4,
+      "at": 1.2,
       "from": 600
      },
      "z": 30
@@ -589,7 +599,7 @@
      "size": 30,
      "in": {
       "type": "slideD",
-      "at": 3.0,
+      "at": 2.5999999999999996,
       "from": 600
      },
      "z": 31
@@ -605,33 +615,35 @@
      "size": 30,
      "in": {
       "type": "slideD",
-      "at": 4.6,
+      "at": 4.0,
       "from": 600
      },
      "z": 32
     }
    ],
-   "captions": "والناس بدت تسأل… | وين أحصلها؟",
+   "dur": 5.5,
+   "captions": "والناس بدت تتابع… | وتسأل: | وين أحصل هالساعة؟",
+   "captionStart": 0.2,
+   "captionEnd": 4.390000000000001,
    "sfx": [
     {
-     "at": 1.4,
+     "at": 1.2,
      "name": "notif",
-     "gain": -9
+     "gain": -11
     },
     {
-     "at": 3.0,
+     "at": 2.6,
      "name": "notif",
-     "gain": -9
+     "gain": -11
     },
     {
-     "at": 4.6,
+     "at": 4.0,
      "name": "notif",
-     "gain": -9
+     "gain": -11
     }
    ]
   },
   {
-   "dur": 4.5,
    "theme": "tk-bone",
    "banner": "",
    "floor": false,
@@ -706,28 +718,30 @@
      "z": 40
     }
    ],
-   "captions": "فصرنا نوفر ساعات نحبها.",
+   "dur": 4.59,
+   "captions": "فبدينا نوفر ساعات نحبها… | ونثق فيها.",
+   "captionStart": 0.2,
+   "captionEnd": 3.9899999999999998,
    "sfx": [
     {
      "at": 0.8,
      "name": "fold",
-     "gain": -8
+     "gain": -10
     },
     {
      "at": 1.6,
      "name": "paper_place",
-     "gain": -8
+     "gain": -10
     },
     {
      "at": 2.4,
      "name": "clasp",
-     "gain": -8
+     "gain": -10
     }
    ],
    "silent": true
   },
   {
-   "dur": 5.0,
    "theme": "tk-ink",
    "banner": "2019",
    "floor": false,
@@ -746,7 +760,7 @@
     {
      "type": "waves",
      "x": 360,
-     "y": 450,
+     "y": 430,
      "bars": 25,
      "h": 150,
      "color": "#F3F0E8",
@@ -762,17 +776,19 @@
      ]
     }
    ],
-   "captions": "٢٠١٩… | جاء البودكاست.",
+   "dur": 8.43,
+   "captions": "وفي ٢٠١٩… | جاء البودكاست. | وصرنا نتكلم مع ناس | من قلب عالم الساعات.",
+   "captionStart": 0.2,
+   "captionEnd": 7.83,
    "sfx": [
     {
      "at": 0.6,
      "name": "mic_tap",
-     "gain": -6
+     "gain": -8
     }
    ]
   },
   {
-   "dur": 5.0,
    "theme": "tk-ink",
    "banner": "GENEVA",
    "floor": false,
@@ -851,17 +867,19 @@
      ]
     }
    ],
-   "captions": "وسافرنا… | لجنيف، بسويسرا.",
+   "dur": 5.0,
+   "captions": "ووصلنا جنيف… | قلب صناعة الساعات.",
+   "captionStart": 0.2,
+   "captionEnd": 3.19,
    "sfx": [
     {
      "at": 0.6,
      "name": "plane",
-     "gain": -12
+     "gain": -14
     }
    ]
   },
   {
-   "dur": 5.5,
    "theme": "tk-graphite",
    "banner": "2022",
    "floor": false,
@@ -891,22 +909,24 @@
      }
     }
    ],
-   "captions": "٢٠٢٢… | فتحنا صالة تايم كيبر. | بموعد… | وفيها ناس.",
+   "dur": 8.59,
+   "captions": "وفي ٢٠٢٢… | فتحنا صالة تايم كيبر. | مكان يجتمع فيه | محبين الساعات.",
+   "captionStart": 0.2,
+   "captionEnd": 7.99,
    "sfx": [
     {
      "at": 1.4,
      "name": "paper_place",
-     "gain": -8
+     "gain": -10
     },
     {
      "at": 3.6,
      "name": "door_chime",
-     "gain": -10
+     "gain": -12
     }
    ]
   },
   {
-   "dur": 5.0,
    "theme": "tk-linen",
    "banner": "TIME GALLERY",
    "floor": true,
@@ -937,17 +957,19 @@
      }
     }
    ],
+   "dur": 4.4,
    "captions": "وبعدها… | تايم غاليري.",
+   "captionStart": 0.2,
+   "captionEnd": 1.99,
    "sfx": [
     {
      "at": 1.0,
      "name": "paper_place",
-     "gain": -8
+     "gain": -10
     }
    ]
   },
   {
-   "dur": 4.5,
    "theme": "tk-bone",
    "banner": "THE AVENUES",
    "floor": true,
@@ -974,7 +996,7 @@
      "type": "card",
      "x": 360,
      "y": 410,
-     "w": 280,
+     "w": 260,
      "h": 58,
      "style": "dark",
      "label": "TIME KEEPER",
@@ -987,22 +1009,24 @@
      "z": 40
     }
    ],
+   "dur": 4.0,
    "captions": "والأفنيوز.",
+   "captionStart": 0.2,
+   "captionEnd": 1.19,
    "sfx": [
     {
      "at": 0.6,
      "name": "paper_slide",
-     "gain": -10
+     "gain": -12
     },
     {
-     "at": 2.6,
+     "at": 2.4,
      "name": "door_chime",
-     "gain": -10
+     "gain": -12
     }
    ]
   },
   {
-   "dur": 8.0,
    "theme": "tk-bone",
    "banner": "",
    "floor": true,
@@ -1036,7 +1060,7 @@
     },
     {
      "type": "card",
-     "x": 120.0,
+     "x": 120,
      "y": 907,
      "w": 22,
      "h": 90,
@@ -1046,7 +1070,7 @@
     },
     {
      "type": "card",
-     "x": 600.0,
+     "x": 600,
      "y": 907,
      "w": 22,
      "h": 90,
@@ -1061,7 +1085,7 @@
      "size": 1.1,
      "top": "#43464D",
      "pose": "sitTalk",
-     "talk": true,
+     "flip": false,
      "initial": "ع ر"
     },
     {
@@ -1071,6 +1095,7 @@
      "size": 1.1,
      "top": "#6C7078",
      "pose": "sit",
+     "flip": false,
      "initial": "م ي"
     },
     {
@@ -1115,7 +1140,7 @@
      "dialColor": "#17171A",
      "in": {
       "type": "pop",
-      "at": 5.0
+      "at": 6.0
      }
     },
     {
@@ -1129,7 +1154,7 @@
      "dialColor": "#F1EEE6",
      "in": {
       "type": "pop",
-      "at": 5.5
+      "at": 6.4
      }
     },
     {
@@ -1143,26 +1168,28 @@
      "dialColor": "#B9BDC4",
      "in": {
       "type": "pop",
-      "at": 6.0
+      "at": 6.8
      }
     }
    ],
-   "captions": "القصة ما بدأت بمحل… | ولا بخطة عمل. | بدأت بثلاثة أصدقاء… | يحبون الساعات.",
+   "dur": 9.07,
+   "captions": "بس القصة ما بدأت بمحل… | ولا بخطة عمل. | بدأت بثلاثة أصدقاء… | يحبون الساعات.",
+   "captionStart": 0.2,
+   "captionEnd": 8.47,
    "sfx": [
     {
      "at": 1.0,
      "name": "paper_place",
-     "gain": -10
+     "gain": -12
     },
     {
-     "at": 5.0,
+     "at": 6.0,
      "name": "clasp",
-     "gain": -9
+     "gain": -11
     }
    ]
   },
   {
-   "dur": 4.5,
    "theme": "tk-ink",
    "banner": "",
    "floor": false,
@@ -1183,33 +1210,35 @@
      }
     }
    ],
+   "dur": 4.5,
    "captions": "والوقت… | كان مجرد البداية.",
+   "captionStart": 0.2,
+   "captionEnd": 2.4699999999999998,
    "sfx": [
     {
-     "at": 3.4,
+     "at": 3.6,
      "name": "tick_pair",
-     "gain": -8
+     "gain": -9
     }
    ],
    "silent": true,
-   "tr": "fade",
-   "captionStart": 0.4
+   "transition": "fade"
   },
   {
-   "dur": 2.5,
    "theme": "tk-black",
    "banner": "",
    "floor": false,
    "elements": [],
+   "dur": 2.5,
    "sfx": [
     {
      "at": 0.8,
      "name": "tick_pair",
-     "gain": -8
+     "gain": -9
     }
    ],
    "silent": true,
-   "tr": "fade"
+   "transition": "fade"
   }
  ]
 }

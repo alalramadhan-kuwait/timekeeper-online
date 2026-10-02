@@ -151,7 +151,11 @@ const voiceClips = [];
       if (!fs.existsSync(f)) die('scene voice not found: ' + f);
       const d = audioDuration(f);
       if (d == null) die('could not read the duration of ' + f);
-      if (sc.dur === undefined || sc.dur === 'auto') sc.dur = +(d + (sc.pad != null ? sc.pad : 0.45)).toFixed(2);
+      const at = sc.voiceAt != null ? sc.voiceAt : 0.15;
+      if (sc.dur === undefined || sc.dur === 'auto') sc.dur = +Math.max(at + d + (sc.pad != null ? sc.pad : 0.45), sc.minDur || 0).toFixed(2);
+      // captions follow the voice unless the storyboard pins them
+      if (sc.captionStart == null) sc.captionStart = at + 0.05;
+      if (sc.captionEnd == null) sc.captionEnd = Math.min(sc.dur - 0.2, at + d);
       else if (d > sc.dur) console.warn(`warning: voice clip ${sc.voice} is ${d.toFixed(1)}s but its scene is ${sc.dur}s`);
       voiceClips.push({ f, start: acc + (sc.voiceAt != null ? sc.voiceAt : 0.15) });
     } else if (sc.dur === undefined || sc.dur === 'auto') sc.dur = 4;

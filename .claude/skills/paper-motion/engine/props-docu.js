@@ -381,6 +381,19 @@
     return { node, w, h, anchor: 't', update(lt) { node.style.opacity = sp.flicker ? 0.85 + 0.15 * Math.sin(lt * 17) : 1; } };
   };
 
+  // A paper-cut figure (a person or group) from a PNG with a transparent background: white paper edge plus a cast shadow.
+  B.cutout = (sp, ctx) => {
+    const h = sp.h || 360, w = sp.w || Math.round(h * (sp.aspect || 0.75));
+    const node = PM.div('', { position: 'relative', width: px(w), height: px(h) });
+    const im = document.createElement('img');
+    im.src = sp.src;
+    const e = sp.edge == null ? 2 : sp.edge, c = sp.edgeColor || '#F7F4EE';
+    Object.assign(im.style, { position: 'absolute', left: '0', top: '0', width: px(w), height: px(h), objectFit: 'contain', objectPosition: '50% 100%',
+      filter: e ? `drop-shadow(${e}px 0 0 ${c}) drop-shadow(-${e}px 0 0 ${c}) drop-shadow(0 ${e}px 0 ${c}) drop-shadow(0 -${e}px 0 ${c}) drop-shadow(3px 7px 6px rgba(0,0,0,.38))` : 'drop-shadow(3px 7px 6px rgba(0,0,0,.38))' });
+    node.appendChild(im);
+    return { node, w, h, anchor: 'b' };
+  };
+
   B.suitcase = (sp, ctx) => {
     const w = sp.w || 150, h = sp.h || 110, c = sp.color || '#2B2D32';
     const node = PM.div('', { position: 'relative', width: px(w), height: px(h + 22) });

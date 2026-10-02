@@ -1,0 +1,110 @@
+{
+ "voice": "Marcus (ElevenLabs, via Higgsfield)",
+ "lines": [
+  {
+   "n": 1,
+   "file": "01.mp3",
+   "job_id": "2f1f8dc0-6c43-4233-83a7-ef2b403d1b15",
+   "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3JDjaL8YxOXQo3GeCTPz1i3F13U/hf_20261002_080031_2f1f8dc0-6c43-4233-83a7-ef2b403d1b15.mp3",
+   "seconds": 2.96
+  },
+  {
+   "n": 2,
+   "file": "02.mp3",
+   "job_id": "22c7f560-210b-4c2e-93f8-755276e8f2b0",
+   "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3JDjaL8YxOXQo3GeCTPz1i3F13U/hf_20261002_080031_22c7f560-210b-4c2e-93f8-755276e8f2b0.mp3",
+   "seconds": 6.4
+  },
+  {
+   "n": 3,
+   "file": "03.mp3",
+   "job_id": "6a884881-088d-4e23-ac6e-acc0731c36f2",
+   "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3JDjaL8YxOXQo3GeCTPz1i3F13U/hf_20261002_080031_6a884881-088d-4e23-ac6e-acc0731c36f2.mp3",
+   "seconds": 6.48
+  },
+  {
+   "n": 4,
+   "file": "04.mp3",
+   "job_id": "b532dc0a-c580-474e-9025-23960b906133",
+   "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3JDjaL8YxOXQo3GeCTPz1i3F13U/hf_20261002_080031_b532dc0a-c580-474e-9025-23960b906133.mp3",
+   "seconds": 6.64
+  },
+  {
+   "n": 5,
+   "file": "05.mp3",
+   "job_id": "1fddce12-95f6-42b3-addc-b7725936532e",
+   "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3JDjaL8YxOXQo3GeCTPz1i3F13U/hf_20261002_080031_1fddce12-95f6-42b3-addc-b7725936532e.mp3",
+   "seconds": 2.16
+  },
+  {
+   "n": 6,
+   "file": "06.mp3",
+   "job_id": "42bab3c3-436c-461b-990e-ca21e744da89",
+   "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3JDjaL8YxOXQo3GeCTPz1i3F13U/hf_20261002_080031_42bab3c3-436c-461b-990e-ca21e744da89.mp3",
+   "seconds": 7.28
+  },
+  {
+   "n": 7,
+   "file": "07.mp3",
+   "job_id": "d1a8d099-4a0c-4fc6-9f11-1503d2dc6233",
+   "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3JDjaL8YxOXQo3GeCTPz1i3F13U/hf_20261002_080031_d1a8d099-4a0c-4fc6-9f11-1503d2dc6233.mp3",
+   "seconds": 4.24
+  },
+  {
+   "n": 8,
+   "file": "08.mp3",
+   "job_id": "7cdb6802-4c90-4623-b4d9-52dd80f53359",
+   "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3JDjaL8YxOXQo3GeCTPz1i3F13U/hf_20261002_080055_7cdb6802-4c90-4623-b4d9-52dd80f53359.mp3",
+   "seconds": 3.84
+  },
+  {
+   "n": 9,
+   "file": "09.mp3",
+   "job_id": "e58b4b32-5ccf-4012-b4bf-0ce4446d31b9",
+   "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3JDjaL8YxOXQo3GeCTPz1i3F13U/hf_20261002_080055_e58b4b32-5ccf-4012-b4bf-0ce4446d31b9.mp3",
+   "seconds": 7.68
+  },
+  {
+   "n": 10,
+   "file": "10.mp3",
+   "job_id": "e5cc4afe-0b4d-487c-b35f-861e5cb22335",
+   "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3JDjaL8YxOXQo3GeCTPz1i3F13U/hf_20261002_080031_e5cc4afe-0b4d-487c-b35f-861e5cb22335.mp3",
+   "seconds": 3.04
+  },
+  {
+   "n": 11,
+   "file": "11.mp3",
+   "job_id": "d4e572ed-a8ee-40ae-ba27-c7fc08d83371",
+   "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3JDjaL8YxOXQo3GeCTPz1i3F13U/hf_20261002_080031_d4e572ed-a8ee-40ae-ba27-c7fc08d83371.mp3",
+   "seconds": 7.84
+  },
+  {
+   "n": 12,
+   "file": "12.mp3",
+   "job_id": "36fe23e4-4345-4942-84f0-1a99b3893322",
+   "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3JDjaL8YxOXQo3GeCTPz1i3F13U/hf_20261002_080031_36fe23e4-4345-4942-84f0-1a99b3893322.mp3",
+   "seconds": 1.84
+  },
+  {
+   "n": 13,
+   "file": "13.mp3",
+   "job_id": "17a730ea-c74a-49ec-a888-c1793dc0e2c1",
+   "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3JDjaL8YxOXQo3GeCTPz1i3F13U/hf_20261002_080034_17a730ea-c74a-49ec-a888-c1793dc0e2c1.mp3",
+   "seconds": 1.04
+  },
+  {
+   "n": 14,
+   "file": "14.mp3",
+   "job_id": "e687bdfb-1c75-40e8-a737-dcb3d21ff3ea",
+   "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3JDjaL8YxOXQo3GeCTPz1i3F13U/hf_20261002_080033_e687bdfb-1c75-40e8-a737-dcb3d21ff3ea.mp3",
+   "seconds": 8.32
+  },
+  {
+   "n": 15,
+   "file": "15.mp3",
+   "job_id": "b26305de-259d-4e83-b8f6-28cd1f835b05",
+   "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3JDjaL8YxOXQo3GeCTPz1i3F13U/hf_20261002_080055_b26305de-259d-4e83-b8f6-28cd1f835b05.mp3",
+   "seconds": 2.32
+  }
+ ]
+}
