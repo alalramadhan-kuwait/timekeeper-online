@@ -9,9 +9,11 @@
   Build:     python3 simple.py && node ../../.claude/skills/paper-motion/scripts/render.mjs simple.json -o renders/time-keeper-story.mp4 --scale 1.5
 """
 import json, os
+from landmarks import boulder, san_diego, kuwait_dusk, coffee_tray, geneva
 from PIL import Image
 H = os.path.dirname(os.path.abspath(__file__)); ST = json.load(open(os.path.join(H, 'tk-style.json')))
-VO = {l['n']: l for l in json.load(open(os.path.join(H, 'voice', 'manifest.json')))['lines']}
+# One clip per narration piece, cut from the Andre track by voice/cut-andre.py (lines 2, 3 and 10 are split at their pauses)
+VO = json.load(open(os.path.join(H, 'voice', 'clips.json')))
 LOGO = '../../public/icon-512.png'
 MUSIC_GAIN = float(os.environ.get('MUSIC_GAIN', -24))   # -90 renders the sound-effects bed alone, for a separate music mix
 FLOOR = 1020   # floor line: lower than the engine default (960) so the figures get more of the screen
@@ -48,10 +50,10 @@ def POST(name, x, y, w, rot=0, at=0.8, **kw):
 
 SC = []
 def S(n, minDur, theme, caption='', banner='', els=None, floor=False, sfx=None, silent=False, beds=None, voiceAt=0.15, **kw):
-    """n = narration line number in voice/manifest.json (0 = no narration)."""
+    """n = narration clip id in voice/clips.json, e.g. 1 or '2b' (0 = no narration)."""
     sc = {"theme": theme, "banner": banner, "floor": floor, "elements": els or []}
     if n:
-        d = VO[n]['seconds']
+        n = str(n); d = VO[n]['seconds']
         sc["dur"] = round(max(voiceAt + d + 0.6, minDur), 2)
         sc["captions"] = caption; sc["captionStart"] = voiceAt + 0.05; sc["captionEnd"] = voiceAt + d
         f = os.path.join(H, 'voice', VO[n]['file'])
@@ -66,14 +68,21 @@ def S(n, minDur, theme, caption='', banner='', els=None, floor=False, sfx=None, 
 S(1, 4.6, 'tk-black', 'تايم كيبر… | ما بدأ كمحل ساعات.', silent=True, voiceAt=1.4, beds=[{"name": "watch_run", "from": 0, "to": 5, "gain": -18}],
   els=[{"type": "watch", "x": 360, "y": 600, "size": 660, "strap": False, "numerals": "arabic", "date": False, "scale": [[0, 1.75], [3.8, 1.0, "inOutCubic"]], "time": [10, 8, 40], "still": True}])
 cas = HAVE['casual']
-S(2, 6.0, 'tk-ink', 'بدأ بثلاثة أصدقاء… | التقوا وهم يدرسون في أمريكا. | في بولدر… | وسان دييغو.', floor=cas,
+S('2a', 6.0, 'tk-ink', 'بدأ بثلاثة أصدقاء… | التقوا وهم يدرسون في أمريكا.', floor=cas,
   sfx=[{"at": 0.2, "name": "paper_tear", "gain": -14}, {"at": 2.4, "name": "plane", "gain": -16}],
   els=[MAP([[0, V(-98, 38.5, 58)], [2.0, V(-111, 36.5, 30), "inOutCubic"]], pins=[pin(BOU, 1.2), pin(SD, 2.4)], routes=[{"from": "bou", "to": "sd", "at": 2.2, "dur": 1.2}],
            states=True, unfold={"at": 0.2, "dur": 1.2}, y=390 if cas else 580, h=560 if cas else 680)] + fig('casual', h=540, at=1.0))
+S('2b', 3.8, 'tk-linen', 'في بولدر…', banner='BOULDER', floor=True, voiceAt=1.0, sfx=[{"at": 0.3, "name": "paper_place", "gain": -12}],
+  els=boulder(FLOOR) + fig('casual', h=420, at=0.7))
+S('2c', 3.8, 'tk-linen', 'وسان دييغو.', banner='SAN DIEGO', floor=True, voiceAt=0.9, sfx=[{"at": 0.3, "name": "paper_place", "gain": -12}],
+  els=san_diego(FLOOR) + fig('casual', h=420, at=0.6))
 kw_ = HAVE['kuwaiti']
-S(3, 5.0, 'tk-ink', 'وبعد الدراسة… | رجعوا الكويت. | والساعات، دايماً حاضرة بجلساتهم.', banner='KUWAIT', floor=kw_, sfx=[{"at": 0.9, "name": "plane", "gain": -14}],
-  els=[MAP([[0, V(-60, 38, 150)], [2.6, V(48, 29.4, 30), "inOutCubic"]], pins=[pin(KW, 2.8)], highlight=[{"n": "Kuwait", "at": 2.6, "color": "#111111"}], y=420 if kw_ else 560, h=480 if kw_ else 620),
-       {"type": "towers", "x": 600 if kw_ else 560, "y": FLOOR, "h": 420 if kw_ else 330, "in": {"type": "rise", "at": 3.0, "dur": 0.8}, "z": 8}] + fig('kuwaiti', x=330, h=500, at=3.4))
+S('3a', 4.0, 'tk-ink', 'وبعد الدراسة… | رجعوا الكويت.', banner='KUWAIT', sfx=[{"at": 0.6, "name": "plane", "gain": -14}],
+  els=[MAP([[0, V(-60, 38, 150)], [2.6, V(48, 29.4, 30), "inOutCubic"]], pins=[pin(SD, 0), pin(KW, 2.8)], routes=[{"from": "sd", "to": "kw", "at": 0.4, "dur": 2.2, "curve": .18}],
+           highlight=[{"n": "Kuwait", "at": 2.6, "color": "#111111"}], y=590, h=860)])
+S('3b', 4.8, 'tk-ink', 'والساعات، | دايماً حاضرة بجلساتهم.', floor=True, voiceAt=0.5, sfx=[{"at": 1.0, "name": "paper_place", "gain": -12}, {"at": 1.7, "name": "clasp", "gain": -12}],
+  els=kuwait_dusk(FLOOR) + fig('kuwaiti', h=470, at=0.4) + [coffee_tray(360, FLOOR + 6, at=0.9)] + [
+      {"type": "watch", "x": 438 + i * 50, "y": FLOOR - 40, "size": 64, "strap": False, "dialColor": ['#17171A', '#F1EEE6', '#B9BDC4'][i], "z": 41, "in": {"type": "pop", "at": 1.6 + i * 0.35}} for i in range(3)])
 S(4, 7.0, 'tk-graphite', 'ولاحظوا شي… | المعلومات عن الساعات كثيرة، | بس أغلبها بالإنجليزي. | وبالعربي؟ | قليل.',
   sfx=[{"at": 2.0 + i * 0.45, "name": "paper_place", "gain": -15} for i in range(6)],
   els=[{"type": "text", "text": "ENGLISH", "x": 215, "y": 360, "size": 38, "font": "banner", "weight": 800, "color": "#F3F0E8", "ls": .12, "upper": False, "shadow": False, "in": {"type": "fade", "at": 1.6}},
@@ -97,10 +106,13 @@ S(8, 4.5, 'tk-bone', 'فبدينا نوفر ساعات نحبها… | ونثق 
 fo = HAVE['formal']
 S(9, 5.0, 'tk-ink', 'وفي ٢٠١٩… | جاء البودكاست. | وصرنا نتكلم مع ناس | من قلب عالم الساعات.', banner='2019', floor=fo, sfx=[{"at": 0.6, "name": "mic_tap", "gain": -8}],
   els=[{"type": "mic", "x": 360, "y": 470 if fo else FLOOR, "size": 0.8 if fo else 1.1, "in": {"type": "drop", "at": 0.3}, "z": 30},
-       {"type": "waves", "x": 360, "y": 300, "bars": 25, "h": 170, "color": "#F3F0E8", "level": [[1.0, 0], [1.6, 1]]}] + fig('formal', h=520, at=1.2))
-S(10, 5.0, 'tk-ink', 'ووصلنا جنيف… | قلب صناعة الساعات.', banner='GENEVA', floor=fo, sfx=[{"at": 0.6, "name": "plane", "gain": -14}],
+       {"type": "waves", "x": 360, "y": 300, "bars": 25, "h": 170, "color": "#F3F0E8", "level": [[1.0, 0], [1.6, 1]]},
+       {"type": "card", "x": 610, "y": 205, "w": 150, "h": 50, "style": "dark", "label": "ON AIR", "labelSize": 22, "ink": "#EDE9E0", "rot": 3, "in": {"type": "pop", "at": 0.9}, "idle": {"type": "pulse", "amp": .04, "speed": 1.2}, "z": 40}] + fig('formal', h=520, at=1.2))
+S('10a', 3.8, 'tk-ink', 'ووصلنا جنيف…', sfx=[{"at": 0.6, "name": "plane", "gain": -14}],
   els=[MAP([[0, V(48, 29.4, 30)], [1.2, V(26, 38, 70), "inOutCubic"], [3.0, V(10, 44, 26), "inOutCubic"]], pins=[pin(KW, 0), pin(GVA, 2.8)], routes=[{"from": "kw", "to": "gva", "at": 0.6, "dur": 2.2, "curve": .14}],
-           highlight=[{"n": "Kuwait", "color": "#111111"}, {"n": "Switzerland", "at": 3.0, "color": "#111111"}], y=390 if fo else 580, h=560 if fo else 640)] + fig('formal', h=540, at=2.6))
+           highlight=[{"n": "Kuwait", "color": "#111111"}, {"n": "Switzerland", "at": 3.0, "color": "#111111"}], y=590, h=860)])
+S('10b', 4.4, 'tk-linen', 'قلب صناعة الساعات.', banner='GENEVA', floor=True, voiceAt=0.9, sfx=[{"at": 0.3, "name": "paper_place", "gain": -12}, {"at": 1.3, "name": "tick_pair", "gain": -12}],
+  els=geneva(FLOOR) + fig('formal', x=500, h=330, at=0.5))
 S(11, 5.5, 'tk-graphite', 'وفي ٢٠٢٢… | فتحنا صالة تايم كيبر. | مكان يجتمع فيه | محبين الساعات.', banner='2022', floor=fo,
   sfx=[{"at": 1.4, "name": "paper_place", "gain": -10}, {"at": 3.6, "name": "door_chime", "gain": -12}],
   els=[{"type": "door", "x": 360, "y": 560, "w": 340 if fo else 300, "h": 560 if fo else 540, "z": 5, "sign": "TIME KEEPER LOUNGE", "open": [[2.6, 0], [4.2, 1, "outBack"]], "in": {"type": "rise", "at": 0.5, "dur": 0.7}}] + fig('formal', h=520, at=3.4, z=20))
@@ -123,6 +135,6 @@ S(15, 4.5, 'tk-ink', 'والوقت… | كان مجرد البداية.', silent
 S(0, 2.5, 'tk-black', silent=True, transition='fade', sfx=[{"at": 0.8, "name": "tick_pair", "gain": -9}])
 total = sum(s['dur'] for s in SC)
 json.dump({"title": "قصة تايم كيبر", "width": 720, "height": 1280, "fps": 30, "floorY": FLOOR, "captionY": FLOOR + 38, "bannerY": 110, "maxWords": 4, "style": ST['style'], "themes": ST['themes'],
-           "audio": {"autoSfx": True, "music": "renders/simple_score.wav", "musicGain": MUSIC_GAIN, "voiceGain": 2}, "scenes": SC}, open(os.path.join(H, 'simple.json'), 'w'), ensure_ascii=False, indent=1)
+           "audio": {"autoSfx": True, "music": "renders/simple_score.wav", "musicGain": MUSIC_GAIN, "voiceGain": 0}, "scenes": SC}, open(os.path.join(H, 'simple.json'), 'w'), ensure_ascii=False, indent=1)
 nv = sum(1 for s in SC if 'voice' in s)
 print('simple.json  %d scenes  %.1fs  narration clips present: %d/15  figures: %s' % (len(SC), total, nv, ', '.join(k for k, v in HAVE.items() if v) or 'none yet'))

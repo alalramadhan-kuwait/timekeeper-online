@@ -1,0 +1,97 @@
+{
+ "1": {
+  "file": "clips/1.wav",
+  "seconds": 2.98,
+  "line": 1
+ },
+ "2a": {
+  "file": "clips/2a.wav",
+  "seconds": 4.68,
+  "line": 2
+ },
+ "2b": {
+  "file": "clips/2b.wav",
+  "seconds": 1.03,
+  "line": 2
+ },
+ "2c": {
+  "file": "clips/2c.wav",
+  "seconds": 1.31,
+  "line": 2
+ },
+ "3a": {
+  "file": "clips/3a.wav",
+  "seconds": 2.37,
+  "line": 3
+ },
+ "3b": {
+  "file": "clips/3b.wav",
+  "seconds": 3.32,
+  "line": 3
+ },
+ "4": {
+  "file": "clips/4.wav",
+  "seconds": 6.24,
+  "line": 4
+ },
+ "5": {
+  "file": "clips/5.wav",
+  "seconds": 2.32,
+  "line": 5
+ },
+ "6": {
+  "file": "clips/6.wav",
+  "seconds": 8.02,
+  "line": 6
+ },
+ "7": {
+  "file": "clips/7.wav",
+  "seconds": 4.49,
+  "line": 7
+ },
+ "8": {
+  "file": "clips/8.wav",
+  "seconds": 3.6,
+  "line": 8
+ },
+ "9": {
+  "file": "clips/9.wav",
+  "seconds": 7.68,
+  "line": 9
+ },
+ "10a": {
+  "file": "clips/10a.wav",
+  "seconds": 1.75,
+  "line": 10
+ },
+ "10b": {
+  "file": "clips/10b.wav",
+  "seconds": 2.0,
+  "line": 10
+ },
+ "11": {
+  "file": "clips/11.wav",
+  "seconds": 7.94,
+  "line": 11
+ },
+ "12": {
+  "file": "clips/12.wav",
+  "seconds": 2.82,
+  "line": 12
+ },
+ "13": {
+  "file": "clips/13.wav",
+  "seconds": 1.28,
+  "line": 13
+ },
+ "14": {
+  "file": "clips/14.wav",
+  "seconds": 7.29,
+  "line": 14
+ },
+ "15": {
+  "file": "clips/15.wav",
+  "seconds": 2.82,
+  "line": 15
+ }
+}
