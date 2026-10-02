@@ -329,7 +329,7 @@
     return Object.assign({ at: 0, dur: 0.45, from: 520 }, dflt, a);
   }
 
-  function applyEl(it, lt) {
+  function applyEl(it, lt, cam) {
     const sp = it.spec;
     const inn = it._in || (it._in = normAnim(sp.in));
     const out = it._out || (it._out = normAnim(sp.out, { type: sp.in && sp.in.type ? sp.in.type : 'fade', dur: 0.3 }));
@@ -365,6 +365,13 @@
       if (f && (id.from == null || lt >= id.from) && (id.until == null || lt <= id.until)) {
         add(f(bt + (id.phase || 0) + it.seed % 7, id.amp, id.speed || 1));
       }
+    }
+    // scene camera: zoom toward / pan to (cam.x, cam.y). depth scales the move per element: 0 = pinned to the
+    // screen, 1 = the scene plane, >1 = foreground that sweeps past faster (parallax).
+    if (cam && sp.depth !== 0) {
+      const d = sp.depth == null ? 1 : sp.depth, z = 1 + (cam.z - 1) * d;
+      const ox = S.width / 2 + (cam.x - S.width / 2) * d, oy = S.height / 2 + (cam.y - S.height / 2) * d;
+      x = S.width / 2 + (x - ox) * z; y = S.height / 2 + (y - oy) * z; sc *= z;
     }
     if (S.boil && !sp.still && !sp.noBoil) {
       const r = rng(it.seed + Math.floor(lt * 12) * 7919);
@@ -617,7 +624,9 @@
       }
       sc.root.style.transform = 'translate(' + tx.toFixed(1) + 'px,' + ty.toFixed(1) + 'px)';
       sc.root.style.opacity = op;
-      sc.items.forEach((it) => applyEl(it, lt));
+      const cs = sc.spec.camera;
+      const cam = cs ? { z: val(cs.zoom, lt, 1), x: val(cs.x, lt, S.width / 2), y: val(cs.y, lt, S.height / 2) } : null;
+      sc.items.forEach((it) => applyEl(it, lt, cam));
       if (sc.banner) {
         const at = sc.bannerKeep ? -1 : (sc.spec.bannerAt != null ? sc.spec.bannerAt : 0.25);
         const p = clamp((lt - at) / 0.6);

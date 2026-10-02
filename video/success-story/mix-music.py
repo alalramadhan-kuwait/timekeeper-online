@@ -26,15 +26,15 @@ def load(f):
     return np.frombuffer(raw, dtype=np.float32).reshape(-1, 2).copy()
 
 
-def main(src, out):
-    sb = json.load(open(os.path.join(H, 'simple.json')))
+def main(src, out, sbname='simple.json'):
+    sb = json.load(open(os.path.join(H, sbname)))
     i = lambda t: int(round(t * SR))
     total = sum(s['dur'] for s in sb['scenes']); N = i(total)
     m = load(MUSIC)
     xf = i(0.04); ramp = np.linspace(0, 1, xf)[:, None]
     def join(a, b):
         a = a.copy(); a[-xf:] = a[-xf:] * (1 - ramp) + b[:xf] * ramp; return np.concatenate([a, b[xf:]])
-    L = INSERT_BARS * BAR
+    L = sb.get('musicInsertBars', INSERT_BARS) * BAR
     ext = join(join(m[:i(SPLICE)], m[i(SPLICE - L):i(SPLICE)]), m[i(SPLICE):])
 
     mus = np.zeros((N, 2), np.float32); key = np.zeros((N, 2), np.float32)
@@ -70,4 +70,4 @@ def main(src, out):
 
 
 if __name__ == '__main__':
-    main(*sys.argv[1:3])
+    main(*sys.argv[1:4])

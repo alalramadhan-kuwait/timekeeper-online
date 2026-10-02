@@ -387,11 +387,25 @@
     const node = PM.div('', { position: 'relative', width: px(w), height: px(h) });
     const im = document.createElement('img');
     im.src = sp.src;
+    if (sp.flip) im.style.transform = 'scaleX(-1)';   // mirror, so two figures can face each other
     const e = sp.edge == null ? 2 : sp.edge, c = sp.edgeColor || '#F7F4EE';
     Object.assign(im.style, { position: 'absolute', left: '0', top: '0', width: px(w), height: px(h), objectFit: 'contain', objectPosition: '50% 100%',
       filter: e ? `drop-shadow(${e}px 0 0 ${c}) drop-shadow(-${e}px 0 0 ${c}) drop-shadow(0 ${e}px 0 ${c}) drop-shadow(0 -${e}px 0 ${c}) drop-shadow(3px 7px 6px rgba(0,0,0,.38))` : 'drop-shadow(3px 7px 6px rgba(0,0,0,.38))' });
     node.appendChild(im);
     return { node, w, h, anchor: 'b' };
+  };
+
+  // an image uncovered by a sweeping hand: reveal 0..1 (keyframes) opens a conic mask clockwise from 12 o'clock
+  B.reveal = (sp, ctx) => {
+    const w = sp.w || 300, h = sp.h || w;
+    const node = PM.div('', { position: 'relative', width: px(w), height: px(h) });
+    const im = document.createElement('img'); im.src = sp.src;
+    Object.assign(im.style, { position: 'absolute', left: '0', top: '0', width: px(w), height: px(h), objectFit: 'contain' });
+    node.appendChild(im);
+    return { node, w, h, update(lt) {
+      const k = clamp(PM.val(sp.reveal, lt, 1)), a = (k * 360).toFixed(1);
+      im.style.webkitMaskImage = im.style.maskImage = k >= 1 ? 'none' : 'conic-gradient(#000 ' + a + 'deg, transparent ' + a + 'deg)';
+    } };
   };
 
   B.suitcase = (sp, ctx) => {
