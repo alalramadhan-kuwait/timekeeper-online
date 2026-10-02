@@ -14,7 +14,7 @@ The full table with sources is in `FACTS.csv` (24 rows, sortable). Founder testi
 | # | When | What | Status | Still needed |
 | --- | --- | --- | --- | --- |
 | 1 | Student years (year ?) | Ali Al-Ramadhan and Ali Al-Yousifi meet in **Boulder, Colorado** | FOUNDER | Year, real photo |
-| 2 | Student years (year ?) | They meet Mohammad bin Wail Al-Yousifi in **San Diego, California**. Three become one group | FOUNDER | Year, real photo |
+| 2 | Student years (year ?) | They meet Mohammad bin Wail Al-Yousifi in **Los Angeles, California**. Three become one group | FOUNDER | Year, real photo |
 | 3 | Student years | Watch interest grows. They are discovering, not yet experts | FOUNDER | Early photos |
 | 4 | After graduation (year ?) | Return to Kuwait. Careers not yet started, so they keep meeting | FOUNDER | Year, gathering photo |
 | 5 | Same period | Gatherings reveal the gap: lots of English watch content, little useful Arabic | FOUNDER | |

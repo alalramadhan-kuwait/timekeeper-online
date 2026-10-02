@@ -25,7 +25,7 @@ def pup(k, x, y=960, size=.85, **kw):
 
 # ---- places ---------------------------------------------------------------------------------------------------
 BOU = dict(id='bou', lon=-105.27, lat=40.01, label='BOULDER')
-SD = dict(id='sd', lon=-117.16, lat=32.72, label='SAN DIEGO')
+LA = dict(id='la', lon=-118.24, lat=34.05, label='LOS ANGELES')
 KW = dict(id='kw', lon=47.98, lat=29.37, label='KUWAIT')
 GVA = dict(id='gva', lon=6.14, lat=46.20, label='GENEVA')
 V = lambda lon, lat, span: {"lon": lon, "lat": lat, "span": span}
@@ -119,14 +119,14 @@ S(1, 'E1-S05', 'FOUNDER', 6.5, 'tk-bone', floor=True,
       {"type": "bubble", "x": 200, "y": 480, "w": 120, "h": 70, "kind": "thought", "text": "؟", "in": {"type": "pop", "at": 3.4}, "z": 40},
       {"type": "bubble", "x": 520, "y": 500, "w": 120, "h": 70, "kind": "thought", "text": "؟", "in": {"type": "pop", "at": 4.0}, "z": 40}])
 
-S(1, 'E1-S06', 'FOUNDER', 7.0, 'tk-ink', banner='SAN DIEGO — CALIFORNIA',
-  vo='وفي سان دييغو، كاليفورنيا… تعرفوا على محمد بن وائل اليوسفي.',
-  claims=['Mohammad bin Wail Al-Yousifi was met in San Diego, California (founder testimony).'],
-  note='Map unfolds west; a paper plane travels Boulder to San Diego. Real photo of the meeting goes in the polaroid.',
+S(1, 'E1-S06', 'FOUNDER', 7.0, 'tk-ink', banner='LOS ANGELES — CALIFORNIA',
+  vo='وفي لوس أنجلوس، كاليفورنيا… تعرفوا على محمد بن وائل اليوسفي.',
+  claims=['Mohammad bin Wail Al-Yousifi was met in Los Angeles, California (founder testimony).'],
+  note='Map unfolds west; a paper plane travels Boulder to Los Angeles. Real photo of the meeting goes in the polaroid.',
   sfx=[{"at": 1.6, "name": "plane", "gain": -14}, {"at": 3.5, "name": "paper_place", "gain": -8}],
-  els=[MAP([[0, V(-105.27, 40.0, 9)], [1.4, V(-111, 36.5, 24), "inOutCubic"]], pins=[pin(BOU, 0), pin(SD, 2.9)],
-           routes=[{"from": "bou", "to": "sd", "at": 1.7, "dur": 1.3}], y=520, h=520, w=640, states=True),
-       photo('ep1_sandiego_meeting', 360, 850, 380, 1.5, 'SAN DIEGO', 3, 3.4, desc='Meeting Mohammad bin Wail Al-Yousifi in San Diego')])
+  els=[MAP([[0, V(-105.27, 40.0, 9)], [1.4, V(-111, 36.5, 24), "inOutCubic"]], pins=[pin(BOU, 0), pin(LA, 2.9)],
+           routes=[{"from": "bou", "to": "la", "at": 1.7, "dur": 1.3}], y=520, h=520, w=640, states=True),
+       photo('ep1_losangeles_meeting', 360, 850, 380, 1.5, 'LOS ANGELES', 3, 3.4, desc='Meeting Mohammad bin Wail Al-Yousifi in Los Angeles')])
 
 S(1, 'E1-S07', 'FOUNDER', 5.0, 'tk-bone', floor=True,
   vo='وصاروا ثلاثة.',

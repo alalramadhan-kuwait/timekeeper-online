@@ -7,7 +7,7 @@ Real photograph beats AI recreation every time. Send files named with the **asse
 | Asset id | What it should be | Used in |
 | --- | --- | --- |
 | `ep1_boulder_university` | Ali Al-Ramadhan and Ali Al-Yousifi at university in Boulder, Colorado | E1-S04, E3-S08 |
-| `ep1_sandiego_meeting` | The meeting with Mohammad bin Wail Al-Yousifi in San Diego, California | E1-S06 |
+| `ep1_losangeles_meeting` | The meeting with Mohammad bin Wail Al-Yousifi in Los Angeles, California | E1-S06 |
 | `ep2_first_post_01` … `03` | The first real educational Instagram posts, with dates | E2-S01, E3-S12 |
 | `ep2_featured_watch_post` | A real post featuring a watch that drew requests | E2-S03 |
 | `ep2_app_screenshot` | Early website or app screenshot | E2-S05 |
@@ -22,7 +22,7 @@ Already supplied and in use: `ep3_timegallery_store` (Time Gallery storefront) a
 
 ## From the brief, section 7 (everything worth having)
 
-US university photographs. Boulder. California and San Diego. Early photos of the three founders. Early Kuwait gatherings. The watches they owned at the start. First Time Keeper Instagram posts. First logo. Early website and app screenshots. Early orders. First packaging. Podcast photographs. First podcast episode. Important guests. Watches & Wonders. Geneva. Factory visits. Interviews. Brand meetings. Watch executives. Independent watchmakers. Time Keeper Lounge. Limited editions. Time Gallery. The Rarest in Kuwait (the actual pieces). Time Keeper Avenues. Community events. Current team, store and community photographs.
+US university photographs. Boulder. California and Los Angeles. Early photos of the three founders. Early Kuwait gatherings. The watches they owned at the start. First Time Keeper Instagram posts. First logo. Early website and app screenshots. Early orders. First packaging. Podcast photographs. First podcast episode. Important guests. Watches & Wonders. Geneva. Factory visits. Interviews. Brand meetings. Watch executives. Independent watchmakers. Time Keeper Lounge. Limited editions. Time Gallery. The Rarest in Kuwait (the actual pieces). Time Keeper Avenues. Community events. Current team, store and community photographs.
 
 ## With every file, please tell us
 

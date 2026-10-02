@@ -12,7 +12,7 @@ EP = {
  ('E1-03', 'كان في ثلاثة أصدقاء… يحبون الساعات.', 0.8, 'Three empty paper places on the map.', 'F'),
  ('E1-04', 'في بولدر، كولورادو… التقى علي الرمضان وعلي اليوسفي. كانوا يدرسون.', 0.6, 'Boulder. Real university photo.', 'F'),
  ('E1-05', 'ومع الأيام… صارت الساعات تدخل بكلامهم. بس ما كانوا خبراء… كانوا يكتشفون.', 0.8, 'Two friends, one watch between them. Question marks, not answers.', 'F'),
- ('E1-06', 'وبعدها، في سان دييغو، كاليفورنيا… تعرفوا على محمد بن وائل اليوسفي.', 0.5, 'Map unfolds west. Plane. San Diego photo.', 'F'),
+ ('E1-06', 'وبعدها، في لوس أنجلوس، كاليفورنيا… تعرفوا على محمد بن وائل اليوسفي.', 0.5, 'Map unfolds west. Plane. Los Angeles photo.', 'F'),
  ('E1-07', 'وصاروا ثلاثة.', 1.2, 'Three paper people, one table, three watches. The world is almost empty.', 'F'),
  ('E1-08', 'وخلصت الدراسة… ورجعوا الكويت. وكانوا ينتظرون حياتهم العملية تبدأ.', 0.6, 'Suitcases close. Plane USA to Kuwait. Kuwait Towers rise from paper.', 'F'),
  ('E1-09', 'وكانوا يلتقون… وكلام الساعات ما ينتهي.', 0.5, 'The table again: phones, laptop, magazines, watches.', 'F'),

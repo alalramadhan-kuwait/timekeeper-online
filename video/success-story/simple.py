@@ -9,7 +9,7 @@
   Build:     python3 simple.py && node ../../.claude/skills/paper-motion/scripts/render.mjs simple.json -o renders/time-keeper-story.mp4 --scale 1.5
 """
 import json, os
-from landmarks import boulder, san_diego, kuwait_dusk, coffee_tray, geneva, bookcase, arabic_shelf, bulb, notebook, pen, camera_rig, ring_light, interview_set
+from landmarks import boulder, los_angeles, kuwait_dusk, coffee_tray, geneva, bookcase, arabic_shelf, bulb, notebook, pen, camera_rig, ring_light, interview_set
 from PIL import Image
 H = os.path.dirname(os.path.abspath(__file__)); ST = json.load(open(os.path.join(H, 'tk-style.json')))
 # One clip per narration piece, cut from the Andre track by voice/cut-andre.py (lines 2, 3 and 10 are split at their pauses)
@@ -18,7 +18,7 @@ LOGO = '../../public/icon-512.png'
 MUSIC_GAIN = float(os.environ.get('MUSIC_GAIN', -24))   # -90 renders the sound-effects bed alone, for a separate music mix
 FLOOR = 1020   # floor line: lower than the engine default (960) so the figures get more of the screen
 V = lambda lon, lat, span: {"lon": lon, "lat": lat, "span": span}
-BOU = dict(id='bou', lon=-105.27, lat=40.01, label='BOULDER'); SD = dict(id='sd', lon=-117.16, lat=32.72, label='SAN DIEGO')
+BOU = dict(id='bou', lon=-105.27, lat=40.01, label='BOULDER'); LA = dict(id='la', lon=-118.24, lat=34.05, label='LOS ANGELES')
 KW = dict(id='kw', lon=47.98, lat=29.37, label='KUWAIT'); GVA = dict(id='gva', lon=6.14, lat=46.20, label='GENEVA')
 pin = lambda p, at: dict(p, at=at)
 def MAP(view, pins=None, routes=None, y=580, h=680, **kw):
@@ -27,18 +27,21 @@ def MAP(view, pins=None, routes=None, y=580, h=680, **kw):
 # ---- paper-cut figures --------------------------------------------------------------------------------------------
 FIGDIR = os.path.join(H, 'assets', 'figures')
 PEOPLE = ['ali-alramadhan', 'mohammad-alyousifi', 'ali-alyousifi']   # left to right
+# Relative heights, read from a group photo of the three standing in a row (eye level and headwear top):
+# the tallest is 1.0. h in fig() is the tallest founder's height; the others stand on the same floor.
+HEIGHT = {'ali-alramadhan': 1.0, 'mohammad-alyousifi': 0.955, 'ali-alyousifi': 0.905}
 def fig(outfit, x=360, h=500, at=0.5, z=12):
     """Paper-cut figures for one outfit: a group PNG <outfit>.png, or one PNG per founder <person>_<outfit>.png."""
-    def one(rel, xx, delay, zz, ph):
+    def one(rel, xx, delay, zz, ph, k=1.0):
         w, hh = Image.open(os.path.join(H, rel)).size
-        return {"type": "cutout", "src": rel, "x": xx, "y": FLOOR, "h": h, "aspect": w / hh, "z": zz, "edge": 0,
+        return {"type": "cutout", "src": rel, "x": xx, "y": FLOOR, "h": round(h * k), "aspect": w / hh, "z": zz, "edge": 0,
                 "in": {"type": "rise", "at": at + delay}, "idle": {"type": "bob", "amp": 2, "speed": .5, "phase": ph}}
     if os.path.exists(os.path.join(FIGDIR, outfit + '.png')):
         return [one('assets/figures/%s.png' % outfit, x, 0, z, 0)]
     have = [p for p in PEOPLE if os.path.exists(os.path.join(FIGDIR, '%s_%s.png' % (p, outfit)))]
     gap = h * 0.46
     offs = {1: [0], 2: [-gap / 2, gap / 2], 3: [-gap, 0, gap]}.get(len(have), [])
-    return [one('assets/figures/%s_%s.png' % (p, outfit), x + o, i * 0.2, z + (1 if o == 0 else 0), i * .3) for i, (p, o) in enumerate(zip(have, offs))]
+    return [one('assets/figures/%s_%s.png' % (p, outfit), x + o, i * 0.2, z + (1 if o == 0 else 0), i * .3, HEIGHT.get(p, 1.0)) for i, (p, o) in enumerate(zip(have, offs))]
 HAVE = {o: bool(fig(o)) for o in ('casual', 'formal', 'kuwaiti')}
 
 # Real Time Keeper posts (screenshots cropped by hand, git-ignored under assets/posts/)
@@ -70,15 +73,15 @@ S(1, 4.6, 'tk-black', 'تايم كيبر… | ما بدأ كمحل ساعات.',
 cas = HAVE['casual']
 S('2a', 6.0, 'tk-ink', 'بدأ بثلاثة أصدقاء… | التقوا وهم يدرسون في أمريكا.', floor=cas,
   sfx=[{"at": 0.2, "name": "paper_tear", "gain": -14}, {"at": 2.4, "name": "plane", "gain": -16}],
-  els=[MAP([[0, V(-98, 38.5, 58)], [2.0, V(-111, 36.5, 30), "inOutCubic"]], pins=[pin(BOU, 1.2), pin(SD, 2.4)], routes=[{"from": "bou", "to": "sd", "at": 2.2, "dur": 1.2}],
+  els=[MAP([[0, V(-98, 38.5, 58)], [2.0, V(-111, 36.5, 30), "inOutCubic"]], pins=[pin(BOU, 1.2), pin(LA, 2.4)], routes=[{"from": "bou", "to": "la", "at": 2.2, "dur": 1.2}],
            states=True, unfold={"at": 0.2, "dur": 1.2}, y=390 if cas else 580, h=560 if cas else 680)] + fig('casual', h=540, at=1.0))
 S('2b', 3.8, 'tk-linen', 'في بولدر…', banner='BOULDER', floor=True, voiceAt=1.0, sfx=[{"at": 0.3, "name": "paper_place", "gain": -12}],
   els=boulder(FLOOR) + fig('casual', h=420, at=0.7))
-S('2c', 3.8, 'tk-linen', 'وسان دييغو.', banner='SAN DIEGO', floor=True, voiceAt=0.9, sfx=[{"at": 0.3, "name": "paper_place", "gain": -12}],
-  els=san_diego(FLOOR) + fig('casual', h=420, at=0.6))
+S('2c', 3.8, 'tk-linen', 'ولوس أنجلوس.', banner='LOS ANGELES', floor=True, voiceAt=0.9, sfx=[{"at": 0.3, "name": "paper_place", "gain": -12}],
+  els=los_angeles(FLOOR) + fig('casual', h=420, at=0.6))
 kw_ = HAVE['kuwaiti']
 S('3a', 4.0, 'tk-ink', 'وبعد الدراسة… | رجعوا الكويت.', banner='KUWAIT', sfx=[{"at": 0.6, "name": "plane", "gain": -14}],
-  els=[MAP([[0, V(-60, 38, 150)], [2.6, V(48, 29.4, 30), "inOutCubic"]], pins=[pin(SD, 0), pin(KW, 2.8)], routes=[{"from": "sd", "to": "kw", "at": 0.4, "dur": 2.2, "curve": .18}],
+  els=[MAP([[0, V(-60, 38, 150)], [2.6, V(48, 29.4, 30), "inOutCubic"]], pins=[pin(LA, 0), pin(KW, 2.8)], routes=[{"from": "la", "to": "kw", "at": 0.4, "dur": 2.2, "curve": .18}],
            highlight=[{"n": "Kuwait", "at": 2.6, "color": "#111111"}], y=590, h=860)])
 S('3b', 4.8, 'tk-ink', 'والساعات… | دايماً حاضرة بقعداتهم.', floor=True, voiceAt=0.5, sfx=[{"at": 1.0, "name": "paper_place", "gain": -12}, {"at": 1.7, "name": "clasp", "gain": -12}],
   els=kuwait_dusk(FLOOR) + fig('kuwaiti', h=470, at=0.4) + [coffee_tray(360, FLOOR + 6, at=0.9)] + [

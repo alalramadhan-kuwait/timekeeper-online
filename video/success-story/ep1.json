@@ -611,17 +611,17 @@
        "at": 0
       },
       {
-       "id": "sd",
-       "lon": -117.16,
-       "lat": 32.72,
-       "label": "SAN DIEGO",
+       "id": "la",
+       "lon": -118.24,
+       "lat": 34.05,
+       "label": "LOS ANGELES",
        "at": 2.9
       }
      ],
      "routes": [
       {
        "from": "bou",
-       "to": "sd",
+       "to": "la",
        "at": 1.7,
        "dur": 1.3
       }
@@ -630,13 +630,13 @@
     },
     {
      "type": "photo",
-     "asset": "ep1_sandiego_meeting",
+     "asset": "ep1_losangeles_meeting",
      "x": 360,
      "y": 850,
      "w": 380,
      "aspect": 1.5,
-     "label": "SAN DIEGO",
-     "desc": "Meeting Mohammad bin Wail Al-Yousifi in San Diego",
+     "label": "LOS ANGELES",
+     "desc": "Meeting Mohammad bin Wail Al-Yousifi in Los Angeles",
      "rot": [
       [
        0,
@@ -655,13 +655,13 @@
      }
     }
    ],
-   "banner": "SAN DIEGO — CALIFORNIA",
-   "vo": "وفي سان دييغو، كاليفورنيا… تعرفوا على محمد بن وائل اليوسفي.",
-   "captions": "وفي سان دييغو، | كاليفورنيا… | تعرفوا على محمد بن وائل اليوسفي.",
+   "banner": "LOS ANGELES — CALIFORNIA",
+   "vo": "وفي لوس أنجلوس، كاليفورنيا… تعرفوا على محمد بن وائل اليوسفي.",
+   "captions": "وفي لوس أنجلوس، | كاليفورنيا… | تعرفوا على محمد بن وائل اليوسفي.",
    "claims": [
-    "Mohammad bin Wail Al-Yousifi was met in San Diego, California (founder testimony)."
+    "Mohammad bin Wail Al-Yousifi was met in Los Angeles, California (founder testimony)."
    ],
-   "note": "Map unfolds west; a paper plane travels Boulder to San Diego. Real photo of the meeting goes in the polaroid.",
+   "note": "Map unfolds west; a paper plane travels Boulder to Los Angeles. Real photo of the meeting goes in the polaroid.",
    "sfx": [
     {
      "at": 1.6,

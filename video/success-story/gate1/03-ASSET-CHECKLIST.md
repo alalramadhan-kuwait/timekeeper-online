@@ -32,7 +32,7 @@
 
 ## Preferred
 
-Boulder and university photos. San Diego and California photos. Early photos of Mohammad. The three together, early. Graduation. The return to Kuwait. Early gatherings in Kuwait. The watches they owned at the start. First customer or order. Early website or app screenshots. Follower milestones (screenshots with dates). Important podcast guests. Manufacture visit photos. Independent watchmakers. Interviews. Brand meetings. Events and trunk shows. The Avenues under construction and opening day. Current team, store and community photos.
+Boulder and university photos. Los Angeles and California photos. Early photos of Mohammad. The three together, early. Graduation. The return to Kuwait. Early gatherings in Kuwait. The watches they owned at the start. First customer or order. Early website or app screenshots. Follower milestones (screenshots with dates). Important podcast guests. Manufacture visit photos. Independent watchmakers. Interviews. Brand meetings. Events and trunk shows. The Avenues under construction and opening day. Current team, store and community photos.
 
 ## Optional
 
@@ -42,7 +42,7 @@ Material tied to Rolex, Patek Philippe, Audemars Piguet, Hublot, Bulgari: only i
 
 | Missing | What the film does |
 | --- | --- |
-| Boulder or San Diego photo | A paper map and an empty polaroid shown as **metaphor**, labelled so in the ledger |
+| Boulder or Los Angeles photo | A paper map and an empty polaroid shown as **metaphor**, labelled so in the ledger |
 | Any house material | The scene is cut or kept generic. No logo, no name |
 | Podcast or event photo | The scene uses the microphone prop only, no claim beyond the narration |
 | Edition photos | The edition scene is cut |

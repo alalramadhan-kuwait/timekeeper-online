@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Cuts the timed Andre narration track back into one clip per line, with lines 2, 3 and 10 split at their pauses
-so each place (Boulder, San Diego, Kuwait, Geneva) can get its own scene.
+so each place (Boulder, Los Angeles, Kuwait, Geneva) can get its own scene.
 
    python3 voice/cut-andre.py            # reads voice/andre/narration.mp3, writes voice/clips/*.wav + voice/clips.json
 
@@ -13,7 +13,7 @@ SRC = os.path.join(H, 'andre', 'narration.mp3')
 CUES = [1.4, 5.08, 12.91, 19.3, 26.3, 30.5, 39.22, 44.72, 49.22, 57.6, 62.6, 71.24, 75.64, 79.64, 87.64]
 SECS = {l['n']: l['seconds'] for l in json.load(open(os.path.join(H, 'manifest.json')))['lines']}
 CUTS = {n: [(str(n), CUES[n - 1], CUES[n - 1] + SECS[n] + 0.05)] for n in SECS}
-CUTS[2] = [('2a', 5.08, 9.76), ('2b', 9.76, 10.79), ('2c', 10.79, 12.10)]      # ...في أمريكا. | في بولدر… | وسان دييغو.
+CUTS[2] = [('2a', 5.08, 9.76), ('2b', 9.76, 10.79), ('2c', 10.79, 12.10)]      # ...في أمريكا. | في بولدر… | ولوس أنجلوس.
 CUTS[3] = [('3a', 12.91, 15.28), ('3b', 15.28, 18.60)]                        # ...رجعوا الكويت. | والساعات...
 CUTS[10] = [('10a', 57.60, 59.35), ('10b', 59.35, 61.35)]                     # ووصلنا جنيف… | قلب صناعة الساعات.
 os.makedirs(os.path.join(H, 'clips'), exist_ok=True)

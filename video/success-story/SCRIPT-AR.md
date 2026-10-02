@@ -14,8 +14,8 @@ Timings are estimates from word count until narration is recorded.
   في بولدر، كولورادو… التقى علي الرمضان وعلي اليوسفي، وهم يدرسون.
 - **E1-S05** (24.8s, 6.5s)
   وشوي شوي… صارت الساعات تدخل بكلامهم.
-- **E1-S06** (31.3s, 7s)  banner: SAN DIEGO — CALIFORNIA
-  وفي سان دييغو، كاليفورنيا… تعرفوا على محمد بن وائل اليوسفي.
+- **E1-S06** (31.3s, 7s)  banner: LOS ANGELES — CALIFORNIA
+  وفي لوس أنجلوس، كاليفورنيا… تعرفوا على محمد بن وائل اليوسفي.
 - **E1-S07** (38.3s, 5s)
   وصاروا ثلاثة.
 - **E1-S08** (43.3s, 7s)  banner: KUWAIT

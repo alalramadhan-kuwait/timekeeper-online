@@ -11,7 +11,7 @@ Status key: **CONFIRMED** documented externally, **FOUNDER** supplied directly b
 | E1-S03 | FOUNDER | Three young men united by a love of watches (founder testimony). | - | - |
 | E1-S04 | FOUNDER | Ali Al-Ramadhan and Ali Al-Yousifi met while studying in Boulder, Colorado (founder testimony). | ep1_boulder_university | - |
 | E1-S05 | FOUNDER | Their friendship and watch interest developed while studying in the US (founder testimony). They are discovering, not yet experts. | - | - |
-| E1-S06 | FOUNDER | Mohammad bin Wail Al-Yousifi was met in San Diego, California (founder testimony). | ep1_sandiego_meeting | - |
+| E1-S06 | FOUNDER | Mohammad bin Wail Al-Yousifi was met in Los Angeles, California (founder testimony). | ep1_losangeles_meeting | - |
 | E1-S07 | FOUNDER | The three founders came together (founder testimony). | - | - |
 | E1-S08 | FOUNDER | The founders returned to Kuwait after their studies in the US (founder testimony). | - | - |
 | E1-S09 | FOUNDER | After returning to Kuwait, the three kept meeting and talking about watches (founder testimony). | - | - |

@@ -31,7 +31,7 @@ Status key per line: **FOUNDER** supplied by the founders, **PUBLIC (to confirm)
 | E1-03 | **كان في ثلاثة أصدقاء… يحبون الساعات.** | 0.8 s | Three empty paper places on the map. | FOUNDER |
 | E1-04 | **في بولدر، كولورادو… التقى علي الرمضان وعلي اليوسفي. كانوا يدرسون.** | 0.6 s | Boulder. Real university photo. | FOUNDER |
 | E1-05 | **ومع الأيام… صارت الساعات تدخل بكلامهم. بس ما كانوا خبراء… كانوا يكتشفون.** | 0.8 s | Two friends, one watch between them. Question marks, not answers. | FOUNDER |
-| E1-06 | **وبعدها، في سان دييغو، كاليفورنيا… تعرفوا على محمد بن وائل اليوسفي.** | 0.5 s | Map unfolds west. Plane. San Diego photo. | FOUNDER |
+| E1-06 | **وبعدها، في لوس أنجلوس، كاليفورنيا… تعرفوا على محمد بن وائل اليوسفي.** | 0.5 s | Map unfolds west. Plane. Los Angeles photo. | FOUNDER |
 | E1-07 | **وصاروا ثلاثة.** | 1.2 s | Three paper people, one table, three watches. The world is almost empty. | FOUNDER |
 | E1-08 | **وخلصت الدراسة… ورجعوا الكويت. وكانوا ينتظرون حياتهم العملية تبدأ.** | 0.6 s | Suitcases close. Plane USA to Kuwait. Kuwait Towers rise from paper. | FOUNDER |
 | E1-09 | **وكانوا يلتقون… وكلام الساعات ما ينتهي.** | 0.5 s | The table again: phones, laptop, magazines, watches. | FOUNDER |

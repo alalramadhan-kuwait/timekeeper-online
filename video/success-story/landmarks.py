@@ -1,4 +1,4 @@
-"""Paper-cut place scenes for simple.py: Boulder, San Diego, Kuwait at dusk, Geneva.
+"""Paper-cut place scenes for simple.py: Boulder, Los Angeles, Kuwait at dusk, Geneva.
 
 Each function returns paper-motion elements (inline SVG layers) for a 720x1280 stage whose floor line is at FLOOR.
 Layers are separate elements so they can arrive one after another, back to front, like cut paper being laid down.
@@ -114,7 +114,7 @@ def boulder(FLOOR, t0=0.0):
     return els
 
 
-# ------------------------------------------------------------------------------------------------ San Diego, California
+# ------------------------------------------------------------------------------------------------ palms (used in Los Angeles)
 def palm(w, h, flip=False, lean=50):
     tx, ty = w / 2 + lean, 40
     trunk = 'M%.0f %.0f C%.0f %.0f %.0f %.0f %.0f %.0f L%.0f %.0f C%.0f %.0f %.0f %.0f %.0f %.0f Z' % (
@@ -131,40 +131,6 @@ def palm(w, h, flip=False, lean=50):
             tx, ty, cx, cy - 14, ex, ey, cx + 6, cy + 14, tx, ty + 6, '#42584A' if i % 2 else '#536B5A')
     b += ''.join('<circle cx="%.0f" cy="%.0f" r="7" fill="#6B4A2E"/>' % (tx + dx, ty + 10 + dy) for dx, dy in [(-8, 0), (6, 4), (0, 12)])
     return '<g transform="translate(%d 0) scale(-1 1)">%s</g>' % (w, b) if flip else b
-
-
-def san_diego(FLOOR, t0=0.0):
-    els = [sky('sdSky', '#E3C7A2', '#F4E8D4', '<circle cx="505" cy="600" r="88" fill="#F0C27E" opacity=".95"/>')]
-    r = random.Random(11); city = ''
-    for x, wd, ht in [(10, 40, 120), (54, 34, 170), (92, 46, 230), (142, 30, 150), (176, 52, 260), (232, 36, 190), (272, 44, 140), (320, 30, 210), (354, 50, 120)]:
-        city += '<rect x="%d" y="%d" width="%d" height="%d" fill="#A2A7AA"/>' % (x, 260 - ht, wd, ht)
-        city += ''.join('<rect x="%d" y="%d" width="5" height="7" fill="#C8C7BF"/>' % (x + 6 + c * 11, 270 - ht + rr * 18)
-                        for rr in range(ht // 22) for c in range(wd // 12) if r.random() < .35)
-    els.append(svg(400, 260, city, 210, 650, z=2, at=t0 + .1, kind='rise'))
-    waves = ''.join('<path d="M%.0f %.0f q12 -6 24 0" stroke="#A9C4C2" stroke-width="3" fill="none"/>' % (r.uniform(0, 700), r.uniform(20, 210)) for _ in range(26))
-    glint = ''.join('<rect x="%d" y="%d" width="%d" height="5" rx="2" fill="#F2D39B" opacity=".85"/>' % (505 - w2 / 2, y, w2) for y, w2 in [(10, 120), (30, 80), (52, 54), (76, 30)])
-    els.append(svg(720, 230, '<rect width="720" height="230" fill="#7EA2A3"/>' + glint + waves, 360, 640, anchor='t', z=3, at=t0, kind='fade', dur=.3, shadow=False))
-    # Coronado Bridge: a long rising curve on slender piers
-    deck = 'M-10 120 C150 80 260 34 360 34 S600 70 730 104'
-    piers = ''
-    for i in range(-1, 26):
-        x = i * 29; t = min(1, max(0, (x + 10) / 740))
-        y = (120 * (1 - t) ** 3 + 3 * 80 * (1 - t) ** 2 * t + 3 * 34 * (1 - t) * t * t + 34 * t ** 3) if x < 360 else 34 + (x - 360) / 370 * 70
-        piers += '<rect x="%d" y="%.0f" width="9" height="%.0f" fill="#8D99A4"/>' % (x, y + 6, 175 - y)
-    els.append(svg(720, 175, piers + '<path d="%s" stroke="#6F7D8A" stroke-width="14" fill="none"/>' % deck, 360, 600, anchor='t', z=4, at=t0 + .3, kind='rise'))
-    boat = ('<path d="M6 92 H84 L72 108 H18Z" fill="#3F4A55"/><polygon points="44,6 44,88 8,88" fill="#F4F1EA"/>'
-            '<polygon points="50,20 50,88 80,88" fill="#E7E1D3"/><rect x="43" y="4" width="3" height="88" fill="#3F4A55"/>')
-    els.append(svg(90, 110, boat, 620, 800, z=5, at=t0 + .5, kind='pop', idle={"type": "bob", "amp": 4, "speed": .8}))
-    sand = ('<path d="M0 40 Q180 18 360 34 T720 30 V240 H0Z" fill="#DCC59E"/>'
-            '<path d="M0 40 Q180 18 360 34 T720 30" stroke="#F6F2E8" stroke-width="7" fill="none"/>'
-            + ''.join('<ellipse cx="%.0f" cy="%.0f" rx="4" ry="3" fill="#C9AF84"/>' % (r.uniform(0, 720), r.uniform(70, 230)) for _ in range(30)))
-    els.append(svg(720, 240, sand, 360, FLOOR, z=6, at=t0, kind='fade', dur=.3, shadow=False))
-    els.append(svg(260, 720, palm(260, 720, lean=46), 105, FLOOR + 6, z=7, at=t0 + .55, kind='rise', idle={"type": "sway", "amp": 1.2, "speed": .5}))
-    els.append(svg(260, 620, palm(260, 620, flip=True, lean=40), 625, FLOOR + 6, z=7, at=t0 + .7, kind='rise', idle={"type": "sway", "amp": 1.2, "speed": .45, "phase": .4}))
-    board = '<rect x="4" y="4" width="56" height="220" rx="28" fill="#E3B56A"/><rect x="28" y="10" width="8" height="208" fill="#C46F4E"/>'
-    els.append(svg(64, 228, board, 676, FLOOR + 4, z=9, at=t0 + .9, kind='pop', rot=9))
-    els.append(birds(250, 330, at=t0 + .6, drift=-50))
-    return els
 
 
 # ------------------------------------------------------------------------------------------------ Kuwait at dusk
@@ -334,3 +300,54 @@ def interview_set(x, y, at, out):
     b = (chair(80, False) + chair(400, True) + '<rect x="190" y="140" width="100" height="12" fill="#8A6A48"/><rect x="232" y="152" width="16" height="22" fill="#5C4632"/>'
          + mic(214) + mic(266) + '<rect x="0" y="174" width="480" height="6" fill="#2A2A2D" opacity=".25"/>')
     return svg(480, 180, b, x, y, anchor='b', z=30, at=at, kind='rise', out={"at": out, "type": "fade", "dur": .25})
+
+
+# ------------------------------------------------------------------------------------------------ Los Angeles
+def skinny_palm(h, lean=14):
+    """A tall Washington palm: thin trunk, small head of fronds high up."""
+    w = 160; tx, ty = w / 2 + lean, 30
+    b = '<path d="M%.0f %.0f Q%.0f %.0f %.0f %.0f L%.0f %.0f Q%.0f %.0f %.0f %.0f Z" fill="#6E5A47"/>' % (
+        w / 2 - 7, h, w / 2 + lean * .3 - 5, h * .5, tx - 4, ty + 10, tx + 4, ty + 10, w / 2 + lean * .3 + 5, h * .5, w / 2 + 7, h)
+    b += '<path d="M%.0f %.0f q-10 34 -2 60 l10 0 q6 -26 -2 -60z" fill="#8B7258"/>' % (tx - 4, ty + 14)  # dry skirt under the crown
+    for i, a in enumerate([-175, -145, -115, -85, -55, -25, 5, 200]):
+        ra = math.radians(a); L = 62 + (i % 3) * 8
+        ex, ey = tx + math.cos(ra) * L, ty + math.sin(ra) * L * .5 + 26
+        cx, cy = tx + math.cos(ra) * L * .5, ty + math.sin(ra) * L * .5 - 12
+        b += '<path d="M%.0f %.0f Q%.0f %.0f %.0f %.0f Q%.0f %.0f %.0f %.0f Z" fill="%s"/>' % (tx, ty, cx, cy - 8, ex, ey, cx + 4, cy + 8, tx, ty + 4, '#3F5446' if i % 2 else '#506A57')
+    return w, b
+
+
+def los_angeles(FLOOR, t0=0.0):
+    els = [sky('laSky', '#E5B48A', '#F5E4CC', '<circle cx="520" cy="560" r="96" fill="#F2C07C" opacity=".95"/>')]
+    hills = ('<path d="M0 360 L0 170 Q80 110 170 140 Q250 60 360 92 Q470 40 560 110 Q640 70 720 120 L720 360Z" fill="#9C8466"/>'
+             '<path d="M0 360 L0 250 Q120 200 240 230 Q380 180 520 220 Q620 200 720 230 L720 360Z" fill="#86705A"/>')
+    els.append(svg(720, 360, hills, 360, 700, z=2, at=t0 + .05, kind='rise'))
+    r = random.Random(9); sign = ''
+    for k, ch in enumerate('HOLLYWOOD'):
+        x = 18 + k * 34 + r.uniform(-2, 2); y = 6 + k * 3.2 + r.uniform(-3, 3)
+        sign += '<line x1="%.0f" y1="%.0f" x2="%.0f" y2="%.0f" stroke="#6E5E4E" stroke-width="2"/>' % (x + 13, y + 36, x + 13, y + 46)
+        sign += '<text x="%.0f" y="%.0f" font-family="Helvetica,Arial,sans-serif" font-size="44" font-weight="800" fill="#FBFAF6" transform="rotate(%.1f %.0f %.0f)">%s</text>' % (x, y + 38, r.uniform(-4, 4), x + 13, y + 20, ch)
+    els.append(svg(330, 90, sign, 380, 420, anchor='c', z=3, at=t0 + .55, kind='pop', dur=.5))
+    obs = ('<rect x="10" y="50" width="160" height="34" fill="#EFEAE0"/><rect x="0" y="80" width="180" height="10" fill="#D8D1C4"/>'
+           '<path d="M60 52 a30 30 0 0 1 60 0z" fill="#5E6B66"/><path d="M14 52 a14 14 0 0 1 28 0z" fill="#5E6B66"/><path d="M138 52 a14 14 0 0 1 28 0z" fill="#5E6B66"/>'
+           '<rect x="84" y="10" width="12" height="16" fill="#EFEAE0"/>' + ''.join('<rect x="%d" y="60" width="8" height="18" fill="#B9B1A3"/>' % x for x in range(24, 166, 18)))
+    els.append(svg(180, 90, obs, 140, 548, z=3, at=t0 + .4, kind='rise'))
+    city = ''
+    for x, wd, ht in [(0, 36, 120), (40, 30, 170), (74, 44, 150), (170, 34, 140), (208, 46, 200), (258, 30, 130), (292, 38, 110)]:
+        city += '<rect x="%d" y="%d" width="%d" height="%d" fill="#A3A6AA"/>' % (x, 300 - ht, wd, ht)
+    city += '<rect x="122" y="40" width="44" height="260" rx="20" fill="#8F959C"/><rect x="116" y="40" width="56" height="10" fill="#7E848B"/><rect x="126" y="24" width="36" height="18" fill="#8F959C"/>'  # US Bank Tower
+    city += '<path d="M214 100 Q240 40 254 20 L254 300 L214 300Z" fill="#969CA3"/><rect x="252" y="0" width="3" height="22" fill="#7E848B"/>'  # Wilshire Grand
+    city += ''.join('<rect x="%d" y="%d" width="5" height="7" fill="#D6D1C6"/>' % (x, y) for x in range(8, 340, 14) for y in range(200, 296, 18) if r.random() < .3)
+    els.append(svg(340, 300, city, 520, 704, z=4, at=t0 + .25, kind='rise'))
+    for px_, hh, lean, at in [(60, 640, 10, .6), (150, 560, -8, .7), (590, 600, 12, .65), (680, 700, -10, .75)]:
+        w, b = skinny_palm(hh, lean)
+        els.append(svg(w, hh, b, px_, FLOOR - 120, z=5, at=t0 + at, kind='rise', idle={"type": "sway", "amp": 1, "speed": .5, "phase": at}))
+    walk = '<rect width="720" height="150" fill="#BDB6AA"/><rect width="720" height="10" fill="#A69E90"/>'
+    for k in range(4):
+        x = 30 + k * 180
+        walk += '<rect x="%d" y="40" width="150" height="90" fill="#4A4446"/>' % x
+        walk += '<polygon points="%s" fill="#D8A1A0" stroke="#C9A35F" stroke-width="3"/>' % ' '.join(
+            '%.0f,%.0f' % (x + 75 + math.cos(math.radians(-90 + j * 36)) * (34 if j % 2 == 0 else 14), 85 + math.sin(math.radians(-90 + j * 36)) * (30 if j % 2 == 0 else 12)) for j in range(10))
+    els.append(svg(720, 150, walk, 360, FLOOR, z=6, at=t0, kind='fade', dur=.3, shadow=False))
+    els.append(birds(260, 300, at=t0 + .6, drift=-50))
+    return els

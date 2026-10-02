@@ -9,7 +9,7 @@ ST = {'F': ('st-founder', 'Founder'), 'P': ('st-public', 'Public, to confirm'), 
 
 TIMELINE = [
  ('Student years', 'Ali Al-Ramadhan and Ali Al-Yousifi meet in Boulder, Colorado.', 'F', 'Year, real photo'),
- ('Student years', 'They meet Mohammad bin Wail Al-Yousifi in San Diego, California. Three become one group.', 'F', 'Year, real photo'),
+ ('Student years', 'They meet Mohammad bin Wail Al-Yousifi in Los Angeles, California. Three become one group.', 'F', 'Year, real photo'),
  ('Student years', 'Watch interest grows. They are discovering, not yet experts.', 'F', 'Early photos'),
  ('After graduation', 'Back in Kuwait, careers not yet started, they keep meeting. The gap shows: plenty of English watch content, little useful Arabic. They decide to simplify it.', 'F', 'Year of return, gathering photo'),
  ('2018', 'Time Keeper begins as an educational platform.', 'F+P', 'First posts with dates, first logo'),
@@ -39,7 +39,7 @@ REQ = [('R1', 'Labelled photos of each founder: front, three-quarter, side, in t
        ('R7', 'Time Gallery: interior and display (one photo in hand)'), ('R8', 'The Avenues: two or more photos'), ('R9', 'Two documented limited editions: photos and permission'),
        ('R10', 'The Rarest in Kuwait: three or more photos and collectors’ permission'), ('R11', 'For every watch house shown: the relationship class and its evidence'),
        ('R12', 'Dates: US studies, the return, what 2018 marks, opening dates of Lounge, Time Gallery, Avenues'), ('R13', 'Narration recorded in Kuwaiti Arabic'), ('R14', 'Consent from everyone shown, and from each founder to be made a paper character')]
-PREF = 'Boulder and university photos. San Diego photos. Early photos of Mohammad. The three together, early. Graduation. The return to Kuwait. Early gatherings. The watches they owned at the start. First customer or order. Early website or app screenshots. Follower milestones. Podcast guests. Manufacture visits. Independent watchmakers. Interviews. Brand meetings. Events and trunk shows. The Avenues under construction. Current team, store and community.'
+PREF = 'Boulder and university photos. Los Angeles photos. Early photos of Mohammad. The three together, early. Graduation. The return to Kuwait. Early gatherings. The watches they owned at the start. First customer or order. Early website or app screenshots. Follower milestones. Podcast guests. Manufacture visits. Independent watchmakers. Interviews. Brand meetings. Events and trunk shows. The Avenues under construction. Current team, store and community.'
 OPT = 'Material tied to Rolex, Patek Philippe, Audemars Piguet, Hublot or Bulgari, only if real and classified. Gerald Charles documents. Video from manufactures and fairs. Boarding passes and passport pages from real documents. Early voice notes.'
 POSES = [('Front, standing', 1), ('Three-quarter', 0), ('Side', 1), ('Sitting', 1), ('Walking', 1), ('Talking', 1), ('Looking at a watch', 1), ('Holding a watch', 1), ('Holding a phone', 1), ('Using a laptop', 0), ('Holding a microphone', 1), ('Traveling', 0), ('Pointing', 1), ('Celebrating', 1), ('Interacting together', 1)]
 STEPS = [('You send labelled photos and consent', 'You'), ('One trial figure for one founder, cost quoted first', 'You approve the method'), ('Master sheet per character: front, three-quarter, side', 'You approve likeness and lock'),
