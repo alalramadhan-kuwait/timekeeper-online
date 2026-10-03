@@ -49,17 +49,14 @@ The stage point `y` appears on screen at `640 + (y - camY) * zoom` (the same for
 
 ## Delivery
 
-- Attach the cover to the MP4 as an `attached_pic` stream, and also send it as a separate JPG: Instagram and TikTok
-  ask for the cover when you post.
-- Files sent to the user must be under 30 MiB. Re-encode the picture only and **keep the cover stream**. Dropping it
-  is how one version went out without its cover:
-
-  ```bash
-  ffmpeg -i film.mp4 -map 0:v:0 -map 0:a -map 0:v:1? -c:v:0 libx264 -crf 27 -preset medium \
-         -c:v:1 copy -disposition:v:1 attached_pic -c:a copy -movflags +faststart film-send.mp4
-  ```
-
-- After the file is sent, check its streams with `ffmpeg -i`: video, audio and the attached picture.
+- **Open on the cover.** WhatsApp and iMessage use the first frame as the thumbnail, and a paper film usually opens
+  dark, so a shared film showed as a black box. `scripts/deliver.py film.mp4 cover.jpg film-share.mp4` holds the cover
+  for 0.7 s and cross-fades into the film. It delays the audio by the same 0.7 s, so the narration and music stay in
+  sync with the picture. It also attaches the cover as an `attached_pic` stream and steps the quality down until the
+  file is under 29 MiB (the send limit is 30). Send that copy.
+- Also send the cover as a separate JPG: Instagram and TikTok ask for the cover when you post.
+- After making the share copy, check it with `ffmpeg -i`: one video, one audio and one attached picture. Then look
+  at the frames at 0, 0.85 and 1.5 s.
 - Commit and push the storyboard source with every version. Media stays git-ignored.
 
 ## Spending on generation

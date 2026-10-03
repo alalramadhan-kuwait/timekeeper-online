@@ -26,7 +26,7 @@ Making a film about real people (founders, a team, a brand story)? Also read `re
    Open the PNGs and check the QA list below. Fix, re-run, repeat.
 5. **Add audio** (optional, see Audio).
 6. **Render.** `node .claude/skills/paper-story/scripts/render.mjs story.json -o out.mp4 --scale 1.5` gives 1080x1920. About 25 seconds of video takes about a minute at 720p on 4 workers.
-7. **Verify and deliver.** Check duration, size and streams with `ffmpeg -i out.mp4`, view a few frames, and send the file to the user. Say plainly if audio was not added. A file compressed to fit the 30 MiB send limit must keep its cover stream (command in `references/production.md`); send the cover JPG too.
+7. **Verify and deliver.** Check duration, size and streams with `ffmpeg -i out.mp4`, view a few frames, and send the file to the user. Say plainly if audio was not added. Share the copy made by `scripts/deliver.py film.mp4 cover.jpg film-share.mp4`: it opens on the cover (messaging apps use the first frame as the thumbnail), attaches it, and fits the 30 MiB send limit. Send the cover JPG too.
 
 ## Storyboard
 
