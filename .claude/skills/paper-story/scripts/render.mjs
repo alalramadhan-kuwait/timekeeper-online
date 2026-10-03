@@ -4,6 +4,8 @@
  *
  *   node render.mjs <storyboard.json> -o out.mp4 [--scale 1.5] [--audio vo.mp3] [--music bed.mp3]
  *   node render.mjs <storyboard.json> --still 2.5,9 -o stills/       one PNG per time (fast QA)
+ *   node render.mjs <storyboard.json> --check                        lists every face a banner, card or picture covers,
+ *                                                                     and every bubble or word hidden under the banner
  *   node render.mjs <storyboard.json> --sheet [--every 2] -o sheet.png   contact sheet of the whole video
  *
  * Options: --fps N  --scale N (1 = 720x1280, 1.5 = 1080x1920)  --workers N  --from S --to S
@@ -38,6 +40,7 @@ for (let i = 0; i < argv.length; i++) {
   else if (a === '--every') opt.every = +next();
   else if (a === '--still') opt.still = next().split(',').map(Number);
   else if (a === '--sheet') opt.sheet = true;
+  else if (a === '--check') opt.check = true;
   else if (a === '--keep-frames') opt.keep = true;
   else if (a === '--review') opt.review = true;
   else if (a === '--final') opt.final = true;
@@ -185,6 +188,18 @@ async function shot(page, t, file, png) {
 const first = await newPage();
 const duration = first.info.duration;
 const outW = Math.round(first.info.width * opt.scale), outH = Math.round(first.info.height * opt.scale);
+
+if (opt.check) {
+  // every 0.2 s: is any face covered by a banner, caption card, bubble or picture? (elements marked "person": true)
+  const hits = [];
+  for (let t = 0.05; t < duration; t += 0.2) hits.push(...(await first.page.evaluate((tt) => window.PM.headClashes(tt), t)));
+  await browser.close();
+  const seen = new Map();
+  for (const h of hits) { const k = h.scene + '|' + h.person + '|' + h.by; const e = seen.get(k); if (!e) seen.set(k, { ...h, from: h.t, to: h.t }); else { e.to = h.t; e.covered = Math.max(e.covered, h.covered); } }
+  for (const e of seen.values()) console.log(`scene ${e.scene + 1}  ${e.from.toFixed(1)}-${e.to.toFixed(1)}s  ` + (e.under ? `${e.by} is ${e.covered}% under the banner` : `${e.by} covers ${e.covered}% of the head of ${e.person}`));
+  console.log(seen.size ? seen.size + ' clash(es)' : 'no face covered, nothing under the banner');
+  process.exit(seen.size ? 1 : 0);
+}
 
 if (opt.still || opt.sheet) {
   const times = opt.still || Array.from({ length: Math.ceil(duration / opt.every) }, (_, i) => Math.min(duration - 0.05, i * opt.every + 0.01));

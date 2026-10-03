@@ -15,6 +15,9 @@ These notes come from the Time Keeper success story (`video/success-story/`, 21 
 
 The stage point `y` appears on screen at `640 + (y - camY) * zoom` (the same formula with 360 for `x`).
 
+- **Nothing ever covers a face**: not the banner, a card, a speech bubble or a picture. This was raised twice, so it is
+  checked mechanically: `render.mjs story.json --check`. It also flags bubbles and words hidden under the banner. A
+  bubble goes between the banner and the heads; when there is no room, lower the camera rather than shrink the bubble.
 - **The banner covers the top of the screen** (about y 60 to 160). Every head must stay below about y 190 at every
   camera keyframe. A head under the 2019 banner was a review note.
 - Props that stand in front of people must not cross a face: ring lights, mics, stands.

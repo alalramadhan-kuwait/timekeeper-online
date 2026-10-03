@@ -16,7 +16,9 @@ them was a note from the people in it.
   clothing (a dishdasha between the hands and the shoes) until the figure is about 7 heads tall. Keep the face and
   shoes as they are (see the `-tall` cut-outs in `video/success-story/simple.py`).
 - Show each person through what they do, never with a name or title on screen. Give each one a role the user has
-  confirmed (in the story: one on camera, one researching and writing, one designing). Bring a person in only when the
+  confirmed (in the story: one on camera, one researching and writing, one designing watches). Show the role as the
+  person describes it. "Design" meant designing watches, so the designer holds a pencil drawing of a watch, not a logo.
+  Make sure the role is clear and specific. Bring a person in only when the
   story gives them a part.
 
 ## Poses a photo cannot do: generate stills, not video
@@ -58,6 +60,8 @@ Notes from the reviews:
 - A `pose()` helper is a `cutout` sized by height on screen. Its `in`/`out` times let it swap with the single figures
   in the same spot. The figures walk in, then cross-fade (0.2 s) into the pose: two people walk up, then they shake
   hands. See `pose()` and `gone()` in story.py.
+- A generated pose holding a blank sheet can carry a drawing. Warp it onto the sheet's four corners and multiply it in,
+  so it reads as pencil on that paper (`video/success-story/sketch_pose.py`).
 - Measure positions on the cut-out, not by eye. Draw a 100 px grid over it, read off the palm or tabletop, and
   convert to stage coordinates (`dx`, `dy`, `TOP` in story.py).
 - Size a product against the hands, but big enough to read on a phone. Watches shrunk to hand scale were called too

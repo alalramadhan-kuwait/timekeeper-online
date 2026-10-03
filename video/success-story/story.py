@@ -9,7 +9,7 @@ enter and act), the founders meet one by one, and every hero watch is a real wat
 Founders, by their own labelled cut-outs (assets/figures/<person>_<outfit>.png):
   ali-alramadhan      behind the scenes: research, writing, questions, the script, the monitor
   ali-alyousifi       the face on camera: hosts the podcast, sits with the guest
-  mohammad-alyousifi  the visual and commercial side: designs, branding, the products
+  mohammad-alyousifi  designs watches, with an eye for them: the sketches, the dial colours, the products
 They meet in order: Ali Al-Ramadhan and Ali Al-Yousifi in Boulder, Ali Al-Yousifi and Mohammad in Los Angeles,
 and the three are first seen together there. No names or titles on screen; roles show through what they do."""
 import json, math, os
@@ -37,7 +37,7 @@ SLIM = {AY: 0.93}                       # his cut-outs read broader than he is
 def person(p, outfit, x, bottom, h, at=0.3, z=12, flip=False, depth=None, inn='rise', walk=None, **kw):
     """One founder. h is the tallest founder's height in this shot; walk=(t0, t1, x0, x1) walks him in."""
     rel = 'assets/figures/%s_%s.png' % (p, outfit); w, hh = Image.open(os.path.join(H, rel)).size
-    d = {"type": "cutout", "src": rel, "x": x, "y": bottom, "h": round(h * HEIGHT[p]), "aspect": w / hh * SLIM.get(p, 1), "z": z, "edge": 0}
+    d = {"type": "cutout", "src": rel, "x": x, "y": bottom, "h": round(h * HEIGHT[p]), "aspect": w / hh * SLIM.get(p, 1), "z": z, "edge": 0, "person": True}
     if flip: d["flip"] = True
     if depth is not None: d["depth"] = depth
     if walk:
@@ -55,7 +55,7 @@ def pose(name, x, bottom, h, at=0.3, until=None, z=12, inn='fade', depth=None, *
     with .claude/skills/paper-story/scripts/cut-poses.py assets/gen):
     shaking hands, sitting, at the mic. at/until swap it in and out with the single figures."""
     rel = 'assets/gen/%s_cut.png' % name; w, hh = Image.open(os.path.join(H, rel)).size
-    d = {"type": "cutout", "src": rel, "x": x, "y": bottom, "h": round(h), "aspect": w / hh, "z": z, "edge": 0,
+    d = {"type": "cutout", "src": rel, "x": x, "y": bottom, "h": round(h), "aspect": w / hh, "z": z, "edge": 0, "person": True,
          "idle": {"type": "bob", "amp": 2, "speed": .5}}
     if inn: d["in"] = {"type": inn, "at": at, "dur": .2}
     if until is not None: d["out"] = {"at": until, "type": "fade", "dur": .2}
@@ -124,12 +124,12 @@ els += [rect('#B0AA80', 360, 1150, 760, 280, z=6, depth=1.0)]
 els += [gone(person(AR, 'casual', 250, 1170, 640, at=0.4, z=12), 2.6),
         gone(person(AY, 'casual', 440, 1170, 640, z=13, flip=True, walk=(1.0, 2.5, 900, 440)), 2.6),
         pose('boulder_handshake', 345, 1172, 690, at=2.5, z=14),
-        bubble('هلا!', 540, 500, 2.6, 4.4, tail='r'), bubble('أهلين!', 200, 490, 3.1, 4.6)]
+        bubble('هلا!', 545, 400, 2.6, 4.4, tail='r'), bubble('أهلين!', 200, 395, 3.1, 4.6)]
 els[-4]['rot'] = [[2.5, 0], [2.9, 3], [4.4, 3], [4.9, 0]]
 els[-3]['rot'] = [[2.5, 0], [2.8, -3], [4.4, -3], [4.9, 0]]
 S('2b', 5.2, 'tk-linen', 'في بولدر…', banner='BOULDER', voiceAt=1.0, transition='cut', els=els,
   sfx=[E('paper_place', .3, -12), E('paper_slide', 1.0, -13), E('pin', 2.6, -12)],
-  camera={"zoom": [[0, 1.0], [2.2, 1.32, "inOutCubic"], [5.2, 1.4]], "x": [[0, 360], [2.2, 360], [5.2, 380]], "y": [[0, 640], [2.2, 820, "inOutCubic"], [5.2, 830]]})
+  camera={"zoom": [[0, 1.0], [2.2, 1.32, "inOutCubic"], [5.2, 1.4]], "x": [[0, 360], [2.2, 360], [5.2, 380]], "y": [[0, 640], [2.2, 665, "inOutCubic"], [5.2, 670]]})   # heads low enough for the bubbles under the banner
 
 # 4  Los Angeles: Ali Al-Yousifi meets Mohammad (who comes in close, in the foreground), then Ali Al-Ramadhan joins:
 #    the first time the three are together. The landmarks arrive as layers while the camera moves.
@@ -142,12 +142,12 @@ els += [gone(person(AY, 'casual', 400, 1160, 600, at=0.2, z=13, flip=True), 1.9)
         pose('la_greet', 320, 1162, 620, at=1.8, until=4.8, z=15),
         gone(person(AR, 'casual', 600, 1160, 600, z=14, flip=True, walk=(3.4, 4.6, 960, 600)), 4.8),
         pose('la_three', 400, 1164, 640, at=4.7, z=16),
-        bubble('هلا والله!', 280, 520, 1.9, 3.2), bubble('حيّاك!', 470, 560, 2.3, 3.4, tail='r'),
+        bubble('هلا والله!', 250, 455, 1.9, 3.2), bubble('حيّاك!', 470, 470, 2.3, 3.4, tail='r'),
         {"type": "sparkles", "x": 420, "y": 640, "radius": 300, "count": 14, "color": "#F4E3B0", "in": {"type": "fade", "at": 4.8}, "z": 40}]
 S('2c', 6.2, 'tk-linen', 'ولوس أنجلوس.', banner='LOS ANGELES', voiceAt=0.6, transition='slide', els=els,
   sfx=[E('paper_place', .3, -12), E('paper_slide', .6, -12), E('paper_slide', 3.6, -12), E('clasp', 4.8, -10)],
   camera={"zoom": [[0, 1.0], [1.8, 1.3, "inOutCubic"], [3.2, 1.35], [4.6, 1.0, "inOutCubic"], [6.2, 1.15]], "x": [[0, 360], [1.8, 320], [3.2, 330], [4.6, 400], [6.2, 400]],
-          "y": [[0, 700], [1.8, 800, "inOutCubic"], [3.2, 800], [4.6, 700], [6.2, 760]]})
+          "y": [[0, 700], [1.8, 720, "inOutCubic"], [3.2, 720], [4.6, 700], [6.2, 760]]})
 
 # 5  Back to Kuwait: suitcases, the plane through the clouds (the camera follows it), the towers come up
 cloud = lambda x, y, w, d, z: {"type": "cloud", "w": w, "color": "#F6F3EC", "x": x, "y": y, "z": z, "depth": d}
@@ -216,15 +216,15 @@ pn = pen(-100, 800, 900, 0.1, 1.25); pn['scale'] = 3.2; pn['depth'] = 1.6; pn['z
 M += [{"type": "card", "x": 360, "y": 640, "w": 720, "h": 1280, "color": "#FBF9F3", "z": 40, "depth": 0, "in": {"type": "flip", "at": 1.05, "dur": .25}, "out": {"at": 1.3, "type": "fade", "dur": .05}}]
 # translating the news (still Ali Al-Ramadhan, at the monitor)
 M += [plate('#D9D3C5', at=1.3, out=2.75, z=2),
-      {"type": "card", "x": 360, "y": 470, "w": 640, "h": 300, "label": "WATCH NEWS", "labelSize": 64, "color": "#FBF9F3", "rot": -2, "z": 30, "in": {"type": "drop", "at": 1.3, "dur": .35}, "out": {"at": 2.0, "type": "fade", "dur": .1}},
-      {"type": "card", "x": 360, "y": 470, "w": 640, "h": 300, "label": "أخبار الساعات", "labelSize": 72, "color": "#111111", "ink": "#F3F0E8", "style": "dark", "rot": 2, "z": 31, "in": {"type": "flip", "at": 2.0, "dur": .3}, "out": {"at": 2.75, "type": "fade", "dur": .05}},
+      {"type": "card", "x": 360, "y": 300, "w": 640, "h": 280, "label": "WATCH NEWS", "labelSize": 64, "color": "#FBF9F3", "rot": -2, "z": 30, "in": {"type": "drop", "at": 1.3, "dur": .35}, "out": {"at": 2.0, "type": "fade", "dur": .1}},
+      {"type": "card", "x": 360, "y": 300, "w": 640, "h": 280, "label": "أخبار الساعات", "labelSize": 72, "color": "#111111", "ink": "#F3F0E8", "style": "dark", "rot": 2, "z": 31, "in": {"type": "flip", "at": 2.0, "dur": .3}, "out": {"at": 2.75, "type": "fade", "dur": .05}},
       monitor(500, 1250, at=1.4, z=20, w=360, out={"at": 2.75, "type": "fade", "dur": .05}),
       person(AR, 'formal', 170, 1700, 1150, at=1.35, z=18, inn='fade', out={"at": 2.75, "type": "fade", "dur": .05})]
-# filming a real watch (Mohammad on the visual side), through a flash
+# filming a real watch, then Mohammad with the watch he is designing, through a flash
 M += [plate('#FFFFFF', at=2.75, out=2.95, z=70),
       macro('m1', 2.95, 3.6, z=45), macro('m5', 3.6, 4.2, z=45), viewfinder(2.95, 4.2, z=62),
-      pose('designer', 520, 1700, 1300, at=3.6, z=58, out={"at": 4.2, "type": "fade", "dur": .05}),
-      ] + design_board(140, 1180, LOGO, at=3.65, z=59, w=220, out={"at": 4.2, "type": "fade", "dur": .05})
+      pose('designer_sketch', 520, 1700, 1300, at=3.6, z=58, out={"at": 4.2, "type": "fade", "dur": .05}),
+      ] + design_board(140, 1180, at=3.65, z=59, w=220, out={"at": 4.2, "type": "fade", "dur": .05})
 # the interview (Ali Al-Yousifi on camera, with a guest)
 M += [plate('#2B2D32', at=4.2, out=6.35, z=3),
       pose('presenter', 240, 1650, 1250, at=4.25, z=20, out={"at": 6.35, "type": "fade", "dur": .05}),
@@ -291,12 +291,12 @@ S(8, 6.2, 'tk-bone', 'فبدينا نوفر ساعات نحبها… | ونثق 
   camera={"zoom": [[0, 2.1], [1.0, 2.1], [2.0, 1.4, "inOutCubic"], [4.3, 1.4], [4.31, 1.15], [6.2, 1.0, "inOutCubic"]], "x": [[0, 360]],
           "y": [[0, 900], [1.0, 880], [2.0, 760, "inOutCubic"], [4.3, 760], [4.31, 720], [6.2, 640, "inOutCubic"]]})
 
-# 13  The podcast, as a set the camera travels across: Ali Al-Ramadhan's questions and monitor -> Mohammad on the look
-#     of the episode -> Ali Al-Yousifi at the mic with the guest
+# 13  The podcast, as a set the camera travels across: Ali Al-Ramadhan's questions and monitor -> Mohammad with a watch design
+#     -> Ali Al-Yousifi at the mic with the guest
 wood = lambda x, w: rect('#7A5C42', x, 1170, w, 260, z=25)
 els = [plate('#2B2D32'), rect('#3A3C42', 750, 420, 1700, 700, z=2, depth=1.0)]
 els += [pose('writer', 190, 1310, 860, at=0.1, z=18), wood(250, 520), papers(150, 1060, at=0.2), monitor(370, 1060, at=0.3, w=300)]
-els += [pose('designer', 720, 1380, 880, at=0.2, z=18)] + design_board(560, 1000, LOGO, at=1.2, w=200) + [
+els += [pose('designer_sketch', 720, 1380, 880, at=0.2, z=18)] + design_board(560, 1000, at=1.2, w=200) + [
         camera_rig(880, 1100, 1.0, 99), ring_light(970, 1050, 1.0, 99)]
 els += [pose('podcast', 1250, 1560, 1150, at=0.3, z=18), guest(1580, 1110, at=0.4, scale=1.4), wood(1420, 760),
         {"type": "mic", "x": 1520, "y": 1060, "size": 1.0, "z": 30, "in": {"type": "drop", "at": 0.6}},

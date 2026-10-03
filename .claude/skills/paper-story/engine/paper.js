@@ -589,9 +589,51 @@
       stage.appendChild(reviewEl);
     }
     PM.duration = S.duration;
+    PM.scenes = scenes;
     PM.ready = true;
     PM.setTime(0);
     return { duration: S.duration, width: S.width, height: S.height, fps: S.fps };
+  };
+
+  // Faces must never be covered. Elements marked "person": true have a head band (the top "headBand" of their height,
+  // by default 17% for one standing figure, 30% for a wider group or waist-up pose); any banner, text, card, bubble or
+  // picture drawn above it that covers more than 12% of the band at time t is reported. Used by render.mjs --check.
+  const COVERS = { text: 1, card: 1, bubble: 1, image: 1, photo: 1, igpost: 1, phone: 1, svg: 1, laptop: 1, door: 1 };
+  PM.headClashes = function (t) {
+    PM.setTime(t);
+    const out = [], area = S.width * S.height;
+    const inter = (a, b) => Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b.left)) * Math.max(0, Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top));
+    const shown = (el) => el && el.style.display !== 'none' && +(el.style.opacity || 1) > 0.15;
+    scenes.forEach((sc, si) => {
+      const lt = t - sc.start, trd = sc.spec.transitionDur || 0.45;
+      if (lt < trd + 0.05 || lt > sc.spec.dur - 0.05 || sc.root.style.display === 'none') return;
+      if (sc.banner && shown(sc.banner)) {                     // words and bubbles hidden under the banner
+        const br = sc.banner.getBoundingClientRect();
+        sc.items.filter((it) => (it.spec.type === 'bubble' || it.spec.type === 'text') && shown(it.el)).forEach((it) => {
+          const r = it.el.firstChild.getBoundingClientRect(), f = inter(br, r) / Math.max(1, r.width * r.height);
+          if (f > 0.12) out.push({ scene: si, t: +t.toFixed(2), person: '(the banner)', by: it.spec.type + ' "' + (it.spec.text || '') + '"', covered: Math.round(f * 100), under: true });
+        });
+      }
+      const people = sc.items.filter((it) => it.spec.person && shown(it.el));
+      people.forEach((p) => {
+        const r = p.el.firstChild.getBoundingClientRect();
+        const k = p.spec.headBand || (r.width / r.height > 0.6 ? 0.3 : 0.17);
+        const band = { left: r.left, right: r.right, top: r.top, bottom: r.top + r.height * k };
+        const bandA = (band.right - band.left) * (band.bottom - band.top);
+        if (bandA <= 0 || band.bottom < 0 || band.top > S.height) return;
+        const pz = +p.el.style.zIndex;
+        const cands = sc.items.filter((it) => it !== p && COVERS[it.spec.type] && !it.spec.person && shown(it.el) && +it.el.style.zIndex > pz
+            && it.built.w * it.built.h < area * 0.5)                                       // a full-screen page, even mid-turn
+          .map((it) => [it.spec.type + (it.spec.label || it.spec.text ? ' "' + (it.spec.label || it.spec.text) + '"' : ''), it.el.firstChild.getBoundingClientRect()]);
+        if (sc.banner && shown(sc.banner)) cands.push(['banner "' + sc.bannerText + '"', sc.banner.getBoundingClientRect()]);
+        cands.forEach(([what, cr]) => {
+          if ((cr.right - cr.left) * (cr.bottom - cr.top) > area * 0.5) return;      // full-screen plates and flashes
+          const f = inter(band, cr) / bandA;
+          if (f > 0.12) out.push({ scene: si, t: +t.toFixed(2), person: p.spec.src, by: what, covered: Math.round(f * 100) });
+        });
+      });
+    });
+    return out;
   };
 
   PM.setTime = function (t) {

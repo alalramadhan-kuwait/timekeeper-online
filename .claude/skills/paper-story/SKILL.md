@@ -18,7 +18,7 @@ Making a film about real people (founders, a team, a brand story)? Also read `re
 1. **Break the script into beats.** One idea per scene, 2 to 6 seconds each, 5 to 12 scenes. Write the banner first: a takeaway of 6 words or fewer, uppercase renders best. Then the spoken line.
 2. **Pick a visual metaphor per beat** from the element library (dial for levels, stopwatch for time, books for output, skyline for scale, meter for usage, stamp for a verdict, list for a recap). Keep the mascot present in most scenes and change its outfit and face to show progress or mood. For real people, use their cut-outs and generated poses instead of the mascot, and plan a visible change every 2 to 3 seconds.
 3. **Write `storyboard.json`.** Start by copying `examples/demo.json`. Times inside a scene are scene-local seconds.
-4. **Preview before rendering.** Stills and a contact sheet take seconds.
+4. **Preview before rendering.** Run `--check` first: it lists every face a banner, card, bubble or picture covers (elements marked `"person": true`) and every bubble or word hidden under the banner, at every 0.2 s. Fix until it prints none. Then stills and a contact sheet take seconds.
    ```bash
    node .claude/skills/paper-story/scripts/render.mjs story.json --sheet --every 2 -o sheet.png
    node .claude/skills/paper-story/scripts/render.mjs story.json --still 1.5,6 --scale 1.5 -o stills/
@@ -89,6 +89,7 @@ The engine does not synthesise speech. Bring the audio:
 - Captions match the voice words. Groups are 1 to 3 words.
 - Contrast: cream or white text on dark paper, near-black on light paper.
 - Neighbouring scenes use different themes so the slide transition reads.
+- `--check` prints no clashes. Mark every person and pose `"person": true` (`"headBand"` overrides how much of the top is head) so it can see them.
 - Real people: faces match their photos, nobody is under the banner or behind a prop, the person speaking is big, and expressions fit the brand (composed for luxury).
 - Hero products are real photos, sized so they read on a phone.
 

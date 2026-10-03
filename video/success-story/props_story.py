@@ -58,19 +58,35 @@ def papers(x, y, at=0.0, z=21, **kw):
     return svg(260, 140, b, x, y, anchor='b', z=z, at=at, kind='drop', **kw)
 
 
-def design_board(x, y, logo, at=0.0, z=22, w=230, **kw):
-    """A pinned board with a logo sketch and colour swatches (branding work)."""
+def watch_sketch(cx, cy, R, ink='#46484E'):
+    """A pencil design drawing of a watch: case, lugs, crown, indices, hands at 10:10 and a dimension line.
+    A drawing of a design in progress, not a product (real watches are always real photos)."""
+    b = '<g fill="none" stroke="%s" stroke-linecap="round">' % ink
+    b += '<rect x="%.1f" y="%.1f" width="%.1f" height="%.1f" rx="6" stroke-width="2"/>' % (cx - R * .5, cy - R * 2.1, R, R * 1.2)
+    b += '<rect x="%.1f" y="%.1f" width="%.1f" height="%.1f" rx="6" stroke-width="2"/>' % (cx - R * .5, cy + R * .9, R, R * 1.2)
+    b += '<circle cx="%.1f" cy="%.1f" r="%.1f" fill="#FBF9F3" stroke-width="3.5"/>' % (cx, cy, R)
+    b += '<circle cx="%.1f" cy="%.1f" r="%.1f" stroke-width="1.5"/>' % (cx, cy, R * .86)
+    b += '<rect x="%.1f" y="%.1f" width="%.1f" height="%.1f" rx="2" stroke-width="2"/>' % (cx + R, cy - R * .13, R * .14, R * .26)
+    for k in range(12):
+        a = math.radians(k * 30); r1, r2 = R * .8, R * (.64 if k % 3 == 0 else .7)
+        b += '<line x1="%.1f" y1="%.1f" x2="%.1f" y2="%.1f" stroke-width="%.1f"/>' % (cx + r1 * math.sin(a), cy - r1 * math.cos(a), cx + r2 * math.sin(a), cy - r2 * math.cos(a), 3 if k % 3 == 0 else 1.5)
+    for ang, ln, wd in ((300, .45, 4), (60, .68, 3)):
+        a = math.radians(ang); b += '<line x1="%.1f" y1="%.1f" x2="%.1f" y2="%.1f" stroke-width="%d"/>' % (cx, cy, cx + R * ln * math.sin(a), cy - R * ln * math.cos(a), wd)
+    y = cy + R * 2.35
+    b += '<line x1="%.1f" y1="%.1f" x2="%.1f" y2="%.1f" stroke-width="1.5"/>' % (cx - R, y, cx + R, y)
+    b += ''.join('<line x1="%.1f" y1="%.1f" x2="%.1f" y2="%.1f" stroke-width="1.5"/>' % (x, y - 6, x, y + 6) for x in (cx - R, cx + R)) + '</g>'
+    b += '<text x="%.1f" y="%.1f" font-family="Inter,sans-serif" font-size="%d" font-weight="700" fill="%s" text-anchor="middle">40 mm</text>' % (cx, y - 6, max(10, int(R * .3)), ink)
+    return b
+
+
+def design_board(x, y, at=0.0, z=22, w=230, **kw):
+    """A pinned board with a watch being designed: the pencil drawing and the dial colours being tried."""
     h = int(w * 1.25)
     b = ('<rect width="%d" height="%d" fill="#F4F1EA"/><rect x="0" y="0" width="%d" height="14" fill="#C9A35F"/>' % (w, h, w)
-         + '<rect x="%d" y="30" width="%d" height="%d" fill="#FFFFFF"/>' % (w * .2, w * .6, w * .6)
-         + ''.join('<rect x="%d" y="%d" width="%d" height="%d" fill="%s"/>' % (18 + k * (w - 36) / 4, h - 64, (w - 36) / 4 - 6, 44, c)
-                   for k, c in enumerate(['#111111', '#F3F0E8', '#C9A35F', '#7E848B'])))
-    board = svg(w, h, b, x, y, anchor='b', z=z, at=at, kind='drop', **kw)
-    # the logo goes on as an image element: an <image> inside inline SVG does not resolve the storyboard's paths
-    mark = {"type": "image", "src": logo, "x": x, "y": y - h + 30 + w * .3, "w": w * .6, "h": w * .6, "frame": False, "z": z + 1}
-    for k in ('in', 'out', 'depth', 'rot'):
-        if k in board: mark[k] = board[k]
-    return [board, mark]
+         + watch_sketch(w / 2, h * .42, w * .2)
+         + ''.join('<circle cx="%.1f" cy="%d" r="%.1f" fill="%s" stroke="#46484E" stroke-width="1"/>' % (24 + k * (w - 48) / 3, h - 30, w * .06, c)
+                   for k, c in enumerate(['#111111', '#F3F0E8', '#1F4E46', '#7E848B'])))
+    return [svg(w, h, b, x, y, anchor='b', z=z, at=at, kind='rise', **kw)]
 
 
 def guest(x, y, at=0.0, z=14, scale=1.0, flip=True, **kw):
