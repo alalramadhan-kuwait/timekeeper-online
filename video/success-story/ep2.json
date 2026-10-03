@@ -1,0 +1,1277 @@
+{
+ "title": "الفكرة تكبر",
+ "episode": 2,
+ "width": 720,
+ "height": 1280,
+ "fps": 30,
+ "maxWords": 4,
+ "style": {
+  "banner": {
+   "paper": "#F3F0E8",
+   "ink": "#111111",
+   "upper": false,
+   "ls": 0,
+   "tape": "rgba(186,182,172,.88)",
+   "torn": 0.5,
+   "size": 34
+  },
+  "caption": {
+   "font": "var(--f-banner)"
+  },
+  "grain": 0.42,
+  "vignette": 0.8
+ },
+ "themes": {
+  "tk-bone": {
+   "bg": "#E4DFD3",
+   "blot": [
+    "#EFEBE1",
+    "#D5CFC1"
+   ],
+   "floor": "#C9C3B4",
+   "floorTop": "#DDD7C9",
+   "capBg": "#111111",
+   "capInk": "#FFFFFF"
+  },
+  "tk-linen": {
+   "bg": "#CFC7B5",
+   "blot": [
+    "#DDD6C6",
+    "#BDB5A2"
+   ],
+   "floor": "#B3AB98",
+   "floorTop": "#C7BFAD",
+   "capBg": "#111111",
+   "capInk": "#FFFFFF"
+  },
+  "tk-graphite": {
+   "bg": "#34373E",
+   "blot": [
+    "#43474F",
+    "#25272C"
+   ],
+   "floor": "#222428",
+   "floorTop": "#383B42",
+   "capBg": "#F3F0E8",
+   "capInk": "#111111"
+  },
+  "tk-ink": {
+   "bg": "#16181C",
+   "blot": [
+    "#22252B",
+    "#0D0E11"
+   ],
+   "floor": "#0F1013",
+   "floorTop": "#272A31",
+   "capBg": "#F3F0E8",
+   "capInk": "#111111"
+  },
+  "tk-black": {
+   "bg": "#050505",
+   "blot": [
+    "#0B0B0B",
+    "#000000"
+   ],
+   "floor": "#050505",
+   "floorTop": "#111111",
+   "capBg": "#F3F0E8",
+   "capInk": "#111111"
+  }
+ },
+ "audio": {
+  "autoSfx": true,
+  "music": "renders/ep2_score_temp.wav",
+  "musicGain": -17
+ },
+ "scenes": [
+  {
+   "id": "E2-S01",
+   "status": "UNCONFIRMED",
+   "dur": 7.5,
+   "theme": "tk-bone",
+   "floor": false,
+   "elements": [
+    {
+     "type": "igpost",
+     "x": 360,
+     "y": 600,
+     "w": 340,
+     "empty": true,
+     "avatar": "../../public/icon-512.png",
+     "handle": "timekeeperkw",
+     "in": {
+      "type": "drop",
+      "at": 0.5
+     },
+     "out": {
+      "at": 2.0,
+      "type": "fade",
+      "dur": 0.2
+     }
+    },
+    {
+     "type": "igpost",
+     "asset": "ep2_first_post_01",
+     "desc": "First educational post (real, dated)",
+     "x": 215,
+     "y": 560,
+     "w": 330,
+     "avatar": "../../public/icon-512.png",
+     "handle": "timekeeperkw",
+     "rot": -4,
+     "likeAt": 3.4,
+     "in": {
+      "type": "drop",
+      "at": 2.2
+     }
+    },
+    {
+     "type": "igpost",
+     "asset": "ep2_first_post_02",
+     "desc": "Early educational post",
+     "x": 505,
+     "y": 660,
+     "w": 330,
+     "avatar": "../../public/icon-512.png",
+     "handle": "timekeeperkw",
+     "rot": 3,
+     "in": {
+      "type": "drop",
+      "at": 3.2
+     }
+    },
+    {
+     "type": "igpost",
+     "asset": "ep2_first_post_03",
+     "desc": "Early educational post",
+     "x": 330,
+     "y": 800,
+     "w": 330,
+     "avatar": "../../public/icon-512.png",
+     "handle": "timekeeperkw",
+     "rot": -2,
+     "in": {
+      "type": "drop",
+      "at": 4.2
+     }
+    }
+   ],
+   "banner": "2018",
+   "vo": "بدينا بشي بسيط: نشرح الساعات… بالعربي.",
+   "captions": "بدينا بشي بسيط: | نشرح الساعات… | بالعربي.",
+   "claims": [
+    "The original goal was education: explaining watches in Arabic (founder testimony).",
+    "The banner year 2018 is HELD: the brief lists it as a milestone but not what it marks. Confirm before use."
+   ],
+   "note": "An empty social post frame, then real early posts drop in.",
+   "sfx": [
+    {
+     "at": 0.5,
+     "name": "paper_place",
+     "gain": -9
+    },
+    {
+     "at": 2.2,
+     "name": "paper_place",
+     "gain": -9
+    },
+    {
+     "at": 3.2,
+     "name": "paper_place",
+     "gain": -9
+    },
+    {
+     "at": 4.2,
+     "name": "paper_place",
+     "gain": -9
+    }
+   ]
+  },
+  {
+   "id": "E2-S02",
+   "status": "FOUNDER",
+   "dur": 8.5,
+   "theme": "tk-linen",
+   "floor": true,
+   "elements": [
+    {
+     "type": "watch",
+     "x": 360,
+     "y": 560,
+     "size": 330,
+     "numerals": "arabic",
+     "brand": "",
+     "explode": [
+      [
+       1.2,
+       0
+      ],
+      [
+       2.8,
+       1,
+       "outBack"
+      ],
+      [
+       6.5,
+       1,
+       "linear"
+      ],
+      [
+       7.8,
+       0,
+       "inOutCubic"
+      ]
+     ],
+     "time": [
+      10,
+      9,
+      36
+     ],
+     "rate": 5,
+     "in": {
+      "type": "pop",
+      "at": 0.2
+     }
+    },
+    {
+     "type": "shape",
+     "kind": "pill",
+     "x": 120,
+     "y": 420,
+     "w": 150,
+     "h": 46,
+     "color": "#111111",
+     "ink": "#F3F0E8",
+     "text": "الحركة",
+     "size": 22,
+     "in": {
+      "type": "pop",
+      "at": 3.0
+     }
+    },
+    {
+     "type": "shape",
+     "kind": "pill",
+     "x": 130,
+     "y": 620,
+     "w": 150,
+     "h": 46,
+     "color": "#111111",
+     "ink": "#F3F0E8",
+     "text": "العلبة",
+     "size": 22,
+     "in": {
+      "type": "pop",
+      "at": 3.6
+     }
+    },
+    {
+     "type": "shape",
+     "kind": "pill",
+     "x": 600,
+     "y": 400,
+     "w": 150,
+     "h": 46,
+     "color": "#111111",
+     "ink": "#F3F0E8",
+     "text": "الميناء",
+     "size": 22,
+     "in": {
+      "type": "pop",
+      "at": 4.2
+     }
+    },
+    {
+     "type": "shape",
+     "kind": "pill",
+     "x": 600,
+     "y": 560,
+     "w": 150,
+     "h": 46,
+     "color": "#111111",
+     "ink": "#F3F0E8",
+     "text": "العقارب",
+     "size": 22,
+     "in": {
+      "type": "pop",
+      "at": 4.8
+     }
+    },
+    {
+     "type": "shape",
+     "kind": "pill",
+     "x": 595,
+     "y": 720,
+     "w": 150,
+     "h": 46,
+     "color": "#111111",
+     "ink": "#F3F0E8",
+     "text": "التاج",
+     "size": 22,
+     "in": {
+      "type": "pop",
+      "at": 5.4
+     }
+    },
+    {
+     "type": "shape",
+     "kind": "pill",
+     "x": 125,
+     "y": 800,
+     "w": 150,
+     "h": 46,
+     "color": "#111111",
+     "ink": "#F3F0E8",
+     "text": "السوار",
+     "size": 22,
+     "in": {
+      "type": "pop",
+      "at": 6.0
+     }
+    },
+    {
+     "type": "puppet",
+     "x": 150,
+     "y": 960,
+     "size": 0.8,
+     "character": "ali-alramadhan",
+     "initial": "ع ر",
+     "top": "#43464D",
+     "pose": "point",
+     "talk": true,
+     "in": {
+      "type": "rise",
+      "at": 0.1
+     }
+    },
+    {
+     "type": "puppet",
+     "x": 570,
+     "y": 960,
+     "size": 0.8,
+     "character": "ali-alyousifi",
+     "initial": "ع ي",
+     "top": "#6C7078",
+     "pose": "stand",
+     "flip": true,
+     "in": {
+      "type": "rise",
+      "at": 0.3
+     }
+    }
+   ],
+   "banner": "",
+   "vo": "ما كنا نبيع… كنا نعلّم.",
+   "captions": "ما كنا نبيع… | كنا نعلّم.",
+   "claims": [
+    "The original objective was education and simplifying watches, not selling (founder testimony)."
+   ],
+   "note": "The founders break a complicated watch into simple named pieces. Labels are generic watch anatomy.",
+   "sfx": [
+    {
+     "at": 1.0,
+     "name": "crown_wind",
+     "gain": -10
+    },
+    {
+     "at": 2.6,
+     "name": "pin",
+     "gain": -10
+    },
+    {
+     "at": 3.2,
+     "name": "pin",
+     "gain": -10
+    },
+    {
+     "at": 3.8,
+     "name": "pin",
+     "gain": -10
+    },
+    {
+     "at": 4.4,
+     "name": "pin",
+     "gain": -10
+    }
+   ]
+  },
+  {
+   "id": "E2-S03",
+   "status": "FOUNDER",
+   "dur": 10.0,
+   "theme": "tk-graphite",
+   "floor": false,
+   "elements": [
+    {
+     "type": "igpost",
+     "x": 360,
+     "y": 640,
+     "w": 360,
+     "asset": "ep2_featured_watch_post",
+     "desc": "A real post featuring a watch",
+     "avatar": "../../public/icon-512.png",
+     "rot": -2,
+     "opacity": 0.55,
+     "in": {
+      "type": "pop",
+      "at": 0.3
+     }
+    },
+    {
+     "type": "notif",
+     "x": 346,
+     "y": 420,
+     "w": 560,
+     "name": "timekeeperkw",
+     "initial": "؟",
+     "text": "وين أحصل هالساعة؟",
+     "size": 30,
+     "in": {
+      "type": "slideD",
+      "at": 1.4,
+      "from": 600
+     },
+     "z": 30
+    },
+    {
+     "type": "notif",
+     "x": 360,
+     "y": 595,
+     "w": 560,
+     "name": "timekeeperkw",
+     "initial": "؟",
+     "text": "تقدرون توفرونها؟",
+     "size": 30,
+     "in": {
+      "type": "slideD",
+      "at": 3.4,
+      "from": 600
+     },
+     "z": 31
+    },
+    {
+     "type": "notif",
+     "x": 374,
+     "y": 770,
+     "w": 560,
+     "name": "timekeeperkw",
+     "initial": "؟",
+     "text": "من وين نشتريها؟",
+     "size": 30,
+     "in": {
+      "type": "slideD",
+      "at": 5.4,
+      "from": 600
+     },
+     "z": 32
+    }
+   ],
+   "banner": "الطلب جاء من الناس",
+   "vo": "إحنا بدينا نشرح الساعات… والناس بدأت تطلب الساعات اللي نتكلم عنها.",
+   "captions": "إحنا بدينا نشرح الساعات… | والناس بدأت تطلب الساعات اللي نتكلم عنها.",
+   "claims": [
+    "Audience requests for the watches they featured led Time Keeper toward selling (founder testimony).",
+    "The three messages are representative of the requests; replace with real screenshots when available."
+   ],
+   "note": "Notifications arrive. The community, not a business plan, created the demand.",
+   "sfx": [
+    {
+     "at": 1.4,
+     "name": "notif",
+     "gain": -9
+    },
+    {
+     "at": 3.4,
+     "name": "notif",
+     "gain": -9
+    },
+    {
+     "at": 5.4,
+     "name": "notif",
+     "gain": -9
+    }
+   ]
+  },
+  {
+   "id": "E2-S04",
+   "status": "METAPHOR",
+   "dur": 4.5,
+   "theme": "tk-bone",
+   "floor": false,
+   "elements": [
+    {
+     "type": "igpost",
+     "x": 360,
+     "y": 600,
+     "w": 340,
+     "empty": true,
+     "avatar": "../../public/icon-512.png",
+     "scale": [
+      [
+       0.4,
+       1
+      ],
+      [
+       1.4,
+       0.35,
+       "inCubic"
+      ]
+     ],
+     "rot": [
+      [
+       0.4,
+       0
+      ],
+      [
+       1.4,
+       8
+      ]
+     ],
+     "out": {
+      "at": 1.35,
+      "type": "fade",
+      "dur": 0.15
+     }
+    },
+    {
+     "type": "box",
+     "x": 360,
+     "y": 680,
+     "w": 340,
+     "h": 240,
+     "lid": [
+      [
+       2.2,
+       0
+      ],
+      [
+       3.2,
+       1,
+       "outBack"
+      ]
+     ],
+     "in": {
+      "type": "pop",
+      "at": 1.4
+     }
+    },
+    {
+     "type": "watch",
+     "x": 360,
+     "y": 650,
+     "size": 150,
+     "strap": false,
+     "numerals": "arabic",
+     "in": {
+      "type": "pop",
+      "at": 3.0
+     },
+     "z": 40
+    }
+   ],
+   "banner": "",
+   "claims": [
+    "Visual metaphor: educational content turning into a watch box (content to commerce). No factual claim."
+   ],
+   "note": "The post folds into a box. Silence plus paper sounds.",
+   "sfx": [
+    {
+     "at": 0.8,
+     "name": "fold",
+     "gain": -8
+    },
+    {
+     "at": 1.5,
+     "name": "paper_place",
+     "gain": -8
+    },
+    {
+     "at": 2.4,
+     "name": "clasp",
+     "gain": -8
+    }
+   ],
+   "silent": true
+  },
+  {
+   "id": "E2-S05",
+   "status": "METAPHOR",
+   "dur": 7.0,
+   "theme": "tk-linen",
+   "floor": false,
+   "elements": [
+    {
+     "type": "phone",
+     "x": 190,
+     "y": 560,
+     "w": 230,
+     "h": 460,
+     "asset": "ep2_app_screenshot",
+     "label": "REAL APP / WEBSITE SCREENSHOT NEEDED",
+     "rot": -4,
+     "in": {
+      "type": "drop",
+      "at": 0.6
+     }
+    },
+    {
+     "type": "box",
+     "kind": "parcel",
+     "x": 500,
+     "y": 760,
+     "w": 240,
+     "h": 160,
+     "label": "TK-0001",
+     "rot": 3,
+     "in": {
+      "type": "drop",
+      "at": 1.6
+     }
+    },
+    {
+     "type": "box",
+     "kind": "parcel",
+     "x": 540,
+     "y": 590,
+     "w": 200,
+     "h": 140,
+     "label": "TK-0002",
+     "rot": -5,
+     "in": {
+      "type": "drop",
+      "at": 2.6
+     }
+    },
+    {
+     "type": "text",
+     "text": "ثقة",
+     "x": 360,
+     "y": 880,
+     "size": 120,
+     "font": "banner",
+     "weight": 800,
+     "color": "#111111",
+     "paper": "#F3F0E8",
+     "upper": false,
+     "in": {
+      "type": "slam",
+      "at": 5.0
+     },
+     "z": 60
+    }
+   ],
+   "banner": "",
+   "vo": "وكل طلب… كان معناه شي واحد: ثقة.",
+   "captions": "وكل طلب… | كان معناه شي واحد: | ثقة.",
+   "claims": [
+    "Framing: growth measured in trust, not numbers. No figures shown.",
+    "Screens and parcels are placeholders for the real website, app, first orders and first packaging."
+   ],
+   "note": "Not a numbers montage. The word ثقة lands last.",
+   "sfx": [
+    {
+     "at": 0.7,
+     "name": "paper_place",
+     "gain": -10
+    },
+    {
+     "at": 1.7,
+     "name": "paper_place",
+     "gain": -10
+    },
+    {
+     "at": 2.7,
+     "name": "paper_place",
+     "gain": -10
+    },
+    {
+     "at": 5.0,
+     "name": "stamp",
+     "gain": -6
+    }
+   ]
+  },
+  {
+   "id": "E2-S06",
+   "status": "FOUNDER",
+   "dur": 9.0,
+   "theme": "tk-ink",
+   "floor": false,
+   "elements": [
+    {
+     "type": "mic",
+     "x": 360,
+     "y": 960,
+     "size": 1.0,
+     "in": {
+      "type": "drop",
+      "at": 0.3
+     },
+     "z": 30
+    },
+    {
+     "type": "waves",
+     "x": 360,
+     "y": 430,
+     "bars": 25,
+     "h": 150,
+     "color": "#F3F0E8",
+     "level": [
+      [
+       1.0,
+       0
+      ],
+      [
+       1.6,
+       1
+      ]
+     ]
+    },
+    {
+     "type": "photo",
+     "asset": "ep2_podcast_studio",
+     "x": 195,
+     "y": 700,
+     "w": 300,
+     "aspect": 1.5,
+     "label": "البودكاست",
+     "desc": "Real podcast recording photo",
+     "rot": [
+      [
+       0,
+       -12
+      ],
+      [
+       0.9,
+       -4,
+       "outBack"
+      ]
+     ],
+     "in": {
+      "type": "drop",
+      "at": 1.4,
+      "dur": 0.6
+     }
+    },
+    {
+     "type": "photo",
+     "asset": "ep2_podcast_guest",
+     "x": 525,
+     "y": 760,
+     "w": 300,
+     "aspect": 1.5,
+     "label": "ضيوف",
+     "desc": "Important podcast guest, real photo",
+     "rot": [
+      [
+       0,
+       12
+      ],
+      [
+       0.9,
+       4,
+       "outBack"
+      ]
+     ],
+     "in": {
+      "type": "drop",
+      "at": 2.4,
+      "dur": 0.6
+     }
+    }
+   ],
+   "banner": "TIME KEEPER PODCAST",
+   "vo": "وبعدها جاء البودكاست… وما عادوا يشرحون الساعات بروحهم. صاروا يتكلمون مع عالم الساعات نفسه.",
+   "captions": "وبعدها جاء البودكاست… | وما عادوا يشرحون الساعات بروحهم. | صاروا يتكلمون مع عالم الساعات نفسه.",
+   "claims": [
+    "Time Keeper has a podcast (brief; also listed on the company site). The shift from explaining alone to speaking with the watch world is founder narrative."
+   ],
+   "note": "Real podcast photographs and the first episode cover go in the polaroids.",
+   "sfx": [
+    {
+     "at": 0.6,
+     "name": "mic_tap",
+     "gain": -6
+    },
+    {
+     "at": 1.4,
+     "name": "paper_place",
+     "gain": -9
+    },
+    {
+     "at": 2.4,
+     "name": "paper_place",
+     "gain": -9
+    }
+   ]
+  },
+  {
+   "id": "E2-S07",
+   "status": "FOUNDER",
+   "dur": 10.0,
+   "theme": "tk-ink",
+   "floor": false,
+   "elements": [
+    {
+     "type": "map",
+     "x": 360,
+     "y": 500,
+     "w": 640,
+     "h": 480,
+     "view": [
+      [
+       0,
+       {
+        "lon": 48,
+        "lat": 29.4,
+        "span": 30
+       }
+      ],
+      [
+       1.2,
+       {
+        "lon": 26,
+        "lat": 38,
+        "span": 70
+       },
+       "inOutCubic"
+      ],
+      [
+       3.4,
+       {
+        "lon": 10,
+        "lat": 44,
+        "span": 26
+       },
+       "inOutCubic"
+      ]
+     ],
+     "sea": "#CCC6B7",
+     "land": "#F4F1E8",
+     "pins": [
+      {
+       "id": "kw",
+       "lon": 47.98,
+       "lat": 29.37,
+       "label": "KUWAIT",
+       "at": 0
+      },
+      {
+       "id": "gva",
+       "lon": 6.14,
+       "lat": 46.2,
+       "label": "GENEVA",
+       "at": 3.0
+      }
+     ],
+     "routes": [
+      {
+       "from": "kw",
+       "to": "gva",
+       "at": 0.8,
+       "dur": 2.2,
+       "curve": 0.14
+      }
+     ],
+     "highlight": [
+      {
+       "n": "Kuwait",
+       "at": 0,
+       "color": "#111111"
+      },
+      {
+       "n": "Switzerland",
+       "at": 3.2,
+       "color": "#111111"
+      }
+     ]
+    },
+    {
+     "type": "card",
+     "x": 105,
+     "y": 905,
+     "w": 150,
+     "h": 200,
+     "color": "#17181B",
+     "ink": "#E6E1D5",
+     "label": "PASSPORT",
+     "labelSize": 20,
+     "rot": -6,
+     "in": {
+      "type": "drop",
+      "at": 2.4
+     },
+     "z": 30
+    },
+    {
+     "type": "stamp",
+     "x": 108,
+     "y": 925,
+     "text": "GENEVA",
+     "color": "#F3F0E8",
+     "size": 22,
+     "weight": 800,
+     "rot": -12,
+     "blend": "normal",
+     "in": {
+      "type": "slam",
+      "at": 3.5
+     },
+     "z": 40
+    },
+    {
+     "type": "photo",
+     "asset": "ep2_house_1",
+     "x": 270,
+     "y": 905,
+     "w": 160,
+     "aspect": 1.3,
+     "label": "",
+     "desc": "House + relationship type (no logo until classified)",
+     "descSize": 15,
+     "rot": -3,
+     "in": {
+      "type": "drop",
+      "at": 5.2
+     },
+     "z": 35
+    },
+    {
+     "type": "photo",
+     "asset": "ep2_house_2",
+     "x": 440,
+     "y": 905,
+     "w": 160,
+     "aspect": 1.3,
+     "label": "",
+     "desc": "House + relationship type (no logo until classified)",
+     "descSize": 15,
+     "rot": 2,
+     "in": {
+      "type": "drop",
+      "at": 6.4
+     },
+     "z": 36
+    },
+    {
+     "type": "photo",
+     "asset": "ep2_house_3",
+     "x": 610,
+     "y": 905,
+     "w": 160,
+     "aspect": 1.3,
+     "label": "",
+     "desc": "House + relationship type (no logo until classified)",
+     "descSize": 15,
+     "rot": -2,
+     "in": {
+      "type": "drop",
+      "at": 7.6
+     },
+     "z": 37
+    }
+   ],
+   "banner": "GENEVA — SWITZERLAND",
+   "vo": "ومن الكويت… إلى جنيف. من أكبر دور الساعات في العالم… إلى صُنّاع الساعات المستقلين.",
+   "captions": "ومن الكويت… | إلى جنيف. | من أكبر دور الساعات في العالم… | إلى صُنّاع الساعات المستقلين.",
+   "claims": [
+    "Time Keeper reached Geneva and the international watch industry (founder brief).",
+    "NO partnership claim and NO house logo is shown. Each house below stays a placeholder until its relationship is classified in BRAND-RELATIONS.md."
+   ],
+   "note": "Passport, stamp, plane. Placeholder cards carry a relationship type, never a logo.",
+   "sfx": [
+    {
+     "at": 0.8,
+     "name": "plane",
+     "gain": -12
+    },
+    {
+     "at": 3.5,
+     "name": "stamp",
+     "gain": -5
+    },
+    {
+     "at": 5.2,
+     "name": "paper_place",
+     "gain": -10
+    },
+    {
+     "at": 6.4,
+     "name": "paper_place",
+     "gain": -10
+    },
+    {
+     "at": 7.6,
+     "name": "paper_place",
+     "gain": -10
+    }
+   ]
+  },
+  {
+   "id": "E2-S08",
+   "status": "FOUNDER",
+   "dur": 10.0,
+   "theme": "tk-bone",
+   "floor": true,
+   "elements": [
+    {
+     "type": "photo",
+     "asset": "ep2_wandw_01",
+     "x": 190,
+     "y": 520,
+     "w": 280,
+     "aspect": 1.5,
+     "label": "جنيف",
+     "desc": "Watches & Wonders, Geneva (real photo)",
+     "rot": [
+      [
+       0,
+       -9
+      ],
+      [
+       0.9,
+       -3,
+       "outBack"
+      ]
+     ],
+     "in": {
+      "type": "drop",
+      "at": 0.6,
+      "dur": 0.6
+     }
+    },
+    {
+     "type": "photo",
+     "asset": "ep2_wandw_02",
+     "x": 530,
+     "y": 560,
+     "w": 280,
+     "aspect": 1.5,
+     "label": "",
+     "desc": "Meeting or manufacture visit (real photo)",
+     "rot": [
+      [
+       0,
+       9
+      ],
+      [
+       0.9,
+       3,
+       "outBack"
+      ]
+     ],
+     "in": {
+      "type": "drop",
+      "at": 1.2,
+      "dur": 0.6
+     }
+    },
+    {
+     "type": "puppet",
+     "x": [
+      [
+       0,
+       -120
+      ],
+      [
+       9.5,
+       840,
+       "linear"
+      ]
+     ],
+     "y": 960,
+     "size": 0.8,
+     "character": "ali-alramadhan",
+     "initial": "ع ر",
+     "top": "#43464D",
+     "view": "side",
+     "walk": true,
+     "walkRate": 1.3
+    },
+    {
+     "type": "puppet",
+     "x": [
+      [
+       0,
+       -300
+      ],
+      [
+       9.5,
+       660,
+       "linear"
+      ]
+     ],
+     "y": 960,
+     "size": 0.8,
+     "character": "mohammad-alyousifi",
+     "initial": "م ي",
+     "top": "#8D9198",
+     "view": "side",
+     "walk": true,
+     "walkRate": 1.3
+    },
+    {
+     "type": "puppet",
+     "x": [
+      [
+       0,
+       -480
+      ],
+      [
+       9.5,
+       480,
+       "linear"
+      ]
+     ],
+     "y": 960,
+     "size": 0.8,
+     "character": "ali-alyousifi",
+     "initial": "ع ي",
+     "top": "#6C7078",
+     "view": "side",
+     "walk": true,
+     "walkRate": 1.3
+    }
+   ],
+   "banner": "WATCHES & WONDERS — GENEVA",
+   "vo": "في البداية… كنا ندور المعلومة. وبعد سنوات… صرنا نروح للمصدر.",
+   "captions": "في البداية… | كنا ندور المعلومة. | وبعد سنوات… | صرنا نروح للمصدر.",
+   "claims": [
+    "The founders attended Watches & Wonders in Geneva (founder brief). Relationship class for event: EVENT ACCESS. Do not describe as partnership."
+   ],
+   "note": "Same three founders, now walking through the international watch industry. Real event photos go on the wall.",
+   "sfx": [
+    {
+     "at": 5.2,
+     "name": "shutter",
+     "gain": -10
+    }
+   ],
+   "beds": [
+    {
+     "name": "crowd",
+     "from": 0.5,
+     "to": 10,
+     "gain": -26
+    }
+   ],
+   "brands": [
+    {
+     "name": "Watches & Wonders",
+     "relation": "event_access",
+     "evidence": "Founder brief: attended in Geneva. Add badge or invitation photo."
+    }
+   ]
+  },
+  {
+   "id": "E2-S09",
+   "status": "FOUNDER",
+   "dur": 8.0,
+   "theme": "tk-ink",
+   "floor": false,
+   "elements": [
+    {
+     "type": "map",
+     "x": 360,
+     "y": 560,
+     "w": 660,
+     "h": 700,
+     "view": [
+      [
+       0,
+       {
+        "lon": 26,
+        "lat": 38,
+        "span": 70
+       }
+      ],
+      [
+       3.0,
+       {
+        "lon": 20,
+        "lat": 25,
+        "span": 300
+       },
+       "inOutCubic"
+      ]
+     ],
+     "sea": "#CCC6B7",
+     "land": "#F4F1E8",
+     "pins": [
+      {
+       "id": "kw",
+       "lon": 47.98,
+       "lat": 29.37,
+       "label": "KUWAIT",
+       "at": 0
+      },
+      {
+       "id": "gva",
+       "lon": 6.14,
+       "lat": 46.2,
+       "label": "GENEVA",
+       "at": 0
+      }
+     ],
+     "routes": [
+      {
+       "from": "kw",
+       "to": "gva",
+       "at": 0.3,
+       "dur": 1.0,
+       "keep": true,
+       "plane": false
+      }
+     ],
+     "highlight": [
+      {
+       "n": "Kuwait",
+       "color": "#111111"
+      },
+      {
+       "n": "Switzerland",
+       "color": "#111111"
+      }
+     ],
+     "graticule": true
+    },
+    {
+     "type": "text",
+     "text": "مجتمع",
+     "x": 360,
+     "y": 900,
+     "size": 130,
+     "font": "banner",
+     "weight": 800,
+     "color": "#111111",
+     "paper": "#F3F0E8",
+     "upper": false,
+     "in": {
+      "type": "slam",
+      "at": 5.6
+     },
+     "z": 60
+    }
+   ],
+   "banner": "",
+   "vo": "تايم كيبر ما عاد مجرد حساب. صار مجتمع.",
+   "captions": "تايم كيبر ما عاد مجرد حساب. | صار مجتمع.",
+   "claims": [
+    "Time Keeper grew from an account into a community (founder brief)."
+   ],
+   "note": "Kuwait connected by paper lines to Switzerland, then the map widens. Cut to black at the end.",
+   "sfx": [
+    {
+     "at": 0.6,
+     "name": "plane",
+     "gain": -14
+    },
+    {
+     "at": 5.6,
+     "name": "stamp",
+     "gain": -7
+    }
+   ]
+  }
+ ]
+}
