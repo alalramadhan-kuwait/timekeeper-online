@@ -18,7 +18,7 @@ The founders are the protagonists, so they must stay recognisable. The draft use
 
 ## Generating the parts
 
-Higgsfield makes the character art. paper-motion controls the film. Do **not** ask Higgsfield for finished scenes.
+Higgsfield makes the character art. paper-story controls the film. Do **not** ask Higgsfield for finished scenes.
 
 For each locked founder produce transparent-background PNGs, exported at 4x the design sizes below, in `assets/characters/<id>/front/` and `assets/characters/<id>/side/` (profile, facing right, used for walking):
 

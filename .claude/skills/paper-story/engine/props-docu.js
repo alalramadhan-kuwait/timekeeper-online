@@ -1,4 +1,4 @@
-/* paper-motion documentary props: watch, map, photo, social post, phone, door, mic, box, puppet and more.
+/* paper-story documentary props: watch, map, photo, social post, phone, door, mic, box, puppet and more.
  * Same builder contract as props.js. Palette defaults are monochrome (ink, bone, steel) so a brand
  * can drive colour from the storyboard. */
 (function () {

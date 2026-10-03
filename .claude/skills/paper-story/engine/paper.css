@@ -1,4 +1,4 @@
-/* paper-motion stage. Everything is positioned in design pixels (default 720x1280)
+/* paper-story stage. Everything is positioned in design pixels (default 720x1280)
    and scaled by the renderer's deviceScaleFactor. Nothing here uses CSS animation:
    the engine sets every style from the current time so frames are deterministic. */
 @font-face{font-family:"Inter Tight";font-weight:800;src:url(../assets/fonts/inter-tight-latin-800-normal.woff2) format("woff2");}

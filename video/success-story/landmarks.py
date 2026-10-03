@@ -1,6 +1,6 @@
 """Paper-cut place scenes for simple.py: Boulder, Los Angeles, Kuwait at dusk, Geneva.
 
-Each function returns paper-motion elements (inline SVG layers) for a 720x1280 stage whose floor line is at FLOOR.
+Each function returns paper-story elements (inline SVG layers) for a 720x1280 stage whose floor line is at FLOOR.
 Layers are separate elements so they can arrive one after another, back to front, like cut paper being laid down.
 Colours stay muted so the founders' cutouts remain the brightest thing on screen."""
 import math, random

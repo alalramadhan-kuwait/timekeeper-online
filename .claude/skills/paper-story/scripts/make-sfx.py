@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Procedural sound kit for paper-motion drafts: writes mono 44.1 kHz WAVs to assets/sfx/.
+"""Procedural sound kit for paper-story drafts: writes mono 44.1 kHz WAVs to assets/sfx/.
 Deterministic (seeded). These are reference-quality placeholders for reviewing timing and mix; replace any
 of them by dropping a WAV with the same name into assets/sfx/ (or a project-level sfx/ folder).
    python3 make-sfx.py            """

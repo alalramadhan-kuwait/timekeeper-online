@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * paper-motion renderer.
+ * paper-story renderer.
  *
  *   node render.mjs <storyboard.json> -o out.mp4 [--scale 1.5] [--audio vo.mp3] [--music bed.mp3]
  *   node render.mjs <storyboard.json> --still 2.5,9 -o stills/       one PNG per time (fast QA)
@@ -98,7 +98,7 @@ function findFfmpeg() {
   die('ffmpeg not found. Install it (apt-get install ffmpeg) or: pip install imageio-ffmpeg');
 }
 function loadPlaywright() {
-  const cache = path.join(os.homedir(), '.cache', 'paper-motion');
+  const cache = path.join(os.homedir(), '.cache', 'paper-story');
   const roots = [here, process.cwd(), cache, ...(process.env.NODE_PATH || '').split(path.delimiter).filter(Boolean)];
   try { roots.push(execFileSync('npm', ['root', '-g']).toString().trim()); } catch {}
   for (const r of roots) {
@@ -107,9 +107,9 @@ function loadPlaywright() {
   }
   console.error('render: installing playwright-core into ' + cache + ' (one time)...');
   fs.mkdirSync(cache, { recursive: true });
-  if (!fs.existsSync(path.join(cache, 'package.json'))) fs.writeFileSync(path.join(cache, 'package.json'), '{"name":"paper-motion-cache","private":true}');
+  if (!fs.existsSync(path.join(cache, 'package.json'))) fs.writeFileSync(path.join(cache, 'package.json'), '{"name":"paper-story-cache","private":true}');
   const r = spawnSync('npm', ['install', '--silent', '--prefix', cache, 'playwright-core'], { stdio: 'inherit' });
-  if (r.status !== 0) die('could not install playwright-core. Run: npm i --prefix ~/.cache/paper-motion playwright-core');
+  if (r.status !== 0) die('could not install playwright-core. Run: npm i --prefix ~/.cache/paper-story playwright-core');
   return createRequire(path.join(cache, 'node_modules', 'x.js'))('playwright-core');
 }
 function chromiumPath() {

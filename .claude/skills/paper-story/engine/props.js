@@ -1,4 +1,4 @@
-/* paper-motion element library. Each builder: (spec, ctx) -> { node, w, h, anchor?, update?(lt, state) }.
+/* paper-story element library. Each builder: (spec, ctx) -> { node, w, h, anchor?, update?(lt, state) }.
  * `lt` is always scene-local seconds, so every time in a storyboard reads the same way. */
 (function () {
   'use strict';

@@ -5,8 +5,8 @@
              identical with or without the audio files; when the files exist they are mixed in.
   Figures:   assets/figures/{casual,formal,kuwaiti}.png  (all three founders in one transparent PNG per outfit),
              or casual_1.png / casual_2.png / casual_3.png for separate people. Scenes use them only when present.
-             A photo on a plain background: python3 ../../.claude/skills/paper-motion/scripts/cutout.py in.jpg assets/figures/casual.png
-  Build:     python3 simple.py && node ../../.claude/skills/paper-motion/scripts/render.mjs simple.json -o renders/time-keeper-story.mp4 --scale 1.5
+             A photo on a plain background: python3 ../../.claude/skills/paper-story/scripts/cutout.py in.jpg assets/figures/casual.png
+  Build:     python3 simple.py && node ../../.claude/skills/paper-story/scripts/render.mjs simple.json -o renders/time-keeper-story.mp4 --scale 1.5
 """
 import json, os
 from landmarks import balance_wheel, boulder, los_angeles, kuwait_dusk, coffee_tray, geneva, bookcase, arabic_shelf, bulb, notebook, pen, camera_rig, ring_light, interview_set

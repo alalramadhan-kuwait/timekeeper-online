@@ -1,9 +1,9 @@
 ---
-name: paper-motion
-description: Make vertical paper-craft motion-graphic explainer videos (MP4) from a script. Textured cut-paper scenes, a blocky mascot whose outfit escalates, a taped headline banner, word-by-word caption tags on a floor strip, slide transitions, optional voice-over and music, English or Arabic. Use when the user wants a motion graphic, animated explainer, Reel, Short or TikTok "in this style", asks for paper-cut or papercraft animation, or wants a script or voice-over turned into such a video.
+name: paper-story
+description: Make vertical (9:16) paper-cut motion-graphic videos (MP4) from a script, Arabic or English. Two modes: a playful explainer with a cardboard mascot, taped banner and word-by-word captions; or a documentary brand story (success story, founders' journey, company history) with the real people as paper-bordered cut-outs, new poses generated as stills from their own photos, real product photos, maps, landmarks, a moving camera, narration, music timed to the story and a cover. Use when the user asks for a Reel, Short, TikTok, motion graphic, explainer, brand or success-story video "in this style", paper-cut or papercraft animation, or wants a script or voice-over turned into a video.
 ---
 
-# Paper motion videos
+# Paper story videos
 
 Turns a script into a 9:16 explainer in a cut-paper style: every shape is paper with fibre texture, hand-cut edges and a drop shadow, characters are blocky cardboard figures, and a taped paper banner carries the one-line takeaway of each scene while word tags pop onto the floor in time with the voice.
 
@@ -20,12 +20,12 @@ Making a film about real people (founders, a team, a brand story)? Also read `re
 3. **Write `storyboard.json`.** Start by copying `examples/demo.json`. Times inside a scene are scene-local seconds.
 4. **Preview before rendering.** Stills and a contact sheet take seconds.
    ```bash
-   node .claude/skills/paper-motion/scripts/render.mjs story.json --sheet --every 2 -o sheet.png
-   node .claude/skills/paper-motion/scripts/render.mjs story.json --still 1.5,6 --scale 1.5 -o stills/
+   node .claude/skills/paper-story/scripts/render.mjs story.json --sheet --every 2 -o sheet.png
+   node .claude/skills/paper-story/scripts/render.mjs story.json --still 1.5,6 --scale 1.5 -o stills/
    ```
    Open the PNGs and check the QA list below. Fix, re-run, repeat.
 5. **Add audio** (optional, see Audio).
-6. **Render.** `node .claude/skills/paper-motion/scripts/render.mjs story.json -o out.mp4 --scale 1.5` gives 1080x1920. About 25 seconds of video takes about a minute at 720p on 4 workers.
+6. **Render.** `node .claude/skills/paper-story/scripts/render.mjs story.json -o out.mp4 --scale 1.5` gives 1080x1920. About 25 seconds of video takes about a minute at 720p on 4 workers.
 7. **Verify and deliver.** Check duration, size and streams with `ffmpeg -i out.mp4`, view a few frames, and send the file to the user. Say plainly if audio was not added. A file compressed to fit the 30 MiB send limit must keep its cover stream (command in `references/production.md`); send the cover JPG too.
 
 ## Storyboard
@@ -101,7 +101,7 @@ The engine does not synthesise speech. Bring the audio:
 
 ## Setup and troubleshooting
 
-- Needs Node 18+, Chromium and ffmpeg. The script finds Chromium in `/opt/pw-browsers`, and installs `playwright-core` into `~/.cache/paper-motion` on first run. For ffmpeg it uses `ffmpeg` on the path, `$FFMPEG`, or `pip install imageio-ffmpeg`.
+- Needs Node 18+, Chromium and ffmpeg. The script finds Chromium in `/opt/pw-browsers`, and installs `playwright-core` into `~/.cache/paper-story` on first run. For ffmpeg it uses `ffmpeg` on the path, `$FFMPEG`, or `pip install imageio-ffmpeg`.
 - Fonts are bundled in `assets/fonts` (SIL OFL), so renders work offline.
 - Slow? Use `--workers 4`, drop `--scale`, or render a range with `--from 4 --to 9`.
 - An unknown element type or bad JSON stops with a message naming the problem. A `page error:` line means a bug in the storyboard values.

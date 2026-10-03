@@ -1,6 +1,6 @@
 # Time Keeper: Success Story (three episodes)
 
-Vertical paper-craft mini-documentary, built on the `paper-motion` skill (`.claude/skills/paper-motion`).
+Vertical paper-craft mini-documentary, built on the `paper-story` skill (`.claude/skills/paper-story`).
 Story: three friends, a shared passion, a real problem, a small idea, an Arabic watch community, international recognition.
 
 | Episode | Title | Draft length |
@@ -21,7 +21,7 @@ node check-story.mjs --report       # accuracy and brand gate, writes LEDGER.md 
 ./render-all.sh final               # 1080x1920 masters; refuses while any gate fails
 ```
 
-Preview one scene fast: `node ../../.claude/skills/paper-motion/scripts/render.mjs ep1.json --still 28 -o /tmp/still`
+Preview one scene fast: `node ../../.claude/skills/paper-story/scripts/render.mjs ep1.json --still 28 -o /tmp/still`
 
 ## Where each file lives
 
@@ -43,7 +43,7 @@ Preview one scene fast: `node ../../.claude/skills/paper-motion/scripts/render.m
 | 7-8 | Record narration, split per scene | **Blocked on 6.** Per-scene clips drop in and set each scene's length automatically. |
 | 9 | Storyboard | **Done**, 40 scenes. |
 | 10 | Match photos to scenes | **Done where photos exist.** Everything else is a labelled placeholder. |
-| 11 | Build scenes in paper-motion | **Done** with placeholder founders. |
+| 11 | Build scenes in paper-story | **Done** with placeholder founders. |
 | 12 | Character actions through Higgsfield | **Blocked on 5.** |
 | 13 | Captions | **Done** (word tags, at most four words visible). |
 | 14-15 | Music and sound design | **Temporary.** Procedural sound kit and a generated placeholder score. Replace with real music. |

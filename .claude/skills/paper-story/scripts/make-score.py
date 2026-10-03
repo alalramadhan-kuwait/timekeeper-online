@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Temporary generative score for paper-motion drafts. NOT final music: it exists so pacing and mix can be
+"""Temporary generative score for paper-story drafts. NOT final music: it exists so pacing and mix can be
 reviewed before real music is licensed or composed.
 
    python3 make-score.py --mood curious --duration 80 --tail 10 -o ep1_temp.wav

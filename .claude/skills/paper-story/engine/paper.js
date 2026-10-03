@@ -1,4 +1,4 @@
-/* paper-motion engine core.
+/* paper-story engine core.
  *
  * PM.init(storyboard) builds the whole video as DOM once. PM.setTime(t) then sets every
  * style from the time alone, so any frame can be rendered in any order (deterministic).

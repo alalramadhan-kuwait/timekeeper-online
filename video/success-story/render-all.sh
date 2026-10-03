@@ -5,12 +5,12 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 MODE="${1:-draft}"
-R=../../.claude/skills/paper-motion/scripts/render.mjs
+R=../../.claude/skills/paper-story/scripts/render.mjs
 python3 build.py
 for e in 1 2 3; do
   d=$(python3 -c "import json;print(sum(s['dur'] for s in json.load(open('ep$e.json'))['scenes']))")
   m=$(echo curious momentum scale | cut -d' ' -f$e); t=$([ "$e" = 3 ] && echo 12 || echo 7)
-  [ -f "renders/ep${e}_score_temp.wav" ] || python3 ../../.claude/skills/paper-motion/scripts/make-score.py --mood "$m" --duration "$d" --tail "$t" -o "renders/ep${e}_score_temp.wav"
+  [ -f "renders/ep${e}_score_temp.wav" ] || python3 ../../.claude/skills/paper-story/scripts/make-score.py --mood "$m" --duration "$d" --tail "$t" -o "renders/ep${e}_score_temp.wav"
 done
 if [ "$MODE" = final ]; then
   node check-story.mjs --final

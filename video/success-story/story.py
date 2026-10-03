@@ -52,7 +52,7 @@ def person(p, outfit, x, bottom, h, at=0.3, z=12, flip=False, depth=None, inn='r
 
 def pose(name, x, bottom, h, at=0.3, until=None, z=12, inn='fade', depth=None, **kw):
     """A generated pose of the founders (assets/gen/<name>_cut.png, made on Higgsfield from their own cut-outs and cut
-    with .claude/skills/paper-motion/scripts/cut-poses.py assets/gen):
+    with .claude/skills/paper-story/scripts/cut-poses.py assets/gen):
     shaking hands, sitting, at the mic. at/until swap it in and out with the single figures."""
     rel = 'assets/gen/%s_cut.png' % name; w, hh = Image.open(os.path.join(H, rel)).size
     d = {"type": "cutout", "src": rel, "x": x, "y": bottom, "h": round(h), "aspect": w / hh, "z": z, "edge": 0,

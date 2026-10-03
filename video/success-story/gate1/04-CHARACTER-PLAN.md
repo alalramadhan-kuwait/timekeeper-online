@@ -39,9 +39,9 @@ I will test option 1 on one founder first (Gate 3 starts with one, not three) an
 | 5 | Separate into 8 transparent parts per view | Head, torso, upper arm, forearm, hand, upper leg, lower leg, foot | Check joints |
 | 6 | Pose library in the rig | All 15 poses below | You see a pose reel |
 | 7 | Generate only what the rig cannot do (a group at a table, a walk through an exhibition, a founder at a microphone), as isolated transparent assets | Controlled actions | Per asset |
-| 8 | Composite inside paper-motion | Scenes | Gate 5 onward |
+| 8 | Composite inside paper-story | Scenes | Gate 5 onward |
 
-Higgsfield makes controlled assets. paper-motion directs the film. No scene is generated whole.
+Higgsfield makes controlled assets. paper-story directs the film. No scene is generated whole.
 
 ## The 15 required poses
 
