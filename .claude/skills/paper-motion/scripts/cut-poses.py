@@ -1,11 +1,13 @@
-"""Generated founder poses (assets/gen/*.png, Higgsfield nano_banana_2 with the founders' own cut-outs as references) -> *_cut.png.
+#!/usr/bin/env python3
+"""Generated poses (images made from people's own cut-outs, on a flat grey backdrop) -> <name>_cut.png beside each.
+   python3 cut-poses.py assets/gen            # every *.png in the folder that is not already a *_cut.png
 Cuts them off their flat grey background: flood fill the grey from every edge, then clear any flat grey pocket the
 figures enclose (between arms, legs, chair rungs), and keep the paper-bordered figures."""
-import glob, os
+import glob, os, sys
 import numpy as np
 from PIL import Image, ImageDraw, ImageFilter
 
-for f in sorted(glob.glob(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'assets', 'gen', '*.png'))):
+for f in sorted(glob.glob(os.path.join(sys.argv[1] if len(sys.argv) > 1 else '.', '*.png'))):
     if f.endswith('_cut.png'): continue
     im = np.asarray(Image.open(f).convert('RGB')).astype(np.int16)
     h, w, _ = im.shape

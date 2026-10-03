@@ -11,10 +11,12 @@ How it works: a storyboard JSON describes scenes. `engine/` draws them as DOM dr
 
 Read `references/style-guide.md` before writing a storyboard (it describes the original playful look; the Documentary and brand mode section below describes the restrained one). Read `references/elements.md` for every element and its options. `examples/demo.json` is a complete 5-scene storyboard.
 
+Making a film about real people (founders, a team, a brand story)? Also read `references/people.md` (their own cut-outs, generated poses, tone, real products) and `references/production.md` (camera arithmetic, voice and music, review loop, delivery with the cover). `video/success-story/story.py` is the worked example.
+
 ## Workflow
 
 1. **Break the script into beats.** One idea per scene, 2 to 6 seconds each, 5 to 12 scenes. Write the banner first: a takeaway of 6 words or fewer, uppercase renders best. Then the spoken line.
-2. **Pick a visual metaphor per beat** from the element library (dial for levels, stopwatch for time, books for output, skyline for scale, meter for usage, stamp for a verdict, list for a recap). Keep the mascot present in most scenes and change its outfit and face to show progress or mood.
+2. **Pick a visual metaphor per beat** from the element library (dial for levels, stopwatch for time, books for output, skyline for scale, meter for usage, stamp for a verdict, list for a recap). Keep the mascot present in most scenes and change its outfit and face to show progress or mood. For real people, use their cut-outs and generated poses instead of the mascot, and plan a visible change every 2 to 3 seconds.
 3. **Write `storyboard.json`.** Start by copying `examples/demo.json`. Times inside a scene are scene-local seconds.
 4. **Preview before rendering.** Stills and a contact sheet take seconds.
    ```bash
@@ -24,7 +26,7 @@ Read `references/style-guide.md` before writing a storyboard (it describes the o
    Open the PNGs and check the QA list below. Fix, re-run, repeat.
 5. **Add audio** (optional, see Audio).
 6. **Render.** `node .claude/skills/paper-motion/scripts/render.mjs story.json -o out.mp4 --scale 1.5` gives 1080x1920. About 25 seconds of video takes about a minute at 720p on 4 workers.
-7. **Verify and deliver.** Check duration and size with `ffmpeg -i out.mp4`, view a few frames, and send the file to the user. Say plainly if audio was not added.
+7. **Verify and deliver.** Check duration, size and streams with `ffmpeg -i out.mp4`, view a few frames, and send the file to the user. Say plainly if audio was not added. A file compressed to fit the 30 MiB send limit must keep its cover stream (command in `references/production.md`); send the cover JPG too.
 
 ## Storyboard
 
@@ -51,8 +53,8 @@ Read `references/style-guide.md` before writing a storyboard (it describes the o
 - **Canvas** is 720x1280 design pixels. `--scale` multiplies the output size. The floor starts at y 960, captions sit at y 1004, the banner centre is y 215. Keep the action between y 260 and 960.
 - **Scene fields:** `dur` (seconds, or `"auto"` when `voice` is set), `theme`, `banner`, `captions` or `words`, `transition` (`slide`, `push`, `rise`, `drop`, `fade`, `cut`), `floor` (false for full-bleed), `elements`. Omit `banner` to keep the previous one across a cut.
 - **Themes:** teal, navy, night, dusk, rust, cream, sage, mustard, plum, stone, or an object `{bg, blot:[light,dark], floor, floorTop}`.
-- **Camera:** a scene can move like a shot: `"camera": {"zoom": kf, "x": kf, "y": kf}` (keyframes like any value; x/y is the point the camera looks at, zoom 1 = the plain stage). Each element's `depth` sets how much the move affects it: `0` pinned to the screen (plates, overlays), `<1` far layers that drift slower (sky, mountains), `1` the scene plane, `>1` foreground that sweeps past (a pen, a gear, a mic) for parallax. Lay a wide set wider than 720 and pan across it. Use `floor: false` and draw your own ground when the camera moves, since the floor strip stays put.
-- **Figures:** `cutout` takes `flip: true` to mirror a person so two can face each other; walk them in with `x` keyframes plus a `bob` idle limited by `from`/`until`; crop them waist-up by making `h` large and putting the bottom below the frame.
+- **Camera:** a stage point lands on screen at `640 + (y - camY) * zoom` (360 for x); keep every head below the banner at every keyframe. A scene can move like a shot: `"camera": {"zoom": kf, "x": kf, "y": kf}` (keyframes like any value; x/y is the point the camera looks at, zoom 1 = the plain stage). Each element's `depth` sets how much the move affects it: `0` pinned to the screen (plates, overlays), `<1` far layers that drift slower (sky, mountains), `1` the scene plane, `>1` foreground that sweeps past (a pen, a gear, a mic) for parallax. Lay a wide set wider than 720 and pan across it. Use `floor: false` and draw your own ground when the camera moves, since the floor strip stays put.
+- **Figures:** for poses a photo cannot do (handshakes, sitting, at a mic), generate stills from the person's own cut-outs and cut them with `scripts/cut-poses.py <folder>` (see `references/people.md`). `cutout` takes `flip: true` to mirror a person so two can face each other; walk them in with `x` keyframes plus a `bob` idle limited by `from`/`until`; crop them waist-up by making `h` large and putting the bottom below the frame.
 - **Reveal:** `{"type": "reveal", "src": …, "reveal": kf 0..1}` uncovers an image clockwise like a sweeping hand (logo endings).
 - **Captions:** `captions` is plain text spread over the scene by word length. Put `|` between phrases to force a new group. Groups hold up to 3 words. For exact sync use `words: [[0.4,"Every"],[0.7,"shift"], ...]` from a forced aligner or your own timing. `captionStart`/`captionEnd` squeeze the words into a window; the last group stays up until the scene ends unless `captionClear` (scene seconds) takes it off sooner, e.g. before a wordless montage.
 - **Any element** takes `x`, `y`, `rot`, `scale`, `opacity`, `z`, `anchor`, `behind` (draw under the floor), `in`/`out` (`pop`, `rise`, `drop`, `slideL/R/U/D`, `slam`, `flip`, `grow`, `fade`), `idle` (`bob`, `float`, `sway`, `wiggle`, `pulse`, `hop`, `spin`, `shake`), and keyframes on any number: `"x": [[0,100],[2,400,"inOutCubic"]]`.
@@ -87,11 +89,15 @@ The engine does not synthesise speech. Bring the audio:
 - Captions match the voice words. Groups are 1 to 3 words.
 - Contrast: cream or white text on dark paper, near-black on light paper.
 - Neighbouring scenes use different themes so the slide transition reads.
+- Real people: faces match their photos, nobody is under the banner or behind a prop, the person speaking is big, and expressions fit the brand (composed for luxury).
+- Hero products are real photos, sized so they read on a phone.
 
 ## Brand and content rules
 
 - The reference video that defined this style used a third party's logo and mascot. This skill deliberately ships a generic mascot and no logos. Use the user's own brand through the `image` element (logo on a banner or prop) and custom theme colours. Do not recreate someone else's marks.
 - Text in the video must be true to the script the user gave. Do not invent numbers, prices or claims.
+- Never imply a commercial relationship with a brand (authorized dealer, partner, sponsor) that has not been documented. Keep a register of each brand's relationship class and allowed wording, as in `video/success-story/BRAND-RELATIONS.md`.
+- Never generate the hero product or AI-edit a real person's face or build. Identify people only by the labels the user gives.
 
 ## Setup and troubleshooting
 
