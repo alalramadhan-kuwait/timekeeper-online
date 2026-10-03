@@ -11,6 +11,10 @@ them was a note from the people in it.
   personal media.
 - Relative heights come from a real group photo, as a factor per person (`HEIGHT = {...}` in story.py). Scale every
   shot by it so people never swap heights between scenes.
+- Check proportions: an adult stands about 7 heads tall. Photos shot from above give big heads and short legs. The
+  people called it looking like dwarfs. Fix it geometrically and leave the face alone: stretch only a plain band of
+  clothing (a dishdasha between the hands and the shoes) until the figure is about 7 heads tall. Keep the face and
+  shoes as they are (see the `-tall` cut-outs in `video/success-story/simple.py`).
 - Show each person through what they do, never with a name or title on screen. Give each one a role the user has
   confirmed (in the story: one on camera, one researching and writing, one designing). Bring a person in only when the
   story gives them a part.
