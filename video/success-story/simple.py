@@ -202,8 +202,13 @@ cover = {"theme": "tk-black", "banner": "", "floor": True, "dur": 2.0, "elements
     {"type": "image", "x": 360, "y": 190, "w": 170, "h": 170, "src": LOGO, "pad": 10, "rot": -2},
     {"type": "text", "text": "قصة تايم كيبر", "x": 360, "y": 360, "size": 96, "font": "banner", "weight": 800, "color": "#F3F0E8", "shadow": False},
     {"type": "card", "x": 360, "y": 470, "w": 600, "h": 70, "label": "من ثلاثة أصدقاء… لأكبر منصة عربية للساعات", "labelSize": 28, "color": "#F3F0E8", "rot": -1.5}]
-    + fig('kuwaiti', h=520, at=0)}
-for e in cover["elements"]: e.pop("in", None)
+    + fig('kuwaiti-tall', h=610, at=0)}
+for e in cover["elements"]:
+    e.pop("in", None)
+    if e["type"] == "cutout": e["y"] = 1130     # stand into the floor so the taller figures keep their heads clear of the title
+for e, x in zip([e for e in cover["elements"] if e["type"] == "cutout"], (130, 360, 590)): e["x"] = x
+# kuwaiti-tall: the Kuwaiti photos were shot from above (big heads, short bodies); the dishdasha between hands and
+# shoes is stretched so they stand about 7 heads tall, faces and shoes untouched (made once from the _kuwaiti cut-outs)
 json.dump({"title": "غلاف قصة تايم كيبر", "width": 720, "height": 1280, "fps": 30, "floorY": FLOOR, "captionY": FLOOR + 38, "style": ST['style'], "themes": ST['themes'],
            "audio": {"autoSfx": False}, "scenes": [cover]}, open(os.path.join(H, 'cover.json'), 'w'), ensure_ascii=False, indent=1)
 
