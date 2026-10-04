@@ -4,13 +4,14 @@
      node render.mjs --still 2,9.5 -o stills/ [--sub 1]   review stills (sub 1 = no motion blur, faster)
      node render.mjs -o frames/ [--from 0 --to 30]        every frame as JPEG, 30 fps
      node render.mjs --events                             the sound cues as JSON
+     node render.mjs --still 26 --eval "dbg.L.dust.visible = false"   run code on the page before each frame (debugging)
    Needs playwright-core (NODE_PATH), three.js linked at ./vendor-three, Chromium under /opt/pw-browsers. */
 import fs from 'node:fs'; import path from 'node:path'; import http from 'node:http'; import { createRequire } from 'node:module'; import { fileURLToPath } from 'node:url';
 const here = path.dirname(fileURLToPath(import.meta.url)), root = path.resolve(here, '..', '..');
 const argv = process.argv.slice(2), opt = { workers: 2, from: 0, to: 30, sub: 0 };
 for (let i = 0; i < argv.length; i++) { const a = argv[i], n = () => argv[++i];
   if (a === '--still') opt.still = n().split(',').map(Number); else if (a === '-o') opt.out = n(); else if (a === '--events') opt.events = true;
-  else if (a === '--workers') opt.workers = +n(); else if (a === '--from') opt.from = +n(); else if (a === '--to') opt.to = +n(); else if (a === '--sub') opt.sub = +n(); else if (a === '--cam') opt.cam = n(); else if (a === '--where') opt.where = true; else if (a === '--cover') opt.cover = n(); }
+  else if (a === '--workers') opt.workers = +n(); else if (a === '--from') opt.from = +n(); else if (a === '--to') opt.to = +n(); else if (a === '--sub') opt.sub = +n(); else if (a === '--cam') opt.cam = n(); else if (a === '--where') opt.where = true; else if (a === '--cover') opt.cover = n(); else if (a === '--eval') opt.eval = n(); }
 const types = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.woff2': 'font/woff2', '.png': 'image/png', '.jpg': 'image/jpeg', '.json': 'application/json' };
 const server = http.createServer((req, res) => { const f = path.join(root, decodeURIComponent(req.url.split('?')[0]));
   fs.readFile(f, (e, d) => { if (e) { res.writeHead(404); res.end(); return; } res.writeHead(200, { 'Content-Type': types[path.extname(f)] || 'application/octet-stream' }); res.end(d); }); });
@@ -21,7 +22,8 @@ const exe = fs.readdirSync(base).filter((d) => d.startsWith('chromium-')).map((d
 const browser = await pw.chromium.launch({ executablePath: exe, args: ['--no-sandbox', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
 async function page() { const p = await (await browser.newContext({ viewport: { width: 1080, height: 1920 } })).newPage();
   p.on('pageerror', (e) => console.error('page error:', e.message)); p.on('console', (m) => { if (m.type() === 'error') console.error('console:', m.text()); });
-  await p.goto(url); await p.waitForFunction(() => window.ready && window.render, null, { timeout: 120000 }); await p.evaluate(() => window.ready); return p; }
+  await p.goto(url); await p.waitForFunction(() => window.ready && window.render, null, { timeout: 120000 }); await p.evaluate(() => window.ready);
+  if (opt.eval) await p.evaluate((c) => { window.DEBUG_EVAL = new Function('dbg', c); }, opt.eval); return p; }
 const grab = async (p, t, file, type) => {
   if (opt.cam) await p.evaluate((c) => { window.DEBUG_CAM = c.split(';').map((v, i) => (i < 2 ? v.split(',').map(Number) : +v)); }, opt.cam);
   await p.evaluate(([tt, s]) => window.render(tt, s), [t, opt.sub]); const d = await p.evaluate((ty) => document.querySelector('canvas').toDataURL(ty, 0.93), type); fs.writeFileSync(file, Buffer.from(d.split(',')[1], 'base64')); };

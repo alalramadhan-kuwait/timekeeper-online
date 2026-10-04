@@ -619,16 +619,21 @@ function renderAt(t) {
   M.lid.opacity = 1 - inside; L.lid.visible = M.lid.opacity > 0.02; M.ratchet.opacity = 1 - inside; WIND.rt.m.visible = M.ratchet.opacity > 0.02; L.bridges[0].material = inside > 0.02 ? M.bridgeFade : M.bridge; M.bridgeFade.forEach((m) => (m.opacity = 1 - inside));
   L.dust.position.y = Math.sin(t * 0.3) * 0.6;
   L.barrelLight.intensity = 20 * inside;
-  const under = clamp((t - 26.0) / 0.8); L.dialKey.intensity = 3.2 * under; L.dialFill.intensity = 1.0 * under; L.dialSpot.intensity = 5200 * under;
-  scene.environmentIntensity = 1.15 * (1 - 0.45 * win(t, 24.7, 26.0, 0.4, 0.3)) + 0.5 * under;   // the top-down view is not blown out; the watch gets more light
+  // the dial lights come up only once we are out above the dial, or the climb up through the centre burns out
+  const under = clamp((t - 26.55) / 0.5); L.dialKey.intensity = 3.2 * under; L.dialFill.intensity = 1.0 * under; L.dialSpot.intensity = 5200 * under;
+  scene.environmentIntensity = 1.15 * (1 - 0.45 * win(t, 24.7, 26.0, 0.4, 0.3)) * (1 - 0.78 * win(t, 25.75, 26.62, 0.25, 0.08)) + 0.5 * under;
+  // the top-down view is not blown out; climbing face-on past polished wheels the studio would mirror straight in; the watch gets more light
   L.barrelLight.position.set(-44, 14, -32);
   const insideMv = win(t, 2.95, 26.6, 0.25, 0.2);                  // between going in and coming out through the dial
   scene.fog.density = 0.0026 * insideMv; bloom.strength = 0.32 * insideMv;
+  // climbing up the centre arbor the camera's own light sits on polished steel a few units away: let it go
+  L.camLight.intensity = 9 * (1 - 0.92 * win(t, 25.8, 26.62, 0.2, 0.06));
   if (L.sheen) { const a = (t < 3 ? 1 - clamp((t - 2.2) / 0.6) : clamp((t - 26.9) / 0.4) * (1 - clamp((t - 28.9) / 0.5)));
     L.sheen.material.uniforms.k.value = 0.9 * a; const ph = t < 15 ? t / 2.6 : (t - 26.9) / 2.4;
     L.sheen.material.uniforms.L.value.set(Math.cos(1.2 + ph * 1.6) * 0.8, -1, Math.sin(0.4 + ph * 1.3) * 0.9); }
   L.key.intensity = 1.25 * (1 - 0.6 * win(t, 24.6, 26.0, 0.5, 0.3)) * (1 - under);
   L.shafts.forEach((s, i) => (s.material.uniforms.k.value = 0.04 + 0.02 * Math.sin(t * 0.7 + i)));
+  if (window.DEBUG_EVAL) window.DEBUG_EVAL(window.dbg);
   composer.render();
 }
 window.render = function (t, sub = 0) {
@@ -655,6 +660,7 @@ window.ready = (async () => {
   ready = true; return true;
 })();
 window.blurPlan = () => { const o = []; for (let f = 0; f < 900; f++) { const t = f / 30, dt = 1 / 60, a = shot(Math.max(0, t - dt)), b = shot(Math.min(DUR - 1e-3, t + dt)); const sp = a.pos.distanceTo(b.pos) / Math.max(4, b.pos.distanceTo(b.look)) * 30; o.push(Math.min(3, Math.max(1, Math.round(sp * 1.2)))); } return o; };
+window.dbg = { L, scene, bloom, bokeh, camera };
 window.where2 = () => { scene.updateMatrixWorld(true); const w = (o) => { const v = new THREE.Vector3(); o.getWorldPosition(v); return [+v.x.toFixed(1), +v.y.toFixed(1), +v.z.toFixed(1)]; }; const bb = (o) => { const b = new THREE.Box3().setFromObject(o); return [b.min.toArray().map((x) => +x.toFixed(1)), b.max.toArray().map((x) => +x.toFixed(1))]; }; return { pallets: L.pallets.map(bb), esc: bb(L.escWheel), fork: bb(L.fork), balance: bb(L.balance) }; };
 window.where = () => ({ BL: L.BL, P: L.P, X: X0, B: BW(), pal: macroToPlan(PALLETS[1][1][0], PALLETS[1][1][1] + 70), C: TR[1], T: TR[2], F: TR[3] });
 window.events = function () {
