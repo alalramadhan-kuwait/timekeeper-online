@@ -1,0 +1,2109 @@
+{
+ "width": 720,
+ "height": 1280,
+ "fps": 30,
+ "dir": "rtl",
+ "style": {
+  "banner": {
+   "paper": "#EFE8D6",
+   "ink": "#16181D",
+   "upper": true,
+   "tape": "rgba(190,178,150,.85)",
+   "torn": 0.5,
+   "size": 32
+  },
+  "caption": {
+   "font": "var(--f-banner)"
+  },
+  "grain": 0.45,
+  "vignette": 0.85
+ },
+ "themes": {
+  "ro-night": {
+   "bg": "#18202E",
+   "blot": [
+    "#222C3D",
+    "#10151F"
+   ],
+   "floor": "#0F141C",
+   "floorTop": "#253045",
+   "capBg": "#EFE8D6",
+   "capInk": "#16181D"
+  },
+  "ro-alpine": {
+   "bg": "#D9D2C2",
+   "blot": [
+    "#E6E0D2",
+    "#C9C1AE"
+   ],
+   "floor": "#B8AE98",
+   "floorTop": "#CFC6B1",
+   "capBg": "#16181D",
+   "capInk": "#EFE8D6"
+  },
+  "ro-paper": {
+   "bg": "#ECE5D3",
+   "blot": [
+    "#F4EEDF",
+    "#DDD4BF"
+   ],
+   "floor": "#D8CFB9",
+   "floorTop": "#E6DEC9",
+   "capBg": "#16181D",
+   "capInk": "#EFE8D6"
+  },
+  "ro-blue": {
+   "bg": "#1D3B5E",
+   "blot": [
+    "#264A73",
+    "#14304E"
+   ],
+   "floor": "#132A45",
+   "floorTop": "#2B5280",
+   "capBg": "#EFE8D6",
+   "capInk": "#16181D"
+  },
+  "ro-steel": {
+   "bg": "#3B4048",
+   "blot": [
+    "#474D56",
+    "#2D3138"
+   ],
+   "floor": "#25282E",
+   "floorTop": "#4A5059",
+   "capBg": "#EFE8D6",
+   "capInk": "#16181D"
+  },
+  "ro-hall": {
+   "bg": "#221D19",
+   "blot": [
+    "#2E2722",
+    "#17130F"
+   ],
+   "floor": "#14110E",
+   "floorTop": "#352D26",
+   "capBg": "#EFE8D6",
+   "capInk": "#16181D"
+  },
+  "ro-black": {
+   "bg": "#08090B",
+   "blot": [
+    "#101216",
+    "#030304"
+   ],
+   "floor": "#08090B",
+   "floorTop": "#15171B",
+   "capBg": "#EFE8D6",
+   "capInk": "#16181D"
+  }
+ },
+ "audio": {
+  "musicGain": -90
+ },
+ "scenes": [
+  {
+   "theme": "ro-black",
+   "floor": false,
+   "elements": [
+    {
+     "type": "svg",
+     "w": 520,
+     "h": 1000,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"520\" height=\"1000\" viewBox=\"0 0 520 1000\" style=\"overflow:visible;\"><defs><linearGradient id=\"sc\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#FFF1CF\" stop-opacity=\".55\"/><stop offset=\"1\" stop-color=\"#FFF1CF\" stop-opacity=\".05\"/></linearGradient></defs><polygon points=\"228.8,0.0 291.2,0.0 520.0,900.0 0.0,900.0\" fill=\"url(#sc)\"/></svg>",
+     "x": 360,
+     "y": 0,
+     "anchor": "t",
+     "z": 2,
+     "in": {
+      "type": "fade",
+      "at": 0.0,
+      "dur": 0.6
+     }
+    },
+    {
+     "type": "cutout",
+     "x": 360,
+     "y": 1160,
+     "h": 760,
+     "aspect": 0.6823076923076923,
+     "edge": 4,
+     "z": 20,
+     "in": {
+      "type": "rise",
+      "at": 0.1,
+      "dur": 0.3
+     },
+     "src": "assets/genta.png",
+     "person": true,
+     "headBand": 0.2,
+     "out": {
+      "type": "fade",
+      "at": 1.72,
+      "dur": 0.25
+     }
+    },
+    {
+     "type": "cutout",
+     "x": 360,
+     "y": 1160,
+     "h": 760,
+     "aspect": 0.328,
+     "edge": 0,
+     "z": 21,
+     "in": {
+      "type": "fade",
+      "at": 1.57,
+      "dur": 0.3
+     },
+     "src": "assets/gen/genta_think_cut.png",
+     "person": true,
+     "headBand": 0.2,
+     "out": {
+      "type": "fade",
+      "at": 7.02,
+      "dur": 0.25
+     }
+    },
+    {
+     "type": "cutout",
+     "x": 360,
+     "y": 1160,
+     "h": 760,
+     "aspect": 0.2848,
+     "edge": 0,
+     "z": 22,
+     "in": {
+      "type": "fade",
+      "at": 6.87,
+      "dur": 0.35
+     },
+     "src": "assets/gen/young_think_cut.png",
+     "person": true,
+     "headBand": 0.2,
+     "out": {
+      "type": "fade",
+      "at": 7.87,
+      "dur": 0.25
+     }
+    },
+    {
+     "type": "svg",
+     "w": 150,
+     "h": 150,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"150\" height=\"150\" viewBox=\"0 0 150 150\" style=\"overflow:visible;filter:drop-shadow(0 4px 3px rgba(0,0,0,.30))\"><circle cx=\"75\" cy=\"75\" r=\"71\" fill=\"#F3EEE1\" stroke=\"#2A2C31\" stroke-width=\"8\"/><rect x=\"73.0\" y=\"10\" width=\"4\" height=\"14\" fill=\"#2A2C31\" transform=\"rotate(0 75 75)\"/><rect x=\"73.0\" y=\"10\" width=\"4\" height=\"8\" fill=\"#2A2C31\" transform=\"rotate(30 75 75)\"/><rect x=\"73.0\" y=\"10\" width=\"4\" height=\"8\" fill=\"#2A2C31\" transform=\"rotate(60 75 75)\"/><rect x=\"73.0\" y=\"10\" width=\"4\" height=\"14\" fill=\"#2A2C31\" transform=\"rotate(90 75 75)\"/><rect x=\"73.0\" y=\"10\" width=\"4\" height=\"8\" fill=\"#2A2C31\" transform=\"rotate(120 75 75)\"/><rect x=\"73.0\" y=\"10\" width=\"4\" height=\"8\" fill=\"#2A2C31\" transform=\"rotate(150 75 75)\"/><rect x=\"73.0\" y=\"10\" width=\"4\" height=\"14\" fill=\"#2A2C31\" transform=\"rotate(180 75 75)\"/><rect x=\"73.0\" y=\"10\" width=\"4\" height=\"8\" fill=\"#2A2C31\" transform=\"rotate(210 75 75)\"/><rect x=\"73.0\" y=\"10\" width=\"4\" height=\"8\" fill=\"#2A2C31\" transform=\"rotate(240 75 75)\"/><rect x=\"73.0\" y=\"10\" width=\"4\" height=\"14\" fill=\"#2A2C31\" transform=\"rotate(270 75 75)\"/><rect x=\"73.0\" y=\"10\" width=\"4\" height=\"8\" fill=\"#2A2C31\" transform=\"rotate(300 75 75)\"/><rect x=\"73.0\" y=\"10\" width=\"4\" height=\"8\" fill=\"#2A2C31\" transform=\"rotate(330 75 75)\"/></svg>",
+     "x": 570,
+     "y": 300,
+     "anchor": "c",
+     "z": 6,
+     "in": {
+      "type": "pop",
+      "at": 6.17,
+      "dur": 0.4
+     }
+    },
+    {
+     "type": "svg",
+     "w": 150,
+     "h": 150,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"150\" height=\"150\" viewBox=\"0 0 150 150\" style=\"overflow:visible;\"><rect x=\"72.0\" y=\"36.0\" width=\"6\" height=\"45.0\" rx=\"2\" fill=\"#16181D\"/></svg>",
+     "x": 570,
+     "y": 300,
+     "anchor": "c",
+     "z": 7,
+     "in": {
+      "type": "pop",
+      "at": 6.17,
+      "dur": 0.4
+     },
+     "rot": [
+      [
+       6.37,
+       120.0
+      ],
+      [
+       7.92,
+       -120.0,
+       "inOutCubic"
+      ]
+     ]
+    },
+    {
+     "type": "svg",
+     "w": 150,
+     "h": 150,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"150\" height=\"150\" viewBox=\"0 0 150 150\" style=\"overflow:visible;\"><rect x=\"73.0\" y=\"18.0\" width=\"4\" height=\"63.0\" rx=\"2\" fill=\"#16181D\"/></svg>",
+     "x": 570,
+     "y": 300,
+     "anchor": "c",
+     "z": 7,
+     "in": {
+      "type": "pop",
+      "at": 6.17,
+      "dur": 0.4
+     },
+     "rot": [
+      [
+       6.37,
+       0
+      ],
+      [
+       7.92,
+       -2880.0,
+       "inOutCubic"
+      ]
+     ]
+    },
+    {
+     "type": "svg",
+     "w": 300,
+     "h": 330,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"300\" height=\"330\" viewBox=\"0 0 300 330\" style=\"overflow:visible;filter:drop-shadow(0 4px 3px rgba(0,0,0,.30))\"><rect x=\"0\" y=\"18\" width=\"300\" height=\"312\" rx=\"6\" fill=\"#F3EEE1\"/><rect x=\"0\" y=\"18\" width=\"300\" height=\"74\" rx=\"6\" fill=\"#B23A2E\"/><rect x=\"0\" y=\"70\" width=\"300\" height=\"22\" fill=\"#B23A2E\"/><rect x=\"70\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><rect x=\"214\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><text x=\"150\" y=\"262\" font-family=\"var(--f-title)\" font-size=\"150\" fill=\"#16181D\" text-anchor=\"middle\">2000</text><line x1=\"24\" y1=\"292\" x2=\"276\" y2=\"292\" stroke=\"#CFC6B1\" stroke-width=\"2\"/></svg>",
+     "x": 160,
+     "y": 330,
+     "anchor": "c",
+     "z": 10,
+     "in": {
+      "type": "flip",
+      "at": 6.42,
+      "dur": 0.162
+     },
+     "scale": 0.62,
+     "out": {
+      "type": "fade",
+      "at": 6.709999999999999,
+      "dur": 0.05
+     }
+    },
+    {
+     "type": "svg",
+     "w": 300,
+     "h": 330,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"300\" height=\"330\" viewBox=\"0 0 300 330\" style=\"overflow:visible;filter:drop-shadow(0 4px 3px rgba(0,0,0,.30))\"><rect x=\"0\" y=\"18\" width=\"300\" height=\"312\" rx=\"6\" fill=\"#F3EEE1\"/><rect x=\"0\" y=\"18\" width=\"300\" height=\"74\" rx=\"6\" fill=\"#B23A2E\"/><rect x=\"0\" y=\"70\" width=\"300\" height=\"22\" fill=\"#B23A2E\"/><rect x=\"70\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><rect x=\"214\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><text x=\"150\" y=\"262\" font-family=\"var(--f-title)\" font-size=\"150\" fill=\"#16181D\" text-anchor=\"middle\">1990</text><line x1=\"24\" y1=\"292\" x2=\"276\" y2=\"292\" stroke=\"#CFC6B1\" stroke-width=\"2\"/></svg>",
+     "x": 160,
+     "y": 330,
+     "anchor": "c",
+     "z": 11,
+     "in": {
+      "type": "flip",
+      "at": 6.6899999999999995,
+      "dur": 0.162
+     },
+     "scale": 0.62,
+     "out": {
+      "type": "fade",
+      "at": 6.979999999999999,
+      "dur": 0.05
+     }
+    },
+    {
+     "type": "svg",
+     "w": 300,
+     "h": 330,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"300\" height=\"330\" viewBox=\"0 0 300 330\" style=\"overflow:visible;filter:drop-shadow(0 4px 3px rgba(0,0,0,.30))\"><rect x=\"0\" y=\"18\" width=\"300\" height=\"312\" rx=\"6\" fill=\"#F3EEE1\"/><rect x=\"0\" y=\"18\" width=\"300\" height=\"74\" rx=\"6\" fill=\"#B23A2E\"/><rect x=\"0\" y=\"70\" width=\"300\" height=\"22\" fill=\"#B23A2E\"/><rect x=\"70\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><rect x=\"214\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><text x=\"150\" y=\"262\" font-family=\"var(--f-title)\" font-size=\"150\" fill=\"#16181D\" text-anchor=\"middle\">1980</text><line x1=\"24\" y1=\"292\" x2=\"276\" y2=\"292\" stroke=\"#CFC6B1\" stroke-width=\"2\"/></svg>",
+     "x": 160,
+     "y": 330,
+     "anchor": "c",
+     "z": 12,
+     "in": {
+      "type": "flip",
+      "at": 6.96,
+      "dur": 0.162
+     },
+     "scale": 0.62,
+     "out": {
+      "type": "fade",
+      "at": 7.25,
+      "dur": 0.05
+     }
+    },
+    {
+     "type": "svg",
+     "w": 300,
+     "h": 330,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"300\" height=\"330\" viewBox=\"0 0 300 330\" style=\"overflow:visible;filter:drop-shadow(0 4px 3px rgba(0,0,0,.30))\"><rect x=\"0\" y=\"18\" width=\"300\" height=\"312\" rx=\"6\" fill=\"#F3EEE1\"/><rect x=\"0\" y=\"18\" width=\"300\" height=\"74\" rx=\"6\" fill=\"#B23A2E\"/><rect x=\"0\" y=\"70\" width=\"300\" height=\"22\" fill=\"#B23A2E\"/><rect x=\"70\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><rect x=\"214\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><text x=\"150\" y=\"262\" font-family=\"var(--f-title)\" font-size=\"150\" fill=\"#16181D\" text-anchor=\"middle\">1970</text><line x1=\"24\" y1=\"292\" x2=\"276\" y2=\"292\" stroke=\"#CFC6B1\" stroke-width=\"2\"/></svg>",
+     "x": 160,
+     "y": 330,
+     "anchor": "c",
+     "z": 13,
+     "in": {
+      "type": "flip",
+      "at": 7.23,
+      "dur": 0.162
+     },
+     "scale": 0.62,
+     "out": {
+      "type": "fade",
+      "at": 7.52,
+      "dur": 0.05
+     }
+    },
+    {
+     "type": "svg",
+     "w": 300,
+     "h": 330,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"300\" height=\"330\" viewBox=\"0 0 300 330\" style=\"overflow:visible;filter:drop-shadow(0 4px 3px rgba(0,0,0,.30))\"><rect x=\"0\" y=\"18\" width=\"300\" height=\"312\" rx=\"6\" fill=\"#F3EEE1\"/><rect x=\"0\" y=\"18\" width=\"300\" height=\"74\" rx=\"6\" fill=\"#B23A2E\"/><rect x=\"0\" y=\"70\" width=\"300\" height=\"22\" fill=\"#B23A2E\"/><rect x=\"70\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><rect x=\"214\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><text x=\"150\" y=\"262\" font-family=\"var(--f-title)\" font-size=\"150\" fill=\"#16181D\" text-anchor=\"middle\">1960</text><line x1=\"24\" y1=\"292\" x2=\"276\" y2=\"292\" stroke=\"#CFC6B1\" stroke-width=\"2\"/></svg>",
+     "x": 160,
+     "y": 330,
+     "anchor": "c",
+     "z": 14,
+     "in": {
+      "type": "flip",
+      "at": 7.5,
+      "dur": 0.162
+     },
+     "scale": 0.62,
+     "out": {
+      "type": "fade",
+      "at": 7.789999999999999,
+      "dur": 0.05
+     }
+    },
+    {
+     "type": "svg",
+     "w": 300,
+     "h": 330,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"300\" height=\"330\" viewBox=\"0 0 300 330\" style=\"overflow:visible;filter:drop-shadow(0 4px 3px rgba(0,0,0,.30))\"><rect x=\"0\" y=\"18\" width=\"300\" height=\"312\" rx=\"6\" fill=\"#F3EEE1\"/><rect x=\"0\" y=\"18\" width=\"300\" height=\"74\" rx=\"6\" fill=\"#B23A2E\"/><rect x=\"0\" y=\"70\" width=\"300\" height=\"22\" fill=\"#B23A2E\"/><rect x=\"70\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><rect x=\"214\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><text x=\"150\" y=\"262\" font-family=\"var(--f-title)\" font-size=\"150\" fill=\"#16181D\" text-anchor=\"middle\">1954</text><line x1=\"24\" y1=\"292\" x2=\"276\" y2=\"292\" stroke=\"#CFC6B1\" stroke-width=\"2\"/></svg>",
+     "x": 160,
+     "y": 330,
+     "anchor": "c",
+     "z": 15,
+     "in": {
+      "type": "flip",
+      "at": 7.77,
+      "dur": 0.162
+     },
+     "scale": 0.62
+    },
+    {
+     "type": "svg",
+     "w": 760,
+     "h": 1320,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"760\" height=\"1320\" viewBox=\"0 0 760 1320\" style=\"overflow:visible;\"><rect width=\"760\" height=\"1320\" fill=\"#8A6A3A\"/></svg>",
+     "x": 360,
+     "y": 640,
+     "anchor": "c",
+     "z": 30,
+     "depth": 0,
+     "still": true,
+     "opacity": [
+      [
+       6.37,
+       0
+      ],
+      [
+       7.12,
+       0.24
+      ],
+      [
+       8.02,
+       0.12
+      ]
+     ]
+    }
+   ],
+   "dur": 8.14,
+   "silent": true,
+   "captions": "هذا جيرالد جنتا… | من أشهر مصممي | الساعات بالتاريخ. | بس قبل لا يصير | اسمه أسطورة… | خلونا نرجع للبداية.",
+   "captionStart": 0.16999999999999998,
+   "captionEnd": 7.94,
+   "voice": "voice-ar/clips/p1-0.wav",
+   "voiceAt": 0.12,
+   "camera": {
+    "zoom": [
+     [
+      0,
+      1.0
+     ],
+     [
+      6.12,
+      1.12,
+      "inOutCubic"
+     ],
+     [
+      8.02,
+      1.0,
+      "inOutCubic"
+     ]
+    ],
+    "x": [
+     [
+      0,
+      360
+     ],
+     [
+      6.12,
+      360,
+      "inOutCubic"
+     ],
+     [
+      8.02,
+      360,
+      "inOutCubic"
+     ]
+    ],
+    "y": [
+     [
+      0,
+      700
+     ],
+     [
+      6.12,
+      660,
+      "inOutCubic"
+     ],
+     [
+      8.02,
+      640,
+      "inOutCubic"
+     ]
+    ]
+   },
+   "sfx": [
+    {
+     "at": 0.15,
+     "name": "shutter",
+     "gain": -14
+    },
+    {
+     "at": 6.37,
+     "name": "whoosh",
+     "gain": -12
+    },
+    {
+     "at": 6.47,
+     "name": "crown_wind",
+     "gain": -10
+    },
+    {
+     "at": 6.42,
+     "name": "paper_tear",
+     "gain": -17
+    },
+    {
+     "at": 6.69,
+     "name": "paper_tear",
+     "gain": -17
+    },
+    {
+     "at": 6.96,
+     "name": "paper_tear",
+     "gain": -17
+    },
+    {
+     "at": 7.23,
+     "name": "paper_tear",
+     "gain": -17
+    },
+    {
+     "at": 7.5,
+     "name": "paper_tear",
+     "gain": -17
+    },
+    {
+     "at": 7.77,
+     "name": "paper_tear",
+     "gain": -17
+    }
+   ],
+   "beds": [
+    {
+     "name": "watch_run",
+     "from": 0,
+     "to": 8,
+     "gain": -28
+    }
+   ]
+  },
+  {
+   "theme": "ro-alpine",
+   "floor": false,
+   "elements": [
+    {
+     "type": "svg",
+     "w": 720,
+     "h": 760,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"720\" height=\"760\" viewBox=\"0 0 720 760\" style=\"overflow:visible;\"><rect width=\"720\" height=\"760\" fill=\"#9FB7C9\"/><polygon points=\"0.0,456.0 288.0,380.0 720.0,440.8 720.0,501.6 0.0,501.6\" fill=\"#6E8597\"/><rect y=\"501\" width=\"720\" height=\"258\" fill=\"#5E7F98\"/><path d=\"M 251 516 C 244 304 259 136 273 91\" stroke=\"#F4F7FA\" stroke-width=\"7\" fill=\"none\" stroke-linecap=\"round\" opacity=\".9\"/></svg>",
+     "x": 360,
+     "y": 380,
+     "anchor": "c",
+     "z": 1,
+     "in": {
+      "type": "fade",
+      "at": 0,
+      "dur": 0.4
+     },
+     "depth": 0.6
+    },
+    {
+     "type": "svg",
+     "w": 300,
+     "h": 330,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"300\" height=\"330\" viewBox=\"0 0 300 330\" style=\"overflow:visible;filter:drop-shadow(0 4px 3px rgba(0,0,0,.30))\"><rect x=\"0\" y=\"18\" width=\"300\" height=\"312\" rx=\"6\" fill=\"#F3EEE1\"/><rect x=\"0\" y=\"18\" width=\"300\" height=\"74\" rx=\"6\" fill=\"#B23A2E\"/><rect x=\"0\" y=\"70\" width=\"300\" height=\"22\" fill=\"#B23A2E\"/><rect x=\"70\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><rect x=\"214\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><text x=\"150\" y=\"262\" font-family=\"var(--f-title)\" font-size=\"150\" fill=\"#16181D\" text-anchor=\"middle\">1954</text><line x1=\"24\" y1=\"292\" x2=\"276\" y2=\"292\" stroke=\"#CFC6B1\" stroke-width=\"2\"/></svg>",
+     "x": 560,
+     "y": 250,
+     "anchor": "c",
+     "z": 10,
+     "in": {
+      "type": "drop",
+      "at": 0.82,
+      "dur": 0.55
+     },
+     "scale": 0.6
+    },
+    {
+     "type": "svg",
+     "w": 560,
+     "h": 250,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"560\" height=\"250\" viewBox=\"0 0 560 250\" style=\"overflow:visible;filter:drop-shadow(0 4px 3px rgba(0,0,0,.30))\"><polygon points=\"0.0,90.0 560.0,0.0 560.0,40.0 0.0,130.0\" fill=\"#5A4632\"/><polygon points=\"40.0,85.0 500.0,22.0 520.0,70.0 60.0,133.0\" fill=\"#F4EFE2\"/><rect x=\"70\" y=\"128\" width=\"14\" height=\"122\" fill=\"#3D2F22\"/><rect x=\"500\" y=\"40\" width=\"14\" height=\"210\" fill=\"#3D2F22\"/></svg>",
+     "x": 380,
+     "y": 1150,
+     "anchor": "c",
+     "z": 3,
+     "opacity": 0
+    },
+    {
+     "type": "cutout",
+     "x": 330,
+     "y": 1180,
+     "h": 700,
+     "aspect": 0.6977,
+     "edge": 0,
+     "z": 20,
+     "in": {
+      "type": "rise",
+      "at": 4.12,
+      "dur": 0.5
+     },
+     "src": "assets/gen/genta23_desk_cut.png",
+     "person": true,
+     "headBand": 0.2,
+     "out": {
+      "type": "fade",
+      "at": 7.72,
+      "dur": 0.25
+     }
+    },
+    {
+     "type": "map",
+     "x": 360,
+     "y": 600,
+     "w": 720,
+     "h": 1180,
+     "z": 40,
+     "view": [
+      [
+       7.42,
+       {
+        "lon": -40,
+        "lat": 62,
+        "span": 210
+       }
+      ],
+      [
+       14.02,
+       {
+        "lon": -40,
+        "lat": 66,
+        "span": 170
+       },
+       "inOutCubic"
+      ]
+     ],
+     "sea": "#CCC6B7",
+     "land": "#F4F1E8",
+     "pins": [
+      {
+       "id": "cph",
+       "lon": 12.57,
+       "lat": 55.68,
+       "label": "KØBENHAVN",
+       "at": 8.12
+      },
+      {
+       "id": "lax",
+       "lon": -118.24,
+       "lat": 34.05,
+       "label": "LOS ANGELES",
+       "at": 8.52
+      }
+     ],
+     "routes": [
+      {
+       "from": "cph",
+       "to": "lax",
+       "at": 8.92,
+       "dur": 2.4,
+       "curve": -0.45,
+       "plane": true,
+       "keep": true
+      }
+     ],
+     "unfold": {
+      "at": 7.42,
+      "dur": 0.8
+     },
+     "in": {
+      "type": "none",
+      "at": 7.42
+     },
+     "depth": 0
+    },
+    {
+     "type": "photo",
+     "asset": "early/sas1954",
+     "desc": "SAS advertisement for the polar route, 1954 (public domain)",
+     "label": "SAS · 1954",
+     "w": 290,
+     "aspect": 0.69,
+     "x": 470,
+     "y": 880,
+     "z": 45,
+     "rot": 4,
+     "in": {
+      "type": "drop",
+      "at": 11.32,
+      "dur": 0.45
+     },
+     "labelSize": 22
+    }
+   ],
+   "dur": 14.43,
+   "silent": true,
+   "captions": "جنيف، | سنة ألف وتسعمية | وأربعة وخمسين. | شاب عمره ثلاثة | وعشرين سنة بس، | يصمم لشركة | يونيفرسال جنيف | ساعة لرحلات طيران | إس إيه إس | فوق القطب الشمالي.",
+   "captionStart": 0.16999999999999998,
+   "captionEnd": 14.229999999999999,
+   "voice": "voice-ar/clips/p1-1.wav",
+   "voiceAt": 0.12,
+   "transition": "fade",
+   "camera": {
+    "zoom": [
+     [
+      0,
+      1.0
+     ],
+     [
+      7.32,
+      1.08,
+      "inOutCubic"
+     ],
+     [
+      14.22,
+      1.0,
+      "inOutCubic"
+     ]
+    ],
+    "x": [
+     [
+      0,
+      360
+     ],
+     [
+      7.32,
+      340,
+      "inOutCubic"
+     ],
+     [
+      14.22,
+      360,
+      "inOutCubic"
+     ]
+    ],
+    "y": [
+     [
+      0,
+      640
+     ],
+     [
+      7.32,
+      760,
+      "inOutCubic"
+     ],
+     [
+      14.22,
+      640,
+      "inOutCubic"
+     ]
+    ]
+   },
+   "sfx": [
+    {
+     "at": 0.82,
+     "name": "paper_tear",
+     "gain": -14
+    },
+    {
+     "at": 4.52,
+     "name": "pencil",
+     "gain": -10
+    },
+    {
+     "at": 7.42,
+     "name": "paper_slide",
+     "gain": -12
+    },
+    {
+     "at": 8.92,
+     "name": "plane",
+     "gain": -14
+    },
+    {
+     "at": 11.32,
+     "name": "paper_place",
+     "gain": -10
+    }
+   ]
+  },
+  {
+   "theme": "ro-night",
+   "floor": false,
+   "elements": [
+    {
+     "type": "svg",
+     "w": 520,
+     "h": 1000,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"520\" height=\"1000\" viewBox=\"0 0 520 1000\" style=\"overflow:visible;\"><defs><linearGradient id=\"sc\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#FFF1CF\" stop-opacity=\".55\"/><stop offset=\"1\" stop-color=\"#FFF1CF\" stop-opacity=\".05\"/></linearGradient></defs><polygon points=\"228.8,0.0 291.2,0.0 520.0,900.0 0.0,900.0\" fill=\"url(#sc)\"/></svg>",
+     "x": 360,
+     "y": 0,
+     "anchor": "t",
+     "z": 2,
+     "in": {
+      "type": "fade",
+      "at": 0,
+      "dur": 0.5
+     }
+    },
+    {
+     "type": "cutout",
+     "x": 360,
+     "y": 1010,
+     "h": 620,
+     "aspect": 0.6614,
+     "edge": 0,
+     "z": 20,
+     "in": {
+      "type": "rise",
+      "at": 0.15,
+      "dur": 0.6
+     },
+     "src": "assets/early/polerouter_cut.png",
+     "scale": [
+      [
+       0.15,
+       1.0
+      ],
+      [
+       5.2,
+       1.06
+      ]
+     ]
+    },
+    {
+     "type": "text",
+     "text": "Universal Genève Polerouter · 1954",
+     "x": 360,
+     "y": 1110,
+     "font": "banner",
+     "size": 26,
+     "color": "#16181D",
+     "paper": "#EFE8D6",
+     "upper": false,
+     "z": 35,
+     "rot": -2,
+     "in": {
+      "type": "pop",
+      "at": 0.72,
+      "dur": 0.35
+     }
+    }
+   ],
+   "dur": 5.34,
+   "silent": true,
+   "captions": "اسمها البولروتر… | وهي اللي خلت اسمه | ينعرف عند | شركات الساعات.",
+   "captionStart": 0.16999999999999998,
+   "captionEnd": 5.14,
+   "voice": "voice-ar/clips/p1-2.wav",
+   "voiceAt": 0.12,
+   "transition": "slide",
+   "camera": {
+    "zoom": [
+     [
+      0,
+      1.0
+     ],
+     [
+      5.2,
+      1.12,
+      "inOutCubic"
+     ]
+    ],
+    "x": [
+     [
+      0,
+      360
+     ],
+     [
+      5.2,
+      360,
+      "inOutCubic"
+     ]
+    ],
+    "y": [
+     [
+      0,
+      640
+     ],
+     [
+      5.2,
+      620,
+      "inOutCubic"
+     ]
+    ]
+   },
+   "sfx": [
+    {
+     "at": 0.2,
+     "name": "shutter",
+     "gain": -12
+    },
+    {
+     "at": 1.8,
+     "name": "tick",
+     "gain": -16
+    }
+   ]
+  },
+  {
+   "theme": "ro-steel",
+   "floor": false,
+   "elements": [
+    {
+     "type": "svg",
+     "w": 260,
+     "h": 162,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"260\" height=\"162\" viewBox=\"0 0 260 162\" style=\"overflow:visible;filter:drop-shadow(0 4px 3px rgba(0,0,0,.30))\"><path d=\"M 20 150 L 46 60 Q 50 46 66 46 L 194 46 Q 210 46 214 60 L 240 150 Q 242 162 228 162 L 32 162 Q 18 162 20 150 Z\" fill=\"#2A2C31\"/><circle cx=\"130\" cy=\"104\" r=\"44\" fill=\"#EDE6D3\"/><circle cx=\"145.0\" cy=\"78.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"156.0\" cy=\"89.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"160.0\" cy=\"104.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"156.0\" cy=\"119.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"145.0\" cy=\"130.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"130.0\" cy=\"134.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"115.0\" cy=\"130.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"104.0\" cy=\"119.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"100.0\" cy=\"104.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"104.0\" cy=\"89.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"115.0\" cy=\"78.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"130\" cy=\"104\" r=\"14\" fill=\"#2A2C31\"/><rect x=\"56\" y=\"30\" width=\"22\" height=\"22\" rx=\"4\" fill=\"#EDE6D3\"/><rect x=\"182\" y=\"30\" width=\"22\" height=\"22\" rx=\"4\" fill=\"#EDE6D3\"/></svg>",
+     "x": 560,
+     "y": 330,
+     "anchor": "c",
+     "z": 10,
+     "in": {
+      "type": "pop",
+      "at": -0.09999999999999998,
+      "dur": 0.3
+     },
+     "scale": 0.6,
+     "idle": {
+      "type": "shake",
+      "amp": 3,
+      "speed": 9,
+      "from": 0.2,
+      "until": 1.42
+     }
+    },
+    {
+     "type": "svg",
+     "w": 260,
+     "h": 80,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"260\" height=\"80\" viewBox=\"0 0 260 80\" style=\"overflow:visible;filter:drop-shadow(0 4px 3px rgba(0,0,0,.30))\"><path d=\"M 10 40 q -14 24 0 48\" stroke=\"#2A2C31\" stroke-width=\"5\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M -6 26 q -20 38 0 76\" stroke=\"#2A2C31\" stroke-width=\"5\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M 250 40 q 14 24 0 48\" stroke=\"#2A2C31\" stroke-width=\"5\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M 266 26 q 20 38 0 76\" stroke=\"#2A2C31\" stroke-width=\"5\" fill=\"none\" stroke-linecap=\"round\"/></svg>",
+     "x": 560,
+     "y": 282.85714285714283,
+     "anchor": "c",
+     "z": 11,
+     "in": {
+      "type": "pop",
+      "at": 0.2,
+      "dur": 0.2
+     },
+     "scale": 0.6,
+     "idle": {
+      "type": "pulse",
+      "amp": 0.08,
+      "speed": 6
+     },
+     "out": {
+      "type": "fade",
+      "at": 1.42,
+      "dur": 0.15
+     }
+    },
+    {
+     "type": "text",
+     "text": "أوميغا",
+     "x": 560,
+     "y": 230,
+     "font": "banner",
+     "size": 34,
+     "color": "#16181D",
+     "paper": "#EFE8D6",
+     "upper": false,
+     "z": 35,
+     "rot": -2,
+     "in": {
+      "type": "pop",
+      "at": 0.42,
+      "dur": 0.35
+     }
+    },
+    {
+     "type": "cutout",
+     "x": 330,
+     "y": 1060,
+     "h": 600,
+     "aspect": 0.6,
+     "edge": 0,
+     "z": 20,
+     "in": {
+      "type": "rise",
+      "at": 1.52,
+      "dur": 0.5
+     },
+     "asset": "early/constellation_cut",
+     "desc": "Omega Constellation, 1958 (Wikimedia Commons)"
+    },
+    {
+     "type": "text",
+     "text": "Omega Constellation · 1958",
+     "x": 330,
+     "y": 1120,
+     "font": "banner",
+     "size": 24,
+     "color": "#16181D",
+     "paper": "#EFE8D6",
+     "upper": false,
+     "z": 35,
+     "rot": -2,
+     "in": {
+      "type": "pop",
+      "at": 2.12,
+      "dur": 0.35
+     }
+    }
+   ],
+   "dur": 4.7,
+   "silent": true,
+   "captions": "بعدها جات أوميغا، | وطلبت منه يجدد | مجموعة الكونستليشن.",
+   "captionStart": 0.16999999999999998,
+   "captionEnd": 4.5,
+   "voice": "voice-ar/clips/p1-3.wav",
+   "voiceAt": 0.12,
+   "transition": "slide",
+   "camera": {
+    "zoom": [
+     [
+      0,
+      1.0
+     ],
+     [
+      4.6,
+      1.06,
+      "inOutCubic"
+     ]
+    ],
+    "x": [
+     [
+      0,
+      360
+     ],
+     [
+      4.6,
+      360,
+      "inOutCubic"
+     ]
+    ],
+    "y": [
+     [
+      0,
+      640
+     ],
+     [
+      4.6,
+      660,
+      "inOutCubic"
+     ]
+    ]
+   },
+   "sfx": [
+    {
+     "at": 0.2,
+     "name": "ring",
+     "gain": -12
+    },
+    {
+     "at": 1.52,
+     "name": "paper_place",
+     "gain": -10
+    }
+   ]
+  },
+  {
+   "theme": "ro-paper",
+   "floor": false,
+   "elements": [
+    {
+     "type": "svg",
+     "w": 300,
+     "h": 330,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"300\" height=\"330\" viewBox=\"0 0 300 330\" style=\"overflow:visible;filter:drop-shadow(0 4px 3px rgba(0,0,0,.30))\"><rect x=\"0\" y=\"18\" width=\"300\" height=\"312\" rx=\"6\" fill=\"#F3EEE1\"/><rect x=\"0\" y=\"18\" width=\"300\" height=\"74\" rx=\"6\" fill=\"#B23A2E\"/><rect x=\"0\" y=\"70\" width=\"300\" height=\"22\" fill=\"#B23A2E\"/><rect x=\"70\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><rect x=\"214\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><text x=\"150\" y=\"262\" font-family=\"var(--f-title)\" font-size=\"150\" fill=\"#16181D\" text-anchor=\"middle\">1960</text><line x1=\"24\" y1=\"292\" x2=\"276\" y2=\"292\" stroke=\"#CFC6B1\" stroke-width=\"2\"/></svg>",
+     "x": 170,
+     "y": 260,
+     "anchor": "c",
+     "z": 10,
+     "in": {
+      "type": "flip",
+      "at": 0.1,
+      "dur": 0.18
+     },
+     "scale": 0.55
+    },
+    {
+     "type": "image",
+     "src": "assets/ap/lebrassus1969.jpg",
+     "polaroid": true,
+     "aspect": 0.8686210640608035,
+     "label": "Le Brassus",
+     "w": 360,
+     "x": 470,
+     "y": 380,
+     "z": 12,
+     "rot": 3,
+     "in": {
+      "type": "drop",
+      "at": 1.92,
+      "dur": 0.45
+     },
+     "labelSize": 22
+    },
+    {
+     "type": "cutout",
+     "x": 220,
+     "y": 1060,
+     "h": 560,
+     "aspect": 0.5906,
+     "edge": 0,
+     "z": 20,
+     "in": {
+      "type": "rise",
+      "at": 4.72,
+      "dur": 0.5
+     },
+     "src": "assets/cut/m5179.png"
+    },
+    {
+     "type": "text",
+     "text": "5179 · 1961",
+     "x": 220,
+     "y": 1110,
+     "font": "banner",
+     "size": 26,
+     "color": "#16181D",
+     "paper": "#EFE8D6",
+     "upper": false,
+     "z": 35,
+     "rot": -2,
+     "in": {
+      "type": "pop",
+      "at": 5.12,
+      "dur": 0.35
+     }
+    },
+    {
+     "type": "cutout",
+     "x": 520,
+     "y": 1060,
+     "h": 520,
+     "aspect": 0.5854,
+     "edge": 0,
+     "z": 21,
+     "in": {
+      "type": "rise",
+      "at": 7.37,
+      "dur": 0.5
+     },
+     "src": "assets/cut/m5182.png"
+    },
+    {
+     "type": "text",
+     "text": "5182 · 1962",
+     "x": 520,
+     "y": 1110,
+     "font": "banner",
+     "size": 26,
+     "color": "#16181D",
+     "paper": "#EFE8D6",
+     "upper": false,
+     "z": 35,
+     "rot": 2,
+     "in": {
+      "type": "pop",
+      "at": 7.72,
+      "dur": 0.35
+     }
+    }
+   ],
+   "dur": 9.43,
+   "silent": true,
+   "captions": "ومع بداية الستينات، | يظهر اسمه في أرشيف | أوديمار بيغيه: | ساعة تجمع | الدائرة والمربع، | وساعة غير متناظرة…",
+   "captionStart": 0.16999999999999998,
+   "captionEnd": 9.229999999999999,
+   "voice": "voice-ar/clips/p1-4.wav",
+   "voiceAt": 0.12,
+   "transition": "slide",
+   "camera": {
+    "zoom": [
+     [
+      0,
+      1.0
+     ],
+     [
+      4.62,
+      1.0,
+      "inOutCubic"
+     ],
+     [
+      9.32,
+      1.04
+     ]
+    ],
+    "x": [
+     [
+      0,
+      360
+     ],
+     [
+      4.62,
+      360,
+      "inOutCubic"
+     ],
+     [
+      9.32,
+      360
+     ]
+    ],
+    "y": [
+     [
+      0,
+      620
+     ],
+     [
+      4.62,
+      700,
+      "inOutCubic"
+     ],
+     [
+      9.32,
+      720
+     ]
+    ]
+   },
+   "sfx": [
+    {
+     "at": 0.1,
+     "name": "paper_tear",
+     "gain": -15
+    },
+    {
+     "at": 1.92,
+     "name": "paper_place",
+     "gain": -10
+    },
+    {
+     "at": 4.72,
+     "name": "shutter",
+     "gain": -14
+    },
+    {
+     "at": 7.37,
+     "name": "shutter",
+     "gain": -14
+    }
+   ]
+  },
+  {
+   "theme": "ro-alpine",
+   "floor": false,
+   "elements": [
+    {
+     "type": "svg",
+     "w": 300,
+     "h": 330,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"300\" height=\"330\" viewBox=\"0 0 300 330\" style=\"overflow:visible;filter:drop-shadow(0 4px 3px rgba(0,0,0,.30))\"><rect x=\"0\" y=\"18\" width=\"300\" height=\"312\" rx=\"6\" fill=\"#F3EEE1\"/><rect x=\"0\" y=\"18\" width=\"300\" height=\"74\" rx=\"6\" fill=\"#B23A2E\"/><rect x=\"0\" y=\"70\" width=\"300\" height=\"22\" fill=\"#B23A2E\"/><rect x=\"70\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><rect x=\"214\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><text x=\"150\" y=\"262\" font-family=\"var(--f-title)\" font-size=\"150\" fill=\"#16181D\" text-anchor=\"middle\">1967</text><line x1=\"24\" y1=\"292\" x2=\"276\" y2=\"292\" stroke=\"#CFC6B1\" stroke-width=\"2\"/></svg>",
+     "x": 170,
+     "y": 250,
+     "anchor": "c",
+     "z": 10,
+     "in": {
+      "type": "flip",
+      "at": 0.1,
+      "dur": 0.18
+     },
+     "scale": 0.55
+    },
+    {
+     "type": "image",
+     "src": "assets/ap/m8311_sketch.jpg",
+     "polaroid": true,
+     "aspect": 0.8676789587852495,
+     "label": "8311 · 1966",
+     "w": 280,
+     "x": 230,
+     "y": 640,
+     "z": 12,
+     "rot": -4,
+     "in": {
+      "type": "drop",
+      "at": 2.12,
+      "dur": 0.45
+     },
+     "labelSize": 22
+    },
+    {
+     "type": "image",
+     "src": "assets/ap/m8311.jpg",
+     "polaroid": true,
+     "aspect": 0.8676789587852495,
+     "label": "8311 · 1967",
+     "w": 360,
+     "x": 480,
+     "y": 760,
+     "z": 14,
+     "rot": 3,
+     "in": {
+      "type": "drop",
+      "at": 2.62,
+      "dur": 0.45
+     },
+     "labelSize": 22
+    },
+    {
+     "type": "svg",
+     "w": 220,
+     "h": 300,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"220\" height=\"300\" viewBox=\"0 0 220 300\" style=\"overflow:visible;filter:drop-shadow(0 4px 3px rgba(0,0,0,.30))\"><polygon points=\"210.0,110.0 209.1,123.1 206.6,135.9 110.0,110.0\" fill=\"#C7473A\"/><polygon points=\"206.6,135.9 202.4,148.3 196.6,160.0 110.0,110.0\" fill=\"#B23A2E\"/><polygon points=\"196.6,160.0 189.3,170.9 180.7,180.7 110.0,110.0\" fill=\"#C7473A\"/><polygon points=\"180.7,180.7 170.9,189.3 160.0,196.6 110.0,110.0\" fill=\"#B23A2E\"/><polygon points=\"160.0,196.6 148.3,202.4 135.9,206.6 110.0,110.0\" fill=\"#C7473A\"/><polygon points=\"135.9,206.6 123.1,209.1 110.0,210.0 110.0,110.0\" fill=\"#B23A2E\"/><polygon points=\"110.0,210.0 96.9,209.1 84.1,206.6 110.0,110.0\" fill=\"#C7473A\"/><polygon points=\"84.1,206.6 71.7,202.4 60.0,196.6 110.0,110.0\" fill=\"#B23A2E\"/><polygon points=\"60.0,196.6 49.1,189.3 39.3,180.7 110.0,110.0\" fill=\"#C7473A\"/><polygon points=\"39.3,180.7 30.7,170.9 23.4,160.0 110.0,110.0\" fill=\"#B23A2E\"/><polygon points=\"23.4,160.0 17.6,148.3 13.4,135.9 110.0,110.0\" fill=\"#C7473A\"/><polygon points=\"13.4,135.9 10.9,123.1 10.0,110.0 110.0,110.0\" fill=\"#B23A2E\"/><polygon points=\"10.0,110.0 10.9,96.9 13.4,84.1 110.0,110.0\" fill=\"#C7473A\"/><polygon points=\"13.4,84.1 17.6,71.7 23.4,60.0 110.0,110.0\" fill=\"#B23A2E\"/><polygon points=\"23.4,60.0 30.7,49.1 39.3,39.3 110.0,110.0\" fill=\"#C7473A\"/><polygon points=\"39.3,39.3 49.1,30.7 60.0,23.4 110.0,110.0\" fill=\"#B23A2E\"/><polygon points=\"60.0,23.4 71.7,17.6 84.1,13.4 110.0,110.0\" fill=\"#C7473A\"/><polygon points=\"84.1,13.4 96.9,10.9 110.0,10.0 110.0,110.0\" fill=\"#B23A2E\"/><polygon points=\"110.0,10.0 123.1,10.9 135.9,13.4 110.0,110.0\" fill=\"#C7473A\"/><polygon points=\"135.9,13.4 148.3,17.6 160.0,23.4 110.0,110.0\" fill=\"#B23A2E\"/><polygon points=\"160.0,23.4 170.9,30.7 180.7,39.3 110.0,110.0\" fill=\"#C7473A\"/><polygon points=\"180.7,39.3 189.3,49.1 196.6,60.0 110.0,110.0\" fill=\"#B23A2E\"/><polygon points=\"196.6,60.0 202.4,71.7 206.6,84.1 110.0,110.0\" fill=\"#C7473A\"/><polygon points=\"206.6,84.1 209.1,96.9 210.0,110.0 110.0,110.0\" fill=\"#B23A2E\"/><path d=\"M 70 190 L 50 290 L 85 270 L 105 300 L 110 200 Z\" fill=\"#B23A2E\"/><path d=\"M 150 190 L 170 290 L 135 270 L 115 300 L 110 200 Z\" fill=\"#B23A2E\"/><circle cx=\"110\" cy=\"110\" r=\"70\" fill=\"#EFE8D6\"/><text x=\"110\" y=\"76\" font-family=\"var(--f-banner)\" font-weight=\"800\" font-size=\"26\" fill=\"#16181D\" text-anchor=\"middle\">Prix de la Ville</text><text x=\"110\" y=\"106\" font-family=\"var(--f-banner)\" font-weight=\"800\" font-size=\"22\" fill=\"#16181D\" text-anchor=\"middle\">de Genève</text><text x=\"110\" y=\"136\" font-family=\"var(--f-banner)\" font-weight=\"800\" font-size=\"22\" fill=\"#16181D\" text-anchor=\"middle\">1967</text></svg>",
+     "x": 560,
+     "y": 330,
+     "anchor": "c",
+     "z": 20,
+     "in": {
+      "type": "pop",
+      "at": 4.22,
+      "dur": 0.4
+     },
+     "rot": 6
+    }
+   ],
+   "dur": 7.37,
+   "silent": true,
+   "captions": "وفي سنة سبعة وستين، | ساعة شنطة | من تصميمه | تاخذ تنويه | في جائزة مدينة جنيف.",
+   "captionStart": 0.16999999999999998,
+   "captionEnd": 7.17,
+   "voice": "voice-ar/clips/p1-5.wav",
+   "voiceAt": 0.12,
+   "transition": "slide",
+   "camera": {
+    "zoom": [
+     [
+      0,
+      1.0
+     ],
+     [
+      7.2,
+      1.06,
+      "inOutCubic"
+     ]
+    ],
+    "x": [
+     [
+      0,
+      360
+     ],
+     [
+      7.2,
+      380,
+      "inOutCubic"
+     ]
+    ],
+    "y": [
+     [
+      0,
+      620
+     ],
+     [
+      7.2,
+      600,
+      "inOutCubic"
+     ]
+    ]
+   },
+   "sfx": [
+    {
+     "at": 0.1,
+     "name": "paper_tear",
+     "gain": -15
+    },
+    {
+     "at": 2.12,
+     "name": "paper_place",
+     "gain": -10
+    },
+    {
+     "at": 2.62,
+     "name": "paper_place",
+     "gain": -10
+    },
+    {
+     "at": 4.22,
+     "name": "stamp",
+     "gain": -10
+    }
+   ]
+  },
+  {
+   "theme": "ro-alpine",
+   "floor": false,
+   "elements": [
+    {
+     "type": "image",
+     "src": "assets/ap/lebrassus1969.jpg",
+     "polaroid": true,
+     "aspect": 0.8686210640608035,
+     "label": "Audemars Piguet · Le Brassus · 1969",
+     "w": 560,
+     "x": 360,
+     "y": 360,
+     "z": 5,
+     "rot": -1,
+     "in": {
+      "type": "fade",
+      "at": 0.1,
+      "dur": 0.45
+     },
+     "labelSize": 22
+    },
+    {
+     "type": "image",
+     "src": "assets/ap/golay1966.jpg",
+     "polaroid": true,
+     "aspect": 1.3179571663920921,
+     "label": "Georges Golay · 1966",
+     "w": 360,
+     "x": 250,
+     "y": 820,
+     "z": 20,
+     "rot": -3,
+     "in": {
+      "type": "drop",
+      "at": 1.87,
+      "dur": 0.45
+     },
+     "labelSize": 22
+    },
+    {
+     "type": "cutout",
+     "x": 540,
+     "y": 1240,
+     "h": 440,
+     "aspect": 0.6933,
+     "edge": 0,
+     "z": 18,
+     "in": {
+      "type": "rise",
+      "at": 3.12,
+      "dur": 0.5
+     },
+     "src": "assets/gen/golay_phone_cut.png"
+    },
+    {
+     "type": "text",
+     "text": "المدير العام",
+     "x": 250,
+     "y": 1050,
+     "font": "banner",
+     "size": 30,
+     "color": "#16181D",
+     "paper": "#EFE8D6",
+     "upper": false,
+     "z": 35,
+     "rot": -2,
+     "in": {
+      "type": "pop",
+      "at": 3.12,
+      "dur": 0.35
+     }
+    },
+    {
+     "type": "text",
+     "text": "أول مدير من خارج العائلتين",
+     "x": 400,
+     "y": 1130,
+     "font": "banner",
+     "size": 26,
+     "color": "#16181D",
+     "paper": "#EFE8D6",
+     "upper": false,
+     "z": 35,
+     "rot": 1,
+     "in": {
+      "type": "pop",
+      "at": 4.52,
+      "dur": 0.35
+     }
+    }
+   ],
+   "dur": 8.91,
+   "silent": true,
+   "captions": "وهناك لقى شريكه: | جورج غولاي، | المدير العام… | وأول واحد يدير الشركة | من برا العائلتين | المؤسستين.",
+   "captionStart": 0.16999999999999998,
+   "captionEnd": 8.709999999999999,
+   "voice": "voice-ar/clips/p1-6.wav",
+   "voiceAt": 0.12,
+   "transition": "slide",
+   "camera": {
+    "zoom": [
+     [
+      0,
+      1.0
+     ],
+     [
+      1.72,
+      1.0,
+      "inOutCubic"
+     ],
+     [
+      8.72,
+      1.05,
+      "inOutCubic"
+     ]
+    ],
+    "x": [
+     [
+      0,
+      360
+     ],
+     [
+      1.72,
+      360,
+      "inOutCubic"
+     ],
+     [
+      8.72,
+      360,
+      "inOutCubic"
+     ]
+    ],
+    "y": [
+     [
+      0,
+      520
+     ],
+     [
+      1.72,
+      640,
+      "inOutCubic"
+     ],
+     [
+      8.72,
+      720,
+      "inOutCubic"
+     ]
+    ]
+   },
+   "sfx": [
+    {
+     "at": 1.87,
+     "name": "paper_place",
+     "gain": -10
+    },
+    {
+     "at": 3.12,
+     "name": "pin",
+     "gain": -14
+    },
+    {
+     "at": 4.52,
+     "name": "pin",
+     "gain": -14
+    }
+   ]
+  },
+  {
+   "theme": "ro-paper",
+   "floor": false,
+   "elements": [
+    {
+     "type": "cutout",
+     "x": 200,
+     "y": 1130,
+     "h": 640,
+     "aspect": 0.2848,
+     "edge": 0,
+     "z": 20,
+     "in": {
+      "type": "rise",
+      "at": 0.1,
+      "dur": 0.5
+     },
+     "src": "assets/gen/young_think_cut.png",
+     "person": true,
+     "headBand": 0.2
+    },
+    {
+     "type": "cutout",
+     "x": 540,
+     "y": 1130,
+     "h": 420,
+     "aspect": 0.6933,
+     "edge": 0,
+     "z": 18,
+     "in": {
+      "type": "rise",
+      "at": 0.3,
+      "dur": 0.5
+     },
+     "src": "assets/gen/golay_phone_cut.png"
+    },
+    {
+     "type": "svg",
+     "w": 520,
+     "h": 230,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"520\" height=\"230\" viewBox=\"0 0 520 230\" style=\"overflow:visible;filter:drop-shadow(0 4px 3px rgba(0,0,0,.30))\"><circle cx=\"80\" cy=\"160\" r=\"62\" fill=\"none\" stroke=\"#2A2C31\" stroke-width=\"9\"/><line x1=\"80\" y1=\"160\" x2=\"138.0\" y2=\"160.0\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"80\" y1=\"160\" x2=\"130.2\" y2=\"189.0\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"80\" y1=\"160\" x2=\"109.0\" y2=\"210.2\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"80\" y1=\"160\" x2=\"80.0\" y2=\"218.0\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"80\" y1=\"160\" x2=\"51.0\" y2=\"210.2\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"80\" y1=\"160\" x2=\"29.8\" y2=\"189.0\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"80\" y1=\"160\" x2=\"22.0\" y2=\"160.0\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"80\" y1=\"160\" x2=\"29.8\" y2=\"131.0\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"80\" y1=\"160\" x2=\"51.0\" y2=\"109.8\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"80\" y1=\"160\" x2=\"80.0\" y2=\"102.0\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"80\" y1=\"160\" x2=\"109.0\" y2=\"109.8\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"80\" y1=\"160\" x2=\"130.2\" y2=\"131.0\" stroke=\"#8A8F96\" stroke-width=\"2\"/><circle cx=\"440\" cy=\"160\" r=\"62\" fill=\"none\" stroke=\"#2A2C31\" stroke-width=\"9\"/><line x1=\"440\" y1=\"160\" x2=\"498.0\" y2=\"160.0\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"440\" y1=\"160\" x2=\"490.2\" y2=\"189.0\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"440\" y1=\"160\" x2=\"469.0\" y2=\"210.2\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"440\" y1=\"160\" x2=\"440.0\" y2=\"218.0\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"440\" y1=\"160\" x2=\"411.0\" y2=\"210.2\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"440\" y1=\"160\" x2=\"389.8\" y2=\"189.0\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"440\" y1=\"160\" x2=\"382.0\" y2=\"160.0\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"440\" y1=\"160\" x2=\"389.8\" y2=\"131.0\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"440\" y1=\"160\" x2=\"411.0\" y2=\"109.8\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"440\" y1=\"160\" x2=\"440.0\" y2=\"102.0\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"440\" y1=\"160\" x2=\"469.0\" y2=\"109.8\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"440\" y1=\"160\" x2=\"490.2\" y2=\"131.0\" stroke=\"#8A8F96\" stroke-width=\"2\"/><path d=\"M 80 160 L 170 70 L 330 70 L 440 160 M 170 70 L 250 160 L 330 70 M 250 160 L 80 160 M 440 160 L 400 40\" stroke=\"#B23A2E\" stroke-width=\"11\" fill=\"none\" stroke-linejoin=\"round\"/><rect x=\"150\" y=\"52\" width=\"46\" height=\"12\" rx=\"6\" fill=\"#2A2C31\"/><rect x=\"306\" y=\"52\" width=\"46\" height=\"12\" rx=\"6\" fill=\"#2A2C31\"/><path d=\"M 384 36 L 430 30\" stroke=\"#2A2C31\" stroke-width=\"9\" stroke-linecap=\"round\"/></svg>",
+     "x": 360,
+     "y": 340,
+     "anchor": "c",
+     "z": 10,
+     "in": {
+      "type": "slideL",
+      "at": 1.37,
+      "dur": 0.7
+     }
+    },
+    {
+     "type": "text",
+     "text": "\"كنا مثل التاندم\"",
+     "x": 360,
+     "y": 200,
+     "font": "banner",
+     "size": 34,
+     "color": "#16181D",
+     "paper": "#EFE8D6",
+     "upper": false,
+     "z": 35,
+     "rot": -2,
+     "in": {
+      "type": "pop",
+      "at": 1.42,
+      "dur": 0.35
+     }
+    },
+    {
+     "type": "cutout",
+     "x": 360,
+     "y": 1060,
+     "h": 520,
+     "aspect": 0.4414,
+     "edge": 0,
+     "z": 40,
+     "in": {
+      "type": "pop",
+      "at": 6.97,
+      "dur": 0.4
+     },
+     "src": "assets/cut/m5233.png"
+    },
+    {
+     "type": "text",
+     "text": "5233",
+     "x": 360,
+     "y": 1110,
+     "font": "banner",
+     "size": 28,
+     "color": "#16181D",
+     "paper": "#EFE8D6",
+     "upper": false,
+     "z": 41,
+     "rot": -2,
+     "in": {
+      "type": "pop",
+      "at": 7.22,
+      "dur": 0.35
+     }
+    }
+   ],
+   "dur": 9.23,
+   "silent": true,
+   "captions": "جنتا يقول: | كنا مثل الدراجة | اللي يسوقها اثنين… | إذا واحد منا مو مقتنع، | ما نسوي الموديل. | وحتى كانوا يلبسون | نفس الساعة.",
+   "captionStart": 0.16999999999999998,
+   "captionEnd": 9.03,
+   "voice": "voice-ar/clips/p1-7.wav",
+   "voiceAt": 0.12,
+   "transition": "slide",
+   "camera": {
+    "zoom": [
+     [
+      0,
+      1.0
+     ],
+     [
+      6.82,
+      1.0
+     ],
+     [
+      9.02,
+      1.1,
+      "inOutCubic"
+     ]
+    ],
+    "x": [
+     [
+      0,
+      360
+     ],
+     [
+      6.82,
+      360
+     ],
+     [
+      9.02,
+      360,
+      "inOutCubic"
+     ]
+    ],
+    "y": [
+     [
+      0,
+      640
+     ],
+     [
+      6.82,
+      640
+     ],
+     [
+      9.02,
+      760,
+      "inOutCubic"
+     ]
+    ]
+   },
+   "sfx": [
+    {
+     "at": 1.37,
+     "name": "whoosh",
+     "gain": -14
+    },
+    {
+     "at": 6.97,
+     "name": "click",
+     "gain": -10
+    }
+   ]
+  },
+  {
+   "theme": "ro-night",
+   "floor": false,
+   "elements": [
+    {
+     "type": "svg",
+     "w": 300,
+     "h": 330,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"300\" height=\"330\" viewBox=\"0 0 300 330\" style=\"overflow:visible;filter:drop-shadow(0 4px 3px rgba(0,0,0,.30))\"><rect x=\"0\" y=\"18\" width=\"300\" height=\"312\" rx=\"6\" fill=\"#F3EEE1\"/><rect x=\"0\" y=\"18\" width=\"300\" height=\"74\" rx=\"6\" fill=\"#B23A2E\"/><rect x=\"0\" y=\"70\" width=\"300\" height=\"22\" fill=\"#B23A2E\"/><rect x=\"70\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><rect x=\"214\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><text x=\"150\" y=\"262\" font-family=\"var(--f-title)\" font-size=\"150\" fill=\"#16181D\" text-anchor=\"middle\">1970</text><line x1=\"24\" y1=\"292\" x2=\"276\" y2=\"292\" stroke=\"#CFC6B1\" stroke-width=\"2\"/></svg>",
+     "x": 170,
+     "y": 250,
+     "anchor": "c",
+     "z": 10,
+     "in": {
+      "type": "flip",
+      "at": 0.1,
+      "dur": 0.18
+     },
+     "scale": 0.55,
+     "out": {
+      "type": "fade",
+      "at": 7.62,
+      "dur": 0.2
+     }
+    },
+    {
+     "type": "cutout",
+     "x": 360,
+     "y": 1180,
+     "h": 700,
+     "aspect": 0.2848,
+     "edge": 0,
+     "z": 20,
+     "in": {
+      "type": "rise",
+      "at": 2.42,
+      "dur": 0.5
+     },
+     "src": "assets/gen/young_think_cut.png",
+     "person": true,
+     "headBand": 0.2
+    },
+    {
+     "type": "cutout",
+     "x": 120,
+     "y": 520,
+     "h": 230,
+     "aspect": 0.6614,
+     "edge": 0,
+     "z": 12,
+     "in": {
+      "type": "pop",
+      "at": 5.12,
+      "dur": 0.3
+     },
+     "src": "assets/early/polerouter_cut.png",
+     "out": {
+      "type": "fade",
+      "at": 7.62,
+      "dur": 0.25
+     },
+     "rot": -6
+    },
+    {
+     "type": "cutout",
+     "x": 600,
+     "y": 520,
+     "h": 230,
+     "aspect": 0.6,
+     "edge": 0,
+     "z": 12,
+     "in": {
+      "type": "pop",
+      "at": 5.3,
+      "dur": 0.3
+     },
+     "asset": "early/constellation_cut",
+     "desc": "",
+     "out": {
+      "type": "fade",
+      "at": 7.62,
+      "dur": 0.25
+     },
+     "rot": 5
+    },
+    {
+     "type": "cutout",
+     "x": 110,
+     "y": 860,
+     "h": 230,
+     "aspect": 0.5906,
+     "edge": 0,
+     "z": 12,
+     "in": {
+      "type": "pop",
+      "at": 5.48,
+      "dur": 0.3
+     },
+     "src": "assets/cut/m5179.png",
+     "out": {
+      "type": "fade",
+      "at": 7.62,
+      "dur": 0.25
+     },
+     "rot": -3
+    },
+    {
+     "type": "cutout",
+     "x": 610,
+     "y": 860,
+     "h": 230,
+     "aspect": 0.5854,
+     "edge": 0,
+     "z": 12,
+     "in": {
+      "type": "pop",
+      "at": 5.66,
+      "dur": 0.3
+     },
+     "src": "assets/cut/m5182.png",
+     "out": {
+      "type": "fade",
+      "at": 7.62,
+      "dur": 0.25
+     },
+     "rot": 6
+    },
+    {
+     "type": "cutout",
+     "x": 360,
+     "y": 380,
+     "h": 230,
+     "aspect": 0.4414,
+     "edge": 0,
+     "z": 12,
+     "in": {
+      "type": "pop",
+      "at": 5.84,
+      "dur": 0.3
+     },
+     "src": "assets/cut/m5233.png",
+     "out": {
+      "type": "fade",
+      "at": 7.62,
+      "dur": 0.25
+     },
+     "rot": 0
+    },
+    {
+     "type": "text",
+     "text": "عشرة أبريل",
+     "x": 170,
+     "y": 250,
+     "font": "banner",
+     "size": 34,
+     "color": "#16181D",
+     "paper": "#EFE8D6",
+     "upper": false,
+     "z": 35,
+     "rot": -2,
+     "in": {
+      "type": "pop",
+      "at": 7.72,
+      "dur": 0.35
+     }
+    },
+    {
+     "type": "svg",
+     "w": 150,
+     "h": 150,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"150\" height=\"150\" viewBox=\"0 0 150 150\" style=\"overflow:visible;filter:drop-shadow(0 4px 3px rgba(0,0,0,.30))\"><circle cx=\"75\" cy=\"75\" r=\"71\" fill=\"#F3EEE1\" stroke=\"#2A2C31\" stroke-width=\"8\"/><rect x=\"73.0\" y=\"10\" width=\"4\" height=\"14\" fill=\"#2A2C31\" transform=\"rotate(0 75 75)\"/><rect x=\"73.0\" y=\"10\" width=\"4\" height=\"8\" fill=\"#2A2C31\" transform=\"rotate(30 75 75)\"/><rect x=\"73.0\" y=\"10\" width=\"4\" height=\"8\" fill=\"#2A2C31\" transform=\"rotate(60 75 75)\"/><rect x=\"73.0\" y=\"10\" width=\"4\" height=\"14\" fill=\"#2A2C31\" transform=\"rotate(90 75 75)\"/><rect x=\"73.0\" y=\"10\" width=\"4\" height=\"8\" fill=\"#2A2C31\" transform=\"rotate(120 75 75)\"/><rect x=\"73.0\" y=\"10\" width=\"4\" height=\"8\" fill=\"#2A2C31\" transform=\"rotate(150 75 75)\"/><rect x=\"73.0\" y=\"10\" width=\"4\" height=\"14\" fill=\"#2A2C31\" transform=\"rotate(180 75 75)\"/><rect x=\"73.0\" y=\"10\" width=\"4\" height=\"8\" fill=\"#2A2C31\" transform=\"rotate(210 75 75)\"/><rect x=\"73.0\" y=\"10\" width=\"4\" height=\"8\" fill=\"#2A2C31\" transform=\"rotate(240 75 75)\"/><rect x=\"73.0\" y=\"10\" width=\"4\" height=\"14\" fill=\"#2A2C31\" transform=\"rotate(270 75 75)\"/><rect x=\"73.0\" y=\"10\" width=\"4\" height=\"8\" fill=\"#2A2C31\" transform=\"rotate(300 75 75)\"/><rect x=\"73.0\" y=\"10\" width=\"4\" height=\"8\" fill=\"#2A2C31\" transform=\"rotate(330 75 75)\"/></svg>",
+     "x": 560,
+     "y": 270,
+     "anchor": "c",
+     "z": 11,
+     "in": {
+      "type": "pop",
+      "at": 8.82,
+      "dur": 0.4
+     }
+    },
+    {
+     "type": "svg",
+     "w": 150,
+     "h": 150,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"150\" height=\"150\" viewBox=\"0 0 150 150\" style=\"overflow:visible;\"><rect x=\"72.0\" y=\"36.0\" width=\"6\" height=\"45.0\" rx=\"2\" fill=\"#16181D\"/></svg>",
+     "x": 560,
+     "y": 270,
+     "anchor": "c",
+     "z": 12,
+     "in": {
+      "type": "pop",
+      "at": 8.82,
+      "dur": 0.4
+     },
+     "rot": 120.0
+    },
+    {
+     "type": "svg",
+     "w": 150,
+     "h": 150,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"150\" height=\"150\" viewBox=\"0 0 150 150\" style=\"overflow:visible;\"><rect x=\"73.0\" y=\"18.0\" width=\"4\" height=\"63.0\" rx=\"2\" fill=\"#16181D\"/></svg>",
+     "x": 560,
+     "y": 270,
+     "anchor": "c",
+     "z": 12,
+     "in": {
+      "type": "pop",
+      "at": 8.82,
+      "dur": 0.4
+     },
+     "rot": 0
+    },
+    {
+     "type": "svg",
+     "w": 260,
+     "h": 162,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"260\" height=\"162\" viewBox=\"0 0 260 162\" style=\"overflow:visible;filter:drop-shadow(0 4px 3px rgba(0,0,0,.30))\"><path d=\"M 20 150 L 46 60 Q 50 46 66 46 L 194 46 Q 210 46 214 60 L 240 150 Q 242 162 228 162 L 32 162 Q 18 162 20 150 Z\" fill=\"#2A2C31\"/><circle cx=\"130\" cy=\"104\" r=\"44\" fill=\"#EDE6D3\"/><circle cx=\"145.0\" cy=\"78.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"156.0\" cy=\"89.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"160.0\" cy=\"104.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"156.0\" cy=\"119.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"145.0\" cy=\"130.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"130.0\" cy=\"134.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"115.0\" cy=\"130.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"104.0\" cy=\"119.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"100.0\" cy=\"104.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"104.0\" cy=\"89.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"115.0\" cy=\"78.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"130\" cy=\"104\" r=\"14\" fill=\"#2A2C31\"/><rect x=\"56\" y=\"30\" width=\"22\" height=\"22\" rx=\"4\" fill=\"#EDE6D3\"/><rect x=\"182\" y=\"30\" width=\"22\" height=\"22\" rx=\"4\" fill=\"#EDE6D3\"/></svg>",
+     "x": 580,
+     "y": 980,
+     "anchor": "c",
+     "z": 25,
+     "in": {
+      "type": "pop",
+      "at": 10.42,
+      "dur": 0.3
+     },
+     "scale": 0.75,
+     "idle": {
+      "type": "shake",
+      "amp": 3,
+      "speed": 9,
+      "from": 10.72
+     }
+    },
+    {
+     "type": "svg",
+     "w": 260,
+     "h": 80,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"260\" height=\"80\" viewBox=\"0 0 260 80\" style=\"overflow:visible;filter:drop-shadow(0 4px 3px rgba(0,0,0,.30))\"><path d=\"M 10 40 q -14 24 0 48\" stroke=\"#2A2C31\" stroke-width=\"5\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M -6 26 q -20 38 0 76\" stroke=\"#2A2C31\" stroke-width=\"5\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M 250 40 q 14 24 0 48\" stroke=\"#2A2C31\" stroke-width=\"5\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M 266 26 q 20 38 0 76\" stroke=\"#2A2C31\" stroke-width=\"5\" fill=\"none\" stroke-linecap=\"round\"/></svg>",
+     "x": 580,
+     "y": 921.0714285714286,
+     "anchor": "c",
+     "z": 26,
+     "in": {
+      "type": "pop",
+      "at": 10.72,
+      "dur": 0.2
+     },
+     "scale": 0.75,
+     "idle": {
+      "type": "pulse",
+      "amp": 0.08,
+      "speed": 6
+     }
+    },
+    {
+     "type": "text",
+     "text": "يتبع…  الجزء الثاني: الرويال أوك",
+     "x": 360,
+     "y": 210,
+     "font": "banner",
+     "size": 32,
+     "color": "#EFE8D6",
+     "paper": "#16181D",
+     "upper": false,
+     "z": 60,
+     "rot": -2,
+     "in": {
+      "type": "pop",
+      "at": 11.72,
+      "dur": 0.35
+     },
+     "depth": 0
+    },
+    {
+     "type": "text",
+     "text": "Archive images: © Audemars Piguet (AP Chronicles). Polerouter, Omega Constellation and the 1954 SAS advertisement: Wikimedia Commons. Paper characters are AI illustrations (Higgsfield); the portrait of Gérald Genta is by Studio Luxury Griffes (CC BY-SA 3.0).",
+     "x": 360,
+     "y": 1255,
+     "font": "ui",
+     "size": 10,
+     "color": "#9A9488",
+     "upper": false,
+     "w": 690,
+     "z": 61,
+     "depth": 0,
+     "in": {
+      "type": "fade",
+      "at": 11.92,
+      "dur": 0.4
+     }
+    }
+   ],
+   "dur": 13.88,
+   "silent": true,
+   "captions": "أبريل ألف وتسعمية وسبعين. | جنتا عمره | ثمانية وثلاثين، | ووراه ستطعش سنة | من التصاميم. | وفي يوم عشرة، | الساعة أربعة العصر… | تلفونه يرن.",
+   "captionStart": 0.16999999999999998,
+   "captionEnd": 11.879999999999999,
+   "voice": "voice-ar/clips/p1-8.wav",
+   "voiceAt": 0.12,
+   "transition": "slide",
+   "captionClear": 12.02,
+   "camera": {
+    "zoom": [
+     [
+      0,
+      1.0
+     ],
+     [
+      10.52,
+      1.0
+     ],
+     [
+      11.92,
+      1.15,
+      "inOutCubic"
+     ],
+     [
+      13.72,
+      1.15
+     ]
+    ],
+    "x": [
+     [
+      0,
+      360
+     ],
+     [
+      10.52,
+      360
+     ],
+     [
+      11.92,
+      450,
+      "inOutCubic"
+     ],
+     [
+      13.72,
+      450
+     ]
+    ],
+    "y": [
+     [
+      0,
+      640
+     ],
+     [
+      10.52,
+      640
+     ],
+     [
+      11.92,
+      760,
+      "inOutCubic"
+     ],
+     [
+      13.72,
+      760
+     ]
+    ]
+   },
+   "sfx": [
+    {
+     "at": 0.1,
+     "name": "paper_tear",
+     "gain": -15
+    },
+    {
+     "at": 5.12,
+     "name": "click",
+     "gain": -16
+    },
+    {
+     "at": 5.3,
+     "name": "click",
+     "gain": -16
+    },
+    {
+     "at": 5.48,
+     "name": "click",
+     "gain": -16
+    },
+    {
+     "at": 5.66,
+     "name": "click",
+     "gain": -16
+    },
+    {
+     "at": 5.84,
+     "name": "click",
+     "gain": -16
+    },
+    {
+     "at": 8.92,
+     "name": "tick",
+     "gain": -12
+    },
+    {
+     "at": 10.72,
+     "name": "ring",
+     "gain": -8
+    },
+    {
+     "at": 11.72,
+     "name": "ring",
+     "gain": -10
+    }
+   ]
+  }
+ ]
+}
