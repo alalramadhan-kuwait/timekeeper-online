@@ -102,6 +102,363 @@
  },
  "scenes": [
   {
+   "theme": "ro-black",
+   "floor": false,
+   "elements": [
+    {
+     "type": "svg",
+     "w": 520,
+     "h": 1000,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"520\" height=\"1000\" viewBox=\"0 0 520 1000\" style=\"overflow:visible;\"><defs><linearGradient id=\"sc\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#FFF1CF\" stop-opacity=\".55\"/><stop offset=\"1\" stop-color=\"#FFF1CF\" stop-opacity=\".05\"/></linearGradient></defs><polygon points=\"228.8,0.0 291.2,0.0 520.0,900.0 0.0,900.0\" fill=\"url(#sc)\"/></svg>",
+     "x": 360,
+     "y": 0,
+     "anchor": "t",
+     "z": 2,
+     "in": {
+      "type": "fade",
+      "at": 0.0,
+      "dur": 0.6
+     }
+    },
+    {
+     "type": "cutout",
+     "asset": "genta",
+     "desc": "Gerald Genta, portrait (Studio Luxury Griffes, 2005), cut out",
+     "x": 360,
+     "y": 1160,
+     "h": 760,
+     "aspect": 0.6823076923076923,
+     "edge": 4,
+     "z": 20,
+     "person": true,
+     "headBand": 0.42,
+     "in": {
+      "type": "rise",
+      "at": 0.1,
+      "dur": 0.55
+     },
+     "out": {
+      "type": "fade",
+      "at": 1.82,
+      "dur": 0.35
+     }
+    },
+    {
+     "type": "cutout",
+     "src": "assets/gen/genta_think_cut.png",
+     "x": 360,
+     "y": 1160,
+     "h": 760,
+     "aspect": 0.328,
+     "edge": 0,
+     "z": 21,
+     "person": true,
+     "headBand": 0.2,
+     "in": {
+      "type": "fade",
+      "at": 1.72,
+      "dur": 0.4
+     },
+     "out": {
+      "type": "fade",
+      "at": 5.67,
+      "dur": 0.2
+     }
+    },
+    {
+     "type": "cutout",
+     "src": "assets/gen/young_think_cut.png",
+     "x": 360,
+     "y": 1160,
+     "h": 760,
+     "aspect": 0.2848,
+     "edge": 0,
+     "z": 22,
+     "person": false,
+     "headBand": 0.2,
+     "in": {
+      "type": "fade",
+      "at": 5.52,
+      "dur": 0.5
+     }
+    },
+    {
+     "type": "svg",
+     "w": 150,
+     "h": 150,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"150\" height=\"150\" viewBox=\"0 0 150 150\" style=\"overflow:visible;filter:drop-shadow(0 4px 3px rgba(0,0,0,.30))\"><circle cx=\"75\" cy=\"75\" r=\"71\" fill=\"#F3EEE1\" stroke=\"#2A2C31\" stroke-width=\"8\"/><rect x=\"73.0\" y=\"10\" width=\"4\" height=\"14\" fill=\"#2A2C31\" transform=\"rotate(0 75 75)\"/><rect x=\"73.0\" y=\"10\" width=\"4\" height=\"8\" fill=\"#2A2C31\" transform=\"rotate(30 75 75)\"/><rect x=\"73.0\" y=\"10\" width=\"4\" height=\"8\" fill=\"#2A2C31\" transform=\"rotate(60 75 75)\"/><rect x=\"73.0\" y=\"10\" width=\"4\" height=\"14\" fill=\"#2A2C31\" transform=\"rotate(90 75 75)\"/><rect x=\"73.0\" y=\"10\" width=\"4\" height=\"8\" fill=\"#2A2C31\" transform=\"rotate(120 75 75)\"/><rect x=\"73.0\" y=\"10\" width=\"4\" height=\"8\" fill=\"#2A2C31\" transform=\"rotate(150 75 75)\"/><rect x=\"73.0\" y=\"10\" width=\"4\" height=\"14\" fill=\"#2A2C31\" transform=\"rotate(180 75 75)\"/><rect x=\"73.0\" y=\"10\" width=\"4\" height=\"8\" fill=\"#2A2C31\" transform=\"rotate(210 75 75)\"/><rect x=\"73.0\" y=\"10\" width=\"4\" height=\"8\" fill=\"#2A2C31\" transform=\"rotate(240 75 75)\"/><rect x=\"73.0\" y=\"10\" width=\"4\" height=\"14\" fill=\"#2A2C31\" transform=\"rotate(270 75 75)\"/><rect x=\"73.0\" y=\"10\" width=\"4\" height=\"8\" fill=\"#2A2C31\" transform=\"rotate(300 75 75)\"/><rect x=\"73.0\" y=\"10\" width=\"4\" height=\"8\" fill=\"#2A2C31\" transform=\"rotate(330 75 75)\"/></svg>",
+     "x": 570,
+     "y": 300,
+     "anchor": "c",
+     "z": 6,
+     "in": {
+      "type": "pop",
+      "at": 4.71,
+      "dur": 0.4
+     }
+    },
+    {
+     "type": "svg",
+     "w": 150,
+     "h": 150,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"150\" height=\"150\" viewBox=\"0 0 150 150\" style=\"overflow:visible;\"><rect x=\"72.0\" y=\"36.0\" width=\"6\" height=\"45.0\" rx=\"2\" fill=\"#16181D\"/></svg>",
+     "x": 570,
+     "y": 300,
+     "anchor": "c",
+     "z": 7,
+     "in": {
+      "type": "pop",
+      "at": 4.71,
+      "dur": 0.4
+     },
+     "rot": [
+      [
+       4.91,
+       120.0
+      ],
+      [
+       7.22,
+       -60.0,
+       "inOutCubic"
+      ]
+     ]
+    },
+    {
+     "type": "svg",
+     "w": 150,
+     "h": 150,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"150\" height=\"150\" viewBox=\"0 0 150 150\" style=\"overflow:visible;\"><rect x=\"73.0\" y=\"18.0\" width=\"4\" height=\"63.0\" rx=\"2\" fill=\"#16181D\"/></svg>",
+     "x": 570,
+     "y": 300,
+     "anchor": "c",
+     "z": 7,
+     "in": {
+      "type": "pop",
+      "at": 4.71,
+      "dur": 0.4
+     },
+     "rot": [
+      [
+       4.91,
+       0
+      ],
+      [
+       7.22,
+       -2160.0,
+       "inOutCubic"
+      ]
+     ]
+    },
+    {
+     "type": "svg",
+     "w": 300,
+     "h": 330,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"300\" height=\"330\" viewBox=\"0 0 300 330\" style=\"overflow:visible;filter:drop-shadow(0 4px 3px rgba(0,0,0,.30))\"><rect x=\"0\" y=\"18\" width=\"300\" height=\"312\" rx=\"6\" fill=\"#F3EEE1\"/><rect x=\"0\" y=\"18\" width=\"300\" height=\"74\" rx=\"6\" fill=\"#B23A2E\"/><rect x=\"0\" y=\"70\" width=\"300\" height=\"22\" fill=\"#B23A2E\"/><rect x=\"70\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><rect x=\"214\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><text x=\"150\" y=\"262\" font-family=\"var(--f-title)\" font-size=\"150\" fill=\"#16181D\" text-anchor=\"middle\">2000</text><line x1=\"24\" y1=\"292\" x2=\"276\" y2=\"292\" stroke=\"#CFC6B1\" stroke-width=\"2\"/></svg>",
+     "x": 160,
+     "y": 330,
+     "anchor": "c",
+     "z": 10,
+     "in": {
+      "type": "flip",
+      "at": 5.0600000000000005,
+      "dur": 0.18
+     },
+     "scale": 0.62,
+     "out": {
+      "type": "fade",
+      "at": 5.58,
+      "dur": 0.05
+     }
+    },
+    {
+     "type": "svg",
+     "w": 300,
+     "h": 330,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"300\" height=\"330\" viewBox=\"0 0 300 330\" style=\"overflow:visible;filter:drop-shadow(0 4px 3px rgba(0,0,0,.30))\"><rect x=\"0\" y=\"18\" width=\"300\" height=\"312\" rx=\"6\" fill=\"#F3EEE1\"/><rect x=\"0\" y=\"18\" width=\"300\" height=\"74\" rx=\"6\" fill=\"#B23A2E\"/><rect x=\"0\" y=\"70\" width=\"300\" height=\"22\" fill=\"#B23A2E\"/><rect x=\"70\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><rect x=\"214\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><text x=\"150\" y=\"262\" font-family=\"var(--f-title)\" font-size=\"150\" fill=\"#16181D\" text-anchor=\"middle\">1990</text><line x1=\"24\" y1=\"292\" x2=\"276\" y2=\"292\" stroke=\"#CFC6B1\" stroke-width=\"2\"/></svg>",
+     "x": 160,
+     "y": 330,
+     "anchor": "c",
+     "z": 11,
+     "in": {
+      "type": "flip",
+      "at": 5.5600000000000005,
+      "dur": 0.18
+     },
+     "scale": 0.62,
+     "out": {
+      "type": "fade",
+      "at": 6.08,
+      "dur": 0.05
+     }
+    },
+    {
+     "type": "svg",
+     "w": 300,
+     "h": 330,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"300\" height=\"330\" viewBox=\"0 0 300 330\" style=\"overflow:visible;filter:drop-shadow(0 4px 3px rgba(0,0,0,.30))\"><rect x=\"0\" y=\"18\" width=\"300\" height=\"312\" rx=\"6\" fill=\"#F3EEE1\"/><rect x=\"0\" y=\"18\" width=\"300\" height=\"74\" rx=\"6\" fill=\"#B23A2E\"/><rect x=\"0\" y=\"70\" width=\"300\" height=\"22\" fill=\"#B23A2E\"/><rect x=\"70\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><rect x=\"214\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><text x=\"150\" y=\"262\" font-family=\"var(--f-title)\" font-size=\"150\" fill=\"#16181D\" text-anchor=\"middle\">1980</text><line x1=\"24\" y1=\"292\" x2=\"276\" y2=\"292\" stroke=\"#CFC6B1\" stroke-width=\"2\"/></svg>",
+     "x": 160,
+     "y": 330,
+     "anchor": "c",
+     "z": 12,
+     "in": {
+      "type": "flip",
+      "at": 6.0600000000000005,
+      "dur": 0.18
+     },
+     "scale": 0.62,
+     "out": {
+      "type": "fade",
+      "at": 6.58,
+      "dur": 0.05
+     }
+    },
+    {
+     "type": "svg",
+     "w": 300,
+     "h": 330,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"300\" height=\"330\" viewBox=\"0 0 300 330\" style=\"overflow:visible;filter:drop-shadow(0 4px 3px rgba(0,0,0,.30))\"><rect x=\"0\" y=\"18\" width=\"300\" height=\"312\" rx=\"6\" fill=\"#F3EEE1\"/><rect x=\"0\" y=\"18\" width=\"300\" height=\"74\" rx=\"6\" fill=\"#B23A2E\"/><rect x=\"0\" y=\"70\" width=\"300\" height=\"22\" fill=\"#B23A2E\"/><rect x=\"70\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><rect x=\"214\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><text x=\"150\" y=\"262\" font-family=\"var(--f-title)\" font-size=\"150\" fill=\"#16181D\" text-anchor=\"middle\">1970</text><line x1=\"24\" y1=\"292\" x2=\"276\" y2=\"292\" stroke=\"#CFC6B1\" stroke-width=\"2\"/></svg>",
+     "x": 160,
+     "y": 330,
+     "anchor": "c",
+     "z": 13,
+     "in": {
+      "type": "flip",
+      "at": 6.5600000000000005,
+      "dur": 0.18
+     },
+     "scale": 0.62
+    },
+    {
+     "type": "svg",
+     "w": 760,
+     "h": 1320,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"760\" height=\"1320\" viewBox=\"0 0 760 1320\" style=\"overflow:visible;\"><rect width=\"760\" height=\"1320\" fill=\"#8A6A3A\"/></svg>",
+     "x": 360,
+     "y": 640,
+     "anchor": "c",
+     "z": 30,
+     "depth": 0,
+     "still": true,
+     "opacity": [
+      [
+       4.91,
+       0
+      ],
+      [
+       5.72,
+       0.22
+      ],
+      [
+       7.32,
+       0.1
+      ]
+     ]
+    }
+   ],
+   "dur": 7.56,
+   "silent": true,
+   "captions": "This is Gérald Genta, | one of the most celebrated | watch designers in history. | Let's go back | to the night | that made his name.",
+   "captionStart": 0.16999999999999998,
+   "captionEnd": 7.38,
+   "voice": "voice/clips/0.wav",
+   "voiceAt": 0.12,
+   "camera": {
+    "zoom": [
+     [
+      0,
+      1.0
+     ],
+     [
+      4.72,
+      1.12,
+      "inOutCubic"
+     ],
+     [
+      7.42,
+      1.0,
+      "inOutCubic"
+     ]
+    ],
+    "x": [
+     [
+      0,
+      360
+     ],
+     [
+      4.72,
+      360,
+      "inOutCubic"
+     ],
+     [
+      7.42,
+      360,
+      "inOutCubic"
+     ]
+    ],
+    "y": [
+     [
+      0,
+      700
+     ],
+     [
+      4.72,
+      660,
+      "inOutCubic"
+     ],
+     [
+      7.42,
+      640,
+      "inOutCubic"
+     ]
+    ]
+   },
+   "sfx": [
+    {
+     "at": 0.15,
+     "name": "shutter",
+     "gain": -14
+    },
+    {
+     "at": 4.91,
+     "name": "whoosh",
+     "gain": -12
+    },
+    {
+     "at": 5.01,
+     "name": "crown_wind",
+     "gain": -10
+    },
+    {
+     "at": 5.06,
+     "name": "paper_tear",
+     "gain": -16
+    },
+    {
+     "at": 5.56,
+     "name": "paper_tear",
+     "gain": -16
+    },
+    {
+     "at": 6.06,
+     "name": "paper_tear",
+     "gain": -16
+    },
+    {
+     "at": 6.56,
+     "name": "paper_tear",
+     "gain": -16
+    }
+   ],
+   "beds": [
+    {
+     "name": "watch_run",
+     "from": 0,
+     "to": 7.5,
+     "gain": -28
+    }
+   ]
+  },
+  {
    "theme": "ro-night",
    "floor": false,
    "elements": [
@@ -258,6 +615,7 @@
      ]
     ]
    },
+   "transition": "fade",
    "sfx": [
     {
      "at": 0.12,
@@ -418,7 +776,7 @@
      "pencil": false,
      "paths": [
       {
-       "d": "M 250 540 C 690 600 700 760 560 880 S 260 980 150 1040",
+       "d": "M 250 540 C 690 600 700 760 560 880 S 300 1000 270 1090",
        "at": 1.42,
        "dur": 1.4,
        "stroke": "#2A2C31",
@@ -534,8 +892,8 @@
      "w": 260,
      "h": 162,
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"260\" height=\"162\" viewBox=\"0 0 260 162\" style=\"overflow:visible;filter:drop-shadow(0 4px 3px rgba(0,0,0,.30))\"><path d=\"M 20 150 L 46 60 Q 50 46 66 46 L 194 46 Q 210 46 214 60 L 240 150 Q 242 162 228 162 L 32 162 Q 18 162 20 150 Z\" fill=\"#2A2C31\"/><circle cx=\"130\" cy=\"104\" r=\"44\" fill=\"#EDE6D3\"/><circle cx=\"145.0\" cy=\"78.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"156.0\" cy=\"89.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"160.0\" cy=\"104.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"156.0\" cy=\"119.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"145.0\" cy=\"130.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"130.0\" cy=\"134.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"115.0\" cy=\"130.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"104.0\" cy=\"119.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"100.0\" cy=\"104.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"104.0\" cy=\"89.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"115.0\" cy=\"78.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"130\" cy=\"104\" r=\"14\" fill=\"#2A2C31\"/><rect x=\"56\" y=\"30\" width=\"22\" height=\"22\" rx=\"4\" fill=\"#EDE6D3\"/><rect x=\"182\" y=\"30\" width=\"22\" height=\"22\" rx=\"4\" fill=\"#EDE6D3\"/></svg>",
-     "x": 150,
-     "y": 1085,
+     "x": 275,
+     "y": 1105,
      "anchor": "c",
      "z": 6,
      "scale": 0.62,
@@ -557,8 +915,8 @@
      "w": 260,
      "h": 80,
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"260\" height=\"80\" viewBox=\"0 0 260 80\" style=\"overflow:visible;filter:drop-shadow(0 4px 3px rgba(0,0,0,.30))\"><path d=\"M 10 40 q -14 24 0 48\" stroke=\"#2A2C31\" stroke-width=\"5\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M -6 26 q -20 38 0 76\" stroke=\"#2A2C31\" stroke-width=\"5\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M 250 40 q 14 24 0 48\" stroke=\"#2A2C31\" stroke-width=\"5\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M 266 26 q 20 38 0 76\" stroke=\"#2A2C31\" stroke-width=\"5\" fill=\"none\" stroke-linecap=\"round\"/></svg>",
-     "x": 150,
-     "y": 1035,
+     "x": 275,
+     "y": 1055,
      "anchor": "c",
      "z": 9,
      "in": {
@@ -580,14 +938,14 @@
     },
     {
      "type": "cutout",
-     "src": "assets/gen/genta_phone_cut.png",
+     "src": "assets/gen/young_phone_cut.png",
      "x": 240,
      "y": 1290,
      "h": 560,
-     "aspect": 0.5969,
+     "aspect": 0.3768,
      "edge": 0,
      "z": 12,
-     "person": true,
+     "person": false,
      "headBand": 0.2,
      "in": {
       "type": "fade",
@@ -602,14 +960,14 @@
     },
     {
      "type": "cutout",
-     "src": "assets/gen/genta_think_cut.png",
-     "x": 250,
+     "src": "assets/gen/young_think_cut.png",
+     "x": 240,
      "y": 1290,
      "h": 560,
-     "aspect": 0.328,
+     "aspect": 0.2848,
      "edge": 0,
      "z": 12,
-     "person": true,
+     "person": false,
      "headBand": 0.2,
      "in": {
       "type": "fade",
@@ -846,14 +1204,14 @@
     },
     {
      "type": "cutout",
-     "src": "assets/gen/genta_table_cut.png",
+     "src": "assets/gen/young_table_cut.png",
      "x": 205,
      "y": 1255,
      "h": 600,
-     "aspect": 0.7024,
+     "aspect": 0.6909,
      "edge": 0,
      "z": 20,
-     "person": true,
+     "person": false,
      "headBand": 0.2,
      "in": {
       "type": null,
@@ -2142,7 +2500,7 @@
      "w": 520,
      "h": 900,
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"520\" height=\"900\" viewBox=\"0 0 520 900\" style=\"overflow:visible;\"><defs><linearGradient id=\"sc\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#FFF1CF\" stop-opacity=\".55\"/><stop offset=\"1\" stop-color=\"#FFF1CF\" stop-opacity=\".05\"/></linearGradient></defs><polygon points=\"228.8,0.0 291.2,0.0 520.0,900.0 0.0,900.0\" fill=\"url(#sc)\"/></svg>",
-     "x": 260,
+     "x": 470,
      "y": 380,
      "anchor": "t",
      "z": 4,
@@ -2158,7 +2516,7 @@
      "w": 260,
      "h": 300,
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"260\" height=\"300\" viewBox=\"0 0 260 300\" style=\"overflow:visible;filter:drop-shadow(0 4px 3px rgba(0,0,0,.30))\"><rect x=\"0\" y=\"0\" width=\"260\" height=\"30\" fill=\"#EFE8D6\"/><rect x=\"18\" y=\"30\" width=\"224\" height=\"270\" fill=\"#D9D1BE\"/><rect x=\"18\" y=\"30\" width=\"22\" height=\"270\" fill=\"#C3BAA4\"/></svg>",
-     "x": 260,
+     "x": 470,
      "y": 1160,
      "anchor": "b",
      "z": 6,
@@ -2168,7 +2526,7 @@
      "type": "cutout",
      "asset": "ro_front",
      "desc": "Royal Oak Jumbo ref. 15202, the 5402's successor, cut out from a wrist shot",
-     "x": 260,
+     "x": 470,
      "y": 950,
      "h": 440,
      "aspect": 0.723526044647968,
@@ -2183,14 +2541,14 @@
     },
     {
      "type": "cutout",
-     "src": "assets/gen/genta_present_cut.png",
-     "x": 540,
+     "src": "assets/gen/young_present_cut.png",
+     "x": 165,
      "y": 1200,
      "h": 560,
-     "aspect": 0.5275,
+     "aspect": 0.4882,
      "edge": 0,
      "z": 12,
-     "person": true,
+     "person": false,
      "headBand": 0.2,
      "in": {
       "type": "rise",
@@ -2202,7 +2560,7 @@
     {
      "type": "text",
      "text": "pictured: ref. 15202, the 5402's successor",
-     "x": 330,
+     "x": 450,
      "y": 990,
      "font": "cap",
      "size": 17,
@@ -2223,7 +2581,7 @@
      "w": 240,
      "h": 240,
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"240\" height=\"240\" viewBox=\"0 0 240 240\" style=\"overflow:visible;\"><defs><radialGradient id=\"fl\"><stop offset=\"0\" stop-color=\"#FFFFFF\" stop-opacity=\".95\"/><stop offset=\".35\" stop-color=\"#FFF6DD\" stop-opacity=\".5\"/><stop offset=\"1\" stop-color=\"#FFF6DD\" stop-opacity=\"0\"/></radialGradient></defs><circle cx=\"120\" cy=\"120\" r=\"120\" fill=\"url(#fl)\"/></svg>",
-     "x": 140,
+     "x": 640,
      "y": 820,
      "anchor": "c",
      "z": 45,
@@ -2244,8 +2602,8 @@
      "w": 240,
      "h": 240,
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"240\" height=\"240\" viewBox=\"0 0 240 240\" style=\"overflow:visible;\"><defs><radialGradient id=\"fl\"><stop offset=\"0\" stop-color=\"#FFFFFF\" stop-opacity=\".95\"/><stop offset=\".35\" stop-color=\"#FFF6DD\" stop-opacity=\".5\"/><stop offset=\"1\" stop-color=\"#FFF6DD\" stop-opacity=\"0\"/></radialGradient></defs><circle cx=\"120\" cy=\"120\" r=\"120\" fill=\"url(#fl)\"/></svg>",
-     "x": 60,
-     "y": 600,
+     "x": 680,
+     "y": 560,
      "anchor": "c",
      "z": 45,
      "in": {
@@ -2265,8 +2623,8 @@
      "w": 240,
      "h": 240,
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"240\" height=\"240\" viewBox=\"0 0 240 240\" style=\"overflow:visible;\"><defs><radialGradient id=\"fl\"><stop offset=\"0\" stop-color=\"#FFFFFF\" stop-opacity=\".95\"/><stop offset=\".35\" stop-color=\"#FFF6DD\" stop-opacity=\".5\"/><stop offset=\"1\" stop-color=\"#FFF6DD\" stop-opacity=\"0\"/></radialGradient></defs><circle cx=\"120\" cy=\"120\" r=\"120\" fill=\"url(#fl)\"/></svg>",
-     "x": 380,
-     "y": 540,
+     "x": 330,
+     "y": 470,
      "anchor": "c",
      "z": 45,
      "in": {
@@ -2286,8 +2644,8 @@
      "w": 240,
      "h": 240,
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"240\" height=\"240\" viewBox=\"0 0 240 240\" style=\"overflow:visible;\"><defs><radialGradient id=\"fl\"><stop offset=\"0\" stop-color=\"#FFFFFF\" stop-opacity=\".95\"/><stop offset=\".35\" stop-color=\"#FFF6DD\" stop-opacity=\".5\"/><stop offset=\"1\" stop-color=\"#FFF6DD\" stop-opacity=\"0\"/></radialGradient></defs><circle cx=\"120\" cy=\"120\" r=\"120\" fill=\"url(#fl)\"/></svg>",
-     "x": 200,
-     "y": 990,
+     "x": 560,
+     "y": 1000,
      "anchor": "c",
      "z": 45,
      "in": {
@@ -2320,7 +2678,7 @@
     },
     {
      "type": "sketch",
-     "x": 250.44945621064682,
+     "x": 460.4494562106468,
      "y": 673.5999999999999,
      "w": 400,
      "h": 120,
@@ -2390,7 +2748,7 @@
      "w": 249.45733785390343,
      "h": 249.45733785390343,
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"249\" height=\"249\" viewBox=\"0 0 249 249\" style=\"overflow:visible;\"><circle cx=\"124\" cy=\"124\" r=\"120\" fill=\"none\" stroke=\"#EFE8D6\" stroke-width=\"3\" stroke-dasharray=\"9 7\" opacity=\".8\"/></svg>",
-     "x": 250.44945621064682,
+     "x": 460.4494562106468,
      "y": 703.5999999999999,
      "anchor": "c",
      "z": 20,
@@ -2442,12 +2800,12 @@
      ],
      [
       4.72,
-      385,
+      345,
       "inOutCubic"
      ],
      [
       7.72,
-      385,
+      345,
       "inOutCubic"
      ]
     ],
@@ -2992,7 +3350,7 @@
     },
     {
      "type": "text",
-     "text": "Paper characters of Gérald Genta and Georges Golay are AI illustrations (Higgsfield) based on a portrait of Genta by Studio Luxury Griffes (CC BY-SA 3.0); Golay is shown from behind. Watch photos via Wikimedia Commons: ref. 15202 by OpaleHorse, bracelet by Myles Gray, calibre 2121 by EMore98 (CC BY-SA 4.0).",
+     "text": "Portrait of Gérald Genta by Studio Luxury Griffes (CC BY-SA 3.0). The paper characters of Genta, older and younger, and of Georges Golay (shown from behind) are AI illustrations (Higgsfield) based on it. Watch photos via Wikimedia Commons: ref. 15202 by OpaleHorse, bracelet by Myles Gray, calibre 2121 by EMore98 (CC BY-SA 4.0).",
      "x": 360,
      "y": 1255,
      "font": "ui",

@@ -18,7 +18,8 @@ SR = 44100
 rng = np.random.default_rng(11)
 sb = json.load(open(sys.argv[1])); durs = [s['dur'] for s in sb['scenes']]
 starts = np.cumsum([0] + durs[:-1]); DUR = float(sum(durs)); N = int(DUR * SR) + SR
-S = lambda i, t=0.0: float(starts[i - 1] + t)            # scene i (1-based), plus local time
+OFF = len(durs) - 7                                      # 1 when the film opens on the present-day prologue
+S = lambda i, t=0.0: float(starts[i - 1 + OFF] + t)      # story scene i (1-based, 1970 = 1), plus local time
 BEAT = 60 / 92.0
 
 NOTE = {n: i for i, n in enumerate(['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'])}
@@ -130,10 +131,19 @@ def segment(chords, t0, t1):
     """Split [t0, t1) evenly between chords."""
     d = (t1 - t0) / len(chords); return [(c, t0 + i * d, t0 + (i + 1) * d) for i, c in enumerate(chords)]
 
+# 0 the prologue (today): a warm D major, then the music runs backwards into 1970
+if OFF:
+    t_back = float(starts[0] + .12 + 4.79)
+    add(pad([hz(n) for n in CH['Dmaj9']], t_back + .6, 1500, a=1.2, r=.8), 0.0, .06)
+    comp('Dmaj9', 0.1, t_back, [(0, 3.5)], .7, up=1)
+    for k, n in enumerate(['A5', 'F#5', 'D6']): add(celesta(hz(n), 2.0), 1.9 + k * .35, .045, pan=(-.3 + .3 * k))
+    rev = swell(2.4)[::-1].copy(); add(rev, t_back, .16)            # a breath drawn backwards
+    for k in range(14): add(hat(.9), t_back + .1 + k * .17 * (1 - k / 30), .5, pan=(.4 if k % 2 else -.4))   # the clock running back
+    for k, n in enumerate(['D5', 'C#5', 'A4', 'F4', 'D4']): add(celesta(hz(n), 1.4), t_back + .2 + k * .45, .05)
 # 1 1970: the piano alone, a ticking hat
-for c, a, b in segment(['Dm9', 'Bbmaj7'], 0.1, S(2)):
+for c, a, b in segment(['Dm9', 'Bbmaj7'], S(1) + 0.1, S(2)):
     comp(c, a, b, [(0, 3.5)], .7); add(pad([hz(n) for n in CH[c]], b - a + .6, 900, a=1.0), a, .045)
-for k in range(int(S(2) / (BEAT / 2))): add(hat(.5), k * BEAT / 2, .25 if k % 2 else .15, pan=.3)
+for k in range(int((S(2) - S(1)) / (BEAT / 2))): add(hat(.5), S(1) + k * BEAT / 2, .25 if k % 2 else .15, pan=.3)
 add(swell(1.2), S(2) - 1.2, .05)
 # 2 the call: the groove
 for c, a, b in segment(['Dm9', 'G13', 'Dm9', 'G13'], S(2), S(3)):

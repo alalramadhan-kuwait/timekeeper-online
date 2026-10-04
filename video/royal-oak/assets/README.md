@@ -33,3 +33,9 @@ then cut out with Higgsfield's background remover (the backdrop has a gradient, 
 
 Genta is drawn as he looks in the portrait (the user chose this over a younger version the model would have had to
 imagine). The watch is never generated: hands and sheets are empty and the real photo is placed in the scene.
+
+Younger Genta (about forty, for the 1970-72 story), made from the approved 1970 test image with the portrait as a
+second reference: `young_table_cut.png` (c0561fe2), `young_phone_cut.png` (98744836), `young_think_cut.png`
+(a90c31a4), `young_present_cut.png` (60623514). The film opens on his real portrait and his older paper self, then
+runs the clock back to 1970 and tells the story with the younger character; the ending returns to the older one.
+The younger face is the model's guess from the later portrait.

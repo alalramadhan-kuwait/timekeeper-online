@@ -2,6 +2,13 @@
  "voice": "Andre (ElevenLabs, via Higgsfield text2speech_v2)",
  "lines": [
   {
+   "n": 0,
+   "file": "0.mp3",
+   "job_id": "fd592be5-c312-435d-aa65-4111d52d3fc2",
+   "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3JDjaL8YxOXQo3GeCTPz1i3F13U/hf_20261004_184851_fd592be5-c312-435d-aa65-4111d52d3fc2.mp3",
+   "text": "This is Gérald Genta, one of the most celebrated watch designers in history. Let's go back to the night that made his name."
+  },
+  {
    "n": 1,
    "file": "1.mp3",
    "job_id": "42a8bed9-8e4e-4627-bb5d-b4716853f14e",

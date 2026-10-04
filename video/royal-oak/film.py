@@ -22,8 +22,8 @@ ASSETS = {   # real photographs, all from Wikimedia Commons (credits in CREDITS 
     'ro_finish': 'Royal Oak bracelet: brushed links, polished bevels',
     'ro_cal':    'calibre 2121, the 5402\'s movement (here in a 1992 ref. 14802)',
 }
-CREDITS = ('Paper characters of Gérald Genta and Georges Golay are AI illustrations (Higgsfield) based on a portrait of Genta by Studio Luxury Griffes '
-           '(CC BY-SA 3.0); Golay is shown from behind. Watch photos via Wikimedia Commons: ref. 15202 by OpaleHorse, bracelet by Myles Gray, '
+CREDITS = ('Portrait of Gérald Genta by Studio Luxury Griffes (CC BY-SA 3.0). The paper characters of Genta, older and younger, and of '
+           'Georges Golay (shown from behind) are AI illustrations (Higgsfield) based on it. Watch photos via Wikimedia Commons: ref. 15202 by OpaleHorse, bracelet by Myles Gray, '
            'calibre 2121 by EMore98 (CC BY-SA 4.0).')
 POSE_ASPECT = json.load(open(os.path.join(H, 'assets', 'gen', 'aspects.json'))) if os.path.exists(os.path.join(H, 'assets', 'gen', 'aspects.json')) else {}
 def aspect(name, default):
@@ -89,6 +89,25 @@ cam = lambda *keys: {"zoom": [[t, z, e] if e else [t, z] for t, z, x, y, e in ke
 GOLDW = dict(type="watch", caseColor=GOLD, dialColor='#F1EAD8', strapColor='#5A3A22', handColor='#2A2C31', markerColor='#9C7B3F', tick=False, rate=1)
 
 # =================================================================================================================
+# 0  Who he became: his real portrait, then his paper self; the clock runs backwards and he grows young again
+t_back = V(0, 4.79)
+els = [svg(520, 1000, spotlight_cone(), 360, 0, anchor='t', z=2, kind='fade', at=0.0, dur=.6, shadow=False),
+       dict(genta(360, 1160, 760, 0.1, z=20, kind='rise'), out={"type": "fade", "at": V(0, 1.7), "dur": .35}),
+       pose('genta_think', 360, 1160, 760, V(0, 1.6), until=V(0, 5.55), z=21, dur=.4),
+       pose('young_think', 360, 1160, 760, V(0, 5.4), z=22, dur=.5)]
+els += wall_clock(570, 300, 4, 0, z=6, d=150, at=t_back - .2, spin=(t_back, V(0, 7.1), -6))
+for i, y in enumerate(['2000', '1990', '1980', '1970']):
+    t = t_back + .15 + i * .5
+    els.append(dict(calendar(160, 330, y, at=t, z=10 + i, scale=.62,
+                             out={"type": "fade", "at": t + .52, "dur": .05} if i < 3 else None), **{"in": {"type": "flip", "at": t, "dur": .18}}))
+    if i == 3: els[-1].pop('out')
+els.append(svg(760, 1320, '<rect width="760" height="1320" fill="#8A6A3A"/>', 360, 640, z=30, kind=None, shadow=False, depth=0, still=True,
+               opacity=[[t_back, 0], [V(0, 5.6), .22], [V(0, 7.2), .1]]))      # a sepia breath as time runs back
+S(0, 'ro-black', 'This is Gérald Genta, | one of the most celebrated | watch designers in history. | Let\'s go back | to the night | that made his name.', els,
+  camera=cam((0, 1.0, 360, 700, None), (V(0, 4.6), 1.12, 360, 660, 'inOutCubic'), (V(0, 7.3), 1.0, 360, 640, 'inOutCubic')),
+  sfx=[E('shutter', 0.15, -14), E('whoosh', t_back, -12), E('crown_wind', t_back + .1, -10)] + [E('paper_tear', t_back + .15 + i * .5, -16) for i in range(4)],
+  beds=[{"name": "watch_run", "from": 0, "to": 7.5, "gain": -28}])
+
 # 1  1970. The luxury watch was gold, small and round; the middle of the tray is empty.
 els = [calendar(360, 360, '1970', at=0.05, z=30, out={"type": "slideU", "at": V(1, 1.35), "dur": 0.45})]
 els.append(tray(360, 720, at=V(1, 1.0), z=8))
@@ -97,6 +116,7 @@ for i, x in enumerate((165, 555)):
 els.append(svg(300, 520, lamp_glow(300, 520), 360, 470, z=14, kind='fade', at=V(1, 3.0), dur=0.8, shadow=False))
 S(1, 'ro-night', 'Nineteen seventy. | Audemars Piguet needs | a watch the world | has never seen.', els,
   camera=cam((0, 1.0, 360, 620, None), (V(1, 1.4), 1.0, 360, 650, None), (V(1, 4.6), 1.75, 360, 705, 'inOutCubic')),
+  transition='fade',
   sfx=[E('paper_place', 0.12, -10), E('paper_slide', V(1, 1.0), -14), E('tick', V(1, 3.1), -16), E('tick', V(1, 3.6), -18)],
   beds=[{"name": "watch_run", "from": 0, "to": 5.3, "gain": -26}])
 
@@ -112,19 +132,19 @@ els += [svg(260, 162, rotary_phone(), 200, 478, z=6, kind=None, scale=.8),
         pose('golay_phone', 420, 640, 430, 0.05, z=8)]                 # Golay, from behind, makes the call
 # the line runs from one phone to the other
 els.append({"type": "sketch", "x": 360, "y": 640, "w": 720, "h": 1280, "z": 7, "pencil": False,
-            "paths": [{"d": 'M 250 540 C 690 600 700 760 560 880 S 260 980 150 1040', "at": V(2, 1.3), "dur": 1.4, "stroke": '#2A2C31', "width": 4, "opacity": 1}]})
+            "paths": [{"d": 'M 250 540 C 690 600 700 760 560 880 S 300 1000 270 1090', "at": V(2, 1.3), "dur": 1.4, "stroke": '#2A2C31', "width": 4, "opacity": 1}]})
 # Geneva: the lake and the Jet d'Eau, a drafting table, the phone that rings
 els += [svg(240, 180, window(240, 180, lake(240, 180)), 540, 840, z=3, kind=None),
         svg(240, 180, window(240, 180, lake(240, 180, night=True)), 540, 840, z=3, kind='fade', at=V(2, 7.0), dur=0.6)]
 els += wall_clock(330, 760, 4, 0, z=5, spin=(V(2, 6.9), V(2, 7.7), 1.6))
 els += [svg(560, 250, drafting_table(), 380, 1150, z=4, kind=None),
         # the phone rings on the stand; Genta picks it up (his pose takes over on the same spot), then thinks it over
-        svg(260, 162, rotary_phone('#2A2C31', '#EDE6D3'), 150, 1085, z=6, kind=None, scale=.62, out={"type": "fade", "at": V(2, 3.4), "dur": .15},
+        svg(260, 162, rotary_phone('#2A2C31', '#EDE6D3'), 275, 1105, z=6, kind=None, scale=.62, out={"type": "fade", "at": V(2, 3.4), "dur": .15},
             idle={"type": "shake", "amp": 3, "speed": 9, "from": V(2, 2.6), "until": V(2, 3.4)}),
-        svg(260, 80, ring_lines('#2A2C31'), 150, 1035, z=9, kind='pop', at=V(2, 2.6), dur=.2, scale=.7, out={"type": "fade", "at": V(2, 3.4), "dur": .15},
+        svg(260, 80, ring_lines('#2A2C31'), 275, 1055, z=9, kind='pop', at=V(2, 2.6), dur=.2, scale=.7, out={"type": "fade", "at": V(2, 3.4), "dur": .15},
             idle={"type": "pulse", "amp": .08, "speed": 6}),
-        pose('genta_phone', 240, 1290, 560, V(2, 3.3), until=V(2, 5.1), z=12),
-        pose('genta_think', 250, 1290, 560, V(2, 5.0), z=12),
+        pose('young_phone', 240, 1290, 560, V(2, 3.3), until=V(2, 5.1), z=12),
+        pose('young_think', 240, 1290, 560, V(2, 5.0), z=12),
         # the brief lands on the table: a plate of brushed steel
         svg(150, 96, steel_plate(150, 96),
             560, 1165, z=13, rot=-8, kind='drop', at=V(2, 4.2), dur=0.5)]
@@ -138,7 +158,7 @@ S(2, 'ro-alpine', 'One afternoon, | Georges Golay calls | designer Gérald Genta
 els = [svg(260, 220, window(260, 220, lake(260, 220, night=True)), 520, 300, z=3, kind=None, depth=.7)]
 els += wall_clock(160, 270, 11, 0, z=5, spin=(0.1, V(3, 4.6), 2.2), depth=.75)
 els += [svg(420, 640, lamp_glow(420, 640), 190, 930, z=7, kind=None, shadow=False, opacity=.85, depth=1.1),
-        pose('genta_table', 205, 1255, 600, 0.0, z=20, kind=None, depth=1.1),
+        pose('young_table', 205, 1255, 600, 0.0, z=20, kind=None, depth=1.1),
         # the memory: a torn sepia disc, the helmet inside it
         svg(500, 500, '<circle cx="250" cy="250" r="240" fill="#C9B38A"/><circle cx="250" cy="250" r="226" fill="#D8C49B"/>', 470, 520, z=12, kind='grow',
             at=V(3, 0.85), dur=0.5),
@@ -188,7 +208,7 @@ S(5, 'ro-steel', 'Steel was for | tool watches. | This one was finished | like a
   sfx=[E('clasp', 0.2, -12), E('clasp', 0.5, -13), E('whoosh', t_mac, -14), E('shutter', t_mac + .05, -18), E('paper_place', t_scale + .1, -10), E('stamp', t_scale + 1.0, -16)])
 
 # 6  Basel, 1972: the Royal Oak on its stand. Thirty-nine millimetres, huge for its time.
-WH = 440; WX, WY = 260, 950                     # the watch: height on screen, centre x, bottom y
+WH = 440; WX, WY = 470, 950                     # the watch: height on screen, centre x, bottom y
 case_y = WY - WH * 0.56; case_w = WH * RO_ASPECT * 0.87; WX_case = WX - WH * RO_ASPECT * 0.03; GR = case_w / 2 * 34 / 39
 els = [svg(900, 1100, hall(), 360, 560, z=1, kind=None, depth=.55, shadow=False),
        svg(520, 420, booth(), 360, 640, z=3, kind=None, depth=.8),
@@ -197,10 +217,10 @@ els = [svg(900, 1100, hall(), 360, 560, z=1, kind=None, depth=.55, shadow=False)
        svg(520, 900, spotlight_cone(), WX, 380, anchor='t', z=4, kind='fade', at=V(6, 1.9), dur=.5, shadow=False, depth=.9),
        svg(260, 300, pedestal(), WX, 1160, anchor='b', z=6, kind=None, depth=1.0),
        photo('ro_front', WX, WY, WH, V(6, 1.95), z=10, depth=1.0),
-       pose('genta_present', 540, 1200, 560, V(6, 2.2), z=12, kind='rise', dur=.5, depth=1.0),
-       {"type": "text", "text": "pictured: ref. 15202, the 5402's successor", "x": WX + 70, "y": WY + 40, "font": "cap", "size": 17, "color": "#16181D",
+       pose('young_present', 165, 1200, 560, V(6, 2.2), z=12, kind='rise', dur=.5, depth=1.0),
+       {"type": "text", "text": "pictured: ref. 15202, the 5402's successor", "x": WX - 20, "y": WY + 40, "font": "cap", "size": 17, "color": "#16181D",
         "paper": "#EFE8D6", "upper": False, "z": 22, "depth": 1.0, "rot": -1, "in": {"type": "fade", "at": V(6, 2.6), "dur": .4}}]
-for i, (fx, fy, t) in enumerate([(140, 820, V(6, 2.25)), (60, 600, V(6, 2.55)), (380, 540, V(6, 2.85)), (200, 990, V(6, 4.85))]):
+for i, (fx, fy, t) in enumerate([(640, 820, V(6, 2.25)), (680, 560, V(6, 2.55)), (330, 470, V(6, 2.85)), (560, 1000, V(6, 4.85))]):
     els.append(svg(240, 240, flash(), fx, fy, z=45, kind='pop', at=t, dur=.08, shadow=False, depth=1.2, out={"type": "fade", "at": t + .18, "dur": .15}))
 els += [svg(760, 300, crowd(), 360, 1290, anchor='b', z=40, kind='rise', at=0.25, dur=.6, depth=1.35, shadow=False),
         {"type": "sketch", "x": WX_case, "y": case_y - 30, "w": 400, "h": 120, "z": 20, "pencil": False, "depth": 1.0,
@@ -210,7 +230,7 @@ els += [svg(760, 300, crowd(), 360, 1290, anchor='b', z=40, kind='rise', at=0.25
         macro('ro_bezel', V(6, 3.0), V(6, 4.75)),
         svg(2 * GR + 8, 2 * GR + 8, ghost_watch(GR), WX_case, case_y, z=20, kind='pop', at=V(6, 6.3), dur=.35, shadow=False, depth=1.0)]
 S(6, 'ro-hall', 'Basel, | nineteen seventy-two. | The Royal Oak, | reference 5402. | Thirty-nine millimetres, | huge for its time.', els, transition='slide',
-  camera=cam((0, 1.0, 360, 620, None), (V(6, 1.8), 1.0, 360, 640, None), (V(6, 4.6), 1.2, 385, 740, 'inOutCubic'), (V(6, 7.6), 1.22, 385, 740, 'inOutCubic')),
+  camera=cam((0, 1.0, 360, 620, None), (V(6, 1.8), 1.0, 360, 640, None), (V(6, 4.6), 1.2, 345, 740, 'inOutCubic'), (V(6, 7.6), 1.22, 345, 740, 'inOutCubic')),
   sfx=[E('stamp', 0.4, -12), E('shutter', V(6, 2.25), -10), E('shutter', V(6, 2.55), -12), E('shutter', V(6, 2.85), -11), E('whoosh', V(6, 3.0), -16), E('shutter', V(6, 4.85), -13)],
   beds=[{"name": "crowd", "from": 0, "to": 8, "gain": -22}])
 

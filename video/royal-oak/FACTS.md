@@ -5,6 +5,7 @@ Accounts differ on some details; where they do, the film uses the wording all so
 
 | Line | Claim | Sources | Note |
 | --- | --- | --- | --- |
+| 0 | Genta is one of the most celebrated watch designers in history | WebChronos; Monochrome; Swisswatches Magazine (the Royal Oak and later designs made his name) | Opening line; his real portrait is shown, then his paper character. |
 | 1 | In 1970 Audemars Piguet wanted a new kind of watch | Monochrome, Royal Oak Jumbo history; Swisswatches Magazine | The brief came from AP's markets (an Italian agent in particular) asking for a luxury steel sports watch. |
 | 2 | Georges Golay (AP managing director) phoned Gérald Genta one afternoon asking for "an unprecedented steel watch" by the next morning | WebChronos, Royal Oak 50 years; Monochrome | Genta's own account puts the call at 4 p.m.; the wall clocks show four o'clock. Sources disagree on 1970 vs the eve of the 1971 fair; the film says "one afternoon" and the calendar shows 1970, when the first sketch is dated. |
 | 3 | He drew it overnight, inspired by a diver's helmet | WebChronos ("the shape of the scaphander diving helmet ... eight screws and the joint visible") | The helmet on screen is a generic illustration. |
@@ -22,8 +23,9 @@ Sources
 - https://www.sothebys.com/en/articles/the-great-evolution-of-the-audemars-piguet-royal-oak
 
 Pictures of real people and the real watch (see `assets/README.md` for files, authors and licences):
-- Gérald Genta is a paper-craft illustration made with AI from his 2005 portrait, so he looks as he did then, not as
-  in 1970. Georges Golay has no free photograph, so his character is seen only from behind. The closing credits say
+- Gérald Genta opens the film as his real 2005 portrait, then as a paper-craft character made with AI from it. When
+  the story goes back to 1970 he becomes a younger paper character; that younger face is the model's guess from the
+  later portrait, as no free photograph of him from 1970 was found. Georges Golay has no free photograph, so his character is seen only from behind. The closing credits say
   both are AI illustrations.
 - The Royal Oak on screen is a ref. 15202, the 5402's direct successor (same 39 mm Jumbo design). Scene 6 labels it
   "pictured: ref. 15202, the 5402's successor". The calibre 2121 close-up is the 5402's movement, photographed in a
