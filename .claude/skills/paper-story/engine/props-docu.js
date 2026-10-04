@@ -385,6 +385,7 @@
   B.cutout = (sp, ctx) => {
     const h = sp.h || 360, w = sp.w || Math.round(h * (sp.aspect || 0.75));
     const node = PM.div('', { position: 'relative', width: px(w), height: px(h) });
+    if (!sp.src && sp.asset) return { node: PM.needPhoto(node, w, h, sp), w, h, anchor: 'b' };
     const im = document.createElement('img');
     im.src = sp.src;
     if (sp.flip) im.style.transform = 'scaleX(-1)';   // mirror, so two figures can face each other
@@ -524,5 +525,32 @@
         node.style.transform = sp.flip ? 'scaleX(-1)' : '';
       },
     };
+  };
+  // A drawing that draws itself: pencil (or ink) lines laid down stroke by stroke, like a designer's sketch.
+  // paths: [{ d, at, dur, stroke, width, opacity, fill, fillAt, fillDur, fillOpacity, ease }] in the w x h box.
+  // texts: [{ text, x, y, size, at, dur, font, color, rot, anchor }] are written on left to right.
+  // pencil: false turns off the graphite grain (a slight wobble and grain on every line).
+  let sketchN = 0;
+  B.sketch = (sp, ctx) => {
+    const w = sp.w || 400, h = sp.h || 400, id = 'sk' + (++sketchN), ink = sp.ink || '#3A3B3E';
+    const grain = sp.pencil === false ? '' : `<filter id="${id}f" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="${sp.grain || 0.9}" numOctaves="2" seed="${(sketchN * 7) % 97}"/><feDisplacementMap in="SourceGraphic" scale="${sp.wobble == null ? 1.6 : sp.wobble}"/></filter>`;
+    const P = (sp.paths || []).map((p, i) => `<path data-i="${i}" d="${p.d}" fill="${p.fill || 'none'}" fill-opacity="0" stroke="${p.stroke || ink}" stroke-width="${p.width || 2.2}" stroke-opacity="${p.opacity == null ? 0.9 : p.opacity}" stroke-linecap="round" stroke-linejoin="round"/>`).join('');
+    const T = (sp.texts || []).map((t, i) => `<clipPath id="${id}c${i}"><rect x="${t.x - (t.anchor === 'middle' ? 400 : 0)}" y="${t.y - (t.size || 22) * 1.2}" width="0" height="${(t.size || 22) * 1.6}"/></clipPath>` +
+      `<text clip-path="url(#${id}c${i})" x="${t.x}" y="${t.y}" font-size="${t.size || 22}" fill="${t.color || ink}" text-anchor="${t.anchor || 'start'}" font-family="${t.font || 'var(--f-cap)'}" font-weight="700" transform="rotate(${t.rot || 0} ${t.x} ${t.y})">${t.text}</text>`).join('');
+    const node = PM.div('', { position: 'relative', width: px(w), height: px(h) });
+    node.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="overflow:visible;position:absolute;left:0;top:0"><defs>${grain}</defs><g ${grain ? `filter="url(#${id}f)"` : ''}>${P}${T}</g></svg>`;
+    const els = [...node.querySelectorAll('path')], rects = [...node.querySelectorAll('clipPath rect')];
+    let len = null;
+    const ease = (k, e) => (E[e || 'inOutCubic'] || E.inOutCubic)(clamp(k));
+    return { node, w, h, update(lt) {
+      if (!len) len = els.map((el) => { try { return el.getTotalLength() || 1; } catch (e) { return 1000; } });
+      (sp.paths || []).forEach((p, i) => {
+        const k = ease((lt - (p.at || 0)) / (p.dur || 0.6), p.ease), el = els[i];
+        el.style.strokeDasharray = len[i] + ' ' + len[i]; el.style.strokeDashoffset = String(len[i] * (1 - k));
+        el.style.visibility = k > 0 ? 'visible' : 'hidden';
+        if (p.fill) el.setAttribute('fill-opacity', String((p.fillOpacity == null ? 1 : p.fillOpacity) * clamp((lt - (p.fillAt == null ? (p.at || 0) + (p.dur || 0.6) : p.fillAt)) / (p.fillDur || 0.4))));
+      });
+      (sp.texts || []).forEach((t, i) => { const k = ease((lt - (t.at || 0)) / (t.dur || 0.6), 'linear'); rects[i].setAttribute('width', String(k * 800)); });
+    } };
   };
 })();

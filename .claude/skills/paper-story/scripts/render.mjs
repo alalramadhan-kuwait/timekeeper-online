@@ -71,7 +71,7 @@ const findAsset = (id) => { for (const e of ['jpg', 'jpeg', 'png', 'webp']) { co
       else if (k === 'parts' && o[k] && typeof o[k] === 'object') for (const pk of Object.keys(o[k])) o[k][pk] = resolveFile(o[k][pk]);
       else fix(o[k]);
     }
-    if (typeof o.asset === 'string' && !o.src && ['photo', 'igpost', 'image', 'phone', 'door', 'laptop'].includes(o.type)) {
+    if (typeof o.asset === 'string' && !o.src && ['photo', 'igpost', 'image', 'phone', 'door', 'laptop', 'cutout', 'reveal'].includes(o.type)) {
       const f = findAsset(o.asset);
       if (f) o.src = pathToFileURL(f).href; else placeholders.push(o.asset);
     }

@@ -545,6 +545,17 @@
     };
   };
 
+  // A loud stand-in where a real photo belongs (an element with "asset" whose file is not in assets/ yet)
+  PM.needPhoto = (node, w, h, sp) => {
+    const ph = PM.div('', { position: 'absolute', left: '0', top: '0', width: px(w), height: px(h), background: 'repeating-linear-gradient(135deg,#D6D1C4 0 14px,#E3DFD3 14px 28px)', border: '2px dashed #8B857A', boxSizing: 'border-box',
+      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '10px', textAlign: 'center', padding: '16px' });
+    const line = (t, f, size, color) => { const d = PM.div('txt'); d.textContent = t; Object.assign(d.style, { position: 'static', fontFamily: f, fontSize: size + 'px', fontWeight: 700, color, lineHeight: 1.2 }); ph.appendChild(d); };
+    line('REAL PHOTO NEEDED', 'var(--f-mono)', Math.max(13, Math.min(22, w / 16)), '#B3261E');
+    if (sp.desc) line(sp.desc, 'var(--f-ui)', Math.max(14, Math.min(24, w / 18)), '#2A2A2A');
+    line(sp.asset, 'var(--f-mono)', Math.max(11, Math.min(16, w / 24)), '#6A655B');
+    node.appendChild(ph); return node;
+  };
+
   B.image = (sp, ctx) => {
     const polaroid = !!sp.polaroid;
     const w = sp.w || 200;
@@ -553,6 +564,7 @@
     // `aspect` (width / height of the photo) sizes the frame so the picture is never cropped
     const h = sp.aspect ? Math.round((w - pad * 2) / sp.aspect + pad + bottom) : (sp.h || 200);
     const node = PM.div('', { position: 'relative', width: px(w), height: px(h) });
+    if (!sp.src && sp.asset) return { node: PM.needPhoto(node, w, h, sp), w, h };   // real photo not supplied yet
     if (pad) put(node, { w, h, color: sp.color || '#F6EEDD', j: 1.2 });
     const img = document.createElement('img');
     img.src = sp.src;

@@ -1,0 +1,54 @@
+{
+ "voice": "Andre (ElevenLabs, via Higgsfield text2speech_v2)",
+ "lines": [
+  {
+   "n": 1,
+   "file": "1.mp3",
+   "job_id": "42a8bed9-8e4e-4627-bb5d-b4716853f14e",
+   "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3JDjaL8YxOXQo3GeCTPz1i3F13U/hf_20261004_160711_42a8bed9-8e4e-4627-bb5d-b4716853f14e.mp3",
+   "text": "Nineteen seventy. Audemars Piguet needs a watch the world has never seen."
+  },
+  {
+   "n": 2,
+   "file": "2.mp3",
+   "job_id": "ab53e8a8-025d-478f-9a5f-66e81d509bb5",
+   "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3JDjaL8YxOXQo3GeCTPz1i3F13U/hf_20261004_160742_ab53e8a8-025d-478f-9a5f-66e81d509bb5.mp3",
+   "text": "One afternoon, Georges Golay calls designer Gérald Genta. A steel watch, unlike any before. By morning."
+  },
+  {
+   "n": 3,
+   "file": "3.mp3",
+   "job_id": "5df4ed69-1732-478a-a935-c6a67f260ce6",
+   "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3JDjaL8YxOXQo3GeCTPz1i3F13U/hf_20261004_160742_5df4ed69-1732-478a-a935-c6a67f260ce6.mp3",
+   "text": "Overnight, Genta thinks of a diver's helmet: a porthole, bolted shut."
+  },
+  {
+   "n": 4,
+   "file": "4.mp3",
+   "job_id": "fd3a3ad9-2dc5-4a60-a612-cd2d5a4c1ece",
+   "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3JDjaL8YxOXQo3GeCTPz1i3F13U/hf_20261004_160742_fd3a3ad9-2dc5-4a60-a612-cd2d5a4c1ece.mp3",
+   "text": "It becomes an octagon. Eight screws in plain sight. A bracelet flowing from the case. All in steel."
+  },
+  {
+   "n": 5,
+   "file": "5.mp3",
+   "job_id": "b6713890-63c8-43d3-9f3d-c8ed1c8d6bf4",
+   "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3JDjaL8YxOXQo3GeCTPz1i3F13U/hf_20261004_160742_b6713890-63c8-43d3-9f3d-c8ed1c8d6bf4.mp3",
+   "text": "Steel was for tool watches. This one was finished like a precious watch, and cost more than many gold ones."
+  },
+  {
+   "n": 6,
+   "file": "6.mp3",
+   "job_id": "d573d768-e579-4d68-8114-416f83bedac2",
+   "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3JDjaL8YxOXQo3GeCTPz1i3F13U/hf_20261004_160742_d573d768-e579-4d68-8114-416f83bedac2.mp3",
+   "text": "Basel, nineteen seventy-two. The Royal Oak, reference fifty-four oh two. Thirty-nine millimetres, huge for its time."
+  },
+  {
+   "n": 7,
+   "file": "7.mp3",
+   "job_id": "8ad09094-058e-4013-80ad-9a5662c9ee00",
+   "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3JDjaL8YxOXQo3GeCTPz1i3F13U/hf_20261004_160742_8ad09094-058e-4013-80ad-9a5662c9ee00.mp3",
+   "text": "Many doubted it. Time proved them wrong. A sketch overnight. An icon for generations."
+  }
+ ]
+}

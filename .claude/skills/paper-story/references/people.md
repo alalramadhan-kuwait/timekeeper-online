@@ -67,3 +67,10 @@ Notes from the reviews:
 - Size a product against the hands, but big enough to read on a phone. Watches shrunk to hand scale were called too
   small; about 1.5 hand lengths for a watch on a table was right.
 - A waist-up crop of a group can sit on the bottom edge of the frame, with nothing below it.
+
+## Historical figures with no photos supplied
+
+For a story about someone the user has no cut-outs of (a designer in 1970, a founder long gone), show them as
+silhouettes from behind and as hands at work: on a phone, holding a pencil, at a drafting table. Never generate a
+face, and never pass off an illustration as an archive photo or their original drawing. The work they made carries
+the scene instead (`video/royal-oak/`: the call, the night at the table, the sketch drawing itself).
