@@ -132,20 +132,22 @@
      "headBand": 0.2
     },
     {
-     "type": "cutout",
-     "x": 540,
-     "y": 900,
-     "h": 440,
-     "aspect": 0.6807,
-     "edge": 0,
+     "type": "image",
+     "src": "assets/early/polerouter.jpg",
+     "polaroid": true,
+     "aspect": 0.9626274065685164,
+     "label": "Polerouter · 1954",
+     "w": 330,
+     "x": 520,
+     "y": 860,
      "z": 12,
+     "rot": 6,
      "in": {
       "type": "none",
       "at": 0,
-      "dur": 0.3
+      "dur": 0.45
      },
-     "src": "assets/early/polerouter_cut.png",
-     "rot": 6
+     "labelSize": 22
     },
     {
      "type": "text",

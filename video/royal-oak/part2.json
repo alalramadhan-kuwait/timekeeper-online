@@ -492,29 +492,15 @@
    "floor": false,
    "elements": [
     {
-     "type": "cutout",
+     "type": "image",
+     "src": "assets/ap/m5182.jpg",
+     "polaroid": true,
+     "aspect": 0.8676789587852495,
+     "label": "ذهب",
+     "w": 320,
      "x": 230,
-     "y": 760,
-     "h": 420,
-     "aspect": 0.7554,
-     "edge": 0,
+     "y": 700,
      "z": 10,
-     "in": {
-      "type": "rise",
-      "at": 0.1,
-      "dur": 0.4
-     },
-     "src": "assets/cut/m5182.png",
-     "opacity": [
-      [
-       1.42,
-       1
-      ],
-      [
-       2.72,
-       0.25
-      ]
-     ],
      "rot": [
       [
        1.42,
@@ -523,6 +509,22 @@
       [
        2.72,
        -10
+      ]
+     ],
+     "in": {
+      "type": "rise",
+      "at": 0.1,
+      "dur": 0.45
+     },
+     "labelSize": 22,
+     "opacity": [
+      [
+       1.42,
+       1
+      ],
+      [
+       2.72,
+       0.25
       ]
      ]
     },
@@ -2525,19 +2527,22 @@
      "depth": 1.0
     },
     {
-     "type": "cutout",
+     "type": "image",
+     "src": "assets/ap/ro5402_front.jpg",
+     "polaroid": true,
+     "aspect": 0.8676789587852495,
+     "label": "Royal Oak 5402 · 1972",
+     "w": 330,
      "x": 470,
-     "y": 960,
-     "h": 420,
-     "aspect": 0.644,
-     "edge": 0,
+     "y": 700,
      "z": 10,
+     "rot": 0,
      "in": {
       "type": "rise",
       "at": 2.72,
-      "dur": 0.6
+      "dur": 0.45
      },
-     "src": "assets/cut/ro5402_front.png",
+     "labelSize": 22,
      "depth": 1.0
     },
     {
@@ -2557,24 +2562,6 @@
      "person": true,
      "headBand": 0.2,
      "depth": 1.0
-    },
-    {
-     "type": "text",
-     "text": "5402",
-     "x": 470,
-     "y": 1000,
-     "font": "banner",
-     "size": 34,
-     "color": "#16181D",
-     "paper": "#EFE8D6",
-     "upper": false,
-     "z": 22,
-     "rot": -2,
-     "in": {
-      "type": "pop",
-      "at": 4.42,
-      "dur": 0.35
-     }
     },
     {
      "type": "image",
@@ -2613,7 +2600,7 @@
     {
      "type": "sketch",
      "x": 470,
-     "y": 741.6,
+     "y": 640,
      "w": 400,
      "h": 120,
      "z": 20,
@@ -2621,7 +2608,7 @@
      "depth": 1.0,
      "paths": [
       {
-       "d": "M 60 60 L 340 60 M 60 48 L 60 72 M 340 48 L 340 72",
+       "d": "M 95 60 L 305 60 M 95 48 L 95 72 M 305 48 L 305 72",
        "at": 6.22,
        "dur": 0.5,
        "stroke": "#EFE8D6",
@@ -3326,19 +3313,22 @@
      "pencil": false
     },
     {
-     "type": "cutout",
-     "x": 548,
-     "y": 1000,
-     "h": 470,
-     "aspect": 0.6257,
-     "edge": 0,
+     "type": "image",
+     "src": "assets/ap/ro5402_hero.jpg",
+     "polaroid": true,
+     "aspect": 0.8676789587852495,
+     "label": "Royal Oak 5402",
+     "w": 320,
+     "x": 545,
+     "y": 760,
      "z": 50,
+     "rot": 3,
      "in": {
       "type": "fade",
       "at": 11.32,
-      "dur": 0.3
+      "dur": 0.45
      },
-     "src": "assets/cut/ro5402_hero.png",
+     "labelSize": 22,
      "scale": [
       [
        11.32,

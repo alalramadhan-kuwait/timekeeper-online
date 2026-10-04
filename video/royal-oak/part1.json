@@ -773,19 +773,22 @@
      }
     },
     {
-     "type": "cutout",
+     "type": "image",
+     "src": "assets/early/polerouter.jpg",
+     "polaroid": true,
+     "aspect": 0.9626274065685164,
+     "label": "Universal Genève Polerouter · 1954",
+     "w": 560,
      "x": 360,
-     "y": 1010,
-     "h": 620,
-     "aspect": 0.6807,
-     "edge": 0,
+     "y": 600,
      "z": 20,
+     "rot": 0,
      "in": {
       "type": "rise",
       "at": 0.15,
-      "dur": 0.6
+      "dur": 0.45
      },
-     "src": "assets/early/polerouter_cut.png",
+     "labelSize": 22,
      "scale": [
       [
        0.15,
@@ -793,27 +796,9 @@
       ],
       [
        5.2,
-       1.06
+       1.05
       ]
      ]
-    },
-    {
-     "type": "text",
-     "text": "Universal Genève Polerouter · 1954",
-     "x": 360,
-     "y": 1110,
-     "font": "banner",
-     "size": 26,
-     "color": "#16181D",
-     "paper": "#EFE8D6",
-     "upper": false,
-     "z": 35,
-     "rot": -2,
-     "in": {
-      "type": "pop",
-      "at": 0.72,
-      "dur": 0.35
-     }
     }
    ],
    "dur": 5.34,
@@ -944,37 +929,22 @@
      }
     },
     {
-     "type": "cutout",
-     "x": 330,
-     "y": 1060,
-     "h": 600,
-     "aspect": 0.7638,
-     "edge": 0,
+     "type": "image",
+     "src": "assets/early/constellation.jpg",
+     "polaroid": true,
+     "aspect": 0.6666666666666666,
+     "label": "Omega Constellation · 1958",
+     "w": 400,
+     "x": 290,
+     "y": 640,
      "z": 20,
+     "rot": -2,
      "in": {
       "type": "rise",
       "at": 1.52,
-      "dur": 0.5
+      "dur": 0.45
      },
-     "src": "assets/early/constellation_cut.png"
-    },
-    {
-     "type": "text",
-     "text": "Omega Constellation · 1958",
-     "x": 330,
-     "y": 1120,
-     "font": "banner",
-     "size": 24,
-     "color": "#16181D",
-     "paper": "#EFE8D6",
-     "upper": false,
-     "z": 35,
-     "rot": -2,
-     "in": {
-      "type": "pop",
-      "at": 2.12,
-      "dur": 0.35
-     }
+     "labelSize": 22
     }
    ],
    "dur": 4.7,
@@ -1072,70 +1042,40 @@
      "labelSize": 22
     },
     {
-     "type": "cutout",
-     "x": 220,
-     "y": 1060,
-     "h": 560,
-     "aspect": 0.651,
-     "edge": 0,
+     "type": "image",
+     "src": "assets/ap/m5179.jpg",
+     "polaroid": true,
+     "aspect": 0.8676789587852495,
+     "label": "5179 · 1961",
+     "w": 330,
+     "x": 200,
+     "y": 760,
      "z": 20,
+     "rot": -3,
      "in": {
       "type": "rise",
       "at": 4.72,
-      "dur": 0.5
+      "dur": 0.45
      },
-     "src": "assets/cut/m5179.png"
+     "labelSize": 22
     },
     {
-     "type": "text",
-     "text": "5179 · 1961",
-     "x": 220,
-     "y": 1110,
-     "font": "banner",
-     "size": 26,
-     "color": "#16181D",
-     "paper": "#EFE8D6",
-     "upper": false,
-     "z": 35,
-     "rot": -2,
-     "in": {
-      "type": "pop",
-      "at": 5.12,
-      "dur": 0.35
-     }
-    },
-    {
-     "type": "cutout",
-     "x": 520,
-     "y": 1060,
-     "h": 520,
-     "aspect": 0.7554,
-     "edge": 0,
+     "type": "image",
+     "src": "assets/ap/m5182.jpg",
+     "polaroid": true,
+     "aspect": 0.8676789587852495,
+     "label": "5182 · 1962",
+     "w": 330,
+     "x": 515,
+     "y": 760,
      "z": 21,
+     "rot": 3,
      "in": {
       "type": "rise",
       "at": 7.37,
-      "dur": 0.5
+      "dur": 0.45
      },
-     "src": "assets/cut/m5182.png"
-    },
-    {
-     "type": "text",
-     "text": "5182 · 1962",
-     "x": 520,
-     "y": 1110,
-     "font": "banner",
-     "size": 26,
-     "color": "#16181D",
-     "paper": "#EFE8D6",
-     "upper": false,
-     "z": 35,
-     "rot": 2,
-     "in": {
-      "type": "pop",
-      "at": 7.72,
-      "dur": 0.35
-     }
+     "labelSize": 22
     }
    ],
    "dur": 9.43,
@@ -1382,7 +1322,7 @@
      "src": "assets/ap/golay1966.jpg",
      "polaroid": true,
      "aspect": 1.3179571663920921,
-     "label": "Georges Golay · 1966",
+     "label": "جورج غولاي · المدير العام · 1966",
      "w": 360,
      "x": 250,
      "y": 820,
@@ -1409,42 +1349,6 @@
       "dur": 0.5
      },
      "src": "assets/gen/golay_phone_cut.png"
-    },
-    {
-     "type": "text",
-     "text": "المدير العام",
-     "x": 250,
-     "y": 1050,
-     "font": "banner",
-     "size": 30,
-     "color": "#16181D",
-     "paper": "#EFE8D6",
-     "upper": false,
-     "z": 35,
-     "rot": -2,
-     "in": {
-      "type": "pop",
-      "at": 3.12,
-      "dur": 0.35
-     }
-    },
-    {
-     "type": "text",
-     "text": "أول مدير من خارج العائلتين",
-     "x": 400,
-     "y": 1130,
-     "font": "banner",
-     "size": 26,
-     "color": "#16181D",
-     "paper": "#EFE8D6",
-     "upper": false,
-     "z": 35,
-     "rot": 1,
-     "in": {
-      "type": "pop",
-      "at": 4.52,
-      "dur": 0.35
-     }
     }
    ],
    "dur": 8.91,
@@ -1593,37 +1497,22 @@
      }
     },
     {
-     "type": "cutout",
-     "x": 360,
-     "y": 1060,
-     "h": 520,
-     "aspect": 0.4566,
-     "edge": 0,
+     "type": "image",
+     "src": "assets/ap/m5233.jpg",
+     "polaroid": true,
+     "aspect": 0.8676789587852495,
+     "label": "5233",
+     "w": 280,
+     "x": 470,
+     "y": 720,
      "z": 40,
+     "rot": 2,
      "in": {
       "type": "pop",
       "at": 6.97,
-      "dur": 0.4
+      "dur": 0.45
      },
-     "src": "assets/cut/m5233.png"
-    },
-    {
-     "type": "text",
-     "text": "5233",
-     "x": 360,
-     "y": 1110,
-     "font": "banner",
-     "size": 28,
-     "color": "#16181D",
-     "paper": "#EFE8D6",
-     "upper": false,
-     "z": 41,
-     "rot": -2,
-     "in": {
-      "type": "pop",
-      "at": 7.22,
-      "dur": 0.35
-     }
+     "labelSize": 22
     }
    ],
    "dur": 9.23,
@@ -1737,109 +1626,124 @@
      "headBand": 0.2
     },
     {
-     "type": "cutout",
+     "type": "image",
+     "src": "assets/early/polerouter.jpg",
+     "polaroid": true,
+     "aspect": 0.9626274065685164,
+     "label": "",
+     "w": 170,
      "x": 120,
      "y": 520,
-     "h": 230,
-     "aspect": 0.6807,
-     "edge": 0,
      "z": 12,
+     "rot": -6,
      "in": {
       "type": "pop",
       "at": 5.12,
-      "dur": 0.3
+      "dur": 0.45
      },
-     "src": "assets/early/polerouter_cut.png",
+     "labelSize": 22,
      "out": {
       "type": "fade",
       "at": 7.62,
       "dur": 0.25
      },
-     "rot": -6
+     "bottom": 16
     },
     {
-     "type": "cutout",
+     "type": "image",
+     "src": "assets/early/constellation.jpg",
+     "polaroid": true,
+     "aspect": 0.6666666666666666,
+     "label": "",
+     "w": 170,
      "x": 600,
      "y": 520,
-     "h": 230,
-     "aspect": 0.7638,
-     "edge": 0,
      "z": 12,
+     "rot": 5,
      "in": {
       "type": "pop",
       "at": 5.3,
-      "dur": 0.3
+      "dur": 0.45
      },
-     "src": "assets/early/constellation_cut.png",
+     "labelSize": 22,
      "out": {
       "type": "fade",
       "at": 7.62,
       "dur": 0.25
      },
-     "rot": 5
+     "bottom": 16
     },
     {
-     "type": "cutout",
+     "type": "image",
+     "src": "assets/ap/m5179.jpg",
+     "polaroid": true,
+     "aspect": 0.8676789587852495,
+     "label": "",
+     "w": 170,
      "x": 110,
      "y": 860,
-     "h": 230,
-     "aspect": 0.651,
-     "edge": 0,
      "z": 12,
+     "rot": -3,
      "in": {
       "type": "pop",
       "at": 5.48,
-      "dur": 0.3
+      "dur": 0.45
      },
-     "src": "assets/cut/m5179.png",
+     "labelSize": 22,
      "out": {
       "type": "fade",
       "at": 7.62,
       "dur": 0.25
      },
-     "rot": -3
+     "bottom": 16
     },
     {
-     "type": "cutout",
+     "type": "image",
+     "src": "assets/ap/m5182.jpg",
+     "polaroid": true,
+     "aspect": 0.8676789587852495,
+     "label": "",
+     "w": 170,
      "x": 610,
      "y": 860,
-     "h": 230,
-     "aspect": 0.7554,
-     "edge": 0,
      "z": 12,
+     "rot": 6,
      "in": {
       "type": "pop",
       "at": 5.66,
-      "dur": 0.3
+      "dur": 0.45
      },
-     "src": "assets/cut/m5182.png",
+     "labelSize": 22,
      "out": {
       "type": "fade",
       "at": 7.62,
       "dur": 0.25
      },
-     "rot": 6
+     "bottom": 16
     },
     {
-     "type": "cutout",
+     "type": "image",
+     "src": "assets/ap/m5233.jpg",
+     "polaroid": true,
+     "aspect": 0.8676789587852495,
+     "label": "",
+     "w": 170,
      "x": 360,
      "y": 380,
-     "h": 230,
-     "aspect": 0.4566,
-     "edge": 0,
      "z": 12,
+     "rot": 0,
      "in": {
       "type": "pop",
       "at": 5.84,
-      "dur": 0.3
+      "dur": 0.45
      },
-     "src": "assets/cut/m5233.png",
+     "labelSize": 22,
      "out": {
       "type": "fade",
       "at": 7.62,
       "dur": 0.25
      },
-     "rot": 0
+     "bottom": 16
     },
     {
      "type": "text",

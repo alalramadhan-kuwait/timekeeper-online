@@ -183,26 +183,22 @@ P1.S('p1-1', 'ro-alpine', 'جنيف، | سنة ألف وتسعمية | وأرب�
 
 # 2  The Polerouter
 els = [svg(520, 1000, spotlight_cone(), 360, 0, anchor='t', z=2, kind='fade', at=0, dur=.5, shadow=False),
-       cutout('assets/early/polerouter_cut', 360, 1010, 620, .15, z=20, kind='rise', dur=.6, desc='Universal Genève Polerouter (Wikimedia Commons)', scale=[[.15, 1.0], [5.2, 1.06]]),
-       tag('Universal Genève Polerouter · 1954', 360, 1110, V(.6), size=26)]
+       polaroid('assets/early/polerouter', 360, 600, 560, .15, label='Universal Genève Polerouter · 1954', z=20, kind='rise', scale=[[.15, 1.0], [5.2, 1.05]])]
 P1.S('p1-2', 'ro-night', 'اسمها البولروتر… | وهي اللي خلت اسمه | ينعرف عند | شركات الساعات.', els, transition='slide',
      camera=cam((0, 1.0, 360, 640, None), (5.2, 1.12, 360, 620, 'inOutCubic')), sfx=[E('shutter', .2, -12), E('tick', 1.8, -16)])
 
 # 3  Omega asks him to refresh the Constellation
 els = ringing_phone(560, 330, .2, V(1.3), z=10, scale=.6) + [
        tag('أوميغا', 560, 230, V(.3), size=34),
-       cutout('assets/early/constellation_cut', 330, 1060, 600, V(1.4), z=20, kind='rise', dur=.5, desc='Omega Constellation, 1958 (Wikimedia Commons)'),
-       tag('Omega Constellation · 1958', 330, 1120, V(2.0), size=24)]
+       polaroid('assets/early/constellation', 290, 640, 400, V(1.4), label='Omega Constellation · 1958', z=20, rot=-2, kind='rise')]
 P1.S('p1-3', 'ro-steel', 'بعدها جات أوميغا، | وطلبت منه يجدد | مجموعة الكونستليشن.', els, transition='slide',
      camera=cam((0, 1.0, 360, 640, None), (4.6, 1.06, 360, 660, 'inOutCubic')), sfx=[E('ring', .2, -12), E('paper_place', V(1.4), -10)])
 
 # 4  The early 1960s at Audemars Piguet: 5179 and 5182
 els = flips(['1960'], 170, 260, .1, .3, z=10, scale=.55) + [
        polaroid('assets/ap/lebrassus1969', 470, 380, 360, V(1.8), label='Le Brassus', z=12, rot=3),
-       cutout('assets/cut/m5179', 220, 1060, 560, V(4.6), z=20, kind='rise', dur=.5),
-       tag('5179 · 1961', 220, 1110, V(5.0), size=26),
-       cutout('assets/cut/m5182', 520, 1060, 520, V(7.25), z=21, kind='rise', dur=.5),
-       tag('5182 · 1962', 520, 1110, V(7.6), size=26, rot=2)]
+       polaroid('assets/ap/m5179', 200, 760, 330, V(4.6), label='5179 · 1961', z=20, rot=-3, kind='rise'),
+       polaroid('assets/ap/m5182', 515, 760, 330, V(7.25), label='5182 · 1962', z=21, rot=3, kind='rise')]
 P1.S('p1-4', 'ro-paper', 'ومع بداية الستينات، | يظهر اسمه في أرشيف | أوديمار بيغيه: | ساعة تجمع | الدائرة والمربع، | وساعة غير متناظرة…', els, transition='slide',
      camera=cam((0, 1.0, 360, 620, None), (V(4.5), 1.0, 360, 700, 'inOutCubic'), (V(9.2), 1.04, 360, 720, None)),
      sfx=[E('paper_tear', .1, -15), E('paper_place', V(1.8), -10), E('shutter', V(4.6), -14), E('shutter', V(7.25), -14)])
@@ -218,10 +214,9 @@ P1.S('p1-5', 'ro-alpine', 'وفي سنة سبعة وستين، | ساعة شنط
 
 # 6  Georges Golay: managing director, the first from outside the founding families
 els = [polaroid('assets/ap/lebrassus1969', 360, 360, 560, .1, label='Audemars Piguet · Le Brassus · 1969', z=5, rot=-1, kind='fade'),
-       polaroid('assets/ap/golay1966', 250, 820, 360, V(1.75), label='Georges Golay · 1966', z=20, rot=-3),
+       polaroid('assets/ap/golay1966', 250, 820, 360, V(1.75), label='جورج غولاي · المدير العام · 1966', z=20, rot=-3),
        cutout('assets/gen/golay_phone_cut', 540, 1240, 440, V(3.0), z=18, kind='rise', dur=.5),
-       tag('المدير العام', 250, 1050, V(3.0), size=30),
-       tag('أول مدير من خارج العائلتين', 400, 1130, V(4.4), size=26, rot=1)]
+       ]
 P1.S('p1-6', 'ro-alpine', 'وهناك لقى شريكه: | جورج غولاي، | المدير العام… | وأول واحد يدير الشركة | من برا العائلتين | المؤسستين.', els, transition='slide',
      camera=cam((0, 1.0, 360, 520, None), (V(1.6), 1.0, 360, 640, 'inOutCubic'), (V(8.6), 1.05, 360, 720, 'inOutCubic')),
      sfx=[E('paper_place', V(1.75), -10), E('pin', V(3.0), -14), E('pin', V(4.4), -14)])
@@ -231,18 +226,17 @@ els = [cutout('assets/gen/young_think_cut', 200, 1130, 640, .1, z=20, person=Tru
        cutout('assets/gen/golay_phone_cut', 540, 1130, 420, .3, z=18, kind='rise', dur=.5),
        svg(520, 230, tandem_bike(), 360, 340, z=10, kind='slideL', at=V(1.25), dur=.7),
        tag('"كنا مثل التاندم"', 360, 200, V(1.3), size=34),
-       cutout('assets/cut/m5233', 360, 1060, 520, V(6.85), z=40, kind='pop', dur=.4),
-       tag('5233', 360, 1110, V(7.1), size=28, z=41)]
+       polaroid('assets/ap/m5233', 470, 720, 280, V(6.85), label='5233', z=40, rot=2, kind='pop')]
 P1.S('p1-7', 'ro-paper', 'جنتا يقول: | كنا مثل الدراجة | اللي يسوقها اثنين… | إذا واحد منا مو مقتنع، | ما نسوي الموديل. | وحتى كانوا يلبسون | نفس الساعة.', els, transition='slide',
      camera=cam((0, 1.0, 360, 640, None), (V(6.7), 1.0, 360, 640, None), (V(8.9), 1.1, 360, 760, 'inOutCubic')),
      sfx=[E('whoosh', V(1.25), -14), E('click', V(6.85), -10)])
 
 # 8  April 1970: 38 years old, 16 years of designs; on the 10th at 4 pm, the phone rings
-gallery = [('assets/early/polerouter_cut', 120, 520), ('assets/early/constellation_cut', 600, 520), ('assets/cut/m5179', 110, 860), ('assets/cut/m5182', 610, 860), ('assets/cut/m5233', 360, 380)]
+gallery = [('assets/early/polerouter', 120, 520), ('assets/early/constellation', 600, 520), ('assets/ap/m5179', 110, 860), ('assets/ap/m5182', 610, 860), ('assets/ap/m5233', 360, 380)]
 els = flips(['1970'], 170, 250, .1, .3, z=10, scale=.55, last_out=V(7.5)) + [
        cutout('assets/gen/young_think_cut', 360, 1180, 700, V(2.3), z=20, person=True, kind='rise', dur=.5)]
 for i, (rel, gx, gy) in enumerate(gallery):
-    els.append(cutout(rel, gx, gy, 230, V(5.0) + i * .18, z=12, kind='pop', dur=.3, until=V(7.5), rot=(-6, 5, -3, 6, 0)[i]))
+    els.append(polaroid(rel, gx, gy, 170, V(5.0) + i * .18, z=12, kind='pop', until=V(7.5), rot=(-6, 5, -3, 6, 0)[i], bottom=16))
 els += [tag('عشرة أبريل', 170, 250, V(7.6), size=34, until=V(11.4)),
         *wall_clock(560, 270, 4, 0, z=11, d=150, at=V(8.7)),
         *ringing_phone(580, 980, V(10.6), None, z=25, scale=.75),
@@ -277,7 +271,7 @@ P2.S('p2-0', 'ro-hall', 'بازل، | عشرة أبريل | ألف وتسعمي�
      beds=[{"name": "crowd", "from": V(3.0), "to": 15, "gain": -28}])
 
 # 1  The brief: gold alone is not enough; a steel watch, sporty and elegant. AP calls them the Three Musketeers.
-els = [cutout('assets/cut/m5182', 230, 760, 420, .1, z=10, kind='rise', dur=.4, opacity=[[V(1.3), 1], [V(2.6), .25]], rot=[[V(1.3), 0], [V(2.6), -10]]),
+els = [polaroid('assets/ap/m5182', 230, 700, 320, .1, label='ذهب', z=10, kind='rise', opacity=[[V(1.3), 1], [V(2.6), .25]], rot=[[V(1.3), 0], [V(2.6), -10]]),
        tag('الذهب بروحه ما يكفي', 360, 230, V(1.3), size=32, until=V(3.0)),
        svg(300, 190, steel_plate(300, 190), 480, 640, z=12, kind='drop', at=V(3.0), dur=.5, rot=-6),
        tag('ستيل', 480, 460, V(3.1), size=40),
@@ -363,12 +357,11 @@ els = [svg(900, 1100, hall(), 360, 560, z=1, kind=None, depth=.55, shadow=False)
        tag('BASEL · 1972', 360, 300, .15, size=54, z=30, rot=-1.5, depth=.9),
        svg(520, 900, spotlight_cone(), WX, 380, anchor='t', z=4, kind='fade', at=V(2.4), dur=.5, shadow=False, depth=.9),
        svg(260, 300, pedestal(), WX, 1160, anchor='b', z=6, kind=None, depth=1.0),
-       cutout('assets/cut/ro5402_front', WX, WY, WH, V(2.6), z=10, kind='rise', dur=.6, depth=1.0),
+       polaroid('assets/ap/ro5402_front', WX, 700, 330, V(2.6), label='Royal Oak 5402 · 1972', z=10, kind='rise', depth=1.0),
        cutout('assets/gen/young_present_cut', 165, 1200, 560, V(2.9), z=12, kind='rise', dur=.5, person=True, depth=1.0),
-       tag('5402', WX, WY + 40, V(4.3), size=34, z=22),
        macro('assets/ap/techdrawing', V(4.4), V(6.0), zoom=(1.0, 1.1)),
-       {"type": "sketch", "x": WX, "y": WY - WH * .52, "w": 400, "h": 120, "z": 20, "pencil": False, "depth": 1.0,
-        "paths": [{"d": 'M 60 60 L 340 60 M 60 48 L 60 72 M 340 48 L 340 72', "at": V(6.1), "dur": .5, "stroke": "#EFE8D6", "width": 3, "opacity": 1}],
+       {"type": "sketch", "x": WX, "y": 640, "w": 400, "h": 120, "z": 20, "pencil": False, "depth": 1.0,
+        "paths": [{"d": 'M 95 60 L 305 60 M 95 48 L 95 72 M 305 48 L 305 72', "at": V(6.1), "dur": .5, "stroke": "#EFE8D6", "width": 3, "opacity": 1}],
         "texts": [{"text": "39 mm", "x": 200, "y": 40, "size": 34, "at": V(6.4), "dur": .4, "anchor": "middle", "color": "#EFE8D6", "font": "var(--f-banner)"}]},
        cutout('assets/gen/crowd_back_cut', 360, 1300, 380, .3, z=40, kind='rise', dur=.6, desc=PEND, aspect=1.78, depth=1.3)]
 for fx, fy, t in [(640, 820, V(2.7)), (680, 560, V(3.0)), (330, 470, V(3.3))]:
@@ -396,7 +389,7 @@ for p in P_: p['at'] = round(p['at'] + sk_t + .3, 2); p['fillAt'] = round(p['fil
 P_ = [{k: v for k, v in p.items() if v is not None} for p in P_]
 els += [cutout('assets/gen/genta_sheet_cut', GS['x'], GS['y'], GS['h'], sk_t, z=48, kind='rise', dur=.45, person=True),
         {"type": "sketch", "x": round(sheet_c[0], 1), "y": round(sheet_c[1] + 40 * k_, 1), "w": 640, "h": 960, "z": 49, "paths": P_, "texts": [], "scale": round(k_, 3), "pencil": False},
-        cutout('assets/cut/ro5402_hero', 548, 1000, 470, V(11.2), z=50, kind='fade', scale=[[V(11.2), 1.0], [V(13.5) + 1.6, 1.04]]),
+        polaroid('assets/ap/ro5402_hero', 545, 760, 320, V(11.2), label='Royal Oak 5402', z=50, kind='fade', rot=3, scale=[[V(11.2), 1.0], [V(13.5) + 1.6, 1.04]]),
         {"type": "text", "text": "رسمة بليلة وحدة…", "x": 360, "y": 160, "font": "banner", "size": 46, "color": "#EFE8D6", "upper": False, "z": 60, "depth": 0, "in": {"type": "fade", "at": V(8.1), "dur": .5}},
         {"type": "text", "text": "صارت أيقونة للأجيال", "x": 360, "y": 230, "font": "banner", "size": 46, "color": "#EFE8D6", "upper": False, "z": 60, "depth": 0, "in": {"type": "fade", "at": V(11.2), "dur": .5}},
         {"type": "text", "text": CREDITS2, "x": 360, "y": 1255, "font": "ui", "size": 10, "color": "#9A9488", "upper": False, "w": 690, "z": 61, "depth": 0, "in": {"type": "fade", "at": V(12.0), "dur": .4}}]
@@ -423,7 +416,7 @@ def cover(name, els):
 title = lambda t, y, size, ink='#16181D', paper=None: dict({"type": "text", "text": t, "x": 360, "y": y, "font": "banner", "size": size, "color": ink, "upper": False, "z": 30}, **({"paper": paper} if paper else {}))
 cover('cover1', [svg(720, 760, lake(720, 760), 360, 380, z=1, kind=None, shadow=False),
                  cutout('assets/gen/genta23_desk_cut', 250, 1240, 700, 0, z=10, kind='none', person=True),
-                 cutout('assets/early/polerouter_cut', 540, 900, 440, 0, z=12, kind='none', rot=6),
+                 polaroid('assets/early/polerouter', 520, 860, 330, 0, label='Polerouter · 1954', z=12, kind='none', rot=6),
                  title('جيرالد جنتا', 150, 76, paper='#EFE8D6'), title('قبل الرويال أوك · الجزء الأول', 240, 34, paper='#EFE8D6')])
 cover('cover2', [macro('assets/ap/genta_gouache', 0, 2, z=1, zoom=(1.0, 1.0)),
                  cutout('assets/gen/young_present_cut', 150, 1290, 620, 0, z=10, kind='none', person=True),
