@@ -517,20 +517,19 @@
     },
     {
      "type": "cutout",
-     "asset": "genta",
-     "desc": "Gerald Genta, portrait (Studio Luxury Griffes, 2005), cut out",
-     "x": 170,
+     "src": "assets/gen/genta_think_cut.png",
+     "x": 160,
      "y": 1290,
-     "h": 470,
-     "aspect": 0.6823076923076923,
-     "edge": 4,
+     "h": 620,
+     "aspect": 0.328,
+     "edge": 0,
      "z": 9,
      "person": true,
-     "headBand": 0.42,
+     "headBand": 0.2,
      "in": {
       "type": null,
       "at": 0,
-      "dur": 0.55
+      "dur": 0.25
      }
     },
     {

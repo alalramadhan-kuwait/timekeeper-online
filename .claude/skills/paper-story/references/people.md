@@ -81,5 +81,12 @@ than a silhouette (a note on the Royal Oak story). So find a photograph you may 
 - Credit every photograph on screen (author, licence, "via Wikimedia Commons") and in the project's notes.
 - Say what the picture really is. A later portrait is fine for a person, but note its date. A product photo of a
   related model gets a small label in the scene ("pictured: ref. 15202, the 5402's successor").
-- Never generate new poses or faces of a real person who has not agreed to it; animate their photo as a cut-out.
-- Someone with no usable photograph stays a hand or a silhouette (`video/royal-oak/`: Golay is only a phone).
+- Paper characters of a historical figure (when the user asks for them): generate paper-craft illustrations, not
+  photo-real images, with a freely licensed portrait as the face reference. Test one image in two versions where it
+  matters (as in the photo, or at the story's age) and let the user pick; ageing a face up or down is the model's
+  guess, so the photo's age keeps the likeness. Then batch the poses the story needs (on the phone, thinking, at the
+  drafting table, holding a blank sheet, presenting with an empty palm) using the approved image as a second
+  reference. Credit them on screen as AI illustrations.
+- Someone with no usable photograph gets no invented face: a character seen from behind, a hand or a silhouette
+  (`video/royal-oak/`: Golay at his desk, from behind).
+- Generated backdrops often carry a gradient; cut them with Higgsfield `remove_background` rather than `cut-poses.py`.

@@ -15,3 +15,21 @@ The watch photographed is a ref. 15202, the 5402's direct successor (same 39 mm 
 No free photograph of a 5402ST was found: a photo of one you own or may use can replace `ro_front.png` (cut out,
 transparent PNG) and the label in scene 6 can then go. The adapted cut-outs and crops are shared under the same
 CC BY-SA licences.
+
+## Paper characters (`gen/`)
+
+Paper-craft illustrations made on Higgsfield (`nano_banana_2`, 2k) with Genta's 2005 portrait as the face reference,
+then cut out with Higgsfield's background remover (the backdrop has a gradient, so `cut-poses.py` does not apply).
+`aspects.json` holds each cut-out's width / height for film.py.
+
+| file | pose | job |
+| --- | --- | --- |
+| `genta_table_cut.png` | at the drafting table, pencil on a blank sheet (the approved test image) | 0b532f5b |
+| `genta_phone_cut.png` | standing, on a black rotary phone | a0dae66d |
+| `genta_think_cut.png` | standing, hand at his chin | b8a0dba3 |
+| `genta_sheet_cut.png` | holding up a blank sheet (the sketch is drawn onto it in the film) | 1e5a466b |
+| `genta_present_cut.png` | presenting with an open, empty palm | 304768ae |
+| `golay_phone_cut.png` | Georges Golay seen from behind on the phone: no photo of him was available, so no face | 131f7aa7 |
+
+Genta is drawn as he looks in the portrait (the user chose this over a younger version the model would have had to
+imagine). The watch is never generated: hands and sheets are empty and the real photo is placed in the scene.

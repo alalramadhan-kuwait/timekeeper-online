@@ -22,8 +22,9 @@ Sources
 - https://www.sothebys.com/en/articles/the-great-evolution-of-the-audemars-piguet-royal-oak
 
 Pictures of real people and the real watch (see `assets/README.md` for files, authors and licences):
-- Gérald Genta is his own photograph, a 2005 portrait, used as a paper cut-out in the call, the night and the ending.
-  It is a later photograph of him, not one from 1970. Georges Golay has no free photograph, so he is only a phone.
+- Gérald Genta is a paper-craft illustration made with AI from his 2005 portrait, so he looks as he did then, not as
+  in 1970. Georges Golay has no free photograph, so his character is seen only from behind. The closing credits say
+  both are AI illustrations.
 - The Royal Oak on screen is a ref. 15202, the 5402's direct successor (same 39 mm Jumbo design). Scene 6 labels it
   "pictured: ref. 15202, the 5402's successor". The calibre 2121 close-up is the 5402's movement, photographed in a
   1992 ref. 14802.

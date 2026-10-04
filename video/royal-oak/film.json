@@ -338,8 +338,8 @@
      "w": 120,
      "h": 120,
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"120\" height=\"120\" viewBox=\"0 0 120 120\" style=\"overflow:visible;filter:drop-shadow(0 4px 3px rgba(0,0,0,.30))\"><circle cx=\"60\" cy=\"60\" r=\"56\" fill=\"#F3EEE1\" stroke=\"#2A2C31\" stroke-width=\"8\"/><rect x=\"58.0\" y=\"10\" width=\"4\" height=\"14\" fill=\"#2A2C31\" transform=\"rotate(0 60 60)\"/><rect x=\"58.0\" y=\"10\" width=\"4\" height=\"8\" fill=\"#2A2C31\" transform=\"rotate(30 60 60)\"/><rect x=\"58.0\" y=\"10\" width=\"4\" height=\"8\" fill=\"#2A2C31\" transform=\"rotate(60 60 60)\"/><rect x=\"58.0\" y=\"10\" width=\"4\" height=\"14\" fill=\"#2A2C31\" transform=\"rotate(90 60 60)\"/><rect x=\"58.0\" y=\"10\" width=\"4\" height=\"8\" fill=\"#2A2C31\" transform=\"rotate(120 60 60)\"/><rect x=\"58.0\" y=\"10\" width=\"4\" height=\"8\" fill=\"#2A2C31\" transform=\"rotate(150 60 60)\"/><rect x=\"58.0\" y=\"10\" width=\"4\" height=\"14\" fill=\"#2A2C31\" transform=\"rotate(180 60 60)\"/><rect x=\"58.0\" y=\"10\" width=\"4\" height=\"8\" fill=\"#2A2C31\" transform=\"rotate(210 60 60)\"/><rect x=\"58.0\" y=\"10\" width=\"4\" height=\"8\" fill=\"#2A2C31\" transform=\"rotate(240 60 60)\"/><rect x=\"58.0\" y=\"10\" width=\"4\" height=\"14\" fill=\"#2A2C31\" transform=\"rotate(270 60 60)\"/><rect x=\"58.0\" y=\"10\" width=\"4\" height=\"8\" fill=\"#2A2C31\" transform=\"rotate(300 60 60)\"/><rect x=\"58.0\" y=\"10\" width=\"4\" height=\"8\" fill=\"#2A2C31\" transform=\"rotate(330 60 60)\"/></svg>",
-     "x": 540,
-     "y": 220,
+     "x": 630,
+     "y": 200,
      "anchor": "c",
      "z": 5,
      "in": {
@@ -353,8 +353,8 @@
      "w": 120,
      "h": 120,
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"120\" height=\"120\" viewBox=\"0 0 120 120\" style=\"overflow:visible;\"><rect x=\"57.0\" y=\"28.8\" width=\"6\" height=\"37.2\" rx=\"2\" fill=\"#16181D\"/></svg>",
-     "x": 540,
-     "y": 220,
+     "x": 630,
+     "y": 200,
      "anchor": "c",
      "z": 6,
      "in": {
@@ -369,8 +369,8 @@
      "w": 120,
      "h": 120,
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"120\" height=\"120\" viewBox=\"0 0 120 120\" style=\"overflow:visible;\"><rect x=\"58.0\" y=\"14.4\" width=\"4\" height=\"51.6\" rx=\"2\" fill=\"#16181D\"/></svg>",
-     "x": 540,
-     "y": 220,
+     "x": 630,
+     "y": 200,
      "anchor": "c",
      "z": 6,
      "in": {
@@ -385,45 +385,28 @@
      "w": 260,
      "h": 162,
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"260\" height=\"162\" viewBox=\"0 0 260 162\" style=\"overflow:visible;filter:drop-shadow(0 4px 3px rgba(0,0,0,.30))\"><path d=\"M 20 150 L 46 60 Q 50 46 66 46 L 194 46 Q 210 46 214 60 L 240 150 Q 242 162 228 162 L 32 162 Q 18 162 20 150 Z\" fill=\"#EDE6D3\"/><circle cx=\"130\" cy=\"104\" r=\"44\" fill=\"#2A2C31\"/><circle cx=\"145.0\" cy=\"78.0\" r=\"7\" fill=\"#EDE6D3\"/><circle cx=\"156.0\" cy=\"89.0\" r=\"7\" fill=\"#EDE6D3\"/><circle cx=\"160.0\" cy=\"104.0\" r=\"7\" fill=\"#EDE6D3\"/><circle cx=\"156.0\" cy=\"119.0\" r=\"7\" fill=\"#EDE6D3\"/><circle cx=\"145.0\" cy=\"130.0\" r=\"7\" fill=\"#EDE6D3\"/><circle cx=\"130.0\" cy=\"134.0\" r=\"7\" fill=\"#EDE6D3\"/><circle cx=\"115.0\" cy=\"130.0\" r=\"7\" fill=\"#EDE6D3\"/><circle cx=\"104.0\" cy=\"119.0\" r=\"7\" fill=\"#EDE6D3\"/><circle cx=\"100.0\" cy=\"104.0\" r=\"7\" fill=\"#EDE6D3\"/><circle cx=\"104.0\" cy=\"89.0\" r=\"7\" fill=\"#EDE6D3\"/><circle cx=\"115.0\" cy=\"78.0\" r=\"7\" fill=\"#EDE6D3\"/><circle cx=\"130\" cy=\"104\" r=\"14\" fill=\"#EDE6D3\"/><rect x=\"56\" y=\"30\" width=\"22\" height=\"22\" rx=\"4\" fill=\"#2A2C31\"/><rect x=\"182\" y=\"30\" width=\"22\" height=\"22\" rx=\"4\" fill=\"#2A2C31\"/></svg>",
-     "x": 420,
-     "y": 470,
+     "x": 200,
+     "y": 478,
      "anchor": "c",
-     "z": 6
+     "z": 6,
+     "scale": 0.8
     },
     {
-     "type": "svg",
-     "w": 260,
-     "h": 52,
-     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"260\" height=\"52\" viewBox=\"0 0 260 52\" style=\"overflow:visible;filter:drop-shadow(0 4px 3px rgba(0,0,0,.30))\"><path d=\"M 10 30 Q 0 0 30 4 L 50 10 Q 62 14 70 14 L 190 14 Q 198 14 210 10 L 230 4 Q 260 0 250 30 L 236 44 Q 226 50 214 40 L 200 30 L 60 30 L 46 40 Q 34 50 24 44 Z\" fill=\"#EDE6D3\"/></svg>",
+     "type": "cutout",
+     "src": "assets/gen/golay_phone_cut.png",
      "x": 420,
-     "y": [
-      [
-       0,
-       405
-      ],
-      [
-       1.02,
-       405
-      ],
-      [
-       1.37,
-       330,
-       "outBack"
-      ]
-     ],
-     "anchor": "c",
+     "y": 640,
+     "h": 430,
+     "aspect": 0.6933,
+     "edge": 0,
      "z": 8,
-     "rot": [
-      [
-       1.02,
-       0
-      ],
-      [
-       1.37,
-       -14,
-       "outBack"
-      ]
-     ]
+     "person": false,
+     "headBand": 0.2,
+     "in": {
+      "type": "fade",
+      "at": 0.05,
+      "dur": 0.25
+     }
     },
     {
      "type": "sketch",
@@ -435,7 +418,7 @@
      "pencil": false,
      "paths": [
       {
-       "d": "M 520 520 C 690 600 700 760 560 880 S 360 1000 250 1010",
+       "d": "M 250 540 C 690 600 700 760 560 880 S 260 980 150 1040",
        "at": 1.42,
        "dur": 1.4,
        "stroke": "#2A2C31",
@@ -551,51 +534,22 @@
      "w": 260,
      "h": 162,
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"260\" height=\"162\" viewBox=\"0 0 260 162\" style=\"overflow:visible;filter:drop-shadow(0 4px 3px rgba(0,0,0,.30))\"><path d=\"M 20 150 L 46 60 Q 50 46 66 46 L 194 46 Q 210 46 214 60 L 240 150 Q 242 162 228 162 L 32 162 Q 18 162 20 150 Z\" fill=\"#2A2C31\"/><circle cx=\"130\" cy=\"104\" r=\"44\" fill=\"#EDE6D3\"/><circle cx=\"145.0\" cy=\"78.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"156.0\" cy=\"89.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"160.0\" cy=\"104.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"156.0\" cy=\"119.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"145.0\" cy=\"130.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"130.0\" cy=\"134.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"115.0\" cy=\"130.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"104.0\" cy=\"119.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"100.0\" cy=\"104.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"104.0\" cy=\"89.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"115.0\" cy=\"78.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"130\" cy=\"104\" r=\"14\" fill=\"#2A2C31\"/><rect x=\"56\" y=\"30\" width=\"22\" height=\"22\" rx=\"4\" fill=\"#EDE6D3\"/><rect x=\"182\" y=\"30\" width=\"22\" height=\"22\" rx=\"4\" fill=\"#EDE6D3\"/></svg>",
-     "x": 470,
-     "y": 1075,
+     "x": 150,
+     "y": 1085,
      "anchor": "c",
-     "z": 6
-    },
-    {
-     "type": "svg",
-     "w": 260,
-     "h": 52,
-     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"260\" height=\"52\" viewBox=\"0 0 260 52\" style=\"overflow:visible;filter:drop-shadow(0 4px 3px rgba(0,0,0,.30))\"><path d=\"M 10 30 Q 0 0 30 4 L 50 10 Q 62 14 70 14 L 190 14 Q 198 14 210 10 L 230 4 Q 260 0 250 30 L 236 44 Q 226 50 214 40 L 200 30 L 60 30 L 46 40 Q 34 50 24 44 Z\" fill=\"#2A2C31\"/></svg>",
-     "x": 470,
-     "y": [
-      [
-       0,
-       1010
-      ],
-      [
-       3.62,
-       1010
-      ],
-      [
-       3.97,
-       965,
-       "outBack"
-      ]
-     ],
-     "anchor": "c",
-     "z": 8,
-     "rot": [
-      [
-       3.62,
-       0
-      ],
-      [
-       3.97,
-       12,
-       "outBack"
-      ]
-     ],
+     "z": 6,
+     "scale": 0.62,
+     "out": {
+      "type": "fade",
+      "at": 3.52,
+      "dur": 0.15
+     },
      "idle": {
       "type": "shake",
       "amp": 3,
       "speed": 9,
       "from": 2.72,
-      "until": 3.62
+      "until": 3.52
      }
     },
     {
@@ -603,8 +557,8 @@
      "w": 260,
      "h": 80,
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"260\" height=\"80\" viewBox=\"0 0 260 80\" style=\"overflow:visible;filter:drop-shadow(0 4px 3px rgba(0,0,0,.30))\"><path d=\"M 10 40 q -14 24 0 48\" stroke=\"#2A2C31\" stroke-width=\"5\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M -6 26 q -20 38 0 76\" stroke=\"#2A2C31\" stroke-width=\"5\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M 250 40 q 14 24 0 48\" stroke=\"#2A2C31\" stroke-width=\"5\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M 266 26 q 20 38 0 76\" stroke=\"#2A2C31\" stroke-width=\"5\" fill=\"none\" stroke-linecap=\"round\"/></svg>",
-     "x": 470,
-     "y": 1000,
+     "x": 150,
+     "y": 1035,
      "anchor": "c",
      "z": 9,
      "in": {
@@ -612,9 +566,10 @@
       "at": 2.72,
       "dur": 0.2
      },
+     "scale": 0.7,
      "out": {
       "type": "fade",
-      "at": 3.62,
+      "at": 3.52,
       "dur": 0.15
      },
      "idle": {
@@ -625,20 +580,41 @@
     },
     {
      "type": "cutout",
-     "asset": "genta",
-     "desc": "Gerald Genta, portrait (Studio Luxury Griffes, 2005), cut out",
-     "x": 215,
-     "y": 1300,
-     "h": 500,
-     "aspect": 0.6823076923076923,
-     "edge": 4,
+     "src": "assets/gen/genta_phone_cut.png",
+     "x": 240,
+     "y": 1290,
+     "h": 560,
+     "aspect": 0.5969,
+     "edge": 0,
      "z": 12,
      "person": true,
-     "headBand": 0.42,
+     "headBand": 0.2,
      "in": {
-      "type": "rise",
-      "at": 2.87,
-      "dur": 0.55
+      "type": "fade",
+      "at": 3.42,
+      "dur": 0.25
+     },
+     "out": {
+      "type": "fade",
+      "at": 5.22,
+      "dur": 0.2
+     }
+    },
+    {
+     "type": "cutout",
+     "src": "assets/gen/genta_think_cut.png",
+     "x": 250,
+     "y": 1290,
+     "h": 560,
+     "aspect": 0.328,
+     "edge": 0,
+     "z": 12,
+     "person": true,
+     "headBand": 0.2,
+     "in": {
+      "type": "fade",
+      "at": 5.12,
+      "dur": 0.25
      }
     },
     {
@@ -858,56 +834,33 @@
     },
     {
      "type": "svg",
-     "w": 240,
-     "h": 300,
-     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"240\" height=\"300\" viewBox=\"0 0 240 300\" style=\"overflow:visible;filter:drop-shadow(0 4px 3px rgba(0,0,0,.30))\"><path d=\"M 20 300 L 120 300 L 112 288 L 28 288 Z\" fill=\"#2A2C31\"/><rect x=\"64\" y=\"160\" width=\"10\" height=\"132\" fill=\"#2A2C31\" transform=\"rotate(-18 69 290)\"/><rect x=\"90\" y=\"60\" width=\"10\" height=\"130\" fill=\"#2A2C31\" transform=\"rotate(38 95 185)\"/><path d=\"M 150 40 L 230 70 L 206 120 L 140 90 Z\" fill=\"#2A2C31\"/><ellipse cx=\"200\" cy=\"104\" rx=\"30\" ry=\"12\" fill=\"#FFE6A8\" transform=\"rotate(24 200 104)\"/></svg>",
-     "x": 600,
-     "y": 640,
-     "anchor": "c",
-     "z": 6,
-     "depth": 0.9
-    },
-    {
-     "type": "svg",
-     "w": 560,
-     "h": 250,
-     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"560\" height=\"250\" viewBox=\"0 0 560 250\" style=\"overflow:visible;filter:drop-shadow(0 4px 3px rgba(0,0,0,.30))\"><polygon points=\"0.0,90.0 560.0,0.0 560.0,40.0 0.0,130.0\" fill=\"#5A4632\"/><polygon points=\"40.0,85.0 500.0,22.0 520.0,70.0 60.0,133.0\" fill=\"#F4EFE2\"/><rect x=\"70\" y=\"128\" width=\"14\" height=\"122\" fill=\"#3D2F22\"/><rect x=\"500\" y=\"40\" width=\"14\" height=\"210\" fill=\"#3D2F22\"/></svg>",
-     "x": 360,
-     "y": 1010,
-     "anchor": "c",
-     "z": 6,
-     "depth": 0.95
-    },
-    {
-     "type": "svg",
-     "w": 520,
-     "h": 560,
-     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"520\" height=\"560\" viewBox=\"0 0 520 560\" style=\"overflow:visible;\"><defs><radialGradient id=\"lg\" cx=\"50%\" cy=\"20%\" r=\"80%\"><stop offset=\"0\" stop-color=\"#FFE3A0\" stop-opacity=\".55\"/><stop offset=\".55\" stop-color=\"#FFD27A\" stop-opacity=\".14\"/><stop offset=\"1\" stop-color=\"#FFD27A\" stop-opacity=\"0\"/></radialGradient></defs><polygon points=\"218.4,0.0 301.6,0.0 520.0,560.0 0.0,560.0\" fill=\"url(#lg)\"/></svg>",
-     "x": 520,
-     "y": 900,
+     "w": 420,
+     "h": 640,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"420\" height=\"640\" viewBox=\"0 0 420 640\" style=\"overflow:visible;\"><defs><radialGradient id=\"lg\" cx=\"50%\" cy=\"20%\" r=\"80%\"><stop offset=\"0\" stop-color=\"#FFE3A0\" stop-opacity=\".55\"/><stop offset=\".55\" stop-color=\"#FFD27A\" stop-opacity=\".14\"/><stop offset=\"1\" stop-color=\"#FFD27A\" stop-opacity=\"0\"/></radialGradient></defs><polygon points=\"176.4,0.0 243.6,0.0 420.0,640.0 0.0,640.0\" fill=\"url(#lg)\"/></svg>",
+     "x": 190,
+     "y": 930,
      "anchor": "c",
      "z": 7,
-     "opacity": 0.8,
-     "depth": 0.95
+     "opacity": 0.85,
+     "depth": 1.1
     },
     {
      "type": "cutout",
-     "asset": "genta",
-     "desc": "Gerald Genta, portrait (Studio Luxury Griffes, 2005), cut out",
-     "x": 185,
-     "y": 1310,
-     "h": 650,
-     "aspect": 0.6823076923076923,
-     "edge": 4,
+     "src": "assets/gen/genta_table_cut.png",
+     "x": 205,
+     "y": 1255,
+     "h": 600,
+     "aspect": 0.7024,
+     "edge": 0,
      "z": 20,
      "person": true,
-     "headBand": 0.42,
+     "headBand": 0.2,
      "in": {
       "type": null,
       "at": 0.0,
-      "dur": 0.55
+      "dur": 0.25
      },
-     "depth": 1.15
+     "depth": 1.1
     },
     {
      "type": "svg",
@@ -2189,7 +2142,7 @@
      "w": 520,
      "h": 900,
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"520\" height=\"900\" viewBox=\"0 0 520 900\" style=\"overflow:visible;\"><defs><linearGradient id=\"sc\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#FFF1CF\" stop-opacity=\".55\"/><stop offset=\"1\" stop-color=\"#FFF1CF\" stop-opacity=\".05\"/></linearGradient></defs><polygon points=\"228.8,0.0 291.2,0.0 520.0,900.0 0.0,900.0\" fill=\"url(#sc)\"/></svg>",
-     "x": 360,
+     "x": 260,
      "y": 380,
      "anchor": "t",
      "z": 4,
@@ -2205,7 +2158,7 @@
      "w": 260,
      "h": 300,
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"260\" height=\"300\" viewBox=\"0 0 260 300\" style=\"overflow:visible;filter:drop-shadow(0 4px 3px rgba(0,0,0,.30))\"><rect x=\"0\" y=\"0\" width=\"260\" height=\"30\" fill=\"#EFE8D6\"/><rect x=\"18\" y=\"30\" width=\"224\" height=\"270\" fill=\"#D9D1BE\"/><rect x=\"18\" y=\"30\" width=\"22\" height=\"270\" fill=\"#C3BAA4\"/></svg>",
-     "x": 360,
+     "x": 260,
      "y": 1160,
      "anchor": "b",
      "z": 6,
@@ -2215,9 +2168,9 @@
      "type": "cutout",
      "asset": "ro_front",
      "desc": "Royal Oak Jumbo ref. 15202, the 5402's successor, cut out from a wrist shot",
-     "x": 360,
-     "y": 980,
-     "h": 520,
+     "x": 260,
+     "y": 950,
+     "h": 440,
      "aspect": 0.723526044647968,
      "edge": 0,
      "z": 10,
@@ -2229,10 +2182,28 @@
      "depth": 1.0
     },
     {
+     "type": "cutout",
+     "src": "assets/gen/genta_present_cut.png",
+     "x": 540,
+     "y": 1200,
+     "h": 560,
+     "aspect": 0.5275,
+     "edge": 0,
+     "z": 12,
+     "person": true,
+     "headBand": 0.2,
+     "in": {
+      "type": "rise",
+      "at": 2.32,
+      "dur": 0.5
+     },
+     "depth": 1.0
+    },
+    {
      "type": "text",
      "text": "pictured: ref. 15202, the 5402's successor",
-     "x": 360,
-     "y": 1020,
+     "x": 330,
+     "y": 990,
      "font": "cap",
      "size": 17,
      "color": "#16181D",
@@ -2252,7 +2223,7 @@
      "w": 240,
      "h": 240,
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"240\" height=\"240\" viewBox=\"0 0 240 240\" style=\"overflow:visible;\"><defs><radialGradient id=\"fl\"><stop offset=\"0\" stop-color=\"#FFFFFF\" stop-opacity=\".95\"/><stop offset=\".35\" stop-color=\"#FFF6DD\" stop-opacity=\".5\"/><stop offset=\"1\" stop-color=\"#FFF6DD\" stop-opacity=\"0\"/></radialGradient></defs><circle cx=\"120\" cy=\"120\" r=\"120\" fill=\"url(#fl)\"/></svg>",
-     "x": 160,
+     "x": 140,
      "y": 820,
      "anchor": "c",
      "z": 45,
@@ -2273,8 +2244,8 @@
      "w": 240,
      "h": 240,
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"240\" height=\"240\" viewBox=\"0 0 240 240\" style=\"overflow:visible;\"><defs><radialGradient id=\"fl\"><stop offset=\"0\" stop-color=\"#FFFFFF\" stop-opacity=\".95\"/><stop offset=\".35\" stop-color=\"#FFF6DD\" stop-opacity=\".5\"/><stop offset=\"1\" stop-color=\"#FFF6DD\" stop-opacity=\"0\"/></radialGradient></defs><circle cx=\"120\" cy=\"120\" r=\"120\" fill=\"url(#fl)\"/></svg>",
-     "x": 590,
-     "y": 760,
+     "x": 60,
+     "y": 600,
      "anchor": "c",
      "z": 45,
      "in": {
@@ -2294,8 +2265,8 @@
      "w": 240,
      "h": 240,
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"240\" height=\"240\" viewBox=\"0 0 240 240\" style=\"overflow:visible;\"><defs><radialGradient id=\"fl\"><stop offset=\"0\" stop-color=\"#FFFFFF\" stop-opacity=\".95\"/><stop offset=\".35\" stop-color=\"#FFF6DD\" stop-opacity=\".5\"/><stop offset=\"1\" stop-color=\"#FFF6DD\" stop-opacity=\"0\"/></radialGradient></defs><circle cx=\"120\" cy=\"120\" r=\"120\" fill=\"url(#fl)\"/></svg>",
-     "x": 250,
-     "y": 700,
+     "x": 380,
+     "y": 540,
      "anchor": "c",
      "z": 45,
      "in": {
@@ -2315,8 +2286,8 @@
      "w": 240,
      "h": 240,
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"240\" height=\"240\" viewBox=\"0 0 240 240\" style=\"overflow:visible;\"><defs><radialGradient id=\"fl\"><stop offset=\"0\" stop-color=\"#FFFFFF\" stop-opacity=\".95\"/><stop offset=\".35\" stop-color=\"#FFF6DD\" stop-opacity=\".5\"/><stop offset=\"1\" stop-color=\"#FFF6DD\" stop-opacity=\"0\"/></radialGradient></defs><circle cx=\"120\" cy=\"120\" r=\"120\" fill=\"url(#fl)\"/></svg>",
-     "x": 520,
-     "y": 860,
+     "x": 200,
+     "y": 990,
      "anchor": "c",
      "z": 45,
      "in": {
@@ -2349,8 +2320,8 @@
     },
     {
      "type": "sketch",
-     "x": 348.7129937034917,
-     "y": 501.59999999999997,
+     "x": 250.44945621064682,
+     "y": 673.5999999999999,
      "w": 400,
      "h": 120,
      "z": 20,
@@ -2358,7 +2329,7 @@
      "depth": 1.0,
      "paths": [
       {
-       "d": "M 36.3 60 L 363.7 60 M 36.3 48 L 36.3 72 M 363.7 48 L 363.7 72",
+       "d": "M 61.5 60 L 338.5 60 M 61.5 48 L 61.5 72 M 338.5 48 L 338.5 72",
        "at": 5.07,
        "dur": 0.5,
        "stroke": "#EFE8D6",
@@ -2416,11 +2387,11 @@
     },
     {
      "type": "svg",
-     "w": 293.35867200915857,
-     "h": 293.35867200915857,
-     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"293\" height=\"293\" viewBox=\"0 0 293 293\" style=\"overflow:visible;\"><circle cx=\"146\" cy=\"146\" r=\"142\" fill=\"none\" stroke=\"#EFE8D6\" stroke-width=\"3\" stroke-dasharray=\"9 7\" opacity=\".8\"/></svg>",
-     "x": 95,
-     "y": 688.8,
+     "w": 249.45733785390343,
+     "h": 249.45733785390343,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"249\" height=\"249\" viewBox=\"0 0 249 249\" style=\"overflow:visible;\"><circle cx=\"124\" cy=\"124\" r=\"120\" fill=\"none\" stroke=\"#EFE8D6\" stroke-width=\"3\" stroke-dasharray=\"9 7\" opacity=\".8\"/></svg>",
+     "x": 250.44945621064682,
+     "y": 703.5999999999999,
      "anchor": "c",
      "z": 20,
      "in": {
@@ -2451,12 +2422,12 @@
      ],
      [
       4.72,
-      1.28,
+      1.2,
       "inOutCubic"
      ],
      [
       7.72,
-      1.34,
+      1.22,
       "inOutCubic"
      ]
     ],
@@ -2471,12 +2442,12 @@
      ],
      [
       4.72,
-      360,
+      385,
       "inOutCubic"
      ],
      [
       7.72,
-      330,
+      385,
       "inOutCubic"
      ]
     ],
@@ -2491,12 +2462,12 @@
      ],
      [
       4.72,
-      760,
+      740,
       "inOutCubic"
      ],
      [
       7.72,
-      760,
+      740,
       "inOutCubic"
      ]
     ]
@@ -2750,335 +2721,256 @@
      }
     },
     {
+     "type": "cutout",
+     "src": "assets/gen/genta_sheet_cut.png",
+     "x": 200,
+     "y": 1290,
+     "h": 780,
+     "aspect": 0.4309,
+     "edge": 0,
+     "z": 28,
+     "person": true,
+     "headBand": 0.2,
+     "in": {
+      "type": "rise",
+      "at": 3.17,
+      "dur": 0.45
+     }
+    },
+    {
      "type": "sketch",
-     "x": 360,
-     "y": 590,
+     "x": 200.3,
+     "y": 871.3,
      "w": 640,
      "h": 960,
-     "z": 25,
+     "z": 29,
      "paths": [
       {
        "d": "M 80 440 L 560 440",
-       "at": 3.17,
-       "dur": 0.11,
+       "at": 3.47,
+       "dur": 0.1,
        "width": 1.2,
-       "stroke": "#EFE8D6",
+       "stroke": "#7C8088",
        "opacity": 0.7
       },
       {
        "d": "M 320 80 L 320 800",
-       "at": 3.19,
-       "dur": 0.132,
+       "at": 3.49,
+       "dur": 0.12,
        "width": 1.2,
-       "stroke": "#EFE8D6",
+       "stroke": "#7C8088",
        "opacity": 0.7
       },
       {
        "d": "M 203.0 440.0 a 117.0 117.0 0 1 0 234.0 0 a 117.0 117.0 0 1 0 -234.0 0",
-       "at": 3.2,
-       "dur": 0.154,
+       "at": 3.5,
+       "dur": 0.14,
        "width": 2.4,
-       "stroke": "#EFE8D6"
+       "stroke": "#34363B"
       },
       {
        "d": "M458.6 497.4 L377.4 578.6 L262.6 578.6 L181.4 497.4 L181.4 382.6 L262.6 301.4 L377.4 301.4 L458.6 382.6 Z",
-       "at": 3.39,
-       "dur": 0.22,
+       "at": 3.67,
+       "dur": 0.2,
        "width": 3.0,
-       "stroke": "#EFE8D6"
+       "stroke": "#34363B"
       },
       {
        "d": "M439.2 489.4 L369.4 559.2 L270.6 559.2 L200.8 489.4 L200.8 390.6 L270.6 320.8 L369.4 320.8 L439.2 390.6 Z",
-       "at": 3.5,
-       "dur": 0.176,
+       "at": 3.77,
+       "dur": 0.16,
        "width": 1.6,
-       "stroke": "#EFE8D6",
+       "stroke": "#34363B",
        "opacity": 0.7
       },
       {
        "d": "M 210.3 272.0 L 429.7 272.0 Q 518.2 440.0 429.7 608.0 L 210.3 608.0 L 210.3 608.0 Q 121.8 440.0 210.3 272.0 Z",
-       "at": 3.9,
-       "dur": 0.176,
+       "at": 4.13,
+       "dur": 0.16,
        "width": 2.6,
-       "stroke": "#EFE8D6"
+       "stroke": "#34363B"
       },
       {
        "d": "M458.4 493.4 L453.6 501.6 L444.1 501.6 L439.4 493.4 L444.1 485.2 L453.6 485.2 Z",
-       "at": 3.61,
-       "dur": 0.04,
+       "at": 3.87,
+       "dur": 0.036,
        "width": 2.0,
-       "stroke": "#EFE8D6",
+       "stroke": "#34363B",
        "fill": "#55585E",
        "fillOpacity": 0.55
       },
       {
        "d": "M382.9 568.9 L378.1 577.1 L368.6 577.1 L363.9 568.9 L368.6 560.7 L378.1 560.7 Z",
-       "at": 3.63,
-       "dur": 0.04,
+       "at": 3.89,
+       "dur": 0.036,
        "width": 2.0,
-       "stroke": "#EFE8D6",
+       "stroke": "#34363B",
        "fill": "#55585E",
        "fillOpacity": 0.55
       },
       {
        "d": "M276.1 568.9 L271.4 577.1 L261.9 577.1 L257.1 568.9 L261.9 560.7 L271.4 560.7 Z",
-       "at": 3.66,
-       "dur": 0.04,
+       "at": 3.91,
+       "dur": 0.036,
        "width": 2.0,
-       "stroke": "#EFE8D6",
+       "stroke": "#34363B",
        "fill": "#55585E",
        "fillOpacity": 0.55
       },
       {
        "d": "M200.6 493.4 L195.9 501.6 L186.4 501.6 L181.6 493.4 L186.4 485.2 L195.9 485.2 Z",
-       "at": 3.68,
-       "dur": 0.04,
+       "at": 3.94,
+       "dur": 0.036,
        "width": 2.0,
-       "stroke": "#EFE8D6",
+       "stroke": "#34363B",
        "fill": "#55585E",
        "fillOpacity": 0.55
       },
       {
        "d": "M200.6 386.6 L195.9 394.8 L186.4 394.8 L181.6 386.6 L186.4 378.4 L195.9 378.4 Z",
-       "at": 3.71,
-       "dur": 0.04,
+       "at": 3.96,
+       "dur": 0.036,
        "width": 2.0,
-       "stroke": "#EFE8D6",
+       "stroke": "#34363B",
        "fill": "#55585E",
        "fillOpacity": 0.55
       },
       {
        "d": "M276.1 311.1 L271.4 319.3 L261.9 319.3 L257.1 311.1 L261.9 302.9 L271.4 302.9 Z",
-       "at": 3.73,
-       "dur": 0.04,
+       "at": 3.98,
+       "dur": 0.036,
        "width": 2.0,
-       "stroke": "#EFE8D6",
+       "stroke": "#34363B",
        "fill": "#55585E",
        "fillOpacity": 0.55
       },
       {
        "d": "M382.9 311.1 L378.1 319.3 L368.6 319.3 L363.9 311.1 L368.6 302.9 L378.1 302.9 Z",
-       "at": 3.75,
-       "dur": 0.04,
+       "at": 4.0,
+       "dur": 0.036,
        "width": 2.0,
-       "stroke": "#EFE8D6",
+       "stroke": "#34363B",
        "fill": "#55585E",
        "fillOpacity": 0.55
       },
       {
        "d": "M458.4 386.6 L453.6 394.8 L444.1 394.8 L439.4 386.6 L444.1 378.4 L453.6 378.4 Z",
-       "at": 3.78,
-       "dur": 0.04,
+       "at": 4.02,
+       "dur": 0.036,
        "width": 2.0,
-       "stroke": "#EFE8D6",
+       "stroke": "#34363B",
        "fill": "#55585E",
        "fillOpacity": 0.55
       },
       {
        "d": "M 210.3 272.0 L 429.7 272.0 L 425.2 212.0 L 214.8 212.0 Z",
-       "at": 4.03,
-       "dur": 0.055,
+       "at": 4.25,
+       "dur": 0.05,
        "width": 2.2,
-       "stroke": "#EFE8D6"
+       "stroke": "#34363B"
       },
       {
        "d": "M 284.9 266.0 L 284.9 218.0",
-       "at": 4.05,
-       "dur": 0.044,
+       "at": 4.27,
+       "dur": 0.04,
        "width": 1.4,
-       "stroke": "#EFE8D6",
+       "stroke": "#34363B",
        "opacity": 0.75
       },
       {
        "d": "M 355.1 266.0 L 355.1 218.0",
-       "at": 4.05,
-       "dur": 0.044,
+       "at": 4.27,
+       "dur": 0.04,
        "width": 1.4,
-       "stroke": "#EFE8D6",
-       "opacity": 0.75
-      },
-      {
-       "d": "M 214.8 208.0 L 425.2 208.0 L 420.7 148.0 L 219.3 148.0 Z",
-       "at": 4.06,
-       "dur": 0.055,
-       "width": 2.2,
-       "stroke": "#EFE8D6"
-      },
-      {
-       "d": "M 286.3 202.0 L 286.3 154.0",
-       "at": 4.08,
-       "dur": 0.044,
-       "width": 1.4,
-       "stroke": "#EFE8D6",
-       "opacity": 0.75
-      },
-      {
-       "d": "M 353.7 202.0 L 353.7 154.0",
-       "at": 4.08,
-       "dur": 0.044,
-       "width": 1.4,
-       "stroke": "#EFE8D6",
-       "opacity": 0.75
-      },
-      {
-       "d": "M 219.3 144.0 L 420.7 144.0 L 416.2 84.0 L 223.8 84.0 Z",
-       "at": 4.09,
-       "dur": 0.055,
-       "width": 2.2,
-       "stroke": "#EFE8D6"
-      },
-      {
-       "d": "M 287.8 138.0 L 287.8 90.0",
-       "at": 4.11,
-       "dur": 0.044,
-       "width": 1.4,
-       "stroke": "#EFE8D6",
-       "opacity": 0.75
-      },
-      {
-       "d": "M 352.2 138.0 L 352.2 90.0",
-       "at": 4.11,
-       "dur": 0.044,
-       "width": 1.4,
-       "stroke": "#EFE8D6",
+       "stroke": "#34363B",
        "opacity": 0.75
       },
       {
        "d": "M 210.3 608.0 L 429.7 608.0 L 425.2 668.0 L 214.8 668.0 Z",
-       "at": 4.04,
-       "dur": 0.055,
+       "at": 4.26,
+       "dur": 0.05,
        "width": 2.2,
-       "stroke": "#EFE8D6"
+       "stroke": "#34363B"
       },
       {
        "d": "M 284.9 614.0 L 284.9 662.0",
-       "at": 4.05,
-       "dur": 0.044,
+       "at": 4.27,
+       "dur": 0.04,
        "width": 1.4,
-       "stroke": "#EFE8D6",
+       "stroke": "#34363B",
        "opacity": 0.75
       },
       {
        "d": "M 355.1 614.0 L 355.1 662.0",
-       "at": 4.05,
-       "dur": 0.044,
+       "at": 4.27,
+       "dur": 0.04,
        "width": 1.4,
-       "stroke": "#EFE8D6",
-       "opacity": 0.75
-      },
-      {
-       "d": "M 214.8 672.0 L 425.2 672.0 L 420.7 732.0 L 219.3 732.0 Z",
-       "at": 4.07,
-       "dur": 0.055,
-       "width": 2.2,
-       "stroke": "#EFE8D6"
-      },
-      {
-       "d": "M 286.3 678.0 L 286.3 726.0",
-       "at": 4.08,
-       "dur": 0.044,
-       "width": 1.4,
-       "stroke": "#EFE8D6",
-       "opacity": 0.75
-      },
-      {
-       "d": "M 353.7 678.0 L 353.7 726.0",
-       "at": 4.08,
-       "dur": 0.044,
-       "width": 1.4,
-       "stroke": "#EFE8D6",
-       "opacity": 0.75
-      },
-      {
-       "d": "M 219.3 736.0 L 420.7 736.0 L 416.2 796.0 L 223.8 796.0 Z",
-       "at": 4.1,
-       "dur": 0.055,
-       "width": 2.2,
-       "stroke": "#EFE8D6"
-      },
-      {
-       "d": "M 287.8 742.0 L 287.8 790.0",
-       "at": 4.11,
-       "dur": 0.044,
-       "width": 1.4,
-       "stroke": "#EFE8D6",
-       "opacity": 0.75
-      },
-      {
-       "d": "M 352.2 742.0 L 352.2 790.0",
-       "at": 4.11,
-       "dur": 0.044,
-       "width": 1.4,
-       "stroke": "#EFE8D6",
+       "stroke": "#34363B",
        "opacity": 0.75
       },
       {
        "d": "M 227.0 360.0 L 413.0 360.0 M 227.0 380.0 L 413.0 380.0 M 227.0 400.0 L 413.0 400.0 M 227.0 420.0 L 413.0 420.0 M 227.0 440.0 L 413.0 440.0 M 227.0 460.0 L 413.0 460.0 M 227.0 480.0 L 413.0 480.0 M 227.0 500.0 L 413.0 500.0 M 227.0 520.0 L 413.0 520.0 M 240.0 347.0 L 240.0 533.0 M 260.0 347.0 L 260.0 533.0 M 280.0 347.0 L 280.0 533.0 M 300.0 347.0 L 300.0 533.0 M 320.0 347.0 L 320.0 533.0 M 340.0 347.0 L 340.0 533.0 M 360.0 347.0 L 360.0 533.0 M 380.0 347.0 L 380.0 533.0 M 400.0 347.0 L 400.0 533.0 ",
-       "at": 4.27,
-       "dur": 0.154,
+       "at": 4.47,
+       "dur": 0.14,
        "width": 0.9,
-       "stroke": "#EFE8D6",
+       "stroke": "#7C8088",
        "opacity": 0.6
       },
       {
        "d": "M 320 440 L 282 370 M 320 440 L 396 462",
-       "at": 4.36,
-       "dur": 0.077,
+       "at": 4.55,
+       "dur": 0.07,
        "width": 3.2,
-       "stroke": "#EFE8D6"
+       "stroke": "#34363B"
       },
       {
        "d": "M 210.3 272.0 L 429.7 272.0 Q 518.2 440.0 429.7 608.0 L 210.3 608.0 L 210.3 608.0 Q 121.8 440.0 210.3 272.0 Z",
-       "at": 4.48,
+       "at": 4.66,
        "dur": 0.002,
        "width": 0.1,
-       "stroke": "#EFE8D6",
+       "stroke": "#34363B",
        "fill": "#B9BEC4",
-       "fillAt": 4.48,
+       "fillAt": 4.66,
        "fillDur": 0.6,
        "fillOpacity": 0.55
       },
       {
        "d": "M458.6 497.4 L377.4 578.6 L262.6 578.6 L181.4 497.4 L181.4 382.6 L262.6 301.4 L377.4 301.4 L458.6 382.6 Z",
-       "at": 4.5,
+       "at": 4.68,
        "dur": 0.002,
        "width": 0.1,
-       "stroke": "#EFE8D6",
+       "stroke": "#34363B",
        "fill": "#D4D8DD",
-       "fillAt": 4.5,
+       "fillAt": 4.68,
        "fillDur": 0.6,
        "fillOpacity": 0.6
       },
       {
        "d": "M 503.0 287.0 Q 470.0 275.0 385.4 307.1",
-       "at": 3.76,
-       "dur": 0.077,
+       "at": 4.01,
+       "dur": 0.07,
        "width": 1.4,
-       "stroke": "#EFE8D6"
+       "stroke": "#34363B"
       },
       {
        "d": "M 125.0 455.0 Q 140.0 410.0 151.8 410.0",
-       "at": 4.53,
-       "dur": 0.077,
+       "at": 4.71,
+       "dur": 0.07,
        "width": 1.4,
-       "stroke": "#EFE8D6"
+       "stroke": "#34363B"
       }
      ],
      "texts": [],
-     "scale": 0.78,
-     "out": {
-      "type": "fade",
-      "at": 4.87,
-      "dur": 0.5
-     }
+     "scale": 0.335,
+     "pencil": false
     },
     {
      "type": "cutout",
      "asset": "ro_front",
      "desc": "Royal Oak Jumbo ref. 15202, the 5402's successor, cut out from a wrist shot",
-     "x": 450,
-     "y": 1010,
-     "h": 640,
+     "x": 548,
+     "y": 1000,
+     "h": 480,
      "aspect": 0.723526044647968,
      "edge": 0,
      "z": 30,
@@ -3094,38 +2986,20 @@
       ],
       [
        8.07,
-       1.05
+       1.04
       ]
      ]
     },
     {
-     "type": "cutout",
-     "asset": "genta",
-     "desc": "Gerald Genta, portrait (Studio Luxury Griffes, 2005), cut out",
-     "x": 150,
-     "y": 1300,
-     "h": 500,
-     "aspect": 0.6823076923076923,
-     "edge": 4,
-     "z": 32,
-     "person": true,
-     "headBand": 0.42,
-     "in": {
-      "type": "rise",
-      "at": 4.82,
-      "dur": 0.55
-     }
-    },
-    {
      "type": "text",
-     "text": "Photos via Wikimedia Commons: Gérald Genta by Studio Luxury Griffes (CC BY-SA 3.0); Royal Oak ref. 15202 by OpaleHorse, bracelet by Myles Gray, calibre 2121 by EMore98 (CC BY-SA 4.0). Cut-outs and crops adapted.",
+     "text": "Paper characters of Gérald Genta and Georges Golay are AI illustrations (Higgsfield) based on a portrait of Genta by Studio Luxury Griffes (CC BY-SA 3.0); Golay is shown from behind. Watch photos via Wikimedia Commons: ref. 15202 by OpaleHorse, bracelet by Myles Gray, calibre 2121 by EMore98 (CC BY-SA 4.0).",
      "x": 360,
-     "y": 1252,
+     "y": 1255,
      "font": "ui",
-     "size": 11,
+     "size": 10,
      "color": "#9A9488",
      "upper": false,
-     "w": 680,
+     "w": 690,
      "z": 45,
      "depth": 0,
      "in": {
