@@ -6,21 +6,33 @@
   node ../../.claude/skills/paper-story/scripts/render.mjs film.json -o renders/X-nomusic.mp4 --scale 1.5
   python3 score.py film.json music.wav && python3 mix.py renders/X-nomusic.mp4 music.wav renders/X.mp4
 
-Facts on screen and in the narration are in FACTS.md with their sources. People appear only as silhouettes and
-hands. The Royal Oak is shown only as real photographs, dropped into assets/ under the ids in ASSETS; until then the
-render shows a loud REAL PHOTO NEEDED panel in its place (render.mjs --final refuses to run while any remain)."""
+Facts on screen and in the narration are in FACTS.md with their sources. Gerald Genta and the Royal Oak are their
+own photographs (freely licensed, from Wikimedia Commons, credited on screen), cut out as paper. Anyone with no free
+photo (Georges Golay) is only a hand on a phone. Missing files under assets/ show as REAL PHOTO NEEDED panels."""
 import json, os
 from art import *
 
 H = os.path.dirname(os.path.abspath(__file__))
 ST = json.load(open(os.path.join(H, 'ro-style.json')))
 VO = json.load(open(os.path.join(H, 'voice', 'clips.json')))
-ASSETS = {
-    'ro_front':  'Royal Oak 5402ST, straight-on front view with the whole bracelet, cut out (transparent PNG)',
-    'ro_finish': 'Royal Oak 5402ST macro: brushed surfaces and polished bevels on the case and bracelet',
-    'ro_bezel':  'Royal Oak 5402ST macro: the octagonal bezel and its hexagonal screws',
+ASSETS = {   # real photographs, all from Wikimedia Commons (credits in CREDITS below and in FACTS.md)
+    'genta':     'Gerald Genta, portrait (Studio Luxury Griffes, 2005), cut out',
+    'ro_front':  'Royal Oak Jumbo ref. 15202, the 5402\'s successor, cut out from a wrist shot',
+    'ro_bezel':  'the same watch: bezel and screws',
+    'ro_finish': 'Royal Oak bracelet: brushed links, polished bevels',
+    'ro_cal':    'calibre 2121, the 5402\'s movement (here in a 1992 ref. 14802)',
 }
-RO_ASPECT = float(os.environ.get('RO_ASPECT', 0.42))    # width / height of ro_front, set from the real photo
+CREDITS = ('Photos via Wikimedia Commons: Gérald Genta by Studio Luxury Griffes (CC BY-SA 3.0); '
+           'Royal Oak ref. 15202 by OpaleHorse, bracelet by Myles Gray, calibre 2121 by EMore98 (CC BY-SA 4.0). Cut-outs and crops adapted.')
+def aspect(name, default):
+    try:
+        from PIL import Image
+        for e in ('.png', '.jpg'):
+            f = os.path.join(H, 'assets', name + e)
+            if os.path.exists(f): w, h = Image.open(f).size; return w / h
+    except ImportError: pass
+    return default
+RO_ASPECT, GENTA_ASPECT = aspect('ro_front', 0.72), aspect('genta', 0.68)
 VO_AT, TAIL = 0.12, 0.18
 SC = []
 
@@ -43,6 +55,13 @@ def photo(asset, x, y, h, at, z=30, kind='rise', **kw):
     """The real watch (a cut-out photo). Anchor at its bottom."""
     d = {"type": "cutout", "asset": asset, "desc": ASSETS[asset], "x": x, "y": y, "h": h, "aspect": RO_ASPECT, "edge": 0, "z": z,
          "in": {"type": kind, "at": at, "dur": 0.6}}
+    d.update(kw); return d
+
+
+def genta(x, y, h, at, z=20, kind='rise', **kw):
+    """Gerald Genta, his own photograph as a paper cut-out (cream paper edge). Anchor at the bottom."""
+    d = {"type": "cutout", "asset": "genta", "desc": ASSETS['genta'], "x": x, "y": y, "h": h, "aspect": GENTA_ASPECT, "edge": 4, "z": z,
+         "person": True, "headBand": 0.42, "in": {"type": kind, "at": at, "dur": 0.55}}
     d.update(kw); return d
 
 
@@ -87,20 +106,21 @@ els.append({"type": "sketch", "x": 360, "y": 640, "w": 720, "h": 1280, "z": 7, "
 # Geneva: the lake and the Jet d'Eau, a drafting table, the phone that rings
 els += [svg(240, 180, window(240, 180, lake(240, 180)), 540, 840, z=3, kind=None),
         svg(240, 180, window(240, 180, lake(240, 180, night=True)), 540, 840, z=3, kind='fade', at=V(2, 7.0), dur=0.6)]
-els += wall_clock(170, 800, 4, 0, z=5, spin=(V(2, 6.9), V(2, 7.7), 1.6))
+els += wall_clock(330, 760, 4, 0, z=5, spin=(V(2, 6.9), V(2, 7.7), 1.6))
 els += [svg(560, 250, drafting_table(), 380, 1150, z=4, kind=None),
-        svg(260, 162, rotary_phone('#2A2C31', '#EDE6D3'), 215, 1060, z=6, kind=None),
-        svg(260, 52, handset('#2A2C31'), 215, [[0, 995], [V(2, 3.5), 995], [V(2, 3.85), 920, 'outBack']], z=8, kind=None,
+        svg(260, 162, rotary_phone('#2A2C31', '#EDE6D3'), 470, 1075, z=6, kind=None),
+        svg(260, 52, handset('#2A2C31'), 470, [[0, 1010], [V(2, 3.5), 1010], [V(2, 3.85), 965, 'outBack']], z=8, kind=None,
             rot=[[V(2, 3.5), 0], [V(2, 3.85), 12, 'outBack']], idle={"type": "shake", "amp": 3, "speed": 9, "from": V(2, 2.6), "until": V(2, 3.5)}),
-        svg(260, 80, ring_lines('#2A2C31'), 215, 985, z=9, kind='pop', at=V(2, 2.6), dur=.2, out={"type": "fade", "at": V(2, 3.5), "dur": .15},
+        svg(260, 80, ring_lines('#2A2C31'), 470, 1000, z=9, kind='pop', at=V(2, 2.6), dur=.2, out={"type": "fade", "at": V(2, 3.5), "dur": .15},
             idle={"type": "pulse", "amp": .08, "speed": 6}),
         # the brief lands on the table: a plate of brushed steel next to the blank sheet
+        genta(215, 1300, 500, V(2, 2.75), z=12),
         svg(150, 96, steel_plate(150, 96),
-            500, 1035, z=10, rot=-8, kind='drop', at=V(2, 4.2), dur=0.5)]
+            560, 1165, z=13, rot=-8, kind='drop', at=V(2, 4.2), dur=0.5)]
 S(2, 'ro-alpine', 'One afternoon, | Georges Golay calls | designer Gérald Genta. | A steel watch, | unlike any before. | By morning.', els,
   transition='slide',
-  camera=cam((0, 1.55, 360, 360, None), (V(2, 2.4), 1.55, 360, 360, None), (V(2, 3.0), 1.0, 360, 640, 'inOutCubic'), (V(2, 3.6), 1.5, 360, 960, 'inOutCubic'),
-             (V(2, 7.8), 1.62, 380, 975, 'inOutCubic')),
+  camera=cam((0, 1.55, 360, 360, None), (V(2, 2.4), 1.55, 360, 360, None), (V(2, 3.0), 1.0, 360, 640, 'inOutCubic'), (V(2, 3.6), 1.5, 330, 960, 'inOutCubic'),
+             (V(2, 7.8), 1.6, 330, 975, 'inOutCubic')),
   sfx=[E('click', V(2, 1.0), -8), E('ring', V(2, 2.55), -10), E('click', V(2, 3.55), -8), E('paper_place', V(2, 4.25), -10), E('tick_pair', V(2, 6.9), -14)])
 
 # 3  Night. A diver's helmet: a porthole, bolted shut.
@@ -109,13 +129,13 @@ els += wall_clock(160, 270, 11, 0, z=5, spin=(0.1, V(3, 4.6), 2.2), depth=.75)
 els += [svg(240, 300, desk_lamp(), 600, 640, z=6, kind=None, depth=.9),
         svg(560, 250, drafting_table(), 360, 1010, z=6, kind=None, depth=.95),
         svg(520, 560, lamp_glow(520, 560), 520, 900, z=7, kind=None, shadow=False, opacity=.8, depth=.95),
-        svg(400, 360, silhouette(), 170, 1150, z=20, kind=None, depth=1.3),
+        genta(185, 1310, 650, 0.0, z=20, kind=None, depth=1.15),
         # the memory: a torn sepia disc, the helmet inside it
-        svg(500, 500, '<circle cx="250" cy="250" r="240" fill="#C9B38A"/><circle cx="250" cy="250" r="226" fill="#D8C49B"/>', 390, 540, z=12, kind='grow',
+        svg(500, 500, '<circle cx="250" cy="250" r="240" fill="#C9B38A"/><circle cx="250" cy="250" r="226" fill="#D8C49B"/>', 470, 520, z=12, kind='grow',
             at=V(3, 0.85), dur=0.5),
-        svg(440, 470, diver_helmet(), 390, 560, z=13, kind='rise', at=V(3, 1.1), dur=0.6, scale=.82)]
+        svg(440, 470, diver_helmet(), 470, 540, z=13, kind='rise', at=V(3, 1.1), dur=0.6, scale=.82)]
 S(3, 'ro-night', 'Overnight, | Genta thinks of | a diver\'s helmet: | a porthole, | bolted shut.', els, transition='fade',
-  camera=cam((0, 1.05, 360, 660, None), (V(3, 2.6), 1.2, 380, 600, 'inOutCubic'), (V(3, 4.95), 3.6, 390, 519, 'inCubic')),
+  camera=cam((0, 1.05, 360, 660, None), (V(3, 2.6), 1.15, 400, 620, 'inOutCubic'), (V(3, 4.95), 3.6, 470, 499, 'inCubic')),
   sfx=[E('tick_pair', 0.2, -16), E('whoosh', V(3, 0.9), -16), E('clasp', V(3, 4.0), -12), E('clasp', V(3, 4.3), -14)],
   beds=[{"name": "room", "from": 0, "to": 5.4, "gain": -24}])
 
@@ -140,7 +160,7 @@ els = [svg(620, 520, pegboard(), 360, 600, z=3, kind=None, out={"type": "fade", 
        svg(270, 58, screwdriver(), 520, 800, z=5, kind='drop', at=0.3, dur=.4, rot=10, out={"type": "fade", "at": t_mac + .3, "dur": .1}),
        dict(type="watch", x=420, y=590, size=150, caseColor='#A9AFB6', dialColor='#1E2024', strapColor='#2A2C31', handColor='#EDE6D3', markerColor='#EDE6D3',
             time=[2, 50, 0], rate=1, z=6, rot=6, **{"in": {"type": "drop", "at": 0.45, "dur": .45}, "out": {"type": "fade", "at": t_mac + .3, "dur": .1}}),
-       macro('ro_finish', t_mac, t_scale + .05)]
+       macro('ro_finish', t_mac, t_mac + 1.2, zoom=(1.05, 1.18)), macro('ro_cal', t_mac + 1.15, t_scale + .05, zoom=(1.0, 1.12))]
 beam_rot = [[t_scale + .35, 0], [t_scale + 1.1, 8, 'outElastic']]
 import math as _m
 HB = 220; dy = HB * _m.sin(_m.radians(8)); hx = HB * _m.cos(_m.radians(8))       # beam half-length; the hooks drop and rise as it tips
@@ -160,23 +180,25 @@ S(5, 'ro-steel', 'Steel was for | tool watches. | This one was finished | like a
 
 # 6  Basel, 1972: the Royal Oak on its stand. Thirty-nine millimetres, huge for its time.
 WH = 520; WX, WY = 360, 980                     # the watch: height on screen, centre x, bottom y
-case_y = WY - WH * 0.5; case_w = WH * RO_ASPECT * 0.92
+case_y = WY - WH * 0.56; case_w = WH * RO_ASPECT * 0.87; WX_case = WX - WH * RO_ASPECT * 0.03; GR = case_w / 2 * 34 / 39
 els = [svg(900, 1100, hall(), 360, 560, z=1, kind=None, depth=.55, shadow=False),
        svg(520, 420, booth(), 360, 640, z=3, kind=None, depth=.8),
        {"type": "text", "text": "BASEL · 1972", "x": 360, "y": 300, "font": "banner", "size": 54, "color": "#16181D", "paper": "#EFE8D6", "z": 30, "depth": .9,
         "rot": -1.5, "in": {"type": "drop", "at": 0.15, "dur": .55}},
        svg(520, 900, spotlight_cone(), 360, 380, anchor='t', z=4, kind='fade', at=V(6, 1.9), dur=.5, shadow=False, depth=.9),
        svg(260, 300, pedestal(), WX, 1160, anchor='b', z=6, kind=None, depth=1.0),
-       photo('ro_front', WX, WY, WH, V(6, 1.95), z=10, depth=1.0)]
+       photo('ro_front', WX, WY, WH, V(6, 1.95), z=10, depth=1.0),
+       {"type": "text", "text": "pictured: ref. 15202, the 5402's successor", "x": WX, "y": WY + 40, "font": "cap", "size": 17, "color": "#16181D",
+        "paper": "#EFE8D6", "upper": False, "z": 22, "depth": 1.0, "rot": -1, "in": {"type": "fade", "at": V(6, 2.6), "dur": .4}}]
 for i, (fx, fy, t) in enumerate([(160, 820, V(6, 2.25)), (590, 760, V(6, 2.55)), (250, 700, V(6, 2.85)), (520, 860, V(6, 4.85))]):
     els.append(svg(240, 240, flash(), fx, fy, z=45, kind='pop', at=t, dur=.08, shadow=False, depth=1.2, out={"type": "fade", "at": t + .18, "dur": .15}))
 els += [svg(760, 300, crowd(), 360, 1290, anchor='b', z=40, kind='rise', at=0.25, dur=.6, depth=1.35, shadow=False),
-        {"type": "sketch", "x": WX, "y": case_y, "w": 400, "h": 120, "z": 20, "pencil": False, "depth": 1.0,
+        {"type": "sketch", "x": WX_case, "y": case_y - WH * 0.36, "w": 400, "h": 120, "z": 20, "pencil": False, "depth": 1.0,
          "paths": [{"d": 'M %.1f 60 L %.1f 60 M %.1f 48 L %.1f 72 M %.1f 48 L %.1f 72' % (200 - case_w / 2, 200 + case_w / 2, 200 - case_w / 2, 200 - case_w / 2, 200 + case_w / 2, 200 + case_w / 2),
                     "at": V(6, 4.95), "dur": .5, "stroke": "#EFE8D6", "width": 3, "opacity": 1}],
          "texts": [{"text": "39 mm", "x": 200, "y": 40, "size": 34, "at": V(6, 5.2), "dur": .4, "anchor": "middle", "color": "#EFE8D6", "font": "var(--f-banner)"}]},
         macro('ro_bezel', V(6, 3.0), V(6, 4.75)),
-        svg(2 * 88 * 34 / 39 + 8, 2 * 88 * 34 / 39 + 8, ghost_watch(88 * 34 / 39), 120, case_y, z=20, kind='pop', at=V(6, 6.3), dur=.35, shadow=False, depth=1.0)]
+        svg(2 * GR + 8, 2 * GR + 8, ghost_watch(GR), 95, case_y, z=20, kind='pop', at=V(6, 6.3), dur=.35, shadow=False, depth=1.0)]
 S(6, 'ro-hall', 'Basel, | nineteen seventy-two. | The Royal Oak, | reference 5402. | Thirty-nine millimetres, | huge for its time.', els, transition='slide',
   camera=cam((0, 1.0, 360, 620, None), (V(6, 1.8), 1.0, 360, 640, None), (V(6, 4.6), 1.28, 360, 760, 'inOutCubic'), (V(6, 7.6), 1.34, 330, 760, 'inOutCubic')),
   sfx=[E('stamp', 0.4, -12), E('shutter', V(6, 2.25), -10), E('shutter', V(6, 2.55), -12), E('shutter', V(6, 2.85), -11), E('whoosh', V(6, 3.0), -16), E('shutter', V(6, 4.85), -13)],
@@ -199,8 +221,11 @@ for t_ in T: t_['at'] = round(t_['at'] + sk_t, 2)
 P = [{k: v for k, v in p.items() if v is not None} for p in P]
 els.append({"type": "sketch", "x": 360, "y": 590, "w": 640, "h": 960, "z": 25, "paths": P, "texts": [], "scale": .78,
             "out": {"type": "fade", "at": V(7, 4.75), "dur": .5}})
-els.append(photo('ro_front', 360, 1000, 760, V(7, 4.45), z=30, kind='fade', scale=[[V(7, 4.45), 1.0], [V(7, 6.5) + END, 1.05]]))
-for txt, y, t in (('A sketch overnight.', 180, V(7, 3.1)), ('An icon for generations.', 1110, V(7, 4.5))):
+els.append(photo('ro_front', 450, 1010, 640, V(7, 4.45), z=30, kind='fade', scale=[[V(7, 4.45), 1.0], [V(7, 6.5) + END, 1.05]]))
+els.append(genta(150, 1300, 500, V(7, 4.7), z=32, kind='rise'))
+els.append({"type": "text", "text": CREDITS, "x": 360, "y": 1252, "font": "ui", "size": 11, "color": "#9A9488", "upper": False, "w": 680, "z": 45, "depth": 0,
+            "in": {"type": "fade", "at": V(7, 5.2), "dur": .4}})
+for txt, y, t in (('A sketch overnight.', 150, V(7, 3.1)), ('An icon for generations.', 215, V(7, 4.5))):
     els.append({"type": "text", "text": txt, "x": 360, "y": y, "font": "banner", "size": 46, "color": "#EFE8D6", "upper": False, "z": 40, "depth": 0,
                 "in": {"type": "fade", "at": t, "dur": .5}})
 S(7, 'ro-black', 'Many doubted it. | Time proved them wrong.', els, tail=END, transition='fade', captionEnd=V(7, 2.75), captionClear=V(7, 3.0),
@@ -220,6 +245,8 @@ cover = {"width": 720, "height": 1280, "fps": 30, "style": ST['style'], "themes"
     "dur": 8, "theme": "ro-paper", "floor": False, "silent": True, "elements": [
         svg(640, 960, drafting_sheet(), 360, 700, z=3, kind=None),
         {"type": "sketch", "x": 360, "y": 700, "w": 640, "h": 960, "z": 5, "paths": P, "texts": T, "scale": .92},
+        dict(photo('ro_front', 520, 1200, 560, 0, z=8, kind=None), rot=5),
+        genta(170, 1290, 470, 0, z=9, kind=None),
         {"type": "text", "text": "A SKETCH OVERNIGHT", "x": 360, "y": 120, "font": "title", "size": 78, "color": "#16181D", "z": 10},
         {"type": "text", "text": "Gérald Genta · the Royal Oak · 1972", "x": 360, "y": 190, "font": "cap", "size": 30, "color": "#3A3B3E", "upper": False, "z": 10}]}]}
 json.dump(cover, open(os.path.join(H, 'cover.json'), 'w'), indent=1, ensure_ascii=False)

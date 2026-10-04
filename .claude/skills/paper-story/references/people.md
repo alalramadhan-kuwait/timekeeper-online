@@ -68,9 +68,18 @@ Notes from the reviews:
   small; about 1.5 hand lengths for a watch on a table was right.
 - A waist-up crop of a group can sit on the bottom edge of the frame, with nothing below it.
 
-## Historical figures with no photos supplied
+## Historical figures and real products the user has no photos of
 
-For a story about someone the user has no cut-outs of (a designer in 1970, a founder long gone), show them as
-silhouettes from behind and as hands at work: on a phone, holding a pencil, at a drafting table. Never generate a
-face, and never pass off an illustration as an archive photo or their original drawing. The work they made carries
-the scene instead (`video/royal-oak/`: the call, the night at the table, the sketch drawing itself).
+People want the real person and the real product: a cut-out of their actual photograph gives a story far more depth
+than a silhouette (a note on the Royal Oak story). So find a photograph you may use before drawing a stand-in:
+
+- Search Wikimedia Commons (the person's Wikipedia infobox image is usually there) and check each file's licence and
+  author with the API (`prop=imageinfo&iiprop=extmetadata`). Send a descriptive User-Agent and fetch the `thumb/`
+  sizes if the originals answer 429.
+- Cut people and products out with Higgsfield `remove_background` (upload, confirm, remove, download). Firm a soft
+  alpha into a clean paper edge with a threshold and a small median filter, and crop where the photo goes vague.
+- Credit every photograph on screen (author, licence, "via Wikimedia Commons") and in the project's notes.
+- Say what the picture really is. A later portrait is fine for a person, but note its date. A product photo of a
+  related model gets a small label in the scene ("pictured: ref. 15202, the 5402's successor").
+- Never generate new poses or faces of a real person who has not agreed to it; animate their photo as a cut-out.
+- Someone with no usable photograph stays a hand or a silhouette (`video/royal-oak/`: Golay is only a phone).

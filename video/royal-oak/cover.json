@@ -499,6 +499,41 @@
      "scale": 0.92
     },
     {
+     "type": "cutout",
+     "asset": "ro_front",
+     "desc": "Royal Oak Jumbo ref. 15202, the 5402's successor, cut out from a wrist shot",
+     "x": 520,
+     "y": 1200,
+     "h": 560,
+     "aspect": 0.723526044647968,
+     "edge": 0,
+     "z": 8,
+     "in": {
+      "type": null,
+      "at": 0,
+      "dur": 0.6
+     },
+     "rot": 5
+    },
+    {
+     "type": "cutout",
+     "asset": "genta",
+     "desc": "Gerald Genta, portrait (Studio Luxury Griffes, 2005), cut out",
+     "x": 170,
+     "y": 1290,
+     "h": 470,
+     "aspect": 0.6823076923076923,
+     "edge": 4,
+     "z": 9,
+     "person": true,
+     "headBand": 0.42,
+     "in": {
+      "type": null,
+      "at": 0,
+      "dur": 0.55
+     }
+    },
+    {
      "type": "text",
      "text": "A SKETCH OVERNIGHT",
      "x": 360,

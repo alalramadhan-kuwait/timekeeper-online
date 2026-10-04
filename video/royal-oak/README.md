@@ -6,8 +6,8 @@ the sketch, steel, Basel 1972, and the ending.
 
 - `film.py` writes `film.json` (the storyboard). `art.py` holds the paper-cut art; the designer's drawing draws itself
   with the skill's `sketch` element.
-- People are only silhouettes and hands. The watch is only real photographs (`assets/README.md`); until they are
-  supplied the render shows REAL PHOTO NEEDED panels.
+- Gérald Genta and the Royal Oak are their own photographs (freely licensed, Wikimedia Commons), cut out as paper and
+  credited on screen; see `assets/README.md`. Georges Golay, with no free photograph, is only a phone.
 - `FACTS.md` lists every claim and its source.
 - Narration: Andre (ElevenLabs via Higgsfield). `voice/manifest.json` has the jobs; `voice/fetch.sh` downloads them and
   `voice/tighten.py` makes the clips (10% quicker, long pauses shortened).

@@ -21,5 +21,13 @@ Sources
 - https://everywatch.com/audemars-piguet/royal-oak/5402/watch-9168540
 - https://www.sothebys.com/en/articles/the-great-evolution-of-the-audemars-piguet-royal-oak
 
+Pictures of real people and the real watch (see `assets/README.md` for files, authors and licences):
+- Gérald Genta is his own photograph, a 2005 portrait, used as a paper cut-out in the call, the night and the ending.
+  It is a later photograph of him, not one from 1970. Georges Golay has no free photograph, so he is only a phone.
+- The Royal Oak on screen is a ref. 15202, the 5402's direct successor (same 39 mm Jumbo design). Scene 6 labels it
+  "pictured: ref. 15202, the 5402's successor". The calibre 2121 close-up is the 5402's movement, photographed in a
+  1992 ref. 14802.
+- Credits for every photograph are on screen at the end.
+
 Brand: Audemars Piguet is UNCLASSIFIED in `video/success-story/BRAND-RELATIONS.md`. The film is history told by a third
-party: no AP logo is drawn, nothing implies a relationship, and the watch appears only in photographs.
+party: no AP logo is drawn, nothing implies a relationship; AP's name and logo appear only where they are in the photographs.
