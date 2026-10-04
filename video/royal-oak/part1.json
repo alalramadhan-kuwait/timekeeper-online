@@ -633,7 +633,7 @@
        "to": "lax",
        "at": 8.92,
        "dur": 2.4,
-       "curve": -0.45,
+       "curve": 0.45,
        "plane": true,
        "keep": true
       }
@@ -948,7 +948,7 @@
      "x": 330,
      "y": 1060,
      "h": 600,
-     "aspect": 0.6,
+     "aspect": 0.7261,
      "edge": 0,
      "z": 20,
      "in": {
@@ -956,8 +956,7 @@
       "at": 1.52,
       "dur": 0.5
      },
-     "asset": "early/constellation_cut",
-     "desc": "Omega Constellation, 1958 (Wikimedia Commons)"
+     "src": "assets/early/constellation_cut.png"
     },
     {
      "type": "text",
@@ -1763,7 +1762,7 @@
      "x": 600,
      "y": 520,
      "h": 230,
-     "aspect": 0.6,
+     "aspect": 0.7261,
      "edge": 0,
      "z": 12,
      "in": {
@@ -1771,8 +1770,7 @@
       "at": 5.3,
       "dur": 0.3
      },
-     "asset": "early/constellation_cut",
-     "desc": "",
+     "src": "assets/early/constellation_cut.png",
      "out": {
       "type": "fade",
       "at": 7.62,
@@ -1859,6 +1857,11 @@
       "type": "pop",
       "at": 7.72,
       "dur": 0.35
+     },
+     "out": {
+      "type": "fade",
+      "at": 11.52,
+      "dur": 0.2
      }
     },
     {

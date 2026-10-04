@@ -174,7 +174,7 @@ els = [svg(720, 760, lake(720, 760), 360, 380, z=1, kind='fade', at=0, dur=.4, d
        cutout('assets/gen/genta23_desk_cut', 330, 1180, 700, V(4.0), z=20, kind='rise', dur=.5, person=True, until=V(7.6)),
        {"type": "map", "x": 360, "y": 600, "w": 720, "h": 1180, "z": 40, "view": [[V(7.3), {"lon": -40, "lat": 62, "span": 210}], [V(13.9), {"lon": -40, "lat": 66, "span": 170}, "inOutCubic"]],
         "sea": "#CCC6B7", "land": "#F4F1E8", "pins": [dict(CPH, at=V(8.0)), dict(LAX, at=V(8.4))],
-        "routes": [{"from": "cph", "to": "lax", "at": V(8.8), "dur": 2.4, "curve": -.45, "plane": True, "keep": True}],
+        "routes": [{"from": "cph", "to": "lax", "at": V(8.8), "dur": 2.4, "curve": .45, "plane": True, "keep": True}],
         "unfold": {"at": V(7.3), "dur": .8}, "in": {"type": "none", "at": V(7.3)}, "depth": 0},
        polaroid('assets/early/sas1954', 470, 880, 290, V(11.2), label='SAS · 1954', z=45, rot=4, desc='SAS advertisement for the polar route, 1954 (public domain)', aspect=.69)]
 P1.S('p1-1', 'ro-alpine', 'جنيف، | سنة ألف وتسعمية | وأربعة وخمسين. | شاب عمره ثلاثة | وعشرين سنة بس، | يصمم لشركة | يونيفرسال جنيف | ساعة لرحلات طيران | إس إيه إس | فوق القطب الشمالي.', els,
@@ -243,7 +243,7 @@ els = flips(['1970'], 170, 250, .1, .3, z=10, scale=.55, last_out=V(7.5)) + [
        cutout('assets/gen/young_think_cut', 360, 1180, 700, V(2.3), z=20, person=True, kind='rise', dur=.5)]
 for i, (rel, gx, gy) in enumerate(gallery):
     els.append(cutout(rel, gx, gy, 230, V(5.0) + i * .18, z=12, kind='pop', dur=.3, until=V(7.5), rot=(-6, 5, -3, 6, 0)[i]))
-els += [tag('عشرة أبريل', 170, 250, V(7.6), size=34),
+els += [tag('عشرة أبريل', 170, 250, V(7.6), size=34, until=V(11.4)),
         *wall_clock(560, 270, 4, 0, z=11, d=150, at=V(8.7)),
         *ringing_phone(580, 980, V(10.6), None, z=25, scale=.75),
         tag('يتبع…  الجزء الثاني: الرويال أوك', 360, 210, V(11.6), size=32, z=60, ink='#EFE8D6', paper='#16181D', depth=0)]
