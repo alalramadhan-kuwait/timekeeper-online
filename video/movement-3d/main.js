@@ -285,28 +285,13 @@ function build() {
   const bearing = new THREE.Mesh(ring(5, 14, 3.2), M.steel); bearing.position.z = -0.8; L.rotor.add(bearing);
   for (let k = 0; k < 14; k++) { const b = new THREE.Mesh(new THREE.SphereGeometry(1.5, 12, 8), M.steel); const a = (k * TAU) / 14; b.position.set(Math.cos(a) * 9.5, Math.sin(a) * 9.5, 0.2); L.rotor.add(b); }
   const rs = new THREE.Mesh(cyl(4.5, 1.2, M.blue), M.blue); rs.position.z = -1.6; L.rotor.add(rs);
-  // dial side: motion works under the plate, the dial, indices, hands (dial faces -y; 12 o'clock at -z, 3 o'clock at -x)
-  const dial = new THREE.Mesh(new THREE.CylinderGeometry(146, 146, 1.6, 160), M.dial); dial.position.y = -9; dial.rotation.y = 0; scene.add(dial);
-  const hole = new THREE.Mesh(new THREE.CylinderGeometry(3.4, 3.4, 1.8, 24), M.dark); hole.position.y = -9; scene.add(hole);
+  // dial side: the motion works under the plate (12 o'clock at -z, 3 o'clock at -x, seen from the dial)
   const hourWheel = new THREE.Mesh(gear(48, 15, 0.8, M.gold, 4, 3), M.gold); hourWheel.rotation.x = Math.PI / 2; hourWheel.position.y = -7.2; scene.add(hourWheel); L.hourWheel = hourWheel;
   const minWheel = new THREE.Mesh(gear(30, 9, 0.8, M.gold, 0, 1), M.gold); minWheel.rotation.x = Math.PI / 2; minWheel.position.set(19.5, -6.6, 13); scene.add(minWheel); L.minWheel = minWheel;
-  const cannon = new THREE.Mesh(new THREE.CylinderGeometry(2.6, 2.6, 6, 20), M.steel); cannon.position.y = -10; scene.add(cannon);
-  for (let k = 0; k < 12; k++) {
-    const th = k * 30 * D2R, v = [-Math.sin(th), -Math.cos(th)], g = k === 0 ? new THREE.BoxGeometry(9, 1.4, 22) : new THREE.BoxGeometry(5, 1.4, 18);
-    const ix = new THREE.Mesh(g, M.steel); ix.position.set(v[0] * 120, -10.3, v[1] * 120); ix.rotation.y = th; scene.add(ix);
-  }
-  for (let k = 0; k < 60; k++) { if (k % 5 === 0) continue; const th = k * 6 * D2R; const mk = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.3, 5), M.steel); mk.position.set(-Math.sin(th) * 138, -9.95, -Math.cos(th) * 138); mk.rotation.y = th; scene.add(mk); }
-  const dauphine = (len, w) => { const s = new THREE.Shape(); s.moveTo(0, 14); s.lineTo(w, 0); s.lineTo(0, -len); s.lineTo(-w, 0); s.closePath(); const g = new THREE.ExtrudeGeometry(s, { depth: 0.5, bevelEnabled: true, bevelThickness: 0.35, bevelSize: 0.8, bevelSegments: 1 }); g.rotateX(Math.PI / 2); return g; };
-  L.hour = new THREE.Mesh(dauphine(78, 5.5), M.steel); L.hour.position.y = -11; scene.add(L.hour);
-  L.minute = new THREE.Mesh(dauphine(118, 4.5), M.steel); L.minute.position.y = -12.2; scene.add(L.minute);
-  const sec = new THREE.Group(); const sb = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.5, 150), M.steel); sb.position.z = -50; sec.add(sb); const tip = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.55, 18), new THREE.MeshStandardMaterial({ color: 0xc81e2a, metalness: 0.4, roughness: 0.35 })); tip.position.z = -116; sec.add(tip);
-  const capM = new THREE.Mesh(new THREE.CylinderGeometry(3.4, 3.4, 1.2, 24), M.gold); capM.position.y = -0.4; sec.add(capM); sec.position.y = -13.2; scene.add(sec); L.second = sec;
+  const cannon = new THREE.Mesh(new THREE.CylinderGeometry(2.6, 2.6, 3.4, 20), M.steel); cannon.position.y = -7.6; scene.add(cannon);   // hand pipe, behind the dial's opening
   // case: polished middle case around everything, lugs at 12 and 6, crown at 3
-  const prof = [[152, -17], [176, -17], [184, -10], [186, 8], [182, 26], [170, 31], [152, 31]].map(([r, y]) => new THREE.Vector2(r, y));
+  const prof = [[152, -7], [176, -7], [184, -4], [186, 8], [182, 26], [170, 31], [152, 31]].map(([r, y]) => new THREE.Vector2(r, y));   // inside wall only; the outside is the photograph
   const caseM = new THREE.Mesh(new THREE.LatheGeometry(prof, 160), M.case); scene.add(caseM);
-  const bezel = new THREE.Mesh(new THREE.TorusGeometry(160, 9, 20, 160), M.case); bezel.rotation.x = Math.PI / 2; bezel.position.y = -18; scene.add(bezel);
-  [-1, 1].forEach((sz) => [-1, 1].forEach((sx) => { const lug = new THREE.Mesh(new THREE.BoxGeometry(26, 34, 70), M.case); lug.position.set(sx * 92, 4, sz * 186); lug.rotation.y = sx * sz * 0.12; scene.add(lug); }));
-  const crown = new THREE.Mesh(new THREE.CylinderGeometry(16, 16, 22, 40), M.case); crown.rotation.z = Math.PI / 2; crown.position.set(-196, 6, 0); scene.add(crown);
   // lights: key from above (through the sapphire), cool rim, energy lights that travel with the power, a lamp near the camera
   L.key = new THREE.DirectionalLight(0xfff0dc, 1.25); L.key.position.set(-120, 300, -160); scene.add(L.key);
   const rimL = new THREE.DirectionalLight(0x9fb8ff, 0.45); rimL.position.set(160, -120, 200); scene.add(rimL);
@@ -421,11 +406,49 @@ function pose(t) {
   L.escWheel.rotation.z = s.esc + ESC_PHASE;
   L.fork.rotation.z = s.alpha;
   L.balance.rotation.z = s.beta; updateHair(s.beta);
-  // dial side: hands at 10:09:xx, seconds in 8 small steps a second
-  const secs = 30 + Math.floor((t - 26.9) * 8) / 8, hh = 10 + 10 / 60;
-  L.second.rotation.y = (secs / 60) * TAU; L.minute.rotation.y = ((10 + secs / 60 - 0.5) / 60) * TAU; L.hour.rotation.y = (hh / 12) * TAU;
+  // motion works, set to the photograph's 10:10
+  const secs = 30, hh = 10 + 10 / 60;
   L.hourWheel.rotation.z = (hh / 12) * TAU; L.minWheel.rotation.z = -((9 + secs / 60) / 60) * TAU * 3;
   return s;
+}
+
+// ------------------------------------------------------------------ the exterior: the reference photograph in relief
+// The photograph's own pixels (unlit, so their colours stay exact) on a relief built by prep_exterior.py: flat dial,
+// domed bezel, rounded case, bracelet curving away. Every point is pushed along its ray from the hero camera, so from
+// there the render is the photograph itself; anywhere else it has real parallax. The hands are their own layer just
+// above the dial. Dial side faces -y, 12 o'clock at -z, 3 o'clock (the crown) at -x.
+const EXT_PX = 146 / 216, DIAL_Y = -9, HERO_D = 2955, HERO = new THREE.Vector3(0, DIAL_Y - HERO_D, 0), HERO_FOV = 30;
+const EXT_W = 1451, EXT_H = 2160, EXT_CX = 725, EXT_CY = 1080.5;
+function extPoint(u, v, depthPx, lift = 0) {    // photo pixel (u, v) with relief -> world, along the hero camera's ray
+  const plane = new THREE.Vector3(-(u - EXT_CX) * EXT_PX, DIAL_Y, (v - EXT_CY) * EXT_PX);
+  const d = (depthPx * EXT_PX + lift) / HERO_D;
+  return plane.sub(HERO).multiplyScalar(1 - d).add(HERO);
+}
+async function buildExterior() {
+  const buf = await (await fetch('./assets/ext_depth.bin')).arrayBuffer(), dep = new Float32Array(buf), GW = 363, GH = 540;
+  const load = (f) => new Promise((r) => new THREE.TextureLoader().load(f, (t) => { t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; r(t); }));
+  const [baseT, handsT, metalT] = await Promise.all([load('./assets/ext_base.png'), load('./assets/ext_hands.png'), load('./assets/ext_metal.png')]);
+  metalT.colorSpace = THREE.NoColorSpace;
+  const pos = new Float32Array(GW * GH * 3), uv = new Float32Array(GW * GH * 2), idx = [];
+  for (let j = 0; j < GH; j++) for (let i = 0; i < GW; i++) {
+    const u = (i / (GW - 1)) * EXT_W, v = (j / (GH - 1)) * EXT_H, p = extPoint(u, v, dep[j * GW + i]), k = j * GW + i;
+    pos.set([p.x, p.y, p.z], k * 3); uv.set([u / EXT_W, 1 - v / EXT_H], k * 2);
+    if (i < GW - 1 && j < GH - 1) idx.push(k, k + GW, k + 1, k + 1, k + GW, k + GW + 1);
+  }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('uv', new THREE.BufferAttribute(uv, 2)); g.setIndex(idx); g.computeVertexNormals();
+  const photo = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ map: baseT, alphaTest: 0.5, side: THREE.DoubleSide, toneMapped: false, fog: false }));
+  scene.add(photo); L.photo = photo;
+  // moving reflections across the polished metal (additive, gone by the hero frame)
+  L.sheen = new THREE.Mesh(g, new THREE.ShaderMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, polygonOffset: true, polygonOffsetFactor: -1,
+    uniforms: { metal: { value: metalT }, L: { value: new THREE.Vector3(0, -1, 0) }, k: { value: 0 } },
+    vertexShader: 'varying vec2 vUv; varying vec3 vN; varying vec3 vP; void main(){ vUv = uv; vN = normalize(mat3(modelMatrix)*normal); vec4 w = modelMatrix*vec4(position,1.); vP = w.xyz; gl_Position = projectionMatrix*viewMatrix*w; }',
+    fragmentShader: 'uniform sampler2D metal; uniform vec3 L; uniform float k; varying vec2 vUv; varying vec3 vN; varying vec3 vP; void main(){ vec3 V = normalize(cameraPosition - vP); vec3 N = normalize(vN); if (dot(N, V) < 0.) N = -N; vec3 R = reflect(-V, N); float s = pow(max(dot(R, normalize(L)), 0.), 38.) * 1.4 + pow(max(dot(R, normalize(L)), 0.), 6.) * 0.12; float m = texture2D(metal, vUv).r; gl_FragColor = vec4(vec3(1.0, 0.97, 0.92) * s * m * k, 1.0); }' }));
+  scene.add(L.sheen);
+  // the hands, a hair above the dial (same projection, so they sit exactly where the photograph has them)
+  const hp = [[0, 0], [1, 0], [0, 1], [1, 1]].map(([a, b]) => extPoint(EXT_CX - 230 + a * 460, EXT_CY - 230 + b * 460, 0, 1.0));
+  const hg = new THREE.BufferGeometry(); hg.setAttribute('position', new THREE.BufferAttribute(new Float32Array(hp.flatMap((p) => [p.x, p.y, p.z])), 3));
+  hg.setAttribute('uv', new THREE.BufferAttribute(new Float32Array([0, 0, 1, 0, 0, 1, 1, 1].map((x, i) => (i % 2 ? 1 - ((EXT_CY - 230 + x * 460) / EXT_H) : (EXT_CX - 230 + x * 460) / EXT_W))), 2)); hg.setIndex([0, 2, 1, 1, 2, 3]);
+  L.hands = new THREE.Mesh(hg, new THREE.MeshBasicMaterial({ map: handsT, transparent: true, alphaTest: 0.04, side: THREE.DoubleSide, toneMapped: false, fog: false, depthWrite: false })); scene.add(L.hands);
 }
 
 // ------------------------------------------------------------------ the journey
@@ -438,14 +461,18 @@ function buildPath() {
   const pal = macroToPlan(PALLETS[1][1][0], PALLETS[1][1][1] + 70);   // the exit pallet's tip
   const fe = macroToPlan(0, -440);                                       // fork end, at the impulse jewel
   // [time, camera position, look target, fov, aperture]
-  const W3 = (x, h, z) => new THREE.Vector3(x, h, z);
+  const W3 = (x, h, z) => new THREE.Vector3(x, h, z), UPD = W3(0, 0, -1);   // UPD: 12 o'clock at the top, seen from the dial
   PATH = [
-    // skim the rotor's gold rim, then over its Côtes de Genève, then dive past its edge into the open half
-    [0.0, W3(150, 62, -125), W3(0, 16, 0), 50, 0.0004],
-    [1.3, W3(60, 36, -92), W3(-24, 20, -22), 56, 0.0006],
-    [2.5, W3(-40, 22.5, -50), toW(WIND.rv, 17), 62, 0.0008],
+    // the watch, a little off its axis; approach; skim the dial among the indices and hands; through the centre and
+    // up through the movement, coming out under the rotor beside the winding wheels
+    [0.0, W3(-640, DIAL_Y - 2700, 420), W3(0, DIAL_Y, 0), 30, 0.00004, UPD],
+    [1.5, W3(-150, DIAL_Y - 620, 110), W3(0, DIAL_Y, 6), 36, 0.0001, UPD],
+    [2.25, W3(118, DIAL_Y - 16, -34), W3(0, DIAL_Y - 1, 4), 58, 0.0006, UPD],
+    [2.75, W3(24, DIAL_Y - 4.6, -5), W3(0, DIAL_Y - 0.8, 1), 66, 0.0008, UPD],
+    [3.05, W3(1.6, DIAL_Y + 1.5, 1.2), W3(2, 30, -4), 72, 0.0008, UPD],
+    [3.35, W3(8, 9, -14), W3(-12, 18, -32), 66, 0.0008, W3(0, 0.6, -0.8)],
     // follow the winding wheels under the rotor to the ratchet
-    [3.6, W3(-6, 22.5, -50), toW(WIND.rv, 17), 60, 0.0009],
+    [3.7, W3(-6, 22.5, -50), toW(WIND.rv, 17), 60, 0.0009],
     [4.8, W3(-40, 22, -76), toW(WIND.rd, 16), 60, 0.0009],
     [5.9, W3(-72, 24, -56), toW(B, 15), 58, 0.0008],
     // slow reveal over the barrel, then down into it as its lid falls away
@@ -473,11 +500,14 @@ function buildPath() {
     // pull back: the whole movement alive, then straight down through it, the dial, among the hands, out to the watch
     [24.5, W3(60, 120, 170), W3(0, 8, 0), 52, 0.0003],
     [25.5, W3(30, 190, 70), W3(0, 0, 0), 50, 0.0002],
-    [26.2, W3(6, 30, 8), W3(0, -30, 0), 70, 0.0002],
-    [26.9, W3(1, -13.5, 2), W3(0, -12, -60), 76, 0.0004],
-    [28.0, W3(0, -130, 40), W3(0, 0, 0), 46, 0.0002],
-    [29.3, W3(0, -760, 34), W3(0, 0, 0), 33, 0.0001],
-    [30.0, W3(0, -800, 32), W3(0, 0, 0), 32, 0.0001],
+    [26.2, W3(6, 30, 8), W3(0, -30, 0), 70, 0.0002, UPD],
+    [26.5, W3(2.5, 1, 2.5), W3(0, -60, 0), 72, 0.0003, UPD],
+    [26.68, W3(1.6, DIAL_Y - 2.2, 1.6), W3(60, DIAL_Y - 2.2, 4), 74, 0.0004, UPD],
+    [26.95, W3(-8, DIAL_Y - 24, 6), W3(0, DIAL_Y, 0), 70, 0.0009, UPD],
+    [27.8, W3(-90, DIAL_Y - 260, 60), W3(0, DIAL_Y, 0), 48, 0.0002, UPD],
+    [28.8, W3(-150, DIAL_Y - 1700, 90), W3(0, DIAL_Y, 0), 32, 0.00005, UPD],
+    [29.45, HERO.clone(), W3(0, DIAL_Y, 0), HERO_FOV, 0.00002, UPD],
+    [30.0, HERO.clone(), W3(0, DIAL_Y, 0), HERO_FOV, 0.00002, UPD],
   ];
 }
 // Catmull-Rom through keys at their own times (Hermite with finite-difference tangents)
@@ -488,23 +518,30 @@ function hermite(keys, t, get) {
   const p0 = get(k0), p1 = get(k1), p2 = get(k2), p3 = get(k3);
   const m1 = p2.clone().sub(p0).multiplyScalar(dt / Math.max(1e-3, k2[0] - k0[0])), m2 = p3.clone().sub(p1).multiplyScalar(dt / Math.max(1e-3, k3[0] - k1[0]));
   if (i === 0) m1.copy(p2.clone().sub(p1)); if (i + 2 >= keys.length) m2.copy(p2.clone().sub(p1));
+  // through the dial (entry and exit) the path must never overshoot: monotone tangents per component there
+  if (k1[0] < 3.7 || k1[0] >= 26.2) ['x', 'y', 'z'].forEach((c) => {
+    const d = p2[c] - p1[c], dPrev = p1[c] - p0[c], dNext = p3[c] - p2[c];
+    m1[c] = i === 0 || d * dPrev <= 0 ? (i === 0 ? m1[c] : 0) : Math.sign(d) * Math.min(Math.abs(m1[c]), 3 * Math.abs(d), 3 * Math.abs(dPrev) * dt / Math.max(1e-3, k1[0] - k0[0]));
+    m2[c] = d * dNext <= 0 ? 0 : Math.sign(d) * Math.min(Math.abs(m2[c]), 3 * Math.abs(d));
+    if (d === 0) { m1[c] = 0; m2[c] = 0; }
+  });
   const u2 = u * u, u3 = u2 * u;
   return p1.clone().multiplyScalar(2 * u3 - 3 * u2 + 1).add(m1.multiplyScalar(u3 - 2 * u2 + u)).add(p2.clone().multiplyScalar(-2 * u3 + 3 * u2)).add(m2.multiplyScalar(u3 - u2));
 }
-const num = (v) => new THREE.Vector3(v, 0, 0);
+const num = (v) => new THREE.Vector3(v, 0, 0), UP0 = new THREE.Vector3(0, 1, 0);
 function shot(t) {
   const pos = hermite(PATH, t, (k) => k[1]), look = hermite(PATH, t, (k) => k[2]);
   const fov = hermite(PATH, t, (k) => num(k[3])).x, ap = Math.max(0.00002, 0.45 * hermite(PATH, t, (k) => num(k[4])).x);
-  return { pos, look, fov, ap };
+  const up = hermite(PATH, t, (k) => k[5] || UP0).normalize();
+  return { pos, look, fov, ap, up };
 }
 function placeCamera(t) {
   const s = shot(t);
   if (window.DEBUG_CAM) { const [p, l, f] = window.DEBUG_CAM; s.pos = new THREE.Vector3(...p); s.look = new THREE.Vector3(...l); s.fov = f || 50; s.ap = 0.00002; }
   camera.position.copy(s.pos);
-  // below the dial we look up at it, 12 o'clock at the top of the frame
-  camera.up.set(0, t > 26.4 ? 0 : 1, t > 26.4 ? -1 : 0);
-  if (t > 26.0 && t <= 26.4) camera.up.set(0, lerp(1, 0, (t - 26) / 0.4), -lerp(0, 1, (t - 26) / 0.4)).normalize();
-  camera.lookAt(s.look); camera.fov = s.fov; camera.updateProjectionMatrix();
+  camera.up.copy(s.up || UP0);
+  camera.lookAt(s.look); camera.fov = s.fov;
+  camera.near = clamp(s.pos.distanceTo(s.look) * 0.02, 0.05, 120); camera.far = Math.max(4000, s.pos.distanceTo(s.look) * 3); camera.updateProjectionMatrix();   // depth precision at any distance
   bokeh.uniforms.focus.value = s.pos.distanceTo(s.look); bokeh.uniforms.aperture.value = s.ap;
   L.camLight.position.copy(s.pos).add(new THREE.Vector3(0, 3, 0));
   return s;
@@ -546,33 +583,29 @@ function energy(t) {
 // about 216 px). It is only scaled and moved, never redrawn: in at the start, through the dial into the movement; out
 // through the dial at the end, back to the whole watch.
 const EXT = new Image(), EXT_C = [725, 1080.5], EXT_FIT = 1080 / 1451;
-function exterior(t) {
-  let a = 0, k = 1, blur = 0;
-  if (t < 2.0) { a = 1 - clamp((t - 1.45) / 0.45); k = kf([[0, 1.0], [1.1, 1.32, 'sine'], [1.95, 7.5, 'in']], t); blur = clamp((t - 1.15) / 0.6); }
-  else if (t > 26.65) { a = clamp((t - 26.65) / 0.45); k = kf([[26.65, 3.4], [29.4, 1.1, 'out'], [30, 1.07]], t); blur = clamp((27.05 - t) / 0.4) * 0.6; }
-  if (a <= 0 || !EXT.width) return;
-  const draw = (kk, al) => { const sc = EXT_FIT * kk; octx.globalAlpha = al; octx.drawImage(EXT, W / 2 - EXT_C[0] * sc, H / 2 - EXT_C[1] * sc, EXT.width * sc, EXT.height * sc); };
-  octx.save(); octx.globalAlpha = a; octx.fillStyle = '#000'; octx.fillRect(0, 0, W, H);
-  // a zoom through the dial: a few scaled copies smear outwards like a fast push
-  const n = blur > 0.05 ? 5 : 1;
-  for (let i = 0; i < n; i++) draw(k * (1 + blur * 0.06 * i), a * (i === 0 ? 1 : 0.35 / n));
-  // the photograph ends where its frame cuts the bracelet: let it fall off into black instead of a hard edge
-  const top = H / 2 - EXT_C[1] * EXT_FIT * k, bot = top + EXT.height * EXT_FIT * k;
-  [[top, 1], [bot, -1]].forEach(([y, d]) => { if ((d > 0 && y < -260) || (d < 0 && y > H + 260)) return;
-    const g = octx.createLinearGradient(0, y, 0, y + d * 260); g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(1, 'rgba(0,0,0,0)');
-    octx.globalAlpha = a; octx.fillStyle = g; octx.fillRect(0, Math.min(y, y + d * 260) - (d > 0 ? 400 : 0), W, 260 + 400); });
+// the photograph's top and bottom cut its bracelet: fade those edges into black; on the hero frame lay the original
+// file itself over the render (the projection matches it exactly) so the last frames are the photograph at full sharpness
+function exteriorFrame(t) {
+  const show = t < 2.6 ? 1 - clamp((t - 1.4) / 1.0) : clamp((t - 27.6) / 0.8);
+  if (show <= 0) return;
+  const sc = EXT_FIT * 1.1, k = shot(t).pos.distanceTo(new THREE.Vector3(0, DIAL_Y, 0)) / HERO_D;
+  if (t > 29.45 && EXT.width) { octx.save(); octx.globalAlpha = clamp((t - 29.45) / 0.3); octx.drawImage(EXT, W / 2 - EXT_C[0] * sc, H / 2 - EXT_C[1] * sc, EXT.width * sc, EXT.height * sc); octx.restore(); }
+  const top = H / 2 - EXT_C[1] * sc / Math.max(0.3, k), bot = H / 2 + (EXT.height - EXT_C[1]) * sc / Math.max(0.3, k);
+  octx.save(); octx.globalAlpha = show;
+  [[top, 1], [bot, -1]].forEach(([y, d]) => { const g = octx.createLinearGradient(0, y, 0, y + d * 260); g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+    octx.fillStyle = g; octx.fillRect(0, d > 0 ? y - 600 : y - 260, W, 860); });
   octx.restore();
 }
 let ready = false;
-const words = [['CAPTURE', 1.9, 3.5], ['STORE', 8.2, 9.8], ['TRANSFER', 11.3, 12.8], ['REGULATE', 18.9, 20.6]];
+const words = [['CAPTURE', 3.9, 5.3], ['STORE', 8.2, 9.8], ['TRANSFER', 11.3, 12.8], ['REGULATE', 18.9, 20.6]];
 function overlay(t) {
   // grade: vignette, a little grain, the few words
   const vg = octx.createRadialGradient(W / 2, H * 0.48, W * 0.3, W / 2, H / 2, H * 0.72); vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,.62)');
-  octx.fillStyle = vg; octx.fillRect(0, 0, W, H);
+  octx.save(); octx.globalAlpha = 1 - clamp((t - 28.8) / 0.6); octx.fillStyle = vg; octx.fillRect(0, 0, W, H); octx.restore();
   const txt = (s, y, a, size, ls) => { if (a <= 0) return; octx.save(); octx.globalAlpha = a; octx.font = `800 ${size}px "Inter Tight"`; octx.letterSpacing = ls + 'px'; octx.textAlign = 'center';
     octx.shadowColor = 'rgba(0,0,0,.8)'; octx.shadowBlur = 30; octx.fillStyle = '#f4efe4'; octx.fillText(s, W / 2 + ls / 2, y); octx.restore(); };
   words.forEach(([w, a, b]) => txt(w, 1580, win(t, a, b, 0.35, 0.4), 46, 22));
-  exterior(t);
+  exteriorFrame(t);
   const endA = win(t, 28.2, 31, 0.7, 0.1);
   if (endA > 0) { const g = octx.createLinearGradient(0, H - 420, 0, H); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(0.55, 'rgba(0,0,0,.82)'); g.addColorStop(1, 'rgba(0,0,0,.95)'); octx.save(); octx.globalAlpha = endA; octx.fillStyle = g; octx.fillRect(0, H - 420, W, 420); octx.restore(); }
   txt('MOTION BECOMES TIME.', 1800, endA, 50, 14);
@@ -589,7 +622,11 @@ function renderAt(t) {
   const under = clamp((t - 26.0) / 0.8); L.dialKey.intensity = 3.2 * under; L.dialFill.intensity = 1.0 * under; L.dialSpot.intensity = 5200 * under;
   scene.environmentIntensity = 1.15 * (1 - 0.45 * win(t, 24.7, 26.0, 0.4, 0.3)) + 0.5 * under;   // the top-down view is not blown out; the watch gets more light
   L.barrelLight.position.set(-44, 14, -32);
-  scene.fog.density = 0.0026 * (1 - under);
+  const insideMv = win(t, 2.95, 26.6, 0.25, 0.2);                  // between going in and coming out through the dial
+  scene.fog.density = 0.0026 * insideMv; bloom.strength = 0.32 * insideMv;
+  if (L.sheen) { const a = (t < 3 ? 1 - clamp((t - 2.2) / 0.6) : clamp((t - 26.9) / 0.4) * (1 - clamp((t - 28.9) / 0.5)));
+    L.sheen.material.uniforms.k.value = 0.9 * a; const ph = t < 15 ? t / 2.6 : (t - 26.9) / 2.4;
+    L.sheen.material.uniforms.L.value.set(Math.cos(1.2 + ph * 1.6) * 0.8, -1, Math.sin(0.4 + ph * 1.3) * 0.9); }
   L.key.intensity = 1.25 * (1 - 0.6 * win(t, 24.6, 26.0, 0.5, 0.3)) * (1 - under);
   L.shafts.forEach((s, i) => (s.material.uniforms.k.value = 0.04 + 0.02 * Math.sin(t * 0.7 + i)));
   composer.render();
@@ -601,15 +638,18 @@ window.render = function (t, sub = 0) {
   const speed = a.pos.distanceTo(b.pos) / Math.max(4, b.pos.distanceTo(b.look)) * 30;
   const n = sub || Math.min(3, Math.max(1, Math.round(speed * 1.2)));
   octx.globalCompositeOperation = 'source-over'; octx.imageSmoothingEnabled = true; octx.imageSmoothingQuality = 'high';
+  // rack focus as we break out through the dial: the photo cannot hold up at that magnification, so it arrives soft
+  const rack = 16 * clamp((t - 26.6) / 0.12) * clamp((27.22 - t) / 0.3);
+  octx.filter = rack > 0.3 ? `blur(${rack.toFixed(1)}px)` : 'none';
   for (let i = 0; i < n; i++) { renderAt(t + (n > 1 ? (i / (n - 1) - 0.5) / 60 : 0)); octx.globalAlpha = 1 / (i + 1); octx.drawImage(renderer.domElement, 0, 0, W, H); }
-  octx.globalAlpha = 1; overlay(t);
+  octx.filter = 'none'; octx.globalAlpha = 1; overlay(t);
   return n;
 };
 window.ready = (async () => {
   await new Promise((r) => { EXT.onload = r; EXT.onerror = r; EXT.src = './assets/exterior.png'; });
   await Promise.all([['Inter Tight', 'inter-tight-latin-800-normal.woff2', '800']].map(([f, file, w]) => new FontFace(f, `url(../../.claude/skills/paper-story/assets/fonts/${file})`, { weight: w }).load().then((ff) => document.fonts.add(ff))));
   M.bridgeFade = M.bridge.map((m) => { const c = m.clone(); c.transparent = true; return c; });
-  build(); buildPath(); CONTACTS = contacts();
+  build(); await buildExterior(); buildPath(); CONTACTS = contacts();
   CONTACTS.forEach(() => { const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: GLOW, color: 0xffd08a, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false })); scene.add(sp); L.glints.push(sp); });
   renderer.domElement.style.display = 'none'; document.body.appendChild(renderer.domElement);
   ready = true; return true;
