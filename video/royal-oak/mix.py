@@ -16,7 +16,8 @@ def load(f):
     return np.frombuffer(raw, np.float32).reshape(-1, 2).astype(np.float64)
 
 src, music, out = sys.argv[1:4]; sb = json.load(open(sys.argv[4] if len(sys.argv) > 4 else os.path.join(H, 'film.json')))
-film = load(src); m = load(music); N = len(film)
+film = load(src); m = load(music); N = int(round(sum(sc['dur'] for sc in sb['scenes']) * SR))   # the film's full length (its own audio can end earlier)
+film = np.pad(film, ((0, max(0, N - len(film))), (0, 0)))[:N]
 m = np.pad(m, ((0, max(0, N - len(m))), (0, 0)))[:N]
 key = np.zeros(N); t = 0.0
 for sc in sb['scenes']:
@@ -34,5 +35,5 @@ mix = film + m * 10 ** (MUSIC_DB / 20) * dip[:, None]
 with tempfile.TemporaryDirectory() as d:
     f = os.path.join(d, 'a.f32'); mix.astype(np.float32).tofile(f)
     subprocess.run([FF, '-v', 'error', '-y', '-i', src, '-f', 'f32le', '-ar', str(SR), '-ac', '2', '-i', f, '-map', '0:v', '-map', '1:a', '-c:v', 'copy',
-                    '-af', 'loudnorm=I=-14:TP=-1.2:LRA=11', '-ar', '48000', '-c:a', 'aac', '-b:a', '192k', '-shortest', out], check=True)
+                    '-af', 'loudnorm=I=-14:TP=-1.2:LRA=11', '-ar', '48000', '-c:a', 'aac', '-b:a', '192k', out], check=True)
 print('wrote', out)
