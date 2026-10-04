@@ -89,8 +89,8 @@ const perlageDraw = (light) => (g, w, h) => {
 const PERLAGE = canvasTex(512, 512, perlageDraw(true)); PERLAGE.repeat.set(16, 16);
 const PERLAGE_R = dataTex(512, 512, perlageDraw(false)); PERLAGE_R.repeat.set(16, 16);
 const SUNBURST = canvasTex(1024, 1024, (g, w, h) => {
-  const rg = g.createRadialGradient(w / 2, h / 2, 10, w / 2, h / 2, w / 2); rg.addColorStop(0, '#2c4f86'); rg.addColorStop(1, '#0b1630'); g.fillStyle = rg; g.fillRect(0, 0, w, h);
-  g.globalAlpha = 0.18; for (let k = 0; k < 720; k++) { const a = (k / 720) * TAU; g.strokeStyle = k % 2 ? '#ffffff' : '#000000'; g.beginPath(); g.moveTo(w / 2, h / 2); g.lineTo(w / 2 + Math.cos(a) * w, h / 2 + Math.sin(a) * w); g.stroke(); }
+  const rg = g.createRadialGradient(w / 2, h / 2, 10, w / 2, h / 2, w / 2); rg.addColorStop(0, '#b3d2a6'); rg.addColorStop(1, '#8fb585'); g.fillStyle = rg; g.fillRect(0, 0, w, h);
+  g.globalAlpha = 0.06; for (let k = 0; k < 720; k++) { const a = (k / 720) * TAU; g.strokeStyle = k % 2 ? '#ffffff' : '#000000'; g.beginPath(); g.moveTo(w / 2, h / 2); g.lineTo(w / 2 + Math.cos(a) * w, h / 2 + Math.sin(a) * w); g.stroke(); }
 });
 SUNBURST.repeat.set(1, 1);
 const graining = (dark) => (g, w) => { g.fillStyle = dark ? '#808080' : '#d9b46c'; g.fillRect(0, 0, w, w);
@@ -293,12 +293,12 @@ function build() {
   const cannon = new THREE.Mesh(new THREE.CylinderGeometry(2.6, 2.6, 6, 20), M.steel); cannon.position.y = -10; scene.add(cannon);
   for (let k = 0; k < 12; k++) {
     const th = k * 30 * D2R, v = [-Math.sin(th), -Math.cos(th)], g = k === 0 ? new THREE.BoxGeometry(9, 1.4, 22) : new THREE.BoxGeometry(5, 1.4, 18);
-    const ix = new THREE.Mesh(g, M.gold); ix.position.set(v[0] * 120, -10.3, v[1] * 120); ix.rotation.y = th; scene.add(ix);
+    const ix = new THREE.Mesh(g, M.steel); ix.position.set(v[0] * 120, -10.3, v[1] * 120); ix.rotation.y = th; scene.add(ix);
   }
   for (let k = 0; k < 60; k++) { if (k % 5 === 0) continue; const th = k * 6 * D2R; const mk = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.3, 5), M.steel); mk.position.set(-Math.sin(th) * 138, -9.95, -Math.cos(th) * 138); mk.rotation.y = th; scene.add(mk); }
   const dauphine = (len, w) => { const s = new THREE.Shape(); s.moveTo(0, 14); s.lineTo(w, 0); s.lineTo(0, -len); s.lineTo(-w, 0); s.closePath(); const g = new THREE.ExtrudeGeometry(s, { depth: 0.5, bevelEnabled: true, bevelThickness: 0.35, bevelSize: 0.8, bevelSegments: 1 }); g.rotateX(Math.PI / 2); return g; };
-  L.hour = new THREE.Mesh(dauphine(78, 5.5), M.gold); L.hour.position.y = -11; scene.add(L.hour);
-  L.minute = new THREE.Mesh(dauphine(118, 4.5), M.gold); L.minute.position.y = -12.2; scene.add(L.minute);
+  L.hour = new THREE.Mesh(dauphine(78, 5.5), M.steel); L.hour.position.y = -11; scene.add(L.hour);
+  L.minute = new THREE.Mesh(dauphine(118, 4.5), M.steel); L.minute.position.y = -12.2; scene.add(L.minute);
   const sec = new THREE.Group(); const sb = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.5, 150), M.steel); sb.position.z = -50; sec.add(sb); const tip = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.55, 18), new THREE.MeshStandardMaterial({ color: 0xc81e2a, metalness: 0.4, roughness: 0.35 })); tip.position.z = -116; sec.add(tip);
   const capM = new THREE.Mesh(new THREE.CylinderGeometry(3.4, 3.4, 1.2, 24), M.gold); capM.position.y = -0.4; sec.add(capM); sec.position.y = -13.2; scene.add(sec); L.second = sec;
   // case: polished middle case around everything, lugs at 12 and 6, crown at 3
@@ -422,8 +422,8 @@ function pose(t) {
   L.fork.rotation.z = s.alpha;
   L.balance.rotation.z = s.beta; updateHair(s.beta);
   // dial side: hands at 10:09:xx, seconds in 8 small steps a second
-  const secs = 32 + Math.floor(t * 8) / 8, hh = 10 + 9 / 60;
-  L.second.rotation.y = (secs / 60) * TAU; L.minute.rotation.y = ((9 + secs / 60) / 60) * TAU; L.hour.rotation.y = (hh / 12) * TAU;
+  const secs = 30 + Math.floor((t - 26.9) * 8) / 8, hh = 10 + 10 / 60;
+  L.second.rotation.y = (secs / 60) * TAU; L.minute.rotation.y = ((10 + secs / 60 - 0.5) / 60) * TAU; L.hour.rotation.y = (hh / 12) * TAU;
   L.hourWheel.rotation.z = (hh / 12) * TAU; L.minWheel.rotation.z = -((9 + secs / 60) / 60) * TAU * 3;
   return s;
 }
@@ -541,7 +541,28 @@ function energy(t) {
   return vals;
 }
 
-// ------------------------------------------------------------------ frame
+// ------------------------------------------------------------------ the exterior: the reference photograph, unaltered
+// The film opens and closes on the actual watch image (assets/exterior.png, 1451x2160, dial centred at 725,1080, radius
+// about 216 px). It is only scaled and moved, never redrawn: in at the start, through the dial into the movement; out
+// through the dial at the end, back to the whole watch.
+const EXT = new Image(), EXT_C = [725, 1080.5], EXT_FIT = 1080 / 1451;
+function exterior(t) {
+  let a = 0, k = 1, blur = 0;
+  if (t < 2.0) { a = 1 - clamp((t - 1.45) / 0.45); k = kf([[0, 1.0], [1.1, 1.32, 'sine'], [1.95, 7.5, 'in']], t); blur = clamp((t - 1.15) / 0.6); }
+  else if (t > 26.65) { a = clamp((t - 26.65) / 0.45); k = kf([[26.65, 3.4], [29.4, 1.1, 'out'], [30, 1.07]], t); blur = clamp((27.05 - t) / 0.4) * 0.6; }
+  if (a <= 0 || !EXT.width) return;
+  const draw = (kk, al) => { const sc = EXT_FIT * kk; octx.globalAlpha = al; octx.drawImage(EXT, W / 2 - EXT_C[0] * sc, H / 2 - EXT_C[1] * sc, EXT.width * sc, EXT.height * sc); };
+  octx.save(); octx.globalAlpha = a; octx.fillStyle = '#000'; octx.fillRect(0, 0, W, H);
+  // a zoom through the dial: a few scaled copies smear outwards like a fast push
+  const n = blur > 0.05 ? 5 : 1;
+  for (let i = 0; i < n; i++) draw(k * (1 + blur * 0.06 * i), a * (i === 0 ? 1 : 0.35 / n));
+  // the photograph ends where its frame cuts the bracelet: let it fall off into black instead of a hard edge
+  const top = H / 2 - EXT_C[1] * EXT_FIT * k, bot = top + EXT.height * EXT_FIT * k;
+  [[top, 1], [bot, -1]].forEach(([y, d]) => { if ((d > 0 && y < -260) || (d < 0 && y > H + 260)) return;
+    const g = octx.createLinearGradient(0, y, 0, y + d * 260); g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+    octx.globalAlpha = a; octx.fillStyle = g; octx.fillRect(0, Math.min(y, y + d * 260) - (d > 0 ? 400 : 0), W, 260 + 400); });
+  octx.restore();
+}
 let ready = false;
 const words = [['CAPTURE', 1.9, 3.5], ['STORE', 8.2, 9.8], ['TRANSFER', 11.3, 12.8], ['REGULATE', 18.9, 20.6]];
 function overlay(t) {
@@ -551,7 +572,10 @@ function overlay(t) {
   const txt = (s, y, a, size, ls) => { if (a <= 0) return; octx.save(); octx.globalAlpha = a; octx.font = `800 ${size}px "Inter Tight"`; octx.letterSpacing = ls + 'px'; octx.textAlign = 'center';
     octx.shadowColor = 'rgba(0,0,0,.8)'; octx.shadowBlur = 30; octx.fillStyle = '#f4efe4'; octx.fillText(s, W / 2 + ls / 2, y); octx.restore(); };
   words.forEach(([w, a, b]) => txt(w, 1580, win(t, a, b, 0.35, 0.4), 46, 22));
-  txt('MOTION BECOMES TIME.', 1650, win(t, 28.0, 31, 0.6, 0.1), 50, 14);
+  exterior(t);
+  const endA = win(t, 28.2, 31, 0.7, 0.1);
+  if (endA > 0) { const g = octx.createLinearGradient(0, H - 420, 0, H); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(0.55, 'rgba(0,0,0,.82)'); g.addColorStop(1, 'rgba(0,0,0,.95)'); octx.save(); octx.globalAlpha = endA; octx.fillStyle = g; octx.fillRect(0, H - 420, W, 420); octx.restore(); }
+  txt('MOTION BECOMES TIME.', 1800, endA, 50, 14);
   const fin = clamp(t / 0.5) * clamp((DUR - t) / 0.2);
   if (fin < 1) { octx.fillStyle = `rgba(0,0,0,${1 - fin})`; octx.fillRect(0, 0, W, H); }
 }
@@ -582,6 +606,7 @@ window.render = function (t, sub = 0) {
   return n;
 };
 window.ready = (async () => {
+  await new Promise((r) => { EXT.onload = r; EXT.onerror = r; EXT.src = './assets/exterior.png'; });
   await Promise.all([['Inter Tight', 'inter-tight-latin-800-normal.woff2', '800']].map(([f, file, w]) => new FontFace(f, `url(../../.claude/skills/paper-story/assets/fonts/${file})`, { weight: w }).load().then((ff) => document.fonts.add(ff))));
   M.bridgeFade = M.bridge.map((m) => { const c = m.clone(); c.transparent = true; return c; });
   build(); buildPath(); CONTACTS = contacts();
