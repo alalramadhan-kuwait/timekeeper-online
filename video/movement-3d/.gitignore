@@ -1,0 +1,7 @@
+vendor-three
+renders/
+frames/
+*.mp4
+*.wav
+*.jpg
+*.png
