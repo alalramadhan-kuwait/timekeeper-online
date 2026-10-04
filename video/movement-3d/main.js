@@ -15,6 +15,7 @@ import { BokehPass } from 'three/addons/postprocessing/BokehPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 
 const W = 1080, H = 1920, DUR = 30, TAU = Math.PI * 2, D2R = Math.PI / 180;
+const RS = 0.8, RW = Math.round(W * RS), RH = Math.round(H * RS);   // WebGL renders at 0.8 scale; the 2D output upscales
 const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
 const lerp = (a, b, u) => a + (b - a) * u;
 const mod = (a, n) => ((a % n) + n) % n;
@@ -34,7 +35,7 @@ function integral(rate, t0 = 0, t1 = DUR + 1, dt = 1 / 1200) {
 
 // ------------------------------------------------------------------ renderer, post, output canvas
 const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true, powerPreference: 'high-performance' });
-renderer.setPixelRatio(1); renderer.setSize(W, H);
+renderer.setPixelRatio(1); renderer.setSize(RW, RH);
 renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 0.92; renderer.outputColorSpace = THREE.SRGBColorSpace;
 const out = document.createElement('canvas'); out.width = W; out.height = H; document.body.appendChild(out);
 const octx = out.getContext('2d');
@@ -60,7 +61,7 @@ scene.environmentIntensity = 1.15;
 const camera = new THREE.PerspectiveCamera(58, W / H, 0.05, 4000);
 const composer = new EffectComposer(renderer);
 composer.addPass(new RenderPass(scene, camera));
-const bloom = new UnrealBloomPass(new THREE.Vector2(W, H), 0.32, 0.45, 0.93); composer.addPass(bloom);
+const bloom = new UnrealBloomPass(new THREE.Vector2(RW, RH), 0.32, 0.45, 0.93); composer.addPass(bloom);
 const bokeh = new BokehPass(scene, camera, { focus: 30, aperture: 0.0008, maxblur: 0.012 }); composer.addPass(bokeh);
 composer.addPass(new OutputPass());
 
@@ -574,9 +575,9 @@ window.render = function (t, sub = 0) {
   // motion blur: average a few moments inside the shutter when the camera moves fast
   const dt = 1 / 60, a = shot(Math.max(0, t - dt)), b = shot(Math.min(DUR - 1e-3, t + dt));
   const speed = a.pos.distanceTo(b.pos) / Math.max(4, b.pos.distanceTo(b.look)) * 30;
-  const n = sub || Math.min(4, Math.max(1, Math.round(speed * 1.6)));
-  octx.globalCompositeOperation = 'source-over';
-  for (let i = 0; i < n; i++) { renderAt(t + (n > 1 ? (i / (n - 1) - 0.5) / 60 : 0)); octx.globalAlpha = 1 / (i + 1); octx.drawImage(renderer.domElement, 0, 0); }
+  const n = sub || Math.min(3, Math.max(1, Math.round(speed * 1.2)));
+  octx.globalCompositeOperation = 'source-over'; octx.imageSmoothingEnabled = true; octx.imageSmoothingQuality = 'high';
+  for (let i = 0; i < n; i++) { renderAt(t + (n > 1 ? (i / (n - 1) - 0.5) / 60 : 0)); octx.globalAlpha = 1 / (i + 1); octx.drawImage(renderer.domElement, 0, 0, W, H); }
   octx.globalAlpha = 1; overlay(t);
   return n;
 };
@@ -588,6 +589,7 @@ window.ready = (async () => {
   renderer.domElement.style.display = 'none'; document.body.appendChild(renderer.domElement);
   ready = true; return true;
 })();
+window.blurPlan = () => { const o = []; for (let f = 0; f < 900; f++) { const t = f / 30, dt = 1 / 60, a = shot(Math.max(0, t - dt)), b = shot(Math.min(DUR - 1e-3, t + dt)); const sp = a.pos.distanceTo(b.pos) / Math.max(4, b.pos.distanceTo(b.look)) * 30; o.push(Math.min(3, Math.max(1, Math.round(sp * 1.2)))); } return o; };
 window.where2 = () => { scene.updateMatrixWorld(true); const w = (o) => { const v = new THREE.Vector3(); o.getWorldPosition(v); return [+v.x.toFixed(1), +v.y.toFixed(1), +v.z.toFixed(1)]; }; const bb = (o) => { const b = new THREE.Box3().setFromObject(o); return [b.min.toArray().map((x) => +x.toFixed(1)), b.max.toArray().map((x) => +x.toFixed(1))]; }; return { pallets: L.pallets.map(bb), esc: bb(L.escWheel), fork: bb(L.fork), balance: bb(L.balance) }; };
 window.where = () => ({ BL: L.BL, P: L.P, X: X0, B: BW(), pal: macroToPlan(PALLETS[1][1][0], PALLETS[1][1][1] + 70), C: TR[1], T: TR[2], F: TR[3] });
 window.events = function () {

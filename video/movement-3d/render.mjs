@@ -27,6 +27,7 @@ const grab = async (p, t, file, type) => {
   await p.evaluate(([tt, s]) => window.render(tt, s), [t, opt.sub]); const d = await p.evaluate((ty) => document.querySelector('canvas').toDataURL(ty, 0.93), type); fs.writeFileSync(file, Buffer.from(d.split(',')[1], 'base64')); };
 const done = async (c = 0) => { await browser.close(); server.close(); process.exit(c); };
 if (opt.cover) { const p = await page(); await p.evaluate(() => window.cover()); const d = await p.evaluate(() => document.querySelector('canvas').toDataURL('image/jpeg', 0.94)); fs.writeFileSync(opt.cover, Buffer.from(d.split(',')[1], 'base64')); console.log('cover ' + opt.cover); await done(); }
+if (process.env.BLURPLAN) { const p = await page(); console.log(JSON.stringify(await p.evaluate(() => window.blurPlan()))); await done(); }
 if (opt.where) { const p = await page(); await p.evaluate(() => window.render(18.3, 1)); console.log(JSON.stringify(await p.evaluate(() => window.where2()))); console.log(JSON.stringify(await p.evaluate(() => window.where()), (k, v) => (typeof v === 'number' ? +v.toFixed(2) : k === 'group' || k === 'wheel' || k === 'pinion' ? undefined : v))); await done(); }
 if (opt.events) { const p = await page(); console.log(JSON.stringify(await p.evaluate(() => window.events()))); await done(); }
 const out = opt.out || 'stills'; fs.mkdirSync(out, { recursive: true });
