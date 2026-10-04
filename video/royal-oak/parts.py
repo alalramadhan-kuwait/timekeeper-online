@@ -414,3 +414,17 @@ for name, part in (('part1', P1), ('part2', P2)):
     json.dump(sb, open(os.path.join(H, name + '.json'), 'w'), indent=1, ensure_ascii=False)
     missing = sorted({e.get('asset') for s in part.sc for e in s['elements'] if e.get('asset')})
     print('%s.json: %d scenes, %.1f s; waiting on: %s' % (name, len(part.sc), sum(s['dur'] for s in part.sc), ', '.join(missing) or 'nothing'))
+
+# ---- covers (render.mjs coverN.json --still 1 --scale 1.5)
+def cover(name, els):
+    sb = {"width": 720, "height": 1280, "fps": 30, "dir": "rtl", "style": ST['style'], "themes": ST['themes'],
+          "scenes": [{"dur": 2, "theme": "ro-paper", "floor": False, "silent": True, "elements": els}]}
+    json.dump(sb, open(os.path.join(H, name + '.json'), 'w'), indent=1, ensure_ascii=False)
+title = lambda t, y, size, ink='#16181D', paper=None: dict({"type": "text", "text": t, "x": 360, "y": y, "font": "banner", "size": size, "color": ink, "upper": False, "z": 30}, **({"paper": paper} if paper else {}))
+cover('cover1', [svg(720, 760, lake(720, 760), 360, 380, z=1, kind=None, shadow=False),
+                 cutout('assets/gen/genta23_desk_cut', 250, 1240, 700, 0, z=10, kind='none', person=True),
+                 cutout('assets/early/polerouter_cut', 540, 900, 440, 0, z=12, kind='none', rot=6),
+                 title('جيرالد جنتا', 150, 76, paper='#EFE8D6'), title('قبل الرويال أوك · الجزء الأول', 240, 34, paper='#EFE8D6')])
+cover('cover2', [macro('assets/ap/genta_gouache', 0, 2, z=1, zoom=(1.0, 1.0)),
+                 cutout('assets/gen/young_present_cut', 150, 1290, 620, 0, z=10, kind='none', person=True),
+                 title('الرويال أوك', 150, 80, paper='#EFE8D6'), title('رسمة بليلة وحدة · الجزء الثاني', 240, 34, paper='#EFE8D6')])

@@ -649,12 +649,12 @@
      "depth": 0
     },
     {
-     "type": "photo",
-     "asset": "early/sas1954",
-     "desc": "SAS advertisement for the polar route, 1954 (public domain)",
+     "type": "image",
+     "src": "assets/early/sas1954.jpg",
+     "polaroid": true,
+     "aspect": 0.69,
      "label": "SAS · 1954",
      "w": 290,
-     "aspect": 0.69,
      "x": 470,
      "y": 880,
      "z": 45,

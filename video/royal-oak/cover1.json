@@ -1,0 +1,177 @@
+{
+ "width": 720,
+ "height": 1280,
+ "fps": 30,
+ "dir": "rtl",
+ "style": {
+  "banner": {
+   "paper": "#EFE8D6",
+   "ink": "#16181D",
+   "upper": true,
+   "tape": "rgba(190,178,150,.85)",
+   "torn": 0.5,
+   "size": 32
+  },
+  "caption": {
+   "font": "var(--f-banner)"
+  },
+  "grain": 0.45,
+  "vignette": 0.85
+ },
+ "themes": {
+  "ro-night": {
+   "bg": "#18202E",
+   "blot": [
+    "#222C3D",
+    "#10151F"
+   ],
+   "floor": "#0F141C",
+   "floorTop": "#253045",
+   "capBg": "#EFE8D6",
+   "capInk": "#16181D"
+  },
+  "ro-alpine": {
+   "bg": "#D9D2C2",
+   "blot": [
+    "#E6E0D2",
+    "#C9C1AE"
+   ],
+   "floor": "#B8AE98",
+   "floorTop": "#CFC6B1",
+   "capBg": "#16181D",
+   "capInk": "#EFE8D6"
+  },
+  "ro-paper": {
+   "bg": "#ECE5D3",
+   "blot": [
+    "#F4EEDF",
+    "#DDD4BF"
+   ],
+   "floor": "#D8CFB9",
+   "floorTop": "#E6DEC9",
+   "capBg": "#16181D",
+   "capInk": "#EFE8D6"
+  },
+  "ro-blue": {
+   "bg": "#1D3B5E",
+   "blot": [
+    "#264A73",
+    "#14304E"
+   ],
+   "floor": "#132A45",
+   "floorTop": "#2B5280",
+   "capBg": "#EFE8D6",
+   "capInk": "#16181D"
+  },
+  "ro-steel": {
+   "bg": "#3B4048",
+   "blot": [
+    "#474D56",
+    "#2D3138"
+   ],
+   "floor": "#25282E",
+   "floorTop": "#4A5059",
+   "capBg": "#EFE8D6",
+   "capInk": "#16181D"
+  },
+  "ro-hall": {
+   "bg": "#221D19",
+   "blot": [
+    "#2E2722",
+    "#17130F"
+   ],
+   "floor": "#14110E",
+   "floorTop": "#352D26",
+   "capBg": "#EFE8D6",
+   "capInk": "#16181D"
+  },
+  "ro-black": {
+   "bg": "#08090B",
+   "blot": [
+    "#101216",
+    "#030304"
+   ],
+   "floor": "#08090B",
+   "floorTop": "#15171B",
+   "capBg": "#EFE8D6",
+   "capInk": "#16181D"
+  }
+ },
+ "scenes": [
+  {
+   "dur": 2,
+   "theme": "ro-paper",
+   "floor": false,
+   "silent": true,
+   "elements": [
+    {
+     "type": "svg",
+     "w": 720,
+     "h": 760,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"720\" height=\"760\" viewBox=\"0 0 720 760\" style=\"overflow:visible;\"><rect width=\"720\" height=\"760\" fill=\"#9FB7C9\"/><polygon points=\"0.0,456.0 288.0,380.0 720.0,440.8 720.0,501.6 0.0,501.6\" fill=\"#6E8597\"/><rect y=\"501\" width=\"720\" height=\"258\" fill=\"#5E7F98\"/><path d=\"M 251 516 C 244 304 259 136 273 91\" stroke=\"#F4F7FA\" stroke-width=\"7\" fill=\"none\" stroke-linecap=\"round\" opacity=\".9\"/></svg>",
+     "x": 360,
+     "y": 380,
+     "anchor": "c",
+     "z": 1
+    },
+    {
+     "type": "cutout",
+     "x": 250,
+     "y": 1240,
+     "h": 700,
+     "aspect": 0.6977,
+     "edge": 0,
+     "z": 10,
+     "in": {
+      "type": "none",
+      "at": 0,
+      "dur": 0.3
+     },
+     "src": "assets/gen/genta23_desk_cut.png",
+     "person": true,
+     "headBand": 0.2
+    },
+    {
+     "type": "cutout",
+     "x": 540,
+     "y": 900,
+     "h": 440,
+     "aspect": 0.6614,
+     "edge": 0,
+     "z": 12,
+     "in": {
+      "type": "none",
+      "at": 0,
+      "dur": 0.3
+     },
+     "src": "assets/early/polerouter_cut.png",
+     "rot": 6
+    },
+    {
+     "type": "text",
+     "text": "جيرالد جنتا",
+     "x": 360,
+     "y": 150,
+     "font": "banner",
+     "size": 76,
+     "color": "#16181D",
+     "upper": false,
+     "z": 30,
+     "paper": "#EFE8D6"
+    },
+    {
+     "type": "text",
+     "text": "قبل الرويال أوك · الجزء الأول",
+     "x": 360,
+     "y": 240,
+     "font": "banner",
+     "size": 34,
+     "color": "#16181D",
+     "upper": false,
+     "z": 30,
+     "paper": "#EFE8D6"
+    }
+   ]
+  }
+ ]
+}
