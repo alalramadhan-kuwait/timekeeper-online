@@ -6,7 +6,7 @@ illustration of the idea, not a copy of the original drawing. Generic watches (t
 tool watch) are plain, unbranded shapes. People appear only as silhouettes and hands: no faces."""
 import math, random
 
-SHADOW = 'filter:drop-shadow(0 4px 3px rgba(0,0,0,.30))'
+SHADOW = 'filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))'          # one key light, from the upper left
 GOLD, GOLD_D, CREAM, INK, GRAPH, STEEL = '#C9A35F', '#9C7B3F', '#EFE8D6', '#16181D', '#3A3B3E', '#B9BEC4'
 
 
@@ -178,24 +178,31 @@ def silhouette(color='#0B0E14'):
             '<path d="M 260 210 Q 330 230 380 200 L 392 222 Q 330 262 268 250 Z" fill="%s"/>' % color)
 
 
-def diver_helmet(brass='#B9853F', dark='#6E4A1E', glass='#2C3F4E'):
-    """A generic copper-and-brass diving helmet, front view: dome, front porthole held by bolts, two side ports,
-    breastplate with its bolts. Illustrative, not a specific maker's helmet."""
-    s = '<path d="M 60 300 Q 60 60 220 50 Q 380 60 380 300 Z" fill="%s"/>' % brass
-    s += '<path d="M 90 280 Q 92 100 220 80 Q 260 84 290 100 Q 150 110 120 280 Z" fill="#D9A55A" opacity=".55"/>'
+def diver_helmet(brass='#B9853F', dark='#6E4A1E', glass='#2C3F4E', uid='dh'):
+    """A generic copper-and-brass diving helmet, front view: dome, front porthole held by bolts over a dark rubber
+    seal, two side ports, breastplate with its bolts. Illustrative, not a specific maker's helmet. Genta remembered
+    the bolts and the seal; the octagon came later, from finding room for eight screws."""
+    s = ('<defs><radialGradient id="%s" cx="30%%" cy="22%%" r="85%%"><stop offset="0" stop-color="#E2B46A"/><stop offset=".55" stop-color="%s"/>'
+         '<stop offset="1" stop-color="#7A5222"/></radialGradient></defs>' % (uid, brass))
+    s += '<path d="M 60 300 Q 60 60 220 50 Q 380 60 380 300 Z" fill="url(#%s)"/>' % uid
+    s += ''.join('<path d="%s" stroke="#E3BC7A" stroke-width="1.5" opacity=".4" fill="none"/>' % d for d in
+                 ('M 110 150 q 30 -40 70 -52', 'M 300 120 q 30 30 38 70', 'M 130 250 q 10 -30 30 -44', 'M 280 240 q 18 -10 30 -30'))
     s += '<path d="M 0 300 L 440 300 L 470 420 Q 220 470 -30 420 Z" fill="%s"/>' % dark
-    s += '<path d="M 20 310 L 420 310 L 444 408 Q 220 450 -4 408 Z" fill="%s"/>' % brass
-    s += ''.join('<circle cx="%.1f" cy="%.1f" r="9" fill="%s"/><circle cx="%.1f" cy="%.1f" r="4" fill="#E3BC7A"/>' % (x, y, dark, x, y)
-                 for x, y in [(30 + k * 63, 330 + 40 * abs(math.sin(k * .45)) * 0) for k in range(7)])
+    s += '<path d="M 20 310 L 420 310 L 444 408 Q 220 450 -4 408 Z" fill="%s"/><path d="M 20 312 L 420 312" stroke="#4A3214" stroke-width="2"/>' % brass
+    for k in range(7):
+        x, y = 30 + k * 63, 330
+        s += '<polygon points="%s" fill="%s"/><circle cx="%.1f" cy="%.1f" r="3" fill="#F2D49A"/>' % (pts(hexagon(x, y, 9, 30)), dark, x - 2, y - 2)
     for sx in (90, 350):
         s += '<circle cx="%d" cy="190" r="34" fill="%s"/><circle cx="%d" cy="190" r="24" fill="%s"/>' % (sx, dark, sx, glass)
     s += '<circle cx="220" cy="185" r="96" fill="%s"/>' % dark
     s += '<circle cx="220" cy="185" r="80" fill="%s"/>' % brass
-    s += '<circle cx="220" cy="185" r="62" fill="%s"/>' % glass
-    s += '<path d="M 182 150 Q 200 132 230 134" stroke="#9FB8C8" stroke-width="7" fill="none" stroke-linecap="round" opacity=".7"/>'
+    s += '<circle cx="220" cy="185" r="66" fill="#16171A"/>'                                        # the rubber seal
+    s += '<circle cx="220" cy="185" r="60" fill="%s"/>' % glass
+    s += '<ellipse cx="200" cy="160" rx="34" ry="18" fill="#9FB8C8" opacity=".35" transform="rotate(-30 200 160)"/>'
+    s += '<path d="M 182 150 Q 200 132 230 134" stroke="#FFFFFF" stroke-width="4" fill="none" stroke-linecap="round" opacity=".8"/>'
     for k in range(8):
-        a = math.radians(22.5 + 45 * k); bx, by = 220 + 71 * math.cos(a), 185 + 71 * math.sin(a)
-        s += '<polygon points="%s" fill="%s"/><circle cx="%.1f" cy="%.1f" r="3" fill="#E3BC7A"/>' % (pts(hexagon(bx, by, 9, 30)), dark, bx, by)
+        a = math.radians(22.5 + 45 * k); bx, by = 220 + 73 * math.cos(a), 185 + 73 * math.sin(a)
+        s += '<polygon points="%s" fill="%s"/><circle cx="%.1f" cy="%.1f" r="2.6" fill="#F2D49A"/>' % (pts(hexagon(bx, by, 9, 30)), dark, bx - 2, by - 2)
     return s
 
 
@@ -215,12 +222,15 @@ def ro_sketch(cx=320, cy=440, R=150, k=1.0, ink=None, links=4):
     oc = octagon(cx, cy, R * 1.0)
     add(path(oc), 1.0, 1.0, width=3.0, stroke=G)                                                    # it becomes an octagon
     add(path(octagon(cx, cy, R * .86)), 1.5, 0.8, width=1.6, stroke=G, opacity=.7)
-    # the case: wider than the bezel, flat where the bracelet joins
-    cw, ch = R * 1.18, R * 1.12
+    add(path(octagon(cx, cy, R * 1.05)), 1.9, 0.7, width=1.2, stroke=G, opacity=.85)               # the visible gasket
+    # the case: wider than the bezel, flat where the bracelet joins (38.7 x 48 mm, so taller than wide)
+    cw, ch = R * 1.18, R * 1.30
     case = 'M %.1f %.1f L %.1f %.1f Q %.1f %.1f %.1f %.1f L %.1f %.1f L %.1f %.1f Q %.1f %.1f %.1f %.1f Z' % (
         cx - cw * .62, cy - ch, cx + cw * .62, cy - ch, cx + cw * 1.12, cy, cx + cw * .62, cy + ch,
         cx - cw * .62, cy + ch, cx - cw * .62, cy + ch, cx - cw * 1.12, cy, cx - cw * .62, cy - ch)
     add(case, 3.3, 0.8, width=2.6, stroke=G)
+    crx = cx + cw * .86                                                                              # the crown at 3
+    add('M %.1f %.1f L %.1f %.1f L %.1f %.1f L %.1f %.1f' % (crx, cy - R * .08, crx + R * .11, cy - R * .08, crx + R * .11, cy + R * .08, crx, cy + R * .08), 3.6, 0.3, width=2.2, stroke=G)
     # eight screws at the corners
     screws = []
     for j, (x, y) in enumerate(octagon(cx, cy, R * .93)):
@@ -231,23 +241,27 @@ def ro_sketch(cx=320, cy=440, R=150, k=1.0, ink=None, links=4):
         y0 = cy + sgn * ch
         for i in range(links):
             top = y0 + sgn * (i * 64); bot = top + sgn * 60
-            wt = cw * 1.24 - i * 9; wb = wt - 9
+            wt = cw * 1.24 - i * 16; wb = wt - 16                                                  # 26 mm at the case, 16 at the clasp
             d = 'M %.1f %.1f L %.1f %.1f L %.1f %.1f L %.1f %.1f Z' % (cx - wt * .5, top, cx + wt * .5, top, cx + wb * .5, bot, cx - wb * .5, bot)
             add(d, 3.9 + i * 0.14 + (0.05 if sgn > 0 else 0), 0.25, width=2.2, stroke=G)
-            add('M %.1f %.1f L %.1f %.1f' % (cx - wt * .16, top + sgn * 6, cx - wt * .16, bot - sgn * 6), 4.0 + i * 0.14, 0.2, width=1.4, stroke=G, opacity=.75)
-            add('M %.1f %.1f L %.1f %.1f' % (cx + wt * .16, top + sgn * 6, cx + wt * .16, bot - sgn * 6), 4.0 + i * 0.14, 0.2, width=1.4, stroke=G, opacity=.75)
+            mid = (top + bot) / 2                                                                   # two small polished links
+            for sx in (-1, 1):
+                x0 = cx + sx * wt * .16
+                add('M %.1f %.1f L %.1f %.1f L %.1f %.1f L %.1f %.1f Z' % (x0 - 6, mid - 12, x0 + 6, mid - 12, x0 + 6, mid + 12, x0 - 6, mid + 12), 4.0 + i * 0.14, 0.2, width=1.4, stroke=G, opacity=.75)
     # the dial: a fine grid, batons
     grid = ''.join('M %.1f %.1f L %.1f %.1f ' % (cx - R * .62, cy + v, cx + R * .62, cy + v) for v in range(-80, 81, 20))
     grid += ''.join('M %.1f %.1f L %.1f %.1f ' % (cx + v, cy - R * .62, cx + v, cy + R * .62) for v in range(-80, 81, 20))
     add(grid, 5.0, 0.7, width=0.9, stroke=LIGHT, opacity=.6)
+    add('M %.1f %.1f L %.1f %.1f L %.1f %.1f L %.1f %.1f Z' % (cx + R * .42, cy - R * .05, cx + R * .55, cy - R * .05, cx + R * .55, cy + R * .05, cx + R * .42, cy + R * .05), 5.2, 0.25, width=1.8, stroke=G)   # date at 3
+    add('M %.1f %.1f L %.1f %.1f M %.1f %.1f L %.1f %.1f' % (cx - 4, cy - R * .58, cx - 4, cy - R * .42, cx + 4, cy - R * .58, cx + 4, cy - R * .42), 5.3, 0.2, width=2.6, stroke=G)   # double baton
     add('M %d %d L %d %d M %d %d L %d %d' % (cx, cy, cx - 38, cy - 70, cx, cy, cx + 76, cy + 22), 5.4, 0.35, width=3.2, stroke=G)
     # steel: a grey wash over the case and bezel
     add(case, 5.95, 0.01, width=0.1, stroke=G, fill=STEEL, fillAt=5.95 * K, fillDur=0.6, fillOpacity=.55)
     add(path(oc), 6.05, 0.01, width=0.1, stroke=G, fill='#D4D8DD', fillAt=6.05 * K, fillDur=0.6, fillOpacity=.6)
-    T = [dict(text='8 vis', x=cx + R * 1.25, y=cy - R * .95, size=30, at=2.6 * K, dur=0.5 * K, rot=-6, color=G),
+    T = [dict(text='8 vis hexagonales', x=cx + R * .8, y=cy - R * 1.05, size=22, at=2.6 * K, dur=0.5 * K, rot=-6, color=G),
          dict(text='acier', x=cx - R * 1.75, y=cy + R * .2, size=34, at=6.1 * K, dur=0.5 * K, rot=-8, color=G)]
     # little leader lines for the notes
-    add('M %.1f %.1f Q %.1f %.1f %.1f %.1f' % (cx + R * 1.22, cy - R * 1.02, cx + R * 1.0, cy - R * 1.1, screws[6][0] + 12, screws[6][1] - 4), 2.7, 0.35, width=1.4, stroke=G)
+    add('M %.1f %.1f Q %.1f %.1f %.1f %.1f' % (cx + R * .95, cy - R * 1.0, cx + R * .85, cy - R * .95, screws[6][0] + 12, screws[6][1] - 4), 2.7, 0.35, width=1.4, stroke=G)
     add('M %.1f %.1f Q %.1f %.1f %.1f %.1f' % (cx - R * 1.3, cy + R * .1, cx - R * 1.2, cy - R * .2, cx - cw * .95, cy - R * .2), 6.2, 0.35, width=1.4, stroke=G)
     return P, T
 
@@ -296,23 +310,34 @@ def pan(color='#B08A4A'):
 
 
 # ---------------------------------------------------------------- Basel 1972: the fair
-def hall(w=900, h=1100):
+def hall(w=900, h=1100, bunting=False):
+    """The fair hall: dark wall, columns, a top beam. The bunting is its own piece (bunting()) so it can sway."""
     s = '<rect width="%d" height="%d" fill="#2A221C"/>' % (w, h)
     for i in range(7):
         x = i * w / 6
-        s += '<rect x="%d" y="0" width="22" height="%d" fill="#1B1611"/>' % (x - 11, h)
-    s += '<rect x="0" y="0" width="%d" height="90" fill="#1B1611"/>' % w
-    r = random.Random(9)
-    for i in range(9):
-        x = 50 + i * (w - 100) / 8
-        s += '<path d="M %d 90 L %d 90 L %d 190 L %d 170 L %d 190 Z" fill="%s"/>' % (x - 26, x + 26, x + 26, x, x - 26, ['#B23A2E', '#EFE8D6', '#2F5E8A'][i % 3])
+        s += '<rect x="%d" y="0" width="22" height="%d" fill="#1B1611"/><rect x="%d" y="0" width="3" height="%d" fill="#3A3029"/>' % (x - 11, h, x - 11, h)
+    s += '<rect x="0" y="0" width="%d" height="90" fill="#1B1611"/><rect x="0" y="88" width="%d" height="3" fill="#3A3029"/>' % (w, w)
+    s += ''.join('<rect x="%d" y="%d" width="150" height="40" fill="#1B1611"/>' % (40 + i * 215, 300) + ''.join(
+        '<rect x="%d" y="318" width="%d" height="5" fill="#EFE8D6" opacity=".35"/>' % (58 + i * 215 + j * 20, 12) for j in range(6)) for i in range(4))
+    return s + (bunting_(w) if bunting else '')
+
+
+def bunting_(w=900, y=90, n=9, colors=('#B23A2E', '#EFE8D6', '#16181D')):
+    """Pennants on a cord: Swiss red and white, with the black of Basel's crest."""
+    s = '<path d="M 0 %d Q %d %d %d %d" stroke="#16181D" stroke-width="2" fill="none"/>' % (y, w / 2, y + 26, w, y)
+    for i in range(n):
+        x = 50 + i * (w - 100) / (n - 1); yy = y + 13 * (1 - ((x - w / 2) / (w / 2)) ** 2)
+        s += '<path d="M %.1f %.1f L %.1f %.1f L %.1f %.1f Z" fill="%s"/><path d="M %.1f %.1f L %.1f %.1f" stroke="#00000033" stroke-width="2"/>' % (
+            x - 26, yy, x + 26, yy, x, yy + 92, colors[i % 3], x - 26, yy + 2, x + 26, yy + 2)
     return s
 
 
-def booth(w=520, h=420):
-    return ('<rect x="0" y="0" width="%d" height="%d" fill="#3A302A"/>' % (w, h) +
-            '<rect x="0" y="0" width="%d" height="70" fill="#EFE8D6"/>' % w +
-            '<rect x="20" y="90" width="%d" height="%d" fill="#2A221C"/>' % (w - 40, h - 110))
+def booth(w=520, h=420, name=''):
+    s = ('<rect x="0" y="0" width="%d" height="%d" fill="#3A302A"/>' % (w, h) +
+         '<rect x="0" y="0" width="%d" height="70" fill="#2A221C"/><rect x="0" y="66" width="%d" height="4" fill="#C9A35F"/>' % (w, w) +
+         '<rect x="20" y="90" width="%d" height="%d" fill="#2A221C"/>' % (w - 40, h - 110))
+    if name: s += '<text x="%d" y="46" font-family="var(--f-cap)" font-weight="700" font-size="22" letter-spacing="4" fill="#EFE8D6" text-anchor="middle">%s</text>' % (w / 2, name)
+    return s
 
 
 def pedestal(w=260, h=300):
@@ -358,3 +383,331 @@ def steel_plate(w=150, h=96):
     return ('<defs><linearGradient id="st" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#D5DADF"/><stop offset=".45" stop-color="#9EA5AD"/>'
             '<stop offset=".55" stop-color="#E4E8EC"/><stop offset="1" stop-color="#8C939B"/></linearGradient></defs>'
             '<rect width="%d" height="%d" rx="5" fill="#6F767E"/><rect x="5" y="5" width="%d" height="%d" rx="3" fill="url(#st)"/>%s' % (w, h, w - 10, h - 10, lines))
+
+
+# ---------------------------------------------------------------- review round 2: depth, light and life
+_uid = [0]
+def uid(p='u'):
+    _uid[0] += 1
+    return '%s%d' % (p, _uid[0])
+
+
+def soft_ellipse(rx, ry, color='#000', opacity=.30, blur=6):
+    """A blurred ellipse in a (2rx+4blur) x (2ry+4blur) box: contact shadows, pools of light."""
+    i = uid('se'); W, H = 2 * rx + 8 * blur, 2 * ry + 8 * blur
+    return W, H, ('<defs><filter id="%s" x="-50%%" y="-50%%" width="200%%" height="200%%"><feGaussianBlur stdDeviation="%s"/></filter></defs>'
+                  '<ellipse cx="%d" cy="%d" rx="%d" ry="%d" fill="%s" opacity="%s" filter="url(#%s)"/>' % (i, blur, W / 2, H / 2, rx, ry, color, opacity, i))
+
+
+def floor_band(color, top='#00000000', h=260, w=760):
+    return '<rect width="%d" height="%d" fill="%s"/><rect width="%d" height="3" fill="%s"/>' % (w, h, color, w, top)
+
+
+def glint_band(h, w=90, skew=40, color='#FFFAEB', peak=.42):
+    i = uid('gl')
+    return ('<defs><linearGradient id="%s" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="%s" stop-opacity="0"/>'
+            '<stop offset=".5" stop-color="%s" stop-opacity="%s"/><stop offset="1" stop-color="%s" stop-opacity="0"/></linearGradient></defs>'
+            '<polygon points="%s" fill="url(#%s)"/>' % (i, color, color, peak, color, pts([(skew, 0), (w + skew, 0), (w, h), (0, h)]), i))
+
+
+def mote(r=2.5, color='#FFF1CF'):
+    return '<circle cx="%s" cy="%s" r="%s" fill="%s"/>' % (r, r, r, color)
+
+
+def curtain(w=760, h=1320, n=9, a='#14100C', b='#1D1712', hi='#2A221B'):
+    """Theatre curtain in paper: tapered vertical pleats with a thin highlight edge."""
+    s = '<rect width="%d" height="%d" fill="%s"/>' % (w, h, a)
+    pw = w / n
+    for k in range(n):
+        x = k * pw
+        s += '<path d="M %.1f 0 L %.1f 0 L %.1f %d L %.1f %d Z" fill="%s"/><path d="M %.1f 0 L %.1f %d" stroke="%s" stroke-width="2"/>' % (
+            x + 6, x + pw - 6, x + pw - 16, h, x + 16, h, b if k % 2 else a, x + 6, x + 16, h, hi)
+    return s
+
+
+def vignette(w=760, h=1320, color='#000', amt=.55, inner=.55):
+    i = uid('vg')
+    return ('<defs><radialGradient id="%s" cx="50%%" cy="48%%" r="75%%"><stop offset="%s" stop-color="%s" stop-opacity="0"/>'
+            '<stop offset="1" stop-color="%s" stop-opacity="%s"/></radialGradient></defs><rect width="%d" height="%d" fill="url(#%s)"/>' % (i, inner, color, color, amt, w, h, i))
+
+
+def radial_light(w, h, cx, cy, r, color='#FFE3A0', amt=.22):
+    i = uid('rl')
+    return ('<defs><radialGradient id="%s" gradientUnits="userSpaceOnUse" cx="%s" cy="%s" r="%s"><stop offset="0" stop-color="%s" stop-opacity="%s"/>'
+            '<stop offset="1" stop-color="%s" stop-opacity="0"/></radialGradient></defs><rect width="%d" height="%d" fill="url(#%s)"/>' % (i, cx, cy, r, color, amt, color, w, h, i))
+
+
+def light_beam(pts_, color='#FFE3A0', amt=.12):
+    i = uid('lb')
+    return ('<defs><linearGradient id="%s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="%s" stop-opacity="%s"/><stop offset="1" stop-color="%s" stop-opacity="%s"/></linearGradient></defs>'
+            '<polygon points="%s" fill="url(#%s)"/>' % (i, color, amt, color, amt * .35, pts(pts_), i))
+
+
+# Geneva from the studio, in layers (each its own svg so the camera move becomes parallax)
+def geneva_sky(w=720, h=760, top='#B9C9D6', bot='#DCE4EA'):
+    i = uid('gs')
+    return ('<defs><linearGradient id="%s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="%s"/><stop offset="1" stop-color="%s"/></linearGradient></defs>'
+            '<rect width="%d" height="%d" fill="url(#%s)"/>' % (i, top, bot, w, h, i))
+
+
+def geneva_mountains(w=720, h=200):
+    """Mont Blanc's snow far off, the Saleve ridge in front of it."""
+    s = '<polygon points="%s" fill="#F2F5F7"/>' % pts([(0, h * .55), (w * .18, h * .35), (w * .3, h * .45), (w * .52, h * .05), (w * .62, h * .25), (w * .7, h * .18), (w * .85, h * .4), (w, h * .3), (w, h), (0, h)])
+    s += '<polygon points="%s" fill="#C9D4DE"/>' % pts([(w * .52, h * .05), (w * .56, h * .5), (w * .62, h * .25), (w * .66, h * .6), (w * .52, h * .7), (w * .45, h * .4)])
+    s += '<polygon points="%s" fill="#7F93A0"/>' % pts(jag([(0, h * .8), (w * .15, h * .62), (w * .4, h * .55), (w * .65, h * .66), (w * .85, h * .6), (w, h * .7), (w, h), (0, h)], 2, 3))
+    return s
+
+
+def geneva_quay(w=720, h=120, seed=5):
+    r = random.Random(seed); s = ''; x = -10
+    while x < w:
+        bw, bh = r.uniform(60, 110), r.uniform(50, 100); c = r.choice(['#B8AE98', '#A39880', '#BFB59E'])
+        s += '<rect x="%.1f" y="%.1f" width="%.1f" height="%.1f" fill="%s"/>' % (x, h - bh, bw, bh, c)
+        s += ''.join('<rect x="%.1f" y="%.1f" width="7" height="10" fill="#8C826E"/>' % (x + 8 + j * 16, h - bh + 12 + q * 22) for j in range(int((bw - 10) // 16)) for q in range(int((bh - 20) // 22)))
+        x += bw + r.uniform(2, 8)
+    s += '<path d="M 300 %d q 30 -48 60 0 Z" fill="#9C9078"/>' % (h - 70)      # one dome
+    return s
+
+
+def geneva_lake(w=720, h=300):
+    s = ''
+    for k, c in enumerate(('#6F8FA8', '#5E7F98', '#557590', '#4C6A84')):
+        y = k * h / 4
+        s += '<polygon points="%s" fill="%s"/>' % (pts(jag([(0, y)] + [(i * w / 12, y + (3 if i % 2 else -2)) for i in range(1, 12)] + [(w, y), (w, h), (0, h)], 1.5, 11 + k)), c)
+    return s
+
+
+def jet_d_eau(h=300):
+    """The Jet d'Eau: a tapered plume with its mist at the top. Anchor at the bottom."""
+    return ('<path d="M 28 %d L 22 40 Q 30 10 38 40 L 32 %d Z" fill="#F4F7FA"/>' % (h, h) +
+            ''.join('<circle cx="%d" cy="%d" r="%d" fill="#F4F7FA" opacity=".35"/>' % c for c in ((30, 34, 22), (44, 48, 16), (16, 52, 14))))
+
+
+def steamer(w=160, h=60):
+    """A paddle steamer on the lake (generic: white hull, two funnels)."""
+    return ('<path d="M 0 36 L 160 36 L 146 58 L 12 58 Z" fill="#EFE8D6"/><rect x="24" y="22" width="112" height="14" fill="#EFE8D6"/>'
+            '<rect x="30" y="26" width="100" height="4" fill="#8C826E"/><rect x="56" y="2" width="12" height="22" fill="#B23A2E"/><rect x="90" y="2" width="12" height="22" fill="#16181D"/>'
+            '<circle cx="80" cy="44" r="12" fill="#C9C1AE"/>')
+
+
+def cloud_paper(w=200, h=70, color='#F2F5F7'):
+    return '<path d="M 10 60 Q 0 30 40 32 Q 50 4 90 14 Q 120 0 140 24 Q 190 20 190 60 Z" fill="%s" opacity=".9"/>' % color
+
+
+def aurora(w=760, h=360):
+    s = ''
+    for k, (c, o) in enumerate((('#2F6F6A', .35), ('#3E8A78', .25), ('#5E9E8A', .18))):
+        y = 60 + k * 70
+        s += '<path d="M -20 %d C 180 %d 320 %d 520 %d S 740 %d 780 %d L 780 %d C 600 %d 420 %d 240 %d S 40 %d -20 %d Z" fill="%s" opacity="%s"/>' % (
+            y, y - 50, y + 60, y, y - 40, y + 10, y + 70, y + 40, y + 120, y + 60, y + 100, y + 80, c, o)
+    return s
+
+
+def stars(w=720, h=520, n=30, seed=7, color='#EFE8D6'):
+    r = random.Random(seed)
+    return ''.join('<circle cx="%.1f" cy="%.1f" r="%.1f" fill="%s" opacity="%.2f"/>' % (r.uniform(0, w), r.uniform(0, h), r.uniform(1, 2.2), color, r.uniform(.35, .8)) for _ in range(n))
+
+
+def star8(r=18, color='#C9A35F', under='#9C7B3F'):
+    p = [(r + (r if k % 2 == 0 else r * .42) * math.cos(math.radians(k * 22.5 - 90)), r + (r if k % 2 == 0 else r * .42) * math.sin(math.radians(k * 22.5 - 90))) for k in range(16)]
+    return '<polygon points="%s" fill="%s" transform="translate(1.5 2)"/><polygon points="%s" fill="%s"/>' % (pts(p), under, pts(p), color)
+
+
+def envelope(w=150, h=96, seal='#9E2B22'):
+    """A letter (no logo): cream envelope, flap, a wax dot."""
+    return ('<rect width="%d" height="%d" rx="4" fill="#EFE8D6"/><path d="M 0 0 L %d %d L %d 0" fill="#E2D9C3" stroke="#CFC6B1" stroke-width="1.5"/>' % (w, h, w / 2, h * .55, w) +
+            '<circle cx="%d" cy="%d" r="10" fill="%s"/>' % (w / 2, h * .55, seal))
+
+
+def index_card(name='GENTA, G.', w=300, h=180):
+    """An archive index card: a red header rule, typed lines."""
+    return ('<rect width="%d" height="%d" rx="3" fill="#F6F1E3"/><rect x="0" y="34" width="%d" height="3" fill="#B23A2E"/>' % (w, h, w) +
+            ''.join('<rect x="18" y="%d" width="%d" height="1.5" fill="#B9B2A2"/>' % (y, w - 36) for y in range(66, h - 10, 26)) +
+            '<text x="18" y="26" font-family="var(--f-mono)" font-size="15" fill="#8A8478">AUDEMARS PIGUET · ARCHIVES</text>'
+            '<text x="18" y="62" font-family="var(--f-mono)" font-size="22" font-weight="700" fill="#16181D">%s</text>'
+            '<text x="18" y="88" font-family="var(--f-mono)" font-size="16" fill="#3A3B3E">1960 · dessins</text>' % name)
+
+
+def tick_mark(color='#B23A2E'):
+    return '<path d="M 4 30 L 18 46 L 52 6" stroke="%s" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/>' % color
+
+
+def spruce_band(w=760, h=240, seed=8):
+    """The Vallee de Joux: Risoud spruce, a meadow, a sliver of the lake."""
+    r = random.Random(seed)
+    s = '<rect y="%d" width="%d" height="%d" fill="#8EA07A"/><rect y="%d" width="%d" height="%d" fill="#7E97A6"/>' % (h * .55, w, h * .45, h * .78, w, h * .22)
+    for i in range(44):
+        x, ht = r.uniform(-20, w + 20), r.uniform(50, 95); base = h * .6 + r.uniform(-8, 8)
+        s += '<polygon points="%s" fill="%s"/>' % (pts([(x, base - ht), (x - ht * .26, base), (x + ht * .26, base)]), r.choice(['#2F4038', '#3B5046']))
+    return s
+
+
+def cork_board(w=600, h=360):
+    r = random.Random(12)
+    s = '<rect width="%d" height="%d" rx="6" fill="#5A4632"/><rect x="12" y="12" width="%d" height="%d" fill="#B08A5A"/>' % (w, h, w - 24, h - 24)
+    s += ''.join('<circle cx="%.1f" cy="%.1f" r="1.6" fill="#9C7A4C"/>' % (r.uniform(14, w - 14), r.uniform(14, h - 14)) for _ in range(260))
+    return s
+
+
+def pin_head(color='#B23A2E'):
+    return '<circle cx="8" cy="8" r="7" fill="%s"/><circle cx="6" cy="6" r="2" fill="#FFFFFF" opacity=".6"/>' % color
+
+
+def ribbon_timeline(years, w=560, h=34):
+    s = '<rect width="%d" height="%d" fill="#EFE8D6"/>' % (w, h)
+    for k, y in enumerate(years):
+        x = 30 + k * (w - 60) / (len(years) - 1)
+        s += '<rect x="%.1f" y="0" width="2" height="9" fill="#16181D"/><text x="%.1f" y="27" font-family="var(--f-banner)" font-weight="800" font-size="15" fill="#16181D" text-anchor="middle">%s</text>' % (x - 1, x, y)
+    return s
+
+
+def road_and_hills(w=760, h=140):
+    s = '<polygon points="%s" fill="#9FAF8E"/>' % pts([(0, 60), (120, 30), (260, 52), (420, 20), (560, 46), (760, 28), (760, 110), (0, 110)])
+    s += '<polygon points="%s" fill="#8EA07A"/>' % pts([(0, 84), (200, 64), (380, 80), (600, 62), (760, 76), (760, 112), (0, 112)])
+    s += '<rect y="110" width="%d" height="26" fill="#B8AE98"/>' % w
+    s += ''.join('<rect x="%d" y="121" width="22" height="3" fill="#EFE8D6"/>' % x for x in range(10, w, 46))
+    return s
+
+
+def tandem_frame(c='#B23A2E'):
+    """The tandem without its wheels (wheel() spins separately). Same 520x230 box as tandem_bike()."""
+    return ('<path d="M 80 160 L 170 70 L 330 70 L 440 160 M 170 70 L 250 160 L 330 70 M 250 160 L 80 160 M 440 160 L 400 40" stroke="%s" stroke-width="11" fill="none" stroke-linejoin="round"/>' % c +
+            '<rect x="150" y="52" width="46" height="12" rx="6" fill="#2A2C31"/><rect x="306" y="52" width="46" height="12" rx="6" fill="#2A2C31"/>' +
+            '<path d="M 384 36 L 430 30" stroke="#2A2C31" stroke-width="9" stroke-linecap="round"/><path d="M 172 50 L 150 30 L 176 40 Z" fill="%s"/>' % c)
+
+
+def wheel(r=62):
+    return ('<circle cx="%d" cy="%d" r="%d" fill="none" stroke="#2A2C31" stroke-width="9"/>' % (r + 5, r + 5, r) +
+            ''.join('<line x1="%d" y1="%d" x2="%.1f" y2="%.1f" stroke="#8A8F96" stroke-width="2"/>' % (r + 5, r + 5, r + 5 + (r - 4) * math.cos(math.radians(a)), r + 5 + (r - 4) * math.sin(math.radians(a))) for a in range(0, 360, 30)) +
+            '<circle cx="%d" cy="%d" r="6" fill="#2A2C31"/>' % (r + 5, r + 5))
+
+
+# lifestyle, 1970: what a steel sports watch is for (generic shapes, no brands)
+def icon_yacht():
+    return ('<path d="M 70 10 L 70 120 L 10 120 Z" fill="#EFE8D6"/><path d="M 78 20 Q 140 70 120 120 L 78 120 Z" fill="#B23A2E"/>'
+            '<path d="M 0 130 L 150 130 L 130 156 L 18 156 Z" fill="#EFE8D6"/><rect x="72" y="8" width="4" height="124" fill="#3A3B3E"/>')
+
+
+def icon_racket():
+    return ('<ellipse cx="50" cy="50" rx="40" ry="48" fill="none" stroke="#EFE8D6" stroke-width="8"/>' +
+            ''.join('<line x1="%d" y1="6" x2="%d" y2="94" stroke="#A9B0B8" stroke-width="1.5"/>' % (x, x) for x in range(22, 80, 10)) +
+            ''.join('<line x1="12" y1="%d" x2="88" y2="%d" stroke="#A9B0B8" stroke-width="1.5"/>' % (y, y) for y in range(18, 90, 10)) +
+            '<rect x="44" y="96" width="12" height="70" rx="5" fill="#EFE8D6"/><circle cx="104" cy="150" r="14" fill="#D9E06A"/>')
+
+
+def icon_skis():
+    return ('<rect x="40" y="0" width="14" height="170" rx="7" fill="#EFE8D6" transform="rotate(-18 47 85)"/>'
+            '<rect x="66" y="0" width="14" height="170" rx="7" fill="#B23A2E" transform="rotate(18 73 85)"/>')
+
+
+def icon_car():
+    return ('<path d="M 0 60 L 20 40 Q 60 14 110 18 L 150 36 L 190 44 Q 200 48 200 60 L 200 72 L 0 72 Z" fill="#EFE8D6"/>'
+            '<path d="M 50 38 Q 70 24 104 24 L 128 38 Z" fill="#2A2C31"/><circle cx="46" cy="74" r="16" fill="#2A2C31"/><circle cx="160" cy="74" r="16" fill="#2A2C31"/>'
+            '<circle cx="46" cy="74" r="6" fill="#A9B0B8"/><circle cx="160" cy="74" r="6" fill="#A9B0B8"/>')
+
+
+def icon_sunglasses():
+    return ('<path d="M 0 10 L 140 10" stroke="#EFE8D6" stroke-width="6"/><path d="M 6 12 L 60 12 Q 60 50 34 50 Q 8 50 6 12 Z" fill="#2A2C31" stroke="#EFE8D6" stroke-width="4"/>'
+            '<path d="M 80 12 L 134 12 Q 132 50 106 50 Q 80 50 80 12 Z" fill="#2A2C31" stroke="#EFE8D6" stroke-width="4"/>')
+
+
+def rapier(uid_='rp'):
+    """One rapier, hilt at the bottom of a 60x300 box."""
+    return ('<defs><linearGradient id="%s" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#E4E8EC"/><stop offset="1" stop-color="#9EA5AD"/></linearGradient></defs>'
+            '<path d="M 27 0 L 33 0 L 34 220 L 26 220 Z" fill="url(#%s)"/><path d="M 30 4 L 30 218" stroke="#FFFFFF66" stroke-width="1.5"/>'
+            '<path d="M 4 222 Q 30 196 56 222 Q 30 250 4 222 Z" fill="#9C7B3F"/><path d="M 8 220 Q 30 200 52 220 Q 30 244 8 220 Z" fill="#C9A35F"/>'
+            '<rect x="25" y="236" width="10" height="44" rx="4" fill="#5A3A22"/><circle cx="30" cy="284" r="7" fill="#C9A35F"/>' % (uid_, uid_))
+
+
+def cavalier_hat():
+    return ('<ellipse cx="110" cy="70" rx="110" ry="22" fill="#16181D"/><path d="M 50 70 Q 54 14 110 12 Q 166 14 170 70 Z" fill="#16181D"/>'
+            '<rect x="52" y="54" width="116" height="12" fill="#B23A2E"/>' +
+            ''.join('<path d="M 150 56 Q %d %d %d %d" stroke="#EFE8D6" stroke-width="7" fill="none" stroke-linecap="round"/>' % (180 + k * 6, 10 - k * 4, 214 - k * 6, 30 + k * 10) for k in range(5)))
+
+
+def bubble_sea(r=240):
+    """The memory: an underwater paper diorama in a deckled circle."""
+    i = uid('sea'); c = r + 12
+    edge = [(c + (r + 8 + random.Random(k).uniform(-3, 3)) * math.cos(2 * math.pi * k / 64), c + (r + 8 + random.Random(k + 99).uniform(-3, 3)) * math.sin(2 * math.pi * k / 64)) for k in range(64)]
+    s = '<defs><clipPath id="%s"><circle cx="%d" cy="%d" r="%d"/></clipPath></defs>' % (i, c, c, r)
+    s += '<polygon points="%s" fill="#EFE8D6"/>' % pts(edge)
+    s += '<g clip-path="url(#%s)">' % i
+    for k, col in enumerate(('#2C6A80', '#1E4A63', '#143246')):
+        s += '<rect x="0" y="%d" width="%d" height="%d" fill="%s"/>' % (k * 2 * c / 3, 2 * c, 2 * c / 3 + 2, col)
+    s += ''.join('<polygon points="%s" fill="#FFFFFF" opacity=".08"/>' % pts([(x, 0), (x + 40, 0), (x + 140, 2 * c), (x + 60, 2 * c)]) for x in (60, 200, 330))
+    s += '<path d="M 0 %d Q %d %d %d %d L %d %d L 0 %d Z" fill="#C9B38A"/>' % (2 * c - 60, c, 2 * c - 100, 2 * c, 2 * c - 70, 2 * c, 2 * c, 2 * c)
+    s += '<g transform="translate(70 %d)">%s</g><g transform="translate(%d %d) scale(.8)">%s</g>' % (2 * c - 260, kelp(220), 2 * c - 110, 2 * c - 240, kelp(220, '#2A5444'))
+    s += '</g>'
+    return s
+
+
+def kelp(h=200, color='#2F5E4A'):
+    return '<path d="M 20 %d Q 0 %d 22 %d Q 44 %d 20 %d Q 0 %d 18 0 Q 30 %d 34 %d Q 50 %d 34 %d Q 22 %d 32 %d Z" fill="%s"/>' % (
+        h, h * .75, h * .5, h * .3, h * .15, h * .05, h * .2, h * .4, h * .62, h * .8, h * .9, h, color)
+
+
+def ring(r=8, color='#CFE3EE'):
+    return '<circle cx="%d" cy="%d" r="%d" fill="none" stroke="%s" stroke-width="2"/>' % (r + 2, r + 2, r, color)
+
+
+def drape(w=380, h=460, color='#4A1F25'):
+    """A velvet cloth over the showcase: three soft folds."""
+    i = uid('dr')
+    return ('<defs><linearGradient id="%s" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#3A161B"/><stop offset=".2" stop-color="%s"/>'
+            '<stop offset=".35" stop-color="#5E2A31"/><stop offset=".5" stop-color="#3A161B"/><stop offset=".68" stop-color="#5E2A31"/><stop offset=".85" stop-color="%s"/>'
+            '<stop offset="1" stop-color="#3A161B"/></linearGradient></defs><path d="M 20 0 Q %d -14 %d 0 L %d %d Q %d %d %d %d Q %d %d 0 %d Z" fill="url(#%s)"/>'
+            % (i, color, color, w / 2, w - 20, w, h, w * .75, h + 18, w / 2, h, w * .25, h + 18, h, i))
+
+
+def swing_tag(text='3,300 CHF', w=230, h=112):
+    return ('<rect width="%d" height="%d" rx="9" fill="#F6F1E3"/><rect x="2" y="2" width="%d" height="%d" rx="8" fill="none" stroke="#D9CFB8" stroke-width="2"/>' % (w, h, w - 4, h - 4) +
+            '<circle cx="24" cy="%d" r="8" fill="#3B4048"/><rect x="50" y="34" width="%d" height="2" fill="#C9A35F"/>' % (h / 2, w - 74) +
+            '<text x="%d" y="84" font-family="var(--f-cap)" font-weight="700" font-size="38" fill="#16181D" text-anchor="middle">%s</text>' % (w / 2 + 12, text))
+
+
+def pendant_lamp():
+    return ('<rect x="58" y="0" width="4" height="60" fill="#16181D"/><path d="M 20 100 L 40 60 L 80 60 L 100 100 Z" fill="#2A2C31"/>'
+            '<ellipse cx="60" cy="100" rx="40" ry="7" fill="#FFE6A8"/>')
+
+
+def banner_cloth(w=600, h=70):
+    return '<rect x="0" y="0" width="%d" height="%d" fill="#EFE8D6"/><rect x="0" y="%d" width="%d" height="4" fill="#B23A2E"/>' % (w, h, h - 6, w) + \
+           '<line x1="40" y1="-60" x2="40" y2="0" stroke="#16181D" stroke-width="2"/><line x1="%d" y1="-60" x2="%d" y2="0" stroke="#16181D" stroke-width="2"/>' % (w - 40, w - 40)
+
+
+def carpet(w=760, h=300):
+    return '<polygon points="%s" fill="#7A2A26"/><polygon points="%s" fill="#5E1F1C"/>' % (pts([(w * .3, 0), (w * .7, 0), (w, h), (0, h)]), pts([(w * .3, 0), (w * .32, 0), (w * .04, h), (0, h)]))
+
+
+def velvet_riser(w=240, h=40):
+    return '<rect width="%d" height="%d" rx="6" fill="#4A1F25"/><rect x="0" y="0" width="%d" height="6" rx="3" fill="#6B323A"/>' % (w, h, w)
+
+
+def desk_edge(w=760, h=150):
+    return '<rect width="%d" height="%d" fill="#4A3828"/><rect width="%d" height="26" fill="#5A4632"/><rect width="%d" height="3" fill="#7A6046"/>' % (w, h, w, w)
+
+
+def nameplate(text, w=200, h=40):
+    return ('<rect width="%d" height="%d" rx="3" fill="#9C7B3F"/><rect x="3" y="3" width="%d" height="%d" rx="2" fill="#C9A35F"/>' % (w, h, w - 6, h - 6) +
+            '<text x="%d" y="%d" font-family="var(--f-cap)" font-weight="700" font-size="15" fill="#16181D" text-anchor="middle">%s</text>' % (w / 2, h / 2 + 5, text))
+
+
+def bankers_lamp():
+    return ('<rect x="56" y="70" width="8" height="70" fill="#C9A35F"/><ellipse cx="60" cy="142" rx="40" ry="8" fill="#9C7B3F"/>'
+            '<path d="M 4 70 Q 60 30 116 70 Z" fill="#2E5D3A"/><rect x="4" y="66" width="112" height="6" fill="#244A2E"/>')
+
+
+def drafting_board():
+    """Genta's tilted drafting board, 1970: wood board on an iron stand, a pinned sheet, a parallel rule."""
+    return ('<rect x="150" y="150" width="14" height="190" fill="#2A2C31"/><rect x="100" y="330" width="120" height="12" fill="#2A2C31"/>'
+            '<polygon points="0,140 300,40 320,90 20,190" fill="#8B6A45"/><polygon points="6,136 296,40 314,84 22,182" fill="#C8A46A"/>'
+            '<polygon points="60,128 230,72 246,110 76,166" fill="#F6F1E3"/><polygon points="20,160 306,64 308,70 22,166" fill="#9BA2AB"/>')
+
+
+def jar_brushes():
+    return ('<rect x="10" y="40" width="50" height="60" rx="6" fill="#C9D4DE" opacity=".6"/>' +
+            ''.join('<rect x="%d" y="%d" width="5" height="%d" fill="%s" transform="rotate(%d %d 90)"/>' % (x, y, 90 - y, c, a, x)
+                    for x, y, c, a in ((22, 0, '#B23A2E', -8), (32, 6, '#2E5D3A', 4), (42, 12, '#C9A35F', 12))) +
+            ''.join('<rect x="%d" y="88" width="22" height="14" rx="3" fill="#EFE8D6"/><rect x="%d" y="84" width="22" height="6" rx="2" fill="%s"/>' % (x, x, c)
+                    for x, c in ((70, '#2F5E8A'), (96, '#B23A2E'), (122, '#C9C1AE'))))
+

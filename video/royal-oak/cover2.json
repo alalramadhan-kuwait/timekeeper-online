@@ -113,7 +113,7 @@
      "h": 1280,
      "frame": false,
      "fit": "cover",
-     "pos": "50% 50%",
+     "pos": "62% 50%",
      "depth": 0,
      "z": 1,
      "scale": [
@@ -139,10 +139,41 @@
      "still": true
     },
     {
+     "type": "svg",
+     "w": 760,
+     "h": 420,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"760\" height=\"420\" viewBox=\"0 0 760 420\" style=\"overflow:visible;\"><defs><linearGradient id=\"cv2\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#1D3B5E\" stop-opacity=\".55\"/><stop offset=\"1\" stop-color=\"#1D3B5E\" stop-opacity=\"0\"/></linearGradient></defs><rect width=\"760\" height=\"420\" fill=\"url(#cv2)\"/></svg>",
+     "x": 360,
+     "y": 210,
+     "anchor": "c",
+     "z": 2
+    },
+    {
+     "type": "svg",
+     "w": 760,
+     "h": 120,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"760\" height=\"120\" viewBox=\"0 0 760 120\" style=\"overflow:visible;\"><rect width=\"760\" height=\"120\" fill=\"#132A45\"/></svg>",
+     "x": 360,
+     "y": 1240,
+     "anchor": "c",
+     "z": 3
+    },
+    {
+     "type": "svg",
+     "w": 282,
+     "h": 76,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"282\" height=\"76\" viewBox=\"0 0 282 76\" style=\"overflow:visible;\"><defs><filter id=\"se30\" x=\"-50%\" y=\"-50%\" width=\"200%\" height=\"200%\"><feGaussianBlur stdDeviation=\"6\"/></filter></defs><ellipse cx=\"141\" cy=\"38\" rx=\"117\" ry=\"14\" fill=\"#000\" opacity=\"0.32\" filter=\"url(#se30)\"/></svg>",
+     "x": 170,
+     "y": 1194,
+     "anchor": "c",
+     "z": 9,
+     "still": true
+    },
+    {
      "type": "cutout",
-     "x": 150,
-     "y": 1290,
-     "h": 620,
+     "x": 170,
+     "y": 1200,
+     "h": 680,
      "aspect": 0.4882,
      "edge": 0,
      "z": 10,

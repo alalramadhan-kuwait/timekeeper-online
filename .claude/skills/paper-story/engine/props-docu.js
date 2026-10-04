@@ -169,8 +169,11 @@
           let d = '';
           for (const r of c.r) {
             let minx = 1e9, maxx = -1e9, miny = 1e9, maxy = -1e9, s = '';
+            let off = 0, prev = null;                                  // unwrap rings that cross 180 degrees (no band across the map)
             for (let i = 0; i < r.length; i += 2) {
-              const x = X(r[i]), y = Y(r[i + 1]);
+              if (prev != null) { const dl = r[i] + off - prev; if (dl > 180) off -= 360; else if (dl < -180) off += 360; }
+              prev = r[i] + off;
+              const x = X(prev), y = Y(r[i + 1]);
               if (x < minx) minx = x; if (x > maxx) maxx = x; if (y < miny) miny = y; if (y > maxy) maxy = y;
               s += (i ? 'L' : 'M') + x.toFixed(1) + ' ' + y.toFixed(1);
             }

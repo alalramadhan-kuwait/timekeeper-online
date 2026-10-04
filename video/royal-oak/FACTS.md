@@ -1,3 +1,6 @@
+> **Superseded.** This file describes the earlier single 48-second English film (`film.py`). The two-part Arabic
+> film (`parts.py`) is checked against `FACTS-AR.md`.
+
 # Facts in "A sketch overnight"
 
 Every statement in the narration and on screen, the source checked for it, and how it is worded to stay true.
