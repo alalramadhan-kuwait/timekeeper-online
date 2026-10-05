@@ -18,8 +18,9 @@ Deno.serve(async (req) => {
     if (!cfg) return json({ error: 'push not configured' }, 500);
     webpush.setVapidDetails(cfg.subject, cfg.vapid_public, cfg.vapid_private);
 
-    const { data: sub } = await supa.from('push_subscriptions').select('*').eq('user_id', user.id);
-    if (!sub || sub.length === 0) return json({ sent: 0, error: 'You have not enabled notifications on this device yet.' });
+    // The test comes from the back office's Notification Settings, so it goes to the back office app only.
+    const { data: sub } = await supa.from('push_subscriptions').select('*').eq('user_id', user.id).eq('app', 'timekeeper');
+    if (!sub || sub.length === 0) return json({ sent: 0, error: 'You have not enabled notifications in the Time Keeper app on this device yet.' });
 
     const { data: n } = await supa.from('notifications').insert({
       event_type: 'test', title: 'Test notification', body: 'This is a test from Notification Settings ✅',

@@ -1,5 +1,13 @@
 [
   {
+    "version": "3.2.1",
+    "date": "2026-10-05",
+    "title": "One alert, one app",
+    "changes": [
+      "If you also use the shop app (DSR), alerts no longer arrive twice. Purchase orders, projects, tasks, accounts and marketing alerts come here; requests, birthdays and shop alerts go to the shop app."
+    ]
+  },
+  {
     "version": "3.2.0",
     "date": "2026-10-01",
     "title": "Arabic names for WhatsApp messages",

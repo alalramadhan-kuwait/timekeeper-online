@@ -14,3 +14,9 @@ verify_jwt = true
 # admin/manager JWT checked in code), so the gateway must not require a JWT.
 [functions.lightspeed-sales-sync]
 verify_jwt = false
+
+[functions.push-notify]
+verify_jwt = true
+
+[functions.notify-dispatch]
+verify_jwt = false

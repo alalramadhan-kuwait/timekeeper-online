@@ -45,7 +45,7 @@ export async function enablePush(): Promise<{ ok: boolean; error?: string }> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { ok: false, error: 'Not signed in.' };
   const { error } = await supabase.from('push_subscriptions').upsert(
-    { user_id: user.id, endpoint: sub.endpoint, p256dh: j.keys?.p256dh, auth: j.keys?.auth, ua: navigator.userAgent },
+    { user_id: user.id, endpoint: sub.endpoint, p256dh: j.keys?.p256dh, auth: j.keys?.auth, ua: navigator.userAgent, app: 'timekeeper' },
     { onConflict: 'endpoint' },
   );
   if (error) return { ok: false, error: error.message };

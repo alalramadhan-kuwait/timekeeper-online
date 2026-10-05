@@ -23,10 +23,13 @@ Deno.serve(async (req) => {
     const { data: profs } = await supa.from('profiles').select('id, role');
     const roleIds = (roles: string[]) => (profs ?? []).filter((p: any) => roles.includes(p.role)).map((p: any) => p.id);
 
-    async function sendToUsers(ids: string[], payload: string) {
+    /* Each event is pushed to ONE app per person: its home app (notification_settings.home_app),
+       or the other app when the person has no phone in the home app and the other can show it.
+       push_targets() holds that rule; before it, every subscription of the user got every push. */
+    async function sendToUsers(ids: string[], eventType: string, payload: string) {
       const set = [...new Set(ids)];
       if (set.length === 0) return 0;
-      const { data: subs } = await supa.from('push_subscriptions').select('*').in('user_id', set);
+      const { data: subs } = await supa.rpc('push_targets', { p_users: set, p_event: eventType });
       let sent = 0; const stale: string[] = [];
       await Promise.all((subs ?? []).map(async (s: any) => {
         try { await webpush.sendNotification({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, payload); sent++; }
@@ -47,12 +50,12 @@ Deno.serve(async (req) => {
     const others = bulk ? due.filter((n: any) => !(n.event_type as string).startsWith('po_')) : due;
     let sent = 0;
 
-    for (const n of others) sent += await sendToUsers(recipientsOf(n), JSON.stringify({ title: n.title, body: n.body, url: n.url || '#/inbox' }));
+    for (const n of others) sent += await sendToUsers(recipientsOf(n), n.event_type, JSON.stringify({ title: n.title, body: n.body, url: n.url || '#/inbox' }));
     await Promise.all(others.map((n: any) => supa.from('notifications').update({ delivered_at: new Date().toISOString() }).eq('id', n.id)));
 
     if (po.length === 1) {
       const n = po[0];
-      sent += await sendToUsers(recipientsOf(n), JSON.stringify({ title: n.title, body: n.body, url: n.url || '#/purchase-orders' }));
+      sent += await sendToUsers(recipientsOf(n), n.event_type, JSON.stringify({ title: n.title, body: n.body, url: n.url || '#/purchase-orders' }));
     } else if (po.length > 1) {
       const c: Record<string, number> = { po_new: 0, po_status: 0, po_ship: 0, po_pay: 0 };
       for (const n of po) c[n.event_type] = (c[n.event_type] ?? 0) + 1;
@@ -71,7 +74,7 @@ Deno.serve(async (req) => {
         ? `${po.length} POs updated · ${brands.join(', ')}`
         : `${po.length} POs updated (${parts.join(' · ')})`;
       await supa.from('notifications').insert({ event_type: 'po_summary', title: 'Lightspeed sync', body, url: '#/purchase-orders', audience_roles: ['admin', 'manager'], delivered_at: new Date().toISOString() });
-      sent += await sendToUsers(roleIds(['admin', 'manager']), JSON.stringify({ title: 'Lightspeed sync', body, url: '#/purchase-orders' }));
+      sent += await sendToUsers(roleIds(['admin', 'manager']), 'po_summary', JSON.stringify({ title: 'Lightspeed sync', body, url: '#/purchase-orders' }));
     }
     if (po.length) await Promise.all(po.map((n: any) => supa.from('notifications').update({ delivered_at: new Date().toISOString() }).eq('id', n.id)));
 
