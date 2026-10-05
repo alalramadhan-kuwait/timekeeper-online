@@ -1503,6 +1503,722 @@
    ]
   },
   {
+   "theme": "ro-night",
+   "floor": false,
+   "elements": [
+    {
+     "type": "svg",
+     "w": 300,
+     "h": 330,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"300\" height=\"330\" viewBox=\"0 0 300 330\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><rect x=\"0\" y=\"18\" width=\"300\" height=\"312\" rx=\"6\" fill=\"#F3EEE1\"/><rect x=\"0\" y=\"18\" width=\"300\" height=\"74\" rx=\"6\" fill=\"#B23A2E\"/><rect x=\"0\" y=\"70\" width=\"300\" height=\"22\" fill=\"#B23A2E\"/><rect x=\"70\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><rect x=\"214\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><text x=\"150\" y=\"262\" font-family=\"var(--f-title)\" font-size=\"150\" fill=\"#16181D\" text-anchor=\"middle\">1969</text><line x1=\"24\" y1=\"292\" x2=\"276\" y2=\"292\" stroke=\"#CFC6B1\" stroke-width=\"2\"/></svg>",
+     "x": 170,
+     "y": 250,
+     "anchor": "c",
+     "z": 10,
+     "in": {
+      "type": "flip",
+      "at": 0.05,
+      "dur": 0.18
+     },
+     "scale": 0.55,
+     "out": {
+      "type": "fade",
+      "at": 9.61,
+      "dur": 0.2
+     }
+    },
+    {
+     "type": "text",
+     "text": "طوكيو، ديسمبر 1969",
+     "x": 190,
+     "y": 400,
+     "font": "banner",
+     "size": 26,
+     "color": "#16181D",
+     "paper": "#EFE8D6",
+     "upper": false,
+     "z": 22,
+     "rot": -3,
+     "in": {
+      "type": "pop",
+      "at": 3.1599999999999997,
+      "dur": 0.35
+     },
+     "out": {
+      "type": "fade",
+      "at": 9.61,
+      "dur": 0.2
+     }
+    },
+    {
+     "type": "image",
+     "src": "assets/early/astron1969.jpg",
+     "polaroid": true,
+     "aspect": 0.7677543186180422,
+     "label": "Seiko Quartz Astron · 1969",
+     "w": 380,
+     "x": 470,
+     "y": 560,
+     "z": 20,
+     "rot": [
+      [
+       3.21,
+       3
+      ],
+      [
+       11.59,
+       4.2
+      ]
+     ],
+     "in": {
+      "type": "rise",
+      "at": 2.76,
+      "dur": 0.45
+     },
+     "labelSize": 22,
+     "out": {
+      "type": "fade",
+      "at": 11.59,
+      "dur": 0.25
+     },
+     "opacity": [
+      [
+       7.22,
+       1
+      ],
+      [
+       7.72,
+       0.25
+      ]
+     ],
+     "scale": [
+      [
+       3.21,
+       1
+      ],
+      [
+       11.59,
+       1.006
+      ]
+     ]
+    },
+    {
+     "type": "svg",
+     "w": 130,
+     "h": 430.9712,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"130\" height=\"430\" viewBox=\"0 0 130 430\" style=\"overflow:visible;\"><defs><linearGradient id=\"gl16\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/><stop offset=\".5\" stop-color=\"#FFFAEB\" stop-opacity=\"0.42\"/><stop offset=\"1\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/></linearGradient></defs><polygon points=\"40.0,0.0 130.0,0.0 90.0,431.0 0.0,431.0\" fill=\"url(#gl16)\"/></svg>",
+     "x": [
+      [
+       3.46,
+       359.0
+      ],
+      [
+       4.16,
+       581.0,
+       "inOutCubic"
+      ]
+     ],
+     "y": 538,
+     "anchor": "c",
+     "z": 21,
+     "in": {
+      "type": "none",
+      "at": 3.46,
+      "dur": 0.5
+     },
+     "rot": 3,
+     "still": true,
+     "opacity": [
+      [
+       3.46,
+       0
+      ],
+      [
+       3.58,
+       1
+      ],
+      [
+       4.04,
+       1
+      ],
+      [
+       4.16,
+       0
+      ]
+     ],
+     "out": {
+      "type": "fade",
+      "at": 4.16,
+      "dur": 0.01
+     }
+    },
+    {
+     "type": "svg",
+     "w": 200,
+     "h": 200,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"200\" height=\"200\" viewBox=\"0 0 200 200\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><circle cx=\"100\" cy=\"100\" r=\"96\" fill=\"#F3EEE1\" stroke=\"#2A2C31\" stroke-width=\"8\"/><rect x=\"98.0\" y=\"10\" width=\"4\" height=\"14\" fill=\"#2A2C31\" transform=\"rotate(0 100 100)\"/><rect x=\"98.0\" y=\"10\" width=\"4\" height=\"8\" fill=\"#2A2C31\" transform=\"rotate(30 100 100)\"/><rect x=\"98.0\" y=\"10\" width=\"4\" height=\"8\" fill=\"#2A2C31\" transform=\"rotate(60 100 100)\"/><rect x=\"98.0\" y=\"10\" width=\"4\" height=\"14\" fill=\"#2A2C31\" transform=\"rotate(90 100 100)\"/><rect x=\"98.0\" y=\"10\" width=\"4\" height=\"8\" fill=\"#2A2C31\" transform=\"rotate(120 100 100)\"/><rect x=\"98.0\" y=\"10\" width=\"4\" height=\"8\" fill=\"#2A2C31\" transform=\"rotate(150 100 100)\"/><rect x=\"98.0\" y=\"10\" width=\"4\" height=\"14\" fill=\"#2A2C31\" transform=\"rotate(180 100 100)\"/><rect x=\"98.0\" y=\"10\" width=\"4\" height=\"8\" fill=\"#2A2C31\" transform=\"rotate(210 100 100)\"/><rect x=\"98.0\" y=\"10\" width=\"4\" height=\"8\" fill=\"#2A2C31\" transform=\"rotate(240 100 100)\"/><rect x=\"98.0\" y=\"10\" width=\"4\" height=\"14\" fill=\"#2A2C31\" transform=\"rotate(270 100 100)\"/><rect x=\"98.0\" y=\"10\" width=\"4\" height=\"8\" fill=\"#2A2C31\" transform=\"rotate(300 100 100)\"/><rect x=\"98.0\" y=\"10\" width=\"4\" height=\"8\" fill=\"#2A2C31\" transform=\"rotate(330 100 100)\"/></svg>",
+     "x": 500,
+     "y": 560,
+     "anchor": "c",
+     "z": 12,
+     "in": {
+      "type": "pop",
+      "at": 0.2,
+      "dur": 0.4
+     },
+     "out": {
+      "type": "fade",
+      "at": 2.6599999999999997,
+      "dur": 0.3
+     }
+    },
+    {
+     "type": "svg",
+     "w": 200,
+     "h": 200,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"200\" height=\"200\" viewBox=\"0 0 200 200\" style=\"overflow:visible;\"><rect x=\"97.0\" y=\"48.0\" width=\"6\" height=\"58.0\" rx=\"2\" fill=\"#16181D\"/></svg>",
+     "x": 500,
+     "y": 560,
+     "anchor": "c",
+     "z": 13,
+     "in": {
+      "type": "pop",
+      "at": 0.2,
+      "dur": 0.4
+     },
+     "rot": [
+      [
+       0.3,
+       90.0
+      ],
+      [
+       2.86,
+       150.0,
+       "inOutCubic"
+      ]
+     ],
+     "out": {
+      "type": "fade",
+      "at": 2.6599999999999997,
+      "dur": 0.3
+     }
+    },
+    {
+     "type": "svg",
+     "w": 200,
+     "h": 200,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"200\" height=\"200\" viewBox=\"0 0 200 200\" style=\"overflow:visible;\"><rect x=\"98.0\" y=\"24.0\" width=\"4\" height=\"82.0\" rx=\"2\" fill=\"#16181D\"/></svg>",
+     "x": 500,
+     "y": 560,
+     "anchor": "c",
+     "z": 13,
+     "in": {
+      "type": "pop",
+      "at": 0.2,
+      "dur": 0.4
+     },
+     "rot": [
+      [
+       0.3,
+       0
+      ],
+      [
+       2.86,
+       720.0,
+       "inOutCubic"
+      ]
+     ],
+     "out": {
+      "type": "fade",
+      "at": 2.6599999999999997,
+      "dur": 0.3
+     }
+    },
+    {
+     "type": "image",
+     "src": "assets/early/astron_35a.jpg",
+     "polaroid": true,
+     "aspect": 1.0,
+     "label": "Cal. 35A · 8,192 Hz",
+     "w": 240,
+     "x": 210,
+     "y": 720,
+     "z": 24,
+     "rot": [
+      [
+       6.37,
+       -5
+      ],
+      [
+       11.59,
+       -6.2
+      ]
+     ],
+     "in": {
+      "type": "pop",
+      "at": 5.92,
+      "dur": 0.45
+     },
+     "labelSize": 18,
+     "out": {
+      "type": "fade",
+      "at": 11.59,
+      "dur": 0.25
+     },
+     "opacity": [
+      [
+       7.22,
+       1
+      ],
+      [
+       7.72,
+       0.25
+      ]
+     ],
+     "scale": [
+      [
+       6.37,
+       1
+      ],
+      [
+       11.59,
+       1.006
+      ]
+     ]
+    },
+    {
+     "type": "sketch",
+     "x": 360,
+     "y": 640,
+     "w": 720,
+     "h": 1280,
+     "z": 8,
+     "pencil": false,
+     "paths": [
+      {
+       "d": "M 40.0 160.0 L 44.0 166.2 L 48.0 171.7 L 52.0 175.7 L 56.0 177.8 L 60.0 177.7 L 64.0 175.3 L 68.0 171.1 L 72.0 165.6 L 76.0 159.3 L 80.0 153.1 L 84.0 147.8 L 88.0 144.0 L 92.0 142.1 L 96.0 142.5 L 100.0 145.0 L 104.0 149.4 L 108.0 155.1 L 112.0 161.4 L 116.0 167.5 L 120.0 172.7 L 124.0 176.3 L 128.0 177.9 L 132.0 177.3 L 136.0 174.6 L 140.0 170.0 L 144.0 164.2 L 148.0 157.9 L 152.0 151.8 L 156.0 146.8 L 160.0 143.4 L 164.0 142.0 L 168.0 142.9 L 172.0 145.9 L 176.0 150.6 L 180.0 156.5 L 184.0 162.8 L 188.0 168.8 L 192.0 173.7 L 196.0 176.9 L 200.0 178.0 L 204.0 176.9 L 208.0 173.7 L 212.0 168.8 L 216.0 162.8 L 220.0 156.5 L 224.0 150.6 L 228.0 145.9 L 232.0 142.9 L 236.0 142.0 L 240.0 143.4 L 244.0 146.8 L 248.0 151.8 L 252.0 157.9 L 256.0 164.2 L 260.0 170.0 L 264.0 174.6 L 268.0 177.3 L 272.0 177.9 L 276.0 176.3 L 280.0 172.7 L 284.0 167.5 L 288.0 161.4 L 292.0 155.1 L 296.0 149.4 L 300.0 145.0 L 304.0 142.5 L 308.0 142.1 L 312.0 144.0 L 316.0 147.8 L 320.0 153.1 L 324.0 159.3 L 328.0 165.6 L 332.0 171.1 L 336.0 175.3 L 340.0 177.7 L 344.0 177.8 L 348.0 175.7 L 352.0 171.7 L 356.0 166.2 L 360.0 160.0 L 364.0 153.8 L 368.0 148.3 L 372.0 144.3 L 376.0 142.2 L 380.0 142.3 L 384.0 144.7 L 388.0 148.9 L 392.0 154.4 L 396.0 160.7 L 400.0 166.9 L 404.0 172.2 L 408.0 176.0 L 412.0 177.9 L 416.0 177.5 L 420.0 175.0 L 424.0 170.6 L 428.0 164.9 L 432.0 158.6 L 436.0 152.5 L 440.0 147.3 L 444.0 143.7 L 448.0 142.1 L 452.0 142.7 L 456.0 145.4 L 460.0 150.0 L 464.0 155.8 L 468.0 162.1 L 472.0 168.2 L 476.0 173.2 L 480.0 176.6 L 484.0 178.0 L 488.0 177.1 L 492.0 174.1 L 496.0 169.4 L 500.0 163.5 L 504.0 157.2 L 508.0 151.2 L 512.0 146.3 L 516.0 143.1 L 520.0 142.0 L 524.0 143.1 L 528.0 146.3 L 532.0 151.2 L 536.0 157.2 L 540.0 163.5 L 544.0 169.4 L 548.0 174.1 L 552.0 177.1 L 556.0 178.0 L 560.0 176.6 L 564.0 173.2 L 568.0 168.2 L 572.0 162.1 L 576.0 155.8 L 580.0 150.0 L 584.0 145.4 L 588.0 142.7 L 592.0 142.1 L 596.0 143.7 L 600.0 147.3 L 604.0 152.5 L 608.0 158.6 L 612.0 164.9 L 616.0 170.6 L 620.0 175.0 L 624.0 177.5 L 628.0 177.9 L 632.0 176.0 L 636.0 172.2 L 640.0 166.9 L 644.0 160.7 L 648.0 154.4 L 652.0 148.9 L 656.0 144.7 L 660.0 142.3 L 664.0 142.2 L 668.0 144.3 L 672.0 148.3 L 676.0 153.8 L 680.0 160.0",
+       "at": 6.12,
+       "dur": 1.0,
+       "stroke": "#7FD3F0",
+       "width": 3,
+       "opacity": 0.9
+      }
+     ],
+     "texts": [],
+     "depth": 0,
+     "out": {
+      "type": "fade",
+      "at": 7.52,
+      "dur": 0.4
+     }
+    },
+    {
+     "type": "svg",
+     "w": 240,
+     "h": 240,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"240\" height=\"240\" viewBox=\"0 0 240 240\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><polygon points=\"228.0,120.0 238.4,131.7 236.7,143.2 223.3,151.4 219.8,161.3 224.9,176.1 218.9,186.1 203.5,188.5 196.4,196.4 195.5,212.0 186.1,218.9 170.9,215.2 161.3,219.8 154.5,233.9 143.2,236.7 130.6,227.5 120.0,228.0 108.3,238.4 96.8,236.7 88.6,223.3 78.7,219.8 63.9,224.9 53.9,218.9 51.5,203.5 43.6,196.4 28.0,195.5 21.1,186.1 24.8,170.9 20.2,161.3 6.1,154.5 3.3,143.2 12.5,130.6 12.0,120.0 1.6,108.3 3.3,96.8 16.7,88.6 20.2,78.7 15.1,63.9 21.1,53.9 36.5,51.5 43.6,43.6 44.5,28.0 53.9,21.1 69.1,24.8 78.7,20.2 85.5,6.1 96.8,3.3 109.4,12.5 120.0,12.0 131.7,1.6 143.2,3.3 151.4,16.7 161.3,20.2 176.1,15.1 186.1,21.1 188.5,36.5 196.4,43.6 212.0,44.5 218.9,53.9 215.2,69.1 219.8,78.7 233.9,85.5 236.7,96.8 227.5,109.4\" fill=\"#6F767E\" transform=\"translate(2 3)\"/><polygon points=\"228.0,120.0 238.4,131.7 236.7,143.2 223.3,151.4 219.8,161.3 224.9,176.1 218.9,186.1 203.5,188.5 196.4,196.4 195.5,212.0 186.1,218.9 170.9,215.2 161.3,219.8 154.5,233.9 143.2,236.7 130.6,227.5 120.0,228.0 108.3,238.4 96.8,236.7 88.6,223.3 78.7,219.8 63.9,224.9 53.9,218.9 51.5,203.5 43.6,196.4 28.0,195.5 21.1,186.1 24.8,170.9 20.2,161.3 6.1,154.5 3.3,143.2 12.5,130.6 12.0,120.0 1.6,108.3 3.3,96.8 16.7,88.6 20.2,78.7 15.1,63.9 21.1,53.9 36.5,51.5 43.6,43.6 44.5,28.0 53.9,21.1 69.1,24.8 78.7,20.2 85.5,6.1 96.8,3.3 109.4,12.5 120.0,12.0 131.7,1.6 143.2,3.3 151.4,16.7 161.3,20.2 176.1,15.1 186.1,21.1 188.5,36.5 196.4,43.6 212.0,44.5 218.9,53.9 215.2,69.1 219.8,78.7 233.9,85.5 236.7,96.8 227.5,109.4\" fill=\"#B9BEC4\"/><circle cx=\"120\" cy=\"120\" r=\"60\" fill=\"#6F767E\"/><circle cx=\"155.2\" cy=\"120.0\" r=\"12.1\" fill=\"#B9BEC4\"/><circle cx=\"137.6\" cy=\"150.5\" r=\"12.1\" fill=\"#B9BEC4\"/><circle cx=\"102.4\" cy=\"150.5\" r=\"12.1\" fill=\"#B9BEC4\"/><circle cx=\"84.8\" cy=\"120.0\" r=\"12.1\" fill=\"#B9BEC4\"/><circle cx=\"102.4\" cy=\"89.5\" r=\"12.1\" fill=\"#B9BEC4\"/><circle cx=\"137.6\" cy=\"89.5\" r=\"12.1\" fill=\"#B9BEC4\"/><circle cx=\"120\" cy=\"120\" r=\"11\" fill=\"#2A2C31\"/></svg>",
+     "x": 300,
+     "y": 600,
+     "anchor": "c",
+     "z": 30,
+     "in": {
+      "type": "pop",
+      "at": 7.22,
+      "dur": 0.3
+     },
+     "still": true,
+     "rot": [
+      [
+       7.22,
+       0
+      ],
+      [
+       9.91,
+       300,
+       "outCubic"
+      ]
+     ],
+     "opacity": [
+      [
+       9.61,
+       1
+      ],
+      [
+       10.209999999999999,
+       0.55
+      ]
+     ],
+     "out": {
+      "type": "fade",
+      "at": 11.69,
+      "dur": 0.3
+     }
+    },
+    {
+     "type": "svg",
+     "w": 160,
+     "h": 160,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"160\" height=\"160\" viewBox=\"0 0 160 160\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><polygon points=\"148.0,80.0 158.0,92.4 155.1,104.4 140.6,110.9 135.0,120.0 135.9,135.9 126.4,143.9 110.9,140.6 101.0,144.7 92.4,158.0 80.0,159.0 69.4,147.2 59.0,144.7 44.1,150.4 33.6,143.9 31.9,128.1 25.0,120.0 9.6,115.9 4.9,104.4 12.8,90.6 12.0,80.0 2.0,67.6 4.9,55.6 19.4,49.1 25.0,40.0 24.1,24.1 33.6,16.1 49.1,19.4 59.0,15.3 67.6,2.0 80.0,1.0 90.6,12.8 101.0,15.3 115.9,9.6 126.4,16.1 128.1,31.9 135.0,40.0 150.4,44.1 155.1,55.6 147.2,69.4\" fill=\"#6F767E\" transform=\"translate(2 3)\"/><polygon points=\"148.0,80.0 158.0,92.4 155.1,104.4 140.6,110.9 135.0,120.0 135.9,135.9 126.4,143.9 110.9,140.6 101.0,144.7 92.4,158.0 80.0,159.0 69.4,147.2 59.0,144.7 44.1,150.4 33.6,143.9 31.9,128.1 25.0,120.0 9.6,115.9 4.9,104.4 12.8,90.6 12.0,80.0 2.0,67.6 4.9,55.6 19.4,49.1 25.0,40.0 24.1,24.1 33.6,16.1 49.1,19.4 59.0,15.3 67.6,2.0 80.0,1.0 90.6,12.8 101.0,15.3 115.9,9.6 126.4,16.1 128.1,31.9 135.0,40.0 150.4,44.1 155.1,55.6 147.2,69.4\" fill=\"#B9BEC4\"/><circle cx=\"80\" cy=\"80\" r=\"38\" fill=\"#6F767E\"/><circle cx=\"102.4\" cy=\"80.0\" r=\"7.7\" fill=\"#B9BEC4\"/><circle cx=\"91.2\" cy=\"99.4\" r=\"7.7\" fill=\"#B9BEC4\"/><circle cx=\"68.8\" cy=\"99.4\" r=\"7.7\" fill=\"#B9BEC4\"/><circle cx=\"57.6\" cy=\"80.0\" r=\"7.7\" fill=\"#B9BEC4\"/><circle cx=\"68.8\" cy=\"60.6\" r=\"7.7\" fill=\"#B9BEC4\"/><circle cx=\"91.2\" cy=\"60.6\" r=\"7.7\" fill=\"#B9BEC4\"/><circle cx=\"80\" cy=\"80\" r=\"7\" fill=\"#2A2C31\"/></svg>",
+     "x": 468,
+     "y": 700,
+     "anchor": "c",
+     "z": 31,
+     "in": {
+      "type": "pop",
+      "at": 7.34,
+      "dur": 0.3
+     },
+     "still": true,
+     "rot": [
+      [
+       7.22,
+       0
+      ],
+      [
+       9.91,
+       -480.0,
+       "outCubic"
+      ]
+     ],
+     "opacity": [
+      [
+       9.61,
+       1
+      ],
+      [
+       10.209999999999999,
+       0.55
+      ]
+     ],
+     "out": {
+      "type": "fade",
+      "at": 11.69,
+      "dur": 0.3
+     }
+    },
+    {
+     "type": "svg",
+     "w": 124,
+     "h": 124,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"124\" height=\"124\" viewBox=\"0 0 124 124\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><polygon points=\"112.0,62.0 121.8,73.9 118.4,85.3 103.6,89.8 97.4,97.4 95.9,112.7 85.3,118.4 71.8,111.0 62.0,112.0 50.1,121.8 38.7,118.4 34.2,103.6 26.6,97.4 11.3,95.9 5.6,85.3 13.0,71.8 12.0,62.0 2.2,50.1 5.6,38.7 20.4,34.2 26.6,26.6 28.1,11.3 38.7,5.6 52.2,13.0 62.0,12.0 73.9,2.2 85.3,5.6 89.8,20.4 97.4,26.6 112.7,28.1 118.4,38.7 111.0,52.2\" fill=\"#6F767E\" transform=\"translate(2 3)\"/><polygon points=\"112.0,62.0 121.8,73.9 118.4,85.3 103.6,89.8 97.4,97.4 95.9,112.7 85.3,118.4 71.8,111.0 62.0,112.0 50.1,121.8 38.7,118.4 34.2,103.6 26.6,97.4 11.3,95.9 5.6,85.3 13.0,71.8 12.0,62.0 2.2,50.1 5.6,38.7 20.4,34.2 26.6,26.6 28.1,11.3 38.7,5.6 52.2,13.0 62.0,12.0 73.9,2.2 85.3,5.6 89.8,20.4 97.4,26.6 112.7,28.1 118.4,38.7 111.0,52.2\" fill=\"#B9BEC4\"/><circle cx=\"62\" cy=\"62\" r=\"28\" fill=\"#6F767E\"/><circle cx=\"78.6\" cy=\"62.0\" r=\"5.7\" fill=\"#B9BEC4\"/><circle cx=\"70.3\" cy=\"76.4\" r=\"5.7\" fill=\"#B9BEC4\"/><circle cx=\"53.7\" cy=\"76.4\" r=\"5.7\" fill=\"#B9BEC4\"/><circle cx=\"45.4\" cy=\"62.0\" r=\"5.7\" fill=\"#B9BEC4\"/><circle cx=\"53.7\" cy=\"47.6\" r=\"5.7\" fill=\"#B9BEC4\"/><circle cx=\"70.3\" cy=\"47.6\" r=\"5.7\" fill=\"#B9BEC4\"/><circle cx=\"62\" cy=\"62\" r=\"5\" fill=\"#2A2C31\"/></svg>",
+     "x": 440,
+     "y": 470,
+     "anchor": "c",
+     "z": 32,
+     "in": {
+      "type": "pop",
+      "at": 7.46,
+      "dur": 0.3
+     },
+     "still": true,
+     "rot": [
+      [
+       7.22,
+       0
+      ],
+      [
+       9.91,
+       -630.0,
+       "outCubic"
+      ]
+     ],
+     "opacity": [
+      [
+       9.61,
+       1
+      ],
+      [
+       10.209999999999999,
+       0.55
+      ]
+     ],
+     "out": {
+      "type": "fade",
+      "at": 11.69,
+      "dur": 0.3
+     }
+    },
+    {
+     "type": "sketch",
+     "x": 360,
+     "y": 640,
+     "w": 720,
+     "h": 1280,
+     "z": 34,
+     "pencil": false,
+     "paths": [
+      {
+       "d": "M 180 420 L 260 520 L 230 560 L 330 690 L 300 730 L 400 860",
+       "at": 9.709999999999999,
+       "dur": 0.4,
+       "stroke": "#B23A2E",
+       "width": 5,
+       "opacity": 1
+      }
+     ],
+     "texts": [],
+     "out": {
+      "type": "fade",
+      "at": 11.69,
+      "dur": 0.3
+     }
+    },
+    {
+     "type": "text",
+     "text": "أزمة الكوارتز",
+     "x": 360,
+     "y": 300,
+     "font": "banner",
+     "size": 52,
+     "color": "#EFE8D6",
+     "paper": "#B23A2E",
+     "upper": false,
+     "z": 40,
+     "rot": -3,
+     "in": {
+      "type": "slam",
+      "at": 9.959999999999999,
+      "dur": 0.3
+     }
+    },
+    {
+     "type": "svg",
+     "w": 760,
+     "h": 150,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"760\" height=\"150\" viewBox=\"0 0 760 150\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><rect width=\"760\" height=\"150\" fill=\"#4A3828\"/><rect width=\"760\" height=\"26\" fill=\"#5A4632\"/><rect width=\"760\" height=\"3\" fill=\"#7A6046\"/></svg>",
+     "x": 360,
+     "y": 1205,
+     "anchor": "c",
+     "z": 16,
+     "in": {
+      "type": "fade",
+      "at": 11.59,
+      "dur": 0.4
+     },
+     "depth": 0.95
+    },
+    {
+     "type": "svg",
+     "w": 324,
+     "h": 76,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"324\" height=\"76\" viewBox=\"0 0 324 76\" style=\"overflow:visible;\"><defs><filter id=\"se17\" x=\"-50%\" y=\"-50%\" width=\"200%\" height=\"200%\"><feGaussianBlur stdDeviation=\"6\"/></filter></defs><ellipse cx=\"162\" cy=\"38\" rx=\"138\" ry=\"14\" fill=\"#000\" opacity=\"0.32\" filter=\"url(#se17)\"/></svg>",
+     "x": 540,
+     "y": 1224,
+     "anchor": "c",
+     "z": 17,
+     "in": {
+      "type": "fade",
+      "at": 11.69,
+      "dur": 0.5
+     },
+     "still": true
+    },
+    {
+     "type": "cutout",
+     "x": 540,
+     "y": 1250,
+     "h": 500,
+     "aspect": 0.6933,
+     "edge": 0,
+     "z": 18,
+     "in": {
+      "type": "rise",
+      "at": 11.69,
+      "dur": 0.5
+     },
+     "src": "assets/gen/golay_phone_cut.png"
+    }
+   ],
+   "dur": 13.52,
+   "silent": true,
+   "captions": "والتوقيت كان حساس: | قبلها بأشهر، | سيكو طرحت أول | ساعة يد كوارتز. | ناس شافوها | المستقبل… | وناس شافوها | نهاية الميكانيك. | كانت بداية | أزمة الكوارتز… | وغولاي قرر يخاطر.",
+   "captionStart": 0.16999999999999998,
+   "captionEnd": 13.319999999999999,
+   "transition": "fade",
+   "camera": {
+    "zoom": [
+     [
+      0,
+      1.0
+     ],
+     [
+      2.86,
+      1.0,
+      "inOutCubic"
+     ],
+     [
+      6.42,
+      1.06,
+      "inOutCubic"
+     ],
+     [
+      7.22,
+      1.0,
+      "inOutCubic"
+     ],
+     [
+      9.91,
+      1.04,
+      "inOutCubic"
+     ],
+     [
+      11.79,
+      1.0,
+      "inOutCubic"
+     ],
+     [
+      13.52,
+      1.06,
+      "inOutCubic"
+     ]
+    ],
+    "x": [
+     [
+      0,
+      360
+     ],
+     [
+      2.86,
+      420,
+      "inOutCubic"
+     ],
+     [
+      6.42,
+      330,
+      "inOutCubic"
+     ],
+     [
+      7.22,
+      360,
+      "inOutCubic"
+     ],
+     [
+      9.91,
+      360,
+      "inOutCubic"
+     ],
+     [
+      11.79,
+      400,
+      "inOutCubic"
+     ],
+     [
+      13.52,
+      440,
+      "inOutCubic"
+     ]
+    ],
+    "y": [
+     [
+      0,
+      640
+     ],
+     [
+      2.86,
+      600,
+      "inOutCubic"
+     ],
+     [
+      6.42,
+      660,
+      "inOutCubic"
+     ],
+     [
+      7.22,
+      640,
+      "inOutCubic"
+     ],
+     [
+      9.91,
+      520,
+      "inOutCubic"
+     ],
+     [
+      11.79,
+      760,
+      "inOutCubic"
+     ],
+     [
+      13.52,
+      840,
+      "inOutCubic"
+     ]
+    ]
+   },
+   "sfx": [
+    {
+     "at": 0.05,
+     "name": "paper_tear",
+     "gain": -15
+    },
+    {
+     "at": 2.76,
+     "name": "shutter",
+     "gain": -12
+    },
+    {
+     "at": 3.46,
+     "name": "tick",
+     "gain": -16
+    },
+    {
+     "at": 5.92,
+     "name": "click",
+     "gain": -12
+    },
+    {
+     "at": 6.42,
+     "name": "tick",
+     "gain": -18
+    },
+    {
+     "at": 6.67,
+     "name": "tick",
+     "gain": -18
+    },
+    {
+     "at": 6.92,
+     "name": "tick",
+     "gain": -18
+    },
+    {
+     "at": 7.17,
+     "name": "tick",
+     "gain": -18
+    },
+    {
+     "at": 7.42,
+     "name": "tick",
+     "gain": -18
+    },
+    {
+     "at": 7.67,
+     "name": "tick",
+     "gain": -18
+    },
+    {
+     "at": 7.22,
+     "name": "crown_wind",
+     "gain": -12
+    },
+    {
+     "at": 9.71,
+     "name": "paper_tear",
+     "gain": -10
+    },
+    {
+     "at": 9.96,
+     "name": "stamp",
+     "gain": -8
+    },
+    {
+     "at": 11.69,
+     "name": "paper_slide",
+     "gain": -12
+    }
+   ]
+  },
+  {
    "theme": "ro-alpine",
    "floor": false,
    "elements": [
@@ -1540,7 +2256,7 @@
      "type": "svg",
      "w": 760,
      "h": 640,
-     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"760\" height=\"640\" viewBox=\"0 0 760 640\" style=\"overflow:visible;\"><defs><linearGradient id=\"lb16\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#FFE3A0\" stop-opacity=\"0.12\"/><stop offset=\"1\" stop-color=\"#FFE3A0\" stop-opacity=\"0.041999999999999996\"/></linearGradient></defs><polygon points=\"60.0,160.0 300.0,160.0 520.0,640.0 200.0,640.0\" fill=\"url(#lb16)\"/></svg>",
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"760\" height=\"640\" viewBox=\"0 0 760 640\" style=\"overflow:visible;\"><defs><linearGradient id=\"lb18\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#FFE3A0\" stop-opacity=\"0.12\"/><stop offset=\"1\" stop-color=\"#FFE3A0\" stop-opacity=\"0.041999999999999996\"/></linearGradient></defs><polygon points=\"60.0,160.0 300.0,160.0 520.0,640.0 200.0,640.0\" fill=\"url(#lb18)\"/></svg>",
      "x": 360,
      "y": 320,
      "anchor": "c",
@@ -1698,7 +2414,7 @@
      "type": "svg",
      "w": 760,
      "h": 640,
-     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"760\" height=\"640\" viewBox=\"0 0 760 640\" style=\"overflow:visible;\"><defs><linearGradient id=\"lb17\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#FFE3A0\" stop-opacity=\"0.12\"/><stop offset=\"1\" stop-color=\"#FFE3A0\" stop-opacity=\"0.041999999999999996\"/></linearGradient></defs><polygon points=\"420.0,750.0 660.0,750.0 560.0,1280.0 160.0,1280.0\" fill=\"url(#lb17)\"/></svg>",
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"760\" height=\"640\" viewBox=\"0 0 760 640\" style=\"overflow:visible;\"><defs><linearGradient id=\"lb19\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#FFE3A0\" stop-opacity=\"0.12\"/><stop offset=\"1\" stop-color=\"#FFE3A0\" stop-opacity=\"0.041999999999999996\"/></linearGradient></defs><polygon points=\"420.0,750.0 660.0,750.0 560.0,1280.0 160.0,1280.0\" fill=\"url(#lb19)\"/></svg>",
      "x": 360,
      "y": 960,
      "anchor": "c",
@@ -2282,7 +2998,7 @@
      "type": "svg",
      "w": 504,
      "h": 504,
-     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"504\" height=\"504\" viewBox=\"0 0 504 504\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><defs><clipPath id=\"sea18\"><circle cx=\"252\" cy=\"252\" r=\"240\"/></clipPath></defs><polygon points=\"502.1,252.0 496.6,276.1 497.9,300.5 487.8,323.4 479.7,348.0 471.4,370.2 459.7,391.0 442.9,410.1 426.2,426.3 409.2,442.0 390.0,457.1 368.8,473.0 346.8,482.9 323.6,489.2 299.9,492.5 276.6,497.3 252.0,502.4 227.7,500.7 204.0,493.7 179.7,490.5 156.2,483.5 136.0,470.8 112.7,456.1 93.1,443.8 75.7,425.5 60.9,411.1 44.6,391.1 32.5,369.1 25.0,345.9 14.4,324.8 8.5,300.5 8.1,276.3 6.5,252.0 4.8,227.7 8.6,203.6 14.4,180.0 23.8,156.7 32.3,134.9 45.1,115.6 61.6,95.8 76.8,78.8 95.1,59.0 113.8,45.7 136.4,32.8 157.3,20.6 180.4,15.0 203.2,6.6 227.8,7.4 252.0,3.4 276.1,5.8 300.4,11.3 323.5,12.8 348.0,21.7 369.2,30.8 391.2,43.3 407.8,61.7 429.3,76.3 441.6,94.7 458.6,113.8 469.3,134.6 480.1,157.3 489.3,180.7 497.8,203.6 498.5,228.0\" fill=\"#EFE8D6\"/><g clip-path=\"url(#sea18)\"><rect x=\"0\" y=\"0\" width=\"504\" height=\"170\" fill=\"#2C6A80\"/><rect x=\"0\" y=\"168\" width=\"504\" height=\"170\" fill=\"#1E4A63\"/><rect x=\"0\" y=\"336\" width=\"504\" height=\"170\" fill=\"#143246\"/><polygon points=\"60.0,0.0 100.0,0.0 200.0,504.0 120.0,504.0\" fill=\"#FFFFFF\" opacity=\".08\"/><polygon points=\"200.0,0.0 240.0,0.0 340.0,504.0 260.0,504.0\" fill=\"#FFFFFF\" opacity=\".08\"/><polygon points=\"330.0,0.0 370.0,0.0 470.0,504.0 390.0,504.0\" fill=\"#FFFFFF\" opacity=\".08\"/><path d=\"M 0 444 Q 252 404 504 434 L 504 504 L 0 504 Z\" fill=\"#C9B38A\"/><g transform=\"translate(70 244)\"><path d=\"M 20 220 Q 0 165 22 110 Q 44 66 20 33 Q 0 11 18 0 Q 30 44 34 88 Q 50 136 34 176 Q 22 198 32 220 Z\" fill=\"#2F5E4A\"/></g><g transform=\"translate(394 264) scale(.8)\"><path d=\"M 20 220 Q 0 165 22 110 Q 44 66 20 33 Q 0 11 18 0 Q 30 44 34 88 Q 50 136 34 176 Q 22 198 32 220 Z\" fill=\"#2A5444\"/></g></g></svg>",
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"504\" height=\"504\" viewBox=\"0 0 504 504\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><defs><clipPath id=\"sea20\"><circle cx=\"252\" cy=\"252\" r=\"240\"/></clipPath></defs><polygon points=\"502.1,252.0 496.6,276.1 497.9,300.5 487.8,323.4 479.7,348.0 471.4,370.2 459.7,391.0 442.9,410.1 426.2,426.3 409.2,442.0 390.0,457.1 368.8,473.0 346.8,482.9 323.6,489.2 299.9,492.5 276.6,497.3 252.0,502.4 227.7,500.7 204.0,493.7 179.7,490.5 156.2,483.5 136.0,470.8 112.7,456.1 93.1,443.8 75.7,425.5 60.9,411.1 44.6,391.1 32.5,369.1 25.0,345.9 14.4,324.8 8.5,300.5 8.1,276.3 6.5,252.0 4.8,227.7 8.6,203.6 14.4,180.0 23.8,156.7 32.3,134.9 45.1,115.6 61.6,95.8 76.8,78.8 95.1,59.0 113.8,45.7 136.4,32.8 157.3,20.6 180.4,15.0 203.2,6.6 227.8,7.4 252.0,3.4 276.1,5.8 300.4,11.3 323.5,12.8 348.0,21.7 369.2,30.8 391.2,43.3 407.8,61.7 429.3,76.3 441.6,94.7 458.6,113.8 469.3,134.6 480.1,157.3 489.3,180.7 497.8,203.6 498.5,228.0\" fill=\"#EFE8D6\"/><g clip-path=\"url(#sea20)\"><rect x=\"0\" y=\"0\" width=\"504\" height=\"170\" fill=\"#2C6A80\"/><rect x=\"0\" y=\"168\" width=\"504\" height=\"170\" fill=\"#1E4A63\"/><rect x=\"0\" y=\"336\" width=\"504\" height=\"170\" fill=\"#143246\"/><polygon points=\"60.0,0.0 100.0,0.0 200.0,504.0 120.0,504.0\" fill=\"#FFFFFF\" opacity=\".08\"/><polygon points=\"200.0,0.0 240.0,0.0 340.0,504.0 260.0,504.0\" fill=\"#FFFFFF\" opacity=\".08\"/><polygon points=\"330.0,0.0 370.0,0.0 470.0,504.0 390.0,504.0\" fill=\"#FFFFFF\" opacity=\".08\"/><path d=\"M 0 444 Q 252 404 504 434 L 504 504 L 0 504 Z\" fill=\"#C9B38A\"/><g transform=\"translate(70 244)\"><path d=\"M 20 220 Q 0 165 22 110 Q 44 66 20 33 Q 0 11 18 0 Q 30 44 34 88 Q 50 136 34 176 Q 22 198 32 220 Z\" fill=\"#2F5E4A\"/></g><g transform=\"translate(394 264) scale(.8)\"><path d=\"M 20 220 Q 0 165 22 110 Q 44 66 20 33 Q 0 11 18 0 Q 30 44 34 88 Q 50 136 34 176 Q 22 198 32 220 Z\" fill=\"#2A5444\"/></g></g></svg>",
      "x": 470,
      "y": 520,
      "anchor": "c",
@@ -3673,7 +4389,7 @@
      "type": "svg",
      "w": 760,
      "h": 1320,
-     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"760\" height=\"1320\" viewBox=\"0 0 760 1320\" style=\"overflow:visible;\"><defs><radialGradient id=\"rl19\" gradientUnits=\"userSpaceOnUse\" cx=\"200\" cy=\"300\" r=\"760\"><stop offset=\"0\" stop-color=\"#FFE3A0\" stop-opacity=\"0.2\"/><stop offset=\"1\" stop-color=\"#FFE3A0\" stop-opacity=\"0\"/></radialGradient></defs><rect width=\"760\" height=\"1320\" fill=\"url(#rl19)\"/><defs><radialGradient id=\"vg20\" cx=\"50%\" cy=\"48%\" r=\"75%\"><stop offset=\"0.55\" stop-color=\"#14203A\" stop-opacity=\"0\"/><stop offset=\"1\" stop-color=\"#14203A\" stop-opacity=\"0.5\"/></radialGradient></defs><rect width=\"760\" height=\"1320\" fill=\"url(#vg20)\"/></svg>",
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"760\" height=\"1320\" viewBox=\"0 0 760 1320\" style=\"overflow:visible;\"><defs><radialGradient id=\"rl21\" gradientUnits=\"userSpaceOnUse\" cx=\"200\" cy=\"300\" r=\"760\"><stop offset=\"0\" stop-color=\"#FFE3A0\" stop-opacity=\"0.2\"/><stop offset=\"1\" stop-color=\"#FFE3A0\" stop-opacity=\"0\"/></radialGradient></defs><rect width=\"760\" height=\"1320\" fill=\"url(#rl21)\"/><defs><radialGradient id=\"vg22\" cx=\"50%\" cy=\"48%\" r=\"75%\"><stop offset=\"0.55\" stop-color=\"#14203A\" stop-opacity=\"0\"/><stop offset=\"1\" stop-color=\"#14203A\" stop-opacity=\"0.5\"/></radialGradient></defs><rect width=\"760\" height=\"1320\" fill=\"url(#vg22)\"/></svg>",
      "x": 360,
      "y": 640,
      "anchor": "c",
@@ -3888,7 +4604,7 @@
      "type": "svg",
      "w": 380,
      "h": 1400,
-     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"380\" height=\"1400\" viewBox=\"0 0 380 1400\" style=\"overflow:visible;\"><defs><linearGradient id=\"gl21\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/><stop offset=\".5\" stop-color=\"#FFFAEB\" stop-opacity=\"0.12\"/><stop offset=\"1\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/></linearGradient></defs><polygon points=\"120.0,0.0 380.0,0.0 260.0,1400.0 0.0,1400.0\" fill=\"url(#gl21)\"/></svg>",
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"380\" height=\"1400\" viewBox=\"0 0 380 1400\" style=\"overflow:visible;\"><defs><linearGradient id=\"gl23\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/><stop offset=\".5\" stop-color=\"#FFFAEB\" stop-opacity=\"0.12\"/><stop offset=\"1\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/></linearGradient></defs><polygon points=\"120.0,0.0 380.0,0.0 260.0,1400.0 0.0,1400.0\" fill=\"url(#gl23)\"/></svg>",
      "x": [
       [
        2.72,
@@ -4221,7 +4937,7 @@
      "type": "svg",
      "w": 130,
      "h": 550.1839028340081,
-     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"130\" height=\"550\" viewBox=\"0 0 130 550\" style=\"overflow:visible;\"><defs><linearGradient id=\"gl22\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/><stop offset=\".5\" stop-color=\"#FFFAEB\" stop-opacity=\"0.42\"/><stop offset=\"1\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/></linearGradient></defs><polygon points=\"40.0,0.0 130.0,0.0 90.0,550.2 0.0,550.2\" fill=\"url(#gl22)\"/></svg>",
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"130\" height=\"550\" viewBox=\"0 0 130 550\" style=\"overflow:visible;\"><defs><linearGradient id=\"gl24\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/><stop offset=\".5\" stop-color=\"#FFFAEB\" stop-opacity=\"0.42\"/><stop offset=\"1\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/></linearGradient></defs><polygon points=\"40.0,0.0 130.0,0.0 90.0,550.2 0.0,550.2\" fill=\"url(#gl24)\"/></svg>",
      "x": [
       [
        7.32,
@@ -4643,7 +5359,7 @@
      "type": "svg",
      "w": 380,
      "h": 470,
-     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"380\" height=\"470\" viewBox=\"0 0 380 470\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><defs><linearGradient id=\"dr23\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#3A161B\"/><stop offset=\".2\" stop-color=\"#4A1F25\"/><stop offset=\".35\" stop-color=\"#5E2A31\"/><stop offset=\".5\" stop-color=\"#3A161B\"/><stop offset=\".68\" stop-color=\"#5E2A31\"/><stop offset=\".85\" stop-color=\"#4A1F25\"/><stop offset=\"1\" stop-color=\"#3A161B\"/></linearGradient></defs><path d=\"M 20 0 Q 190 -14 360 0 L 380 460 Q 285 478 190 460 Q 95 478 0 460 Z\" fill=\"url(#dr23)\"/></svg>",
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"380\" height=\"470\" viewBox=\"0 0 380 470\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><defs><linearGradient id=\"dr25\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#3A161B\"/><stop offset=\".2\" stop-color=\"#4A1F25\"/><stop offset=\".35\" stop-color=\"#5E2A31\"/><stop offset=\".5\" stop-color=\"#3A161B\"/><stop offset=\".68\" stop-color=\"#5E2A31\"/><stop offset=\".85\" stop-color=\"#4A1F25\"/><stop offset=\"1\" stop-color=\"#3A161B\"/></linearGradient></defs><path d=\"M 20 0 Q 190 -14 360 0 L 380 460 Q 285 478 190 460 Q 95 478 0 460 Z\" fill=\"url(#dr25)\"/></svg>",
      "x": 360,
      "y": [
       [
@@ -4683,7 +5399,7 @@
      "type": "svg",
      "w": 130,
      "h": 338.00519999999995,
-     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"130\" height=\"338\" viewBox=\"0 0 130 338\" style=\"overflow:visible;\"><defs><linearGradient id=\"gl24\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/><stop offset=\".5\" stop-color=\"#FFFAEB\" stop-opacity=\"0.35\"/><stop offset=\"1\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/></linearGradient></defs><polygon points=\"40.0,0.0 130.0,0.0 90.0,338.0 0.0,338.0\" fill=\"url(#gl24)\"/></svg>",
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"130\" height=\"338\" viewBox=\"0 0 130 338\" style=\"overflow:visible;\"><defs><linearGradient id=\"gl26\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/><stop offset=\".5\" stop-color=\"#FFFAEB\" stop-opacity=\"0.35\"/><stop offset=\"1\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/></linearGradient></defs><polygon points=\"40.0,0.0 130.0,0.0 90.0,338.0 0.0,338.0\" fill=\"url(#gl26)\"/></svg>",
      "x": [
       [
        3.56,
@@ -5744,7 +6460,7 @@
      "type": "svg",
      "w": 600,
      "h": 160,
-     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"600\" height=\"160\" viewBox=\"0 0 600 160\" style=\"overflow:visible;\"><defs><filter id=\"se26\" x=\"-50%\" y=\"-50%\" width=\"200%\" height=\"200%\"><feGaussianBlur stdDeviation=\"10\"/></filter></defs><ellipse cx=\"300\" cy=\"80\" rx=\"260\" ry=\"40\" fill=\"#FFF1CF\" opacity=\"0.18\" filter=\"url(#se26)\"/></svg>",
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"600\" height=\"160\" viewBox=\"0 0 600 160\" style=\"overflow:visible;\"><defs><filter id=\"se28\" x=\"-50%\" y=\"-50%\" width=\"200%\" height=\"200%\"><feGaussianBlur stdDeviation=\"10\"/></filter></defs><ellipse cx=\"300\" cy=\"80\" rx=\"260\" ry=\"40\" fill=\"#FFF1CF\" opacity=\"0.18\" filter=\"url(#se28)\"/></svg>",
      "x": 300,
      "y": 1190,
      "anchor": "c",
@@ -5837,7 +6553,7 @@
      "type": "svg",
      "w": 130,
      "h": 294.6712,
-     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"130\" height=\"294\" viewBox=\"0 0 130 294\" style=\"overflow:visible;\"><defs><linearGradient id=\"gl27\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/><stop offset=\".5\" stop-color=\"#FFFAEB\" stop-opacity=\"0.42\"/><stop offset=\"1\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/></linearGradient></defs><polygon points=\"40.0,0.0 130.0,0.0 90.0,294.7 0.0,294.7\" fill=\"url(#gl27)\"/></svg>",
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"130\" height=\"294\" viewBox=\"0 0 130 294\" style=\"overflow:visible;\"><defs><linearGradient id=\"gl29\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/><stop offset=\".5\" stop-color=\"#FFFAEB\" stop-opacity=\"0.42\"/><stop offset=\"1\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/></linearGradient></defs><polygon points=\"40.0,0.0 130.0,0.0 90.0,294.7 0.0,294.7\" fill=\"url(#gl29)\"/></svg>",
      "x": [
       [
        12.02,
@@ -5952,7 +6668,7 @@
     },
     {
      "type": "text",
-     "text": "Archive images: © Audemars Piguet (AP Chronicles). Carlo de Marchi: © Omega Archives. The original Royal Oak drawing: © Gérald Genta Heritage Association. Paper characters are AI illustrations (Higgsfield); Golay and the agents are shown from behind.",
+     "text": "Archive images: © Audemars Piguet (AP Chronicles). Carlo de Marchi: © Omega Archives. Seiko Quartz Astron and calibre 35A, 1969: Deutsches Uhrenmuseum, Wikimedia Commons (CC BY-SA 4.0, CC BY 3.0 DE). The original Royal Oak drawing: © Gérald Genta Heritage Association. Paper characters are AI illustrations (Higgsfield); Golay and the agents are shown from behind.",
      "x": 360,
      "y": 1150,
      "font": "ui",

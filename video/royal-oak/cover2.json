@@ -162,7 +162,7 @@
      "type": "svg",
      "w": 282,
      "h": 76,
-     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"282\" height=\"76\" viewBox=\"0 0 282 76\" style=\"overflow:visible;\"><defs><filter id=\"se30\" x=\"-50%\" y=\"-50%\" width=\"200%\" height=\"200%\"><feGaussianBlur stdDeviation=\"6\"/></filter></defs><ellipse cx=\"141\" cy=\"38\" rx=\"117\" ry=\"14\" fill=\"#000\" opacity=\"0.32\" filter=\"url(#se30)\"/></svg>",
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"282\" height=\"76\" viewBox=\"0 0 282 76\" style=\"overflow:visible;\"><defs><filter id=\"se32\" x=\"-50%\" y=\"-50%\" width=\"200%\" height=\"200%\"><feGaussianBlur stdDeviation=\"6\"/></filter></defs><ellipse cx=\"141\" cy=\"38\" rx=\"117\" ry=\"14\" fill=\"#000\" opacity=\"0.32\" filter=\"url(#se32)\"/></svg>",
      "x": 170,
      "y": 1194,
      "anchor": "c",

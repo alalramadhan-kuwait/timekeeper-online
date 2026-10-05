@@ -711,3 +711,20 @@ def jar_brushes():
             ''.join('<rect x="%d" y="88" width="22" height="14" rx="3" fill="#EFE8D6"/><rect x="%d" y="84" width="22" height="6" rx="2" fill="%s"/>' % (x, x, c)
                     for x, c in ((70, '#2F5E8A'), (96, '#B23A2E'), (122, '#C9C1AE'))))
 
+
+
+def gear(r=80, teeth=12, color='#B9BEC4', dark='#6F767E'):
+    """A plain paper cog (generic mechanics, not a watch part from any maker). Box 2r+20 square."""
+    c = r + 10; p = []
+    for k in range(teeth * 4):
+        a = 2 * math.pi * k / (teeth * 4); rr = r + 9 if (k % 4) in (1, 2) else r - 2
+        p.append((c + rr * math.cos(a), c + rr * math.sin(a)))
+    return ('<polygon points="%s" fill="%s" transform="translate(2 3)"/><polygon points="%s" fill="%s"/>' % (pts(p), dark, pts(p), color) +
+            '<circle cx="%d" cy="%d" r="%d" fill="%s"/>' % (c, c, r * .55, dark) +
+            ''.join('<circle cx="%.1f" cy="%.1f" r="%.1f" fill="%s"/>' % (c + r * .32 * math.cos(math.radians(a)), c + r * .32 * math.sin(math.radians(a)), r * .11, color) for a in range(0, 360, 60)) +
+            '<circle cx="%d" cy="%d" r="%d" fill="#2A2C31"/>' % (c, c, r * .1))
+
+
+def sine_path(x0, x1, y, amp, waves):
+    n = 160
+    return 'M ' + ' L '.join('%.1f %.1f' % (x0 + (x1 - x0) * i / n, y + amp * math.sin(2 * math.pi * waves * i / n)) for i in range(n + 1))

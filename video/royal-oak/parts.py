@@ -215,7 +215,8 @@ def dashed(x0, y0, x1, y1, n=9):
 CREDITS1 = ('Archive images: © Audemars Piguet (AP Chronicles). Georges Golay, 1966: © Épreuves internationales de ski Le Brassus (J. Piguet, 2017). '
             'Polerouter (Watch15, CC BY-SA 4.0), Omega Constellation (Noop1958, CC BY-SA 3.0), SAS advertisement 1954: Wikimedia Commons. '
             'Portrait of Gérald Genta: Studio Luxury Griffes (CC BY-SA 3.0). Paper characters are AI illustrations (Higgsfield).')
-CREDITS2 = ('Archive images: © Audemars Piguet (AP Chronicles). Carlo de Marchi: © Omega Archives. The original Royal Oak drawing: '
+CREDITS2 = ('Archive images: © Audemars Piguet (AP Chronicles). Carlo de Marchi: © Omega Archives. Seiko Quartz Astron and calibre 35A, 1969: '
+            'Deutsches Uhrenmuseum, Wikimedia Commons (CC BY-SA 4.0, CC BY 3.0 DE). The original Royal Oak drawing: '
             '© Gérald Genta Heritage Association. Paper characters are AI illustrations (Higgsfield); Golay and the agents are shown from behind.')
 PEND = 'paper character, waiting for Higgsfield credits'
 credits = lambda text, t, y=1150: {"type": "text", "text": text, "x": 360, "y": y, "font": "ui", "size": 17, "color": "#CFC8B8", "upper": False, "w": 640,
@@ -508,6 +509,41 @@ P2.S('p2-1', 'ro-steel', C, els, transition='slide',
                 (11.93, 1.06, 360, 520, 'inOutCubic')),
      sfx=[E('paper_place', .1, -12), E('whoosh', t_gold, -16), E('stamp', t_steel - .3, -10), E('tick', t_steel + .4, -16)] +
          [E('pin', t_life + k * .3, -16) for k in range(5)] + [E('whoosh', t_ag - .1, -14), E('clasp', t_mus + .1, -8), E('paper_place', t_mus + .3, -12)])
+
+# 1b  The quartz shock: months earlier Seiko sold the first quartz wristwatch (Tokyo, Christmas 1969). Some saw the
+#     future in it, others the end of mechanical watches: the start of the quartz crisis. Golay decided to gamble.
+#     (AP Chronicles, "Birth of an Icon": "Some people saw the quartz watch as the future of luxury watchmaking and others
+#     as the death knell of mechanical watchmaking ... Within such a context, it was worth taking a gamble.")
+C = 'والتوقيت كان حساس: | قبلها بأشهر، | سيكو طرحت أول | ساعة يد كوارتز. | ناس شافوها | المستقبل… | وناس شافوها | نهاية الميكانيك. | كانت بداية | أزمة الكوارتز… | وغولاي قرر يخاطر.'
+t_seiko, t_fut, t_end_m = at('p2-q', C, 'سيكو طرحت أول'), at('p2-q', C, 'المستقبل…'), at('p2-q', C, 'وناس شافوها')
+t_crisis, t_gamble = at('p2-q', C, 'كانت بداية'), at('p2-q', C, 'وغولاي قرر يخاطر.')
+END_Q = round(VO_AT + VO['p2-q']['seconds'] + TAIL, 2)
+dim = lambda t: {"opacity": [[t, 1], [t + .5, .25]]}
+astron = polaroid('assets/early/astron1969', 470, 560, 380, t_seiko - .1, label='Seiko Quartz Astron · 1969', z=20, rot=3, kind='rise', until=t_gamble - .2, **dim(t_end_m))
+els = flips(['1969'], 170, 250, .05, .3, z=10, scale=.55, last_out=t_crisis) + [
+       tag('طوكيو، ديسمبر 1969', 190, 400, t_seiko + .3, size=26, z=22, rot=-3, until=t_crisis),
+       astron, glint_on(astron, t_seiko + .6),
+       *wall_clock(500, 560, 3, 0, z=12, d=200, at=.2, spin=(.3, t_seiko, 2), out={"type": "fade", "at": t_seiko - .2, "dur": .3}),
+       polaroid('assets/early/astron_35a', 210, 720, 240, t_fut - .5, label='Cal. 35A · 8,192 Hz', z=24, rot=-5, kind='pop', labelSize=18,
+                until=t_gamble - .2, **dim(t_end_m)),
+       sk([{"d": sine_path(40, 680, 160, 18, 9), "at": t_fut - .3, "dur": 1.0, "stroke": "#7FD3F0", "width": 3, "opacity": .9}], z=8, depth=0) |
+       {"out": {"type": "fade", "at": t_end_m + .3, "dur": .4}}]
+for k, (gx, gy, r, n, turns) in enumerate([(300, 600, 110, 16, 1), (468, 700, 70, 10, -1.6), (440, 470, 52, 8, -2.1)]):
+    els.append(svg(2 * r + 20, 2 * r + 20, gear(r, n), gx, gy, z=30 + k, kind='pop', at=t_end_m + k * .12, dur=.3, still=True,
+                   rot=[[t_end_m, 0], [t_crisis + .3, 300 * turns, 'outCubic']],
+                   opacity=[[t_crisis, 1], [t_crisis + .6, .55]], out={"type": "fade", "at": t_gamble - .1, "dur": .3}))
+els += [sk([{"d": 'M 180 420 L 260 520 L 230 560 L 330 690 L 300 730 L 400 860', "at": t_crisis + .1, "dur": .4, "stroke": "#B23A2E", "width": 5, "opacity": 1}], z=34) |
+        {"out": {"type": "fade", "at": t_gamble - .1, "dur": .3}},
+        tag('أزمة الكوارتز', 360, 300, t_crisis + .35, size=52, z=40, rot=-3, ink='#EFE8D6', paper='#B23A2E', **{"in": {"type": "slam", "at": t_crisis + .35, "dur": .3}}),
+        svg(760, 150, desk_edge(), 360, 1205, z=16, kind='fade', at=t_gamble - .2, dur=.4, depth=.95),
+        shadow(GOLAY['x'], GOLAY['y'] - 20, 330, t_gamble - .1, z=17),
+        cutout('assets/gen/golay_phone_cut', GOLAY['x'], GOLAY['y'], GOLAY['h'], t_gamble - .1, z=18, kind='rise', dur=.5)]
+P2.S('p2-q', 'ro-night', C, els, transition='fade',
+     camera=cam((0, 1.0, 360, 640, None), (t_seiko, 1.0, 420, 600, 'inOutCubic'), (t_fut, 1.06, 330, 660, 'inOutCubic'), (t_end_m, 1.0, 360, 640, 'inOutCubic'),
+                (t_crisis + .3, 1.04, 360, 520, 'inOutCubic'), (t_gamble, 1.0, 400, 760, 'inOutCubic'), (END_Q, 1.06, 440, 840, 'inOutCubic')),
+     sfx=[E('paper_tear', .05, -15), E('shutter', t_seiko - .1, -12), E('tick', t_seiko + .6, -16), E('click', t_fut - .5, -12)] +
+         [E('tick', t_fut + k * .25, -18) for k in range(6)] + [E('crown_wind', t_end_m, -12), E('paper_tear', t_crisis + .1, -10), E('stamp', t_crisis + .35, -8),
+          E('paper_slide', t_gamble - .1, -12)])
 
 # 2  4 pm (as Genta remembered it): Golay calls Genta. "I need the sketch tomorrow morning."
 C = 'الساعة أربعة العصر، | غولاي يتصل بجنتا: | نبي ساعة رياضية | من الستيل، | ما انسوت | مثلها قبل… | والرسم أبيه | باچر الصبح.'
