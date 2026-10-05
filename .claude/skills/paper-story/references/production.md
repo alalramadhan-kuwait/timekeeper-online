@@ -1,6 +1,7 @@
 # Production notes: camera, sound, review and delivery
 
-These notes come from the Time Keeper success story (`video/success-story/`, 21 scenes, 2 minutes, 14 versions).
+These notes come from the Time Keeper success story (`video/success-story/`, 21 scenes, 2 minutes, 14 versions) and the
+two-part Royal Oak documentary (`video/royal-oak/parts.py`, Gulf Arabic, three review rounds).
 
 ## Keep it moving
 
@@ -10,6 +11,37 @@ These notes come from the Time Keeper success story (`video/success-story/`, 21 
   across it in time with the narration (a podcast set: writer, then designer, then host).
 - Full-screen close-ups cropped from real product photos (`macro()` in story.py, `fit: cover`, a slow scale push)
   cut between the wider shots.
+
+## Motion that answered "it needs more movement" (Royal Oak expert review)
+
+These are cheap and cover every scene; `life()` in `video/royal-oak/parts.py` applies the first two automatically.
+
+- **People breathe:** `idle: {type: "pulse", amp: .005, speed: .22}` from the end of their entrance (it scales from
+  the feet). Nobody stands frozen.
+- **Taped prints settle:** a 1 to 1.5 degree `rot` drift and a 0.6 % `scale` creep over the time they are on screen.
+- **No camera hold longer than about 2 s:** keep a 3 to 5 % drift between beats and add a small push on each beat.
+- **Layers at different `depth`:** background .4 to .7, pinned things .85 to .9, the subject 1, foreground 1.1 to 1.3.
+- **Light has life:** dust motes in every spotlight (`motes()`), one glint sweep across a hero product photo
+  (`glint()`), a lamp whose glow breathes.
+- **Things that move in the story move on screen:** the tandem rides, its wheels turn (use `rot` keyframes with an
+  ease, not a spin idle, so they slow down) and it brakes on the line where the partners stop; the phone handset
+  lifts and the ringing stops.
+- **Beats land on words.** Time each visual to the caption word it illustrates. `at(key, caption, phrase)` in
+  parts.py computes that time the way the engine spreads the words.
+- **Matched cuts instead of slides:** the same calendar in the same place across a cut, the porthole that becomes the
+  pencil circle at the same screen size, a fade for a jump in time. No more than two slides in a row.
+- **Endings:** a slow push through the last line, then dim everything except the hero (a black plate under it).
+
+## The look (Royal Oak art direction)
+
+- **Everyone stands on something:** a soft contact shadow under each figure and a floor band in empty scenes.
+- **One key light** from the upper left for every drop shadow (`SHADOW` in art.py), deeper on dark themes.
+- **One palette arc per film**, not a new theme every scene. Light and time of day stay continuous (the same 4 pm in
+  both parts of the call).
+- **Rooms, not voids:** a studio gets a window, a board and tools; a fair gets bunting, lamps, a banner and a carpet.
+  Use the country's colours (Swiss red and white, not French tricolour bunting).
+- **Consistent scale:** one height per character pose across the film, so a partner never looks like a child.
+- **Covers:** titles sit on a paper band; nothing crosses the title; the person is fully in frame.
 
 ## Camera arithmetic (check every keyframe, not just the scene start)
 
@@ -40,14 +72,53 @@ The stage point `y` appears on screen at `640 + (y - camY) * zoom` (the same for
 - Duck the music under the voice: sidechain-compress it, keyed by the voice clips themselves. Normalise the result to
   -14 LUFS for social.
 
+## Arabic captions and on-screen text
+
+- **Groups of three words or fewer.** The engine splits a longer `|` group after word three and leaves orphans. Never
+  split a number ("سبعة | وستين"), a negation from its verb ("ما | يكفي") or a noun phrase.
+- **Western digits (0-9) everywhere.** A "·" next to an Arabic-Indic digit reads as a zero ("١٠ ·" looked like
+  "١٠٠"). No dash between two numbers in Arabic: write "10 على 11".
+- **Keep the caption band clear** (about y 960 to 1070 at the end camera): no label, price tag or credit there while
+  captions are on. `--check` does not catch this; look at the stills.
+- **Tags add, they do not repeat.** A tag that says the same words as the caption at the same moment is noise.
+  Keep dates, places, quotes set as titles. Quote marks are «».
+- **Arabic in a `sketch` text writes itself left to right.** Keep sketch notes in the designer's own language (French
+  on a Swiss drawing) and put the Arabic in a tag.
+- **Credits:** at least 17 px, light on dark, after the punchline, never under the platform overlay at the bottom.
+- **Dialect:** write how people speak, and ask about words that change meaning ("انشغلت" means "got busy" in the
+  Gulf, not "was crafted").
+
+## Expert review round
+
+When the user asks for more detail or a second opinion, run a panel of reviewers in parallel, each with the same
+pack: the rules, the engine's abilities, a frame strip per scene and the narration with its timings. Panels that
+worked: motion director, art director, historian / fact-checker, readability and dialect editor, and an expert in
+the product (a watch collector). Ask each for P1/P2/P3 notes with exact coordinates and times. Then merge them into
+one plan ordered by priority, apply what needs no credits, list what does, and re-render.
+
+## Facts
+
+- Every claim in the film is in the facts file with its source, and so is every picture's credit.
+- **Context is not cause.** The quartz crisis was the backdrop to the decision, not the reason given for the design;
+  say it the way the source does.
+- Keep the source's hedges ("probably designed by him") and its caveats (a date the subject remembered).
+
+## When voice credits run short
+
+Preflight each line (`get_cost`; about 0.3 credits for a short line, 0.6 for a long one). If the balance does not
+cover it, build the scene anyway: give `clips.json` an estimated length (characters ÷ about 11 per second), let the
+captions play over the music, and list the line in a `VOICE-TODO.md` with its new text. Record and drop it in when the
+user tops up.
+
 ## Review loop
 
 - Before a full render, render stills at the exact seconds that changed (`--still t1,t2,...`). Read them as one sheet.
   Compute the times from the scene durations rather than guessing.
 - When the user sends a screenshot, first check which version it came from. Two notes were about an older version
   than the one already rendering.
-- The renderer loads images while it renders. Never swap or edit assets during a render: stop it and start again,
-  or the film mixes old and new.
+- The renderer reads images while it renders. Never swap or edit assets during a render: stop it and start again,
+  or the film mixes old and new. (It now waits for every image to decode before the first frame; before that, large
+  cut-outs were missing from the opening frames.)
 - Name each render with a new version number. Delete partial renders so an old file is never sent by mistake.
 
 ## Delivery
@@ -66,3 +137,11 @@ The stage point `y` appears on screen at `640 + (y - camY) * zoom` (the same for
 
 - Preflight the cost (`get_cost: true`) and tell the user what was spent.
 - Test one image, then batch the rest. Redo only the image that failed, not the batch.
+
+## Engine notes
+
+- Inline SVGs share one id namespace: give every gradient, filter and clip a unique id (`uid()` in
+  `video/royal-oak/art.py`), or the first definition wins everywhere.
+- `z` must be an integer. An element has one `idle`; for a second motion use keyframes.
+- A map ring that crosses 180 degrees is unwrapped (it used to draw a band across the map). A small `map` works as a
+  taped inset card for routes the main map cannot hold.

@@ -87,6 +87,27 @@ than a silhouette (a note on the Royal Oak story). So find a photograph you may 
   guess, so the photo's age keeps the likeness. Then batch the poses the story needs (on the phone, thinking, at the
   drafting table, holding a blank sheet, presenting with an empty palm) using the approved image as a second
   reference. Credit them on screen as AI illustrations.
-- Someone with no usable photograph gets no invented face: a character seen from behind, a hand or a silhouette
-  (`video/royal-oak/`: Golay at his desk, from behind).
+- Someone with no usable photograph gets no invented face: a detailed paper character seen from behind or from the
+  side (`video/royal-oak/`: Golay at his desk, from behind). Never a black silhouette: the user asked for people with
+  detail and personality, so give them clothes, hair, posture and a prop that says who they are.
 - Generated backdrops often carry a gradient; cut them with Higgsfield `remove_background` rather than `cut-poses.py`.
+
+## Real products on screen (notes from the Royal Oak story)
+
+- **Show the whole photograph in a taped polaroid, never a cut-out of the product.** Background removal clipped
+  straps and bracelets, and the user called the cut watches wrong. A polaroid with `aspect` set to the photo's own
+  ratio shows every pixel; a hero shot can also be a full-screen `macro()` with a slow push.
+- **Open every file and check what it shows before using it.** Archive filenames lie: a "sketch" was the real
+  catalogue photo, a "bezel" was a bracelet, two files were the same drawing turned 90°. Draw a 5 % grid over a
+  photo to measure where things are (a case's flanks for a dimension line, a dial for a pencil circle).
+- **Label what the picture is, not what the story is about.** No year a photo cannot prove ("Polerouter", not
+  "Polerouter · 1954" on a later dial). A product from before the hero's work says so ("before his refresh") and stays
+  out of a gallery of his designs. Collectors say "Ref.", not "model". A related model gets its own reference number.
+- **Put people only where the record puts them.** The designer was at the 1972 fair but on his own stand; showing
+  him at the brand's stand was the historian's first note.
+- **Real details beat drawn ones.** When the story names a feature (eight screws, a tapering bracelet, the thinness),
+  pin the archive photo or document that shows it (a case sheet, the first trade publication, an exploded case).
+  A drawn version of the hero product appears only as the designer's sketch, and it must still be right: crown and
+  date where they are, proportions from the technical sheet.
+- **Gallery of a career:** a cork board with pinned prints in date order and a red thread reads as "sixteen years of
+  work"; a scatter of polaroids that pop and vanish does not.
