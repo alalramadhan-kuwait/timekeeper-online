@@ -7,6 +7,8 @@ then update the caption string in `parts.py` (groups of three words or fewer).
 
 | Line | Now | New | Why |
 | --- | --- | --- | --- |
+| p1-h (new, the hook) | (no audio yet: captions only, timed for 4.4 s) | كيف شاب عمره ثلاثة وعشرين… صار ورا أشهر ساعات العالم؟ | The question hook the user chose (0.3 credits) |
+| p2-h (new, the hook) | (no audio yet: captions only, timed for 6.0 s) | سنة سبعين… الكوارتز جاي ياخذ كل شي. وأوديمار بيغيه راهنت على الستيل. | The stakes hook the user chose (0.3 credits) |
 | p1-0 | هذا جيرالد جنتا… من أشهر مصممي الساعات بالتاريخ… | هذا جيرالد جنتا… الرجل اللي رسم الرويال أوك بليلة وحدة. بس قبل لا يصير اسمه أسطورة… خلونا نرجع للبداية. | Name the Royal Oak in the first two seconds (a tag does it for now) |
 | p1-1 | سنة ألف وتسعمية وأربعة وخمسين… ساعة لرحلات طيران إس إيه إس | جنيف، سنة أربعة وخمسين. شاب عمره ثلاثة وعشرين سنة بس، يصمم لشركة يونيفرسال جنيف ساعة لرحلات إس إيه إس فوق القطب الشمالي. | Shorter, more natural (about 1.7 s) |
 | p1-4 | يظهر اسمه في أرشيف أوديمار بيغيه: ساعة تجمع… | ومع بداية الستينات، يظهر اسمه في أرشيف أوديمار بيغيه… وتنسب له ساعات مثل: ساعة تجمع الدائرة والمربع، وساعة مو متناظرة… | AP says "probably" his |

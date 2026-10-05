@@ -225,6 +225,21 @@ credits = lambda text, t, y=1150: {"type": "text", "text": text, "x": 360, "y": 
 # =================================================================================================================
 # PART 1  Before the Royal Oak
 P1 = Part()
+# H  The hook (a question, chosen by the user): "How did a 23-year-old end up behind the world's most famous watches?"
+#    Frame 1 already carries the question; the film answers it.
+C = 'كيف شاب | عمره ثلاثة وعشرين… | صار ورا | أشهر ساعات العالم؟'
+t_famous = at('p1-h', C, 'أشهر ساعات')
+hk = polaroid('assets/ap/ro5402_hero', 180, 340, 220, t_famous - .1, label='Royal Oak', z=30, rot=-6, kind='pop')
+els = [svg(760, 520, floor_band('#8A7458', '#A48D6E', 520), 360, 1030, z=1, kind=None, depth=.9, shadow=False),
+       svg(760, 1320, light_beam([(760, 0), (520, 0), (60, 1320), (520, 1320)], amt=.10), 360, 640, z=2, kind=None, shadow=False, depth=.9, still=True),
+       shadow(330, 1180, 520, 0, z=19, kind=None),
+       cutout('assets/gen/genta23_desk_cut', 330, 1180, 700, 0, z=20, kind='none', person=True),
+       tag('كيف صار ورا أشهر ساعات العالم؟', 360, 150, 0, size=32, z=40, depth=0, rot=-1.5, **{"in": {"type": "none", "at": 0}}),
+       hk, glint_on(hk, t_famous + .4)]
+P1.S('p1-h', 'ro-paper', C, els, transition='cut',
+     camera=cam((0, 1.18, 340, 820, None), (t_famous - .2, 1.0, 360, 640, 'inOutCubic'), (round(VO_AT + VO['p1-h']['seconds'] + TAIL, 2), 1.03, 330, 620, 'inOutCubic')),
+     sfx=[E('pencil', .1, -12), E('click', t_famous - .1, -10), E('tick', t_famous + .4, -16)])
+
 # 0  The famous Genta (the watch on his wrist first), then back to 1954
 C = 'هذا جيرالد جنتا… | من أشهر | مصممي الساعات | بالتاريخ. | بس قبل لا | يصير اسمه | أسطورة… | خلونا نرجع للبداية.'
 t_back = at('p1-0', C, 'خلونا'); t_leg = at('p1-0', C, 'أسطورة…')
@@ -240,7 +255,7 @@ els = [svg(760, 1320, curtain(), [[0, 360], [t_back, 360], [V(7.7), 320, 'inOutC
               out={"type": "fade", "at": t_back + .35, "dur": .35}),
        shadow(360, 1160, 300, V(1.45), z=20, out={"type": "fade", "at": t_back + .35, "dur": .35}),
        cutout('assets/gen/young_think_cut', 360, 1160, 760, t_back + .5, z=22, person=True, dur=.35, scale=[[t_back + .5, 1.04], [t_back + 1.05, 1]], until=V(7.75)),
-       polaroid('assets/ap/ro5402_hero', 600, 520, 200, t_leg, label='Royal Oak', z=30, rot=6, kind='pop', fixed=True, out={"type": "slideR", "at": t_back + .05, "dur": .3})]
+       polaroid('assets/ap/ro5402_hero', 628, 650, 190, t_leg, label='Royal Oak', z=30, rot=6, kind='pop', fixed=True, out={"type": "slideR", "at": t_back + .05, "dur": .3})]
 els += motes(cone_points(360, 10, 3), at=.3, z=5)
 els += wall_clock(570, 300, 4, 0, z=6, d=150, at=t_back - .2, spin=(t_back, V(7.8), -8))
 els += flips(['2000', '1990', '1980', '1970', '1960', '1954'], 160, 330, t_back + .05, .2, z=10, scale=.62)
@@ -445,6 +460,23 @@ P1.S('p1-8', 'ro-night', C, els, tail=2.6, transition='fade', captionClear=V(11.
 P2 = Part()
 BSL = dict(id='bsl', lon=7.59, lat=47.56, label='بازل'); TRN = dict(id='trn', lon=7.69, lat=45.07, label='تورينو')
 LSN = dict(id='lsn', lon=6.63, lat=46.52, label='لوزان'); PAR = dict(id='par', lon=2.35, lat=48.86, label='باريس')
+# H  The hook (stakes, chosen by the user): "1970... quartz is coming to take everything. And AP bet on steel."
+#    The quartz scene (1b) pays it off.
+C = 'سنة سبعين… | الكوارتز جاي | ياخذ كل شي. | وأوديمار بيغيه | راهنت على الستيل.'
+t_bet = at('p2-h', C, 'وأوديمار بيغيه')
+END_H = round(VO_AT + VO['p2-h']['seconds'] + TAIL, 2)
+ast = polaroid('assets/early/astron1969', [[t_bet - .1, 360], [t_bet + .5, 150, 'inOutCubic']], 600, 420, 0, label='Seiko Quartz Astron · 1969', z=20, rot=-3,
+               kind='none', fixed=True, opacity=[[t_bet - .1, 1], [t_bet + .5, .3]], scale=[[0, 1.0], [t_bet, 1.04]])
+els = [sk([{"d": sine_path(0, 720, 1100, 22, 7), "at": 0, "dur": 1.6, "stroke": "#7FD3F0", "width": 3, "opacity": .8}], z=5, depth=0),
+       ast, glint(360, 578, 392, 392 / ast['aspect'] * .94, .5, rot=-3, z=21),
+       tag('الكوارتز جاي ياخذ كل شي', 360, 160, 0, size=34, z=40, depth=0, rot=-1.5, until=t_bet, **{"in": {"type": "none", "at": 0}}),
+       svg(320, 200, steel_plate(320, 200), 420, 640, z=25, kind='drop', at=t_bet, dur=.5, rot=-5),
+       glint(420, 640, 310, 190, t_bet + .6, rot=-5, z=26),
+       tag('ستيل', 420, 470, t_bet + .2, size=44, z=30)]
+P2.S('p2-h', 'ro-night', C, els, transition='cut',
+     camera=cam((0, 1.12, 360, 560, None), (t_bet, 1.0, 360, 620, 'inOutCubic'), (END_H, 1.05, 400, 640, 'inOutCubic')),
+     sfx=[E('tick', .1, -12)] + [E('tick', .1 + k * .5, -18) for k in range(1, 5)] + [E('stamp', t_bet, -9), E('tick', t_bet + .6, -16)])
+
 # 0  Basel, 10 April 1970: Golay and the three agents (the day before the fair opened)
 C = 'بازل، | عشرة أبريل | ألف وتسعمية وسبعين. | قبل لا يفتح | معرض الساعات، | جورج غولاي يجتمع | مع ثلاثة | من الوكلاء: | كارلو دي ماركي | من تورينو، | وشارل بوتي | من لوزان، | وشارل دورو | من باريس.'
 t_hall, t_three = V(3.0), at('p2-0', C, 'مع ثلاثة')

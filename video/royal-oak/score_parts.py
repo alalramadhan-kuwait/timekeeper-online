@@ -122,9 +122,9 @@ def segment(chords, t0, t1):
 
 
 part = 1 if 'part1' in sys.argv[1] else 2
-MOODS = {1: [('rewind', ['Dmaj9']), ('groove_light', ['Fmaj9', 'C7']), ('hit', ['Dmaj9']), ('groove_light', ['Am7', 'Gmaj7']),
+MOODS = {1: [('pad', ['Dm9', 'Fmaj9']), ('rewind', ['Dmaj9']), ('groove_light', ['Fmaj9', 'C7']), ('hit', ['Dmaj9']), ('groove_light', ['Am7', 'Gmaj7']),
              ('groove', ['Gm9', 'C7']), ('groove', ['Bbmaj7', 'A7']), ('pad', ['Dm9', 'G13']), ('groove_light', ['Fmaj9', 'Bbmaj7']), ('tension', ['Dm'])],
-         2: [('groove', ['Dm9', 'G13']), ('groove', ['Gm9', 'C7']), ('pad', ['Dm9', 'Bbmaj7', 'Gm9', 'A7']), ('groove', ['Dm9', 'G13']), ('celesta', ['Bbmaj7', 'Am7']), ('strings', ['Dm', 'Bb', 'F', 'C']),
+         2: [('pad', ['Dm9', 'Bbmaj7']), ('groove', ['Dm9', 'G13']), ('groove', ['Gm9', 'C7']), ('pad', ['Dm9', 'Bbmaj7', 'Gm9', 'A7']), ('groove', ['Dm9', 'G13']), ('celesta', ['Bbmaj7', 'Am7']), ('strings', ['Dm', 'Bb', 'F', 'C']),
              ('pad', ['Fmaj9']), ('groove', ['Gm9', 'C7', 'Fmaj9', 'A7']), ('hit', ['Dmaj9', 'Gmaj7']), ('final', ['Bbmaj7', 'Dmaj9'])]}[part]
 for i, (mood, chords) in enumerate(MOODS):
     a, b = float(starts[i]), float(starts[i] + durs[i])

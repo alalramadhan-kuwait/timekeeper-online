@@ -176,6 +176,9 @@ async function newPage() {
   page.on('console', (m) => { if (m.type() === 'error') console.error('page console:', m.text()); });
   await page.goto(stageUrl);
   const info = await page.evaluate((s) => window.PM.init(s), sb);
+  // every picture decoded before the first screenshot (large cut-outs were still loading in the opening frames)
+  await page.evaluate(() => Promise.all([...document.images].map((im) => (im.complete ? Promise.resolve() : new Promise((r) => { im.onload = im.onerror = r; }))
+    .then(() => (im.decode ? im.decode().catch(() => {}) : null)))));
   return { page, info };
 }
 async function shot(page, t, file, png) {
