@@ -11,10 +11,11 @@ How it works: a storyboard JSON describes scenes. `engine/` draws them as DOM dr
 
 Read `references/style-guide.md` before writing a storyboard (it describes the original playful look; the Documentary and brand mode section below describes the restrained one). Read `references/elements.md` for every element and its options. `examples/demo.json` is a complete 5-scene storyboard.
 
-Making a film about real people (founders, a team, a brand story)? Also read `references/people.md` (their own cut-outs, generated poses, tone, real products) and `references/production.md` (camera arithmetic, voice and music, review loop, delivery with the cover). `video/success-story/story.py` is the worked example.
+Every film opens with a hook the user has chosen: see `references/hooks.md`. Making a film about real people (founders, a team, a brand story)? Also read `references/people.md` (their own cut-outs, generated poses, tone, real products) and `references/production.md` (camera arithmetic, voice and music, review loop, delivery with the cover). `video/success-story/story.py` is the worked example.
 
 ## Workflow
 
+0. **Agree the hook first.** Read `references/hooks.md`, propose 3 or 4 hooks the story can honestly support (spoken line, frame-1 text, first visual, cost), recommend one, and let the user choose before building.
 1. **Break the script into beats.** One idea per scene, 2 to 6 seconds each, 5 to 12 scenes. Write the banner first: a takeaway of 6 words or fewer, uppercase renders best. Then the spoken line.
 2. **Pick a visual metaphor per beat** from the element library (dial for levels, stopwatch for time, books for output, skyline for scale, meter for usage, stamp for a verdict, list for a recap). Keep the mascot present in most scenes and change its outfit and face to show progress or mood. For real people, use their cut-outs and generated poses instead of the mascot, and plan a visible change every 2 to 3 seconds.
 3. **Write `storyboard.json`.** Start by copying `examples/demo.json`. Times inside a scene are scene-local seconds.
