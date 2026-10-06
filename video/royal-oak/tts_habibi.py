@@ -13,19 +13,23 @@ H = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(H, 'voice-habibi'); os.makedirs(os.path.join(OUT, 'clips'), exist_ok=True)
 REF_TEXT = 'وين تو الناس متى تصحى ومتى تفطر وتغير يبيلك ساعة يعني بالله تروح الشغل الساعة عشره.'
 SPEED = 0.9            # a little slower than the model's natural pace: a documentary narrator, not a conversation
-# English words are written in English for the model only (the owner asked for them to be read in English); the
-# captions keep the Arabic spelling. People's names and places that have an Arabic form stay in Arabic.
+# English and foreign words are written in Latin letters for the model only (the owner asked for brand names, people's
+# names and cities to be read in English); the captions keep the Arabic spelling.
 PRON = {
-    'يونيفرسال جنيف': 'Universal جنيف', 'إس إيه إس': 'S.A.S', 'البولروتر': 'Polerouter', 'أوميغا': 'Omega',
-    'الكونستليشن': 'Constellation', 'أوديمار بيغيه': 'Audemars Piguet', 'الرويال أوك': 'Royal Oak',
-    'سيكو': 'Seiko', 'الكوارتز': 'quartz', 'كوارتز': 'quartz', 'ملم': 'ملي',
+    'جيرالد جنتا': 'Gerald Genta', 'جنتا': 'Genta', 'جيرالد': 'Gerald',
+    'جورج غولاي': 'Georges Golay', 'غولاي': 'Golay',
+    'كارلو دي ماركي': 'Carlo de Marchi', 'شارل بوتي': 'Charles Bauty', 'شارل دورو': 'Charles Dorot',
+    'يونيفرسال جنيف': 'Universal Geneve', 'جنيف': 'Geneva', 'بازل': 'Basel', 'تورينو': 'Torino', 'لوزان': 'Lausanne', 'باريس': 'Paris',
+    'إس إيه إس': 'S.A.S', 'البولروتر': 'Polerouter', 'أوميغا': 'Omega', 'الكونستليشن': 'Constellation',
+    'أوديمار بيغيه': 'Audemars Piguet', 'الرويال أوك': 'Royal Oak', 'سيكو': 'Seiko', 'الكوارتز': 'quartz', 'كوارتز': 'quartz',
+    'ملم': 'ملي',
 }
 DIAC = re.compile('[\u064B-\u0652]')
 
 
 def spoken(t):
     for a in sorted(PRON, key=len, reverse=True):
-        t = re.sub(r'(?<![\u0621-\u064A])([وبلف]?)' + re.escape(a) + r'(?![\u0621-\u064A])', lambda m: m.group(1) + PRON[a], t)
+        t = re.sub(r'(?<![\u0621-\u064A])([وبلف]?)' + re.escape(a) + r'(?![\u0621-\u064A])', lambda m: m.group(1) + (' ' if m.group(1) and PRON[a][:1].isascii() else '') + PRON[a], t)
     return t
 
 
