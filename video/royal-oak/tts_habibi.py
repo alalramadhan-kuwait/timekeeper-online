@@ -33,6 +33,24 @@ def spoken(t):
     return t
 
 
+REF_LATIN = 'wein tu ennas mita tisha w mita tiftir w tighayyir yibilak saa yani billah trooh ishshughul issaa ashra.'
+LATIN = re.compile(r"[A-Za-z][A-Za-z.' -]*[A-Za-z.]|[A-Za-z]")
+
+
+def segments(t):
+    """Split a spoken line into (lang, text): runs of Latin letters are English, the rest Arabic."""
+    out, i = [], 0
+    for m in LATIN.finditer(t):
+        a = t[i:m.start()].strip(' ')
+        if a.strip(' ،,.:…'): out.append(('ar', a))
+        elif a and out: out[-1] = (out[-1][0], out[-1][1] + a)
+        out.append(('en', m.group(0).strip()))
+        i = m.end()
+    a = t[i:].strip(' ')
+    if a.strip(' ،,.:…'): out.append(('ar', a))
+    return out
+
+
 ORDER = ['p1-h'] + ['p1-%d' % i for i in range(9)] + ['p2-h', 'p2-0', 'p2-1', 'p2-q'] + ['p2-%d' % i for i in range(2, 9)]
 
 
@@ -46,7 +64,7 @@ def lines(revised):
 
 
 if __name__ == '__main__':
-    import torch, soundfile as sf
+    import torch, soundfile as sf, numpy as np
     from importlib.resources import files
     from cached_path import cached_path
     from omegaconf import OmegaConf
@@ -59,7 +77,7 @@ if __name__ == '__main__':
     keys = args or ORDER
     path = os.path.join(OUT, 'clips.json')
     done = json.load(open(path)) if os.path.exists(path) else {}
-    todo = [k for k in keys if not (k in done and done[k]['text'] == text[k] and done[k].get('speed') == SPEED and done[k].get('spoken') == spoken(text[k]) and os.path.exists(os.path.join(OUT, done[k]['file'])))]
+    todo = [k for k in keys if not (k in done and done[k]['text'] == text[k] and done[k].get('speed') == SPEED and done[k].get('spoken') == spoken(text[k]) and done[k].get('method') == 'splice' and os.path.exists(os.path.join(OUT, done[k]['file'])))]
     if not todo: sys.exit('nothing to do')
     cfg = OmegaConf.load(str(files('f5_tts').joinpath('configs/F5TTS_v1_Base.yaml')))
     model = load_model(get_class('f5_tts.model.%s' % cfg.model.backbone), cfg.model.arch,
@@ -68,18 +86,42 @@ if __name__ == '__main__':
     vocoder = load_vocoder(vocoder_name=cfg.model.mel_spec.mel_spec_type, device='cpu')
     ref_audio, ref_text = preprocess_ref_audio_text(str(files('habibi_tts').joinpath('assets/Gulf.wav')), REF_TEXT)
     ref_dur = sf.info(ref_audio).duration
+    en = {}
+    def english(word):
+        # the base F5-TTS model (English) cloned from the same Gulf prompt: the same voice, saying the English word
+        if 'm' not in en:
+            from f5_tts.api import F5TTS
+            en['m'] = F5TTS(model='F5TTS_v1_Base', device='cpu')
+        w, sr_, _ = en['m'].infer(ref_audio, REF_LATIN, word, speed=SPEED, remove_silence=False, show_info=lambda *a: None)
+        return np.asarray(w, dtype=np.float64), sr_
+    def level(w): return w / max(1e-6, (w ** 2).mean() ** .5) * 10 ** (-20 / 20)
+    def trim(w, sr_, th=.02):
+        idx = np.where(np.abs(w) > th * np.abs(w).max())[0]
+        return w[max(0, idx[0] - int(.03 * sr_)): idx[-1] + int(.06 * sr_)] if len(idx) else w
     for k in todo:
         t0 = time.time()
         say = spoken(text[k])
         # the model sizes a line by its UTF-8 length; diacritics would stretch it, so size it from the plain text
         plain = DIAC.sub('', say)
         fix = ref_dur + ref_dur * len(plain.encode('utf-8')) / len(ref_text.encode('utf-8')) / SPEED
-        wav, sr, _ = infer_process(ref_audio, ref_text, say, model, vocoder, mel_spec_type=cfg.model.mel_spec.mel_spec_type, device='cpu',
-                                   dialect_id=None, fix_duration=fix)
-        wav = wav / max(1e-6, (wav ** 2).mean() ** .5) * 10 ** (-20 / 20)            # every line at the same loudness (-20 dBFS RMS)
+        parts = []
+        for lang, seg in segments(say):
+            if lang == 'ar' and seg[:1] in '،,:.' and parts:                         # a comma after a name: a longer breath
+                parts[-1] = np.zeros(int(.26 * sr)); seg = seg.lstrip('،,:. ')
+            if lang == 'en':
+                w, sr = english(seg)
+            else:
+                plain_s = DIAC.sub('', seg)
+                fx = ref_dur + ref_dur * len(plain_s.encode('utf-8')) / len(ref_text.encode('utf-8')) / SPEED
+                w, sr, _ = infer_process(ref_audio, ref_text, seg, model, vocoder, mel_spec_type=cfg.model.mel_spec.mel_spec_type, device='cpu',
+                                         dialect_id=None, fix_duration=fx)
+            w = level(trim(np.asarray(w, dtype=np.float64), sr))
+            f = min(len(w) // 4, int(.012 * sr)); w[:f] *= np.linspace(0, 1, f); w[len(w) - f:] *= np.linspace(1, 0, f)
+            parts += [w, np.zeros(int(.12 * sr))]
+        wav = level(np.concatenate(parts[:-1]))                                        # every line at the same loudness (-20 dBFS RMS)
         wav = wav.clip(-.99, .99)
         f = 'clips/%s.wav' % k
         sf.write(os.path.join(OUT, f), wav, sr)
-        done[k] = {"file": f, "seconds": round(len(wav) / sr, 2), "text": text[k], "voice": "Habibi-TTS SAU, Gulf.wav prompt", "spoken": say, "speed": SPEED}
+        done[k] = {"file": f, "seconds": round(len(wav) / sr, 2), "text": text[k], "voice": "Habibi-TTS SAU, Gulf.wav prompt", "spoken": say, "speed": SPEED, "method": "splice"}
         json.dump(done, open(path, 'w'), ensure_ascii=False, indent=1)
         print('%s  %.1f s audio  in %.0f s' % (k, done[k]['seconds'], time.time() - t0), flush=True)
