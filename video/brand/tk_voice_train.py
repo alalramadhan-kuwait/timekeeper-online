@@ -168,6 +168,9 @@ def train(args):
 
     tts = load_tts(args.device)
     t3 = tts.t3
+    del tts.s3gen, tts.ve  # only T3 trains; frees ~3 GB on a 15 GB box
+    t3.tfmr.gradient_checkpointing_enable()
+    t3.tfmr.config.use_cache = False
     for p in t3.parameters():
         p.requires_grad_(False)
     n = add_lora(t3, args.rank)
@@ -243,7 +246,7 @@ if __name__ == "__main__":
     sub = p.add_subparsers(dest="cmd", required=True)
     b = sub.add_parser("build"); b.add_argument("audio", type=Path)
     t = sub.add_parser("train"); t.add_argument("--name", default="run1"); t.add_argument("--steps", type=int, default=300)
-    t.add_argument("--batch", type=int, default=2); t.add_argument("--lr", type=float, default=1e-4)
+    t.add_argument("--batch", type=int, default=1); t.add_argument("--lr", type=float, default=1e-4)
     t.add_argument("--eval-every", type=int, default=50)
     s = sub.add_parser("sample"); s.add_argument("--ckpt"); s.add_argument("--exaggeration", type=float, default=0.4)
     s.add_argument("--cfg", type=float, default=0.5)
