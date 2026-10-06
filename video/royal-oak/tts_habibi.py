@@ -12,6 +12,28 @@ import json, os, re, sys, time
 H = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(H, 'voice-habibi'); os.makedirs(os.path.join(OUT, 'clips'), exist_ok=True)
 REF_TEXT = 'وين تو الناس متى تصحى ومتى تفطر وتغير يبيلك ساعة يعني بالله تروح الشغل الساعة عشره.'
+SPEED = 0.9            # a little slower than the model's natural pace: a documentary narrator, not a conversation
+# Foreign names spelled for the model only (captions keep the normal spelling): diacritics steer the pronunciation
+# towards the original, without changing the voice. Longest first, so "أوديمار بيغيه" wins over "بيغيه".
+PRON = {
+    'جيرالد جنتا': 'جِيرَالْد جِنْتَا', 'جنتا': 'جِنْتَا', 'جيرالد': 'جِيرَالْد',
+    'يونيفرسال جنيف': 'يُونِيفِيرْسَال جِنِيف', 'جنيف': 'جِنِيف', 'إس إيه إس': 'إِسْ إِيهْ إِسْ',
+    'البولروتر': 'البُولْرُوتَر', 'أوميغا': 'أُومِيغَا', 'الكونستليشن': 'الكُونْسْتِلِيشِن',
+    'أوديمار بيغيه': 'أُودِيمَار بِيغِيه', 'جورج غولاي': 'جُورْج غُولَاي', 'غولاي': 'غُولَاي',
+    'الرويال أوك': 'الرُّويَلْ أُوك', 'كارلو دي ماركي': 'كَارْلُو دِي مَارْكِي', 'شارل بوتي': 'شَارْل بُوتِي', 'شارل دورو': 'شَارْل دُورُو',
+    'تورينو': 'تُورِينُو', 'لوزان': 'لُوزَان', 'بازل': 'بَازِل', 'باريس': 'بَارِيس',
+    'سيكو': 'سِيكُو', 'الكوارتز': 'الكْوَارْتْز', 'كوارتز': 'كْوَارْتْز', 'الستيل': 'السْتِيل', 'ستيل': 'سْتِيل',
+    'ملم': 'مِلِّي', 'فرنك': 'فْرَنْك', 'الميكانيك': 'المِيكَانِيك',
+}
+DIAC = re.compile('[\u064B-\u0652]')
+
+
+def spoken(t):
+    for a in sorted(PRON, key=len, reverse=True):
+        t = re.sub(r'(?<![\u0621-\u064A])([وبلف]?)' + re.escape(a) + r'(?![\u0621-\u064A])', lambda m: m.group(1) + PRON[a], t)
+    return t
+
+
 ORDER = ['p1-h'] + ['p1-%d' % i for i in range(9)] + ['p2-h', 'p2-0', 'p2-1', 'p2-q'] + ['p2-%d' % i for i in range(2, 9)]
 
 
@@ -38,7 +60,7 @@ if __name__ == '__main__':
     keys = args or ORDER
     path = os.path.join(OUT, 'clips.json')
     done = json.load(open(path)) if os.path.exists(path) else {}
-    todo = [k for k in keys if not (k in done and done[k]['text'] == text[k] and os.path.exists(os.path.join(OUT, done[k]['file'])))]
+    todo = [k for k in keys if not (k in done and done[k]['text'] == text[k] and done[k].get('speed') == SPEED and os.path.exists(os.path.join(OUT, done[k]['file'])))]
     if not todo: sys.exit('nothing to do')
     cfg = OmegaConf.load(str(files('f5_tts').joinpath('configs/F5TTS_v1_Base.yaml')))
     model = load_model(get_class('f5_tts.model.%s' % cfg.model.backbone), cfg.model.arch,
@@ -46,11 +68,19 @@ if __name__ == '__main__':
                        mel_spec_type=cfg.model.mel_spec.mel_spec_type, vocab_file=str(cached_path('hf://SWivid/Habibi-TTS/Specialized/SAU/vocab.txt')), device='cpu')
     vocoder = load_vocoder(vocoder_name=cfg.model.mel_spec.mel_spec_type, device='cpu')
     ref_audio, ref_text = preprocess_ref_audio_text(str(files('habibi_tts').joinpath('assets/Gulf.wav')), REF_TEXT)
+    ref_dur = sf.info(ref_audio).duration
     for k in todo:
         t0 = time.time()
-        wav, sr, _ = infer_process(ref_audio, ref_text, text[k], model, vocoder, mel_spec_type=cfg.model.mel_spec.mel_spec_type, device='cpu', dialect_id=None)
+        say = spoken(text[k])
+        # the model sizes a line by its UTF-8 length; diacritics would stretch it, so size it from the plain text
+        plain = DIAC.sub('', say)
+        fix = ref_dur + ref_dur * len(plain.encode('utf-8')) / len(ref_text.encode('utf-8')) / SPEED
+        wav, sr, _ = infer_process(ref_audio, ref_text, say, model, vocoder, mel_spec_type=cfg.model.mel_spec.mel_spec_type, device='cpu',
+                                   dialect_id=None, fix_duration=fix)
+        wav = wav / max(1e-6, (wav ** 2).mean() ** .5) * 10 ** (-20 / 20)            # every line at the same loudness (-20 dBFS RMS)
+        wav = wav.clip(-.99, .99)
         f = 'clips/%s.wav' % k
         sf.write(os.path.join(OUT, f), wav, sr)
-        done[k] = {"file": f, "seconds": round(len(wav) / sr, 2), "text": text[k], "voice": "Habibi-TTS SAU, Gulf.wav prompt"}
+        done[k] = {"file": f, "seconds": round(len(wav) / sr, 2), "text": text[k], "voice": "Habibi-TTS SAU, Gulf.wav prompt", "spoken": say, "speed": SPEED}
         json.dump(done, open(path, 'w'), ensure_ascii=False, indent=1)
         print('%s  %.1f s audio  in %.0f s' % (k, done[k]['seconds'], time.time() - t0), flush=True)
