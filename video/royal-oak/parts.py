@@ -23,7 +23,9 @@ from art import *
 
 H = os.path.dirname(os.path.abspath(__file__))
 ST = json.load(open(os.path.join(H, 'ro-style.json')))
+NARRATOR = os.environ.get('NARRATOR', 'voice-ar')        # voice-ar: Andre (Higgsfield); voice-fahed: Azure ar-KW-FahedNeural (tts_azure.py)
 VO = json.load(open(os.path.join(H, 'voice-ar', 'clips.json')))
+if NARRATOR != 'voice-ar': VO.update(json.load(open(os.path.join(H, NARRATOR, 'clips.json'))))
 ASP = {}
 for f in ('assets/gen/aspects.json', 'assets/cut/aspects.json', 'assets/early/aspects.json'):
     p = os.path.join(H, f)
@@ -60,7 +62,7 @@ class Part:
         dur = round(voiceAt + d + tail, 2)
         sc = {"theme": theme, "floor": False, "elements": els, "dur": dur, "silent": True,
               "captions": caption, "captionStart": voiceAt + 0.05, "captionEnd": voiceAt + d}
-        if os.path.exists(os.path.join(H, 'voice-ar', VO[key]['file'])): sc["voice"] = 'voice-ar/' + VO[key]['file']; sc["voiceAt"] = voiceAt
+        if os.path.exists(os.path.join(H, NARRATOR, VO[key]['file'])): sc["voice"] = NARRATOR + '/' + VO[key]['file']; sc["voiceAt"] = voiceAt
         sc.update(kw)
         for e in els: life(e, dur)
         self.sc.append(sc); return sc
