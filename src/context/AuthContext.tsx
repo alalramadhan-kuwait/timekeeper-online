@@ -48,9 +48,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    /* Not ready until the role is known. Routes are gated by role, and a gate asked before the profile
+       arrived answered "no" and sent every alert link (attendance, purchase orders, projects) to the home
+       page when the app was opened from a notification. */
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setUser(session?.user ?? null);
-      if (session?.user) loadProfile(session.user.id);
+      if (session?.user) { try { await loadProfile(session.user.id); } catch { /* signed in without a profile */ } }
       setLoading(false);
     });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {

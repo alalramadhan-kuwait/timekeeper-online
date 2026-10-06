@@ -19,6 +19,7 @@ import UserActivityPage from './pages/UserActivity';
 import SettingsPage from './pages/Settings';
 import LeavePage from './pages/Leave';
 import AttendancePage from './pages/Attendance';
+import OpenShiftsPage from './pages/OpenShifts';
 import InfluencerProfilePage from './pages/InfluencerProfile';
 import PerformancePage from './pages/Performance';
 import { PurchaseOrdersPage } from './pages/PurchaseOrders';
@@ -65,6 +66,7 @@ function Shell() {
         <Route path="/consignments" element={g('/consignments', <ConsignmentsPage />)} />
         <Route path="/vip" element={g('/vip', <VipCustomersPage />)} />
         <Route path="/attendance" element={g('/attendance', <AttendancePage />)} />
+        <Route path="/open-shifts" element={g('/attendance', <OpenShiftsPage />)} />
         <Route path="/hr" element={g('/hr', <EmployeesPage />)} />
         <Route path="/leave" element={g('/leave', <LeavePage />)} />
         <Route path="/limited-projects" element={g('/limited-projects', <LimitedProjectsPage />)} />

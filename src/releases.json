@@ -1,5 +1,15 @@
 [
   {
+    "version": "3.3.0",
+    "date": "2026-10-06",
+    "title": "Clock-ins not closed, person by person",
+    "changes": [
+      "Tapping the “clock-ins never closed” alert now opens a list: one card per person with each day, the time they came in and where.",
+      "Each card has a ready message for that person (Arabic or English) to send on WhatsApp or copy, telling them which days to correct.",
+      "Alerts that open a page (attendance, purchase orders, projects) now land on that page when the app was closed, instead of the home page."
+    ]
+  },
+  {
     "version": "3.2.1",
     "date": "2026-10-05",
     "title": "One alert, one app",

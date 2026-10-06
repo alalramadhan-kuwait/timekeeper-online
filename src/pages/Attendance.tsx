@@ -369,6 +369,9 @@ function ManagerDashboard() {
           their own shift is judged against that instead, and against their own grace where one is
           set. Staff clock in from My Portal; corrections here are saved to the History Log.
         </p>
+        <Link to="/open-shifts" className="inline-flex items-center gap-1 mt-2 text-sm font-medium text-blue-600 hover:underline">
+          Clock-ins not closed, by person <ChevronRight size={14} />
+        </Link>
       </div>
 
       {err && <div className="px-4 py-2 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">{err}</div>}
