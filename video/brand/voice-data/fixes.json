@@ -412,11 +412,36 @@
   [
    "سبلاير كلهم",
    "السبلايرز كلهم"
+  ],
+  [
+   "شيء",
+   "شي"
+  ],
+  [
+   "هذه",
+   "هذي"
+  ],
+  [
+   "يأخذ",
+   "ياخذ"
+  ],
+  [
+   "تأخذ",
+   "تاخذ"
+  ],
+  [
+   "نأخذ",
+   "ناخذ"
+  ],
+  [
+   "يأخذون",
+   "ياخذون"
   ]
  ],
  "drop": [],
  "test": [
   "tudor-021",
   "tudor-031"
- ]
+ ],
+ "_note_kw": "Kuwaiti spelling: Whisper writes MSA forms for words Ali always says the Kuwaiti way."
 }
