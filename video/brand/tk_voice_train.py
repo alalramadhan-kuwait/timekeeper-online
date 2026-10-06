@@ -198,12 +198,25 @@ def batchify(items, hp, device):
     return cond, T.to(device), tl.to(device), S.to(device), sl.to(device)
 
 
+def with_other_prompt(feats, key, by_video, rng=random):
+    """Same clip, but speaker embedding and prompt tokens from another clip of the same video."""
+    pool = [k for k in by_video[key.rsplit("-", 1)[0]] if k != key] or [key]
+    other = feats[rng.choice(pool)]
+    return {**feats[key], "prompt": other["prompt"], "ve": other["ve"]}
+
+
 def train(args):
     torch.manual_seed(0); random.seed(0)
     data = SRC / args.data
     feats = torch.load(data / "feats.pt")
     split = dict(l.split("|")[0::2] for l in (data / "metadata.csv").read_text().split("\n") if l)
     tr = [k for k, s in split.items() if s == "train"]; te = [k for k, s in split.items() if s == "test"]
+
+    # The voice prompt must come from a *different* clip: a prompt cut from the target clip lets T3 copy it,
+    # and at inference (prompt = ref.wav) that shortcut is gone and the speech falls apart.
+    by_video = {}
+    for k in feats:
+        by_video.setdefault(k.rsplit("-", 1)[0], []).append(k)
 
     tts = load_tts(args.device)
     t3 = tts.t3
@@ -226,7 +239,7 @@ def train(args):
         t3.eval(); tot = []
         with torch.no_grad():
             for k in te:
-                lt, ls = t3_loss(t3, *batchify([feats[k]], t3.hp, args.device))
+                lt, ls = t3_loss(t3, *batchify([with_other_prompt(feats, k, by_video, random.Random(k))], t3.hp, args.device))
                 tot.append(ls.item())
         t3.train()
         return float(np.mean(tot)) if tot else float("nan")
@@ -238,7 +251,7 @@ def train(args):
         random.shuffle(tr)
         for i in range(0, len(tr), args.batch):
             keys = tr[i: i + args.batch]
-            cond, T, tl, S, sl = batchify([feats[k] for k in keys], t3.hp, args.device)
+            cond, T, tl, S, sl = batchify([with_other_prompt(feats, k, by_video) for k in keys], t3.hp, args.device)
             lt, ls = t3_loss(t3, cond, T, tl, S, sl)
             loss = ls + 0.1 * lt
             opt.zero_grad(); loss.backward()
