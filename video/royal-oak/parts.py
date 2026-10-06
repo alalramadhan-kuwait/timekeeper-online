@@ -762,6 +762,11 @@ P2.S('p2-8', 'ro-black', C, els, tail=2.6, transition='fade', captionEnd=V(7.8),
      sfx=[E('paper_slide', V(1.6), -12), E('plane', V(3.2), -16)] + [E('paper_tear', V(6.3) + i * .26, -16) for i in range(6)] +
          [E('pencil', sk_t + .5, -12), E('tick', V(11.2), -12), E('tick', V(11.9), -18)])
 
+import sys
+sys.path.insert(0, os.path.join(H, '..', 'brand'))
+from tk_endcard import endcard          # every Time Keeper film ends on the logo card with the ticks
+for part in (P1, P2): part.sc += endcard(H, theme='ro-black')
+
 for name, part in (('part1', P1), ('part2', P2)):
     sb = {"width": 720, "height": 1280, "fps": 30, "dir": "rtl", "style": ST['style'], "themes": ST['themes'], "audio": {"musicGain": -90}, "scenes": part.sc}
     json.dump(sb, open(os.path.join(H, name + '.json'), 'w'), indent=1, ensure_ascii=False)

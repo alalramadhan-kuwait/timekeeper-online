@@ -9,6 +9,7 @@ import numpy as np
 SR = 44100
 rng = np.random.default_rng(11)
 sb = json.load(open(sys.argv[1])); durs = [s['dur'] for s in sb['scenes']]
+STORY = len([s for s in sb['scenes'] if not s.get('endcard')])     # the Time Keeper end card plays without music, only its ticks
 starts = np.cumsum([0] + durs[:-1]); DUR = float(sum(durs)); N = int(DUR * SR) + SR
 BEAT = 60 / 92.0
 NOTE = {n: i for i, n in enumerate(['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'])}
@@ -166,8 +167,8 @@ for i, (mood, chords) in enumerate(MOODS):
         for k, n in enumerate(['A5', 'C#6', 'E6', 'F#6']): add(celesta(hz(n), 2.5), a + .12 + 11.3 + k * .22, .05, pan=(-.3 + .2 * k))
     if i + 1 < len(MOODS) and mood != 'tension': add(swell(1.0), b - 1.0, .05)
 if part == 1:      # the phone rings into silence, then one low suspense chord under the "to be continued" card
-    a = float(starts[-1]); ring = a + .12 + 10.6
-    add(pad([hz(n) for n in ['D2', 'A2', 'Eb3', 'D4']], DUR - ring + .5, 600, a=.05, r=1.5), ring, .09); add(hit(3.0), ring, .25)
+    a = float(starts[STORY - 1]); ring = a + .12 + 10.6; story_end = a + durs[STORY - 1]
+    add(pad([hz(n) for n in ['D2', 'A2', 'Eb3', 'D4']], story_end - ring + .3, 600, a=.05, r=1.2), ring, .09); add(hit(3.0), ring, .25)
 
 ir_n = int(1.8 * SR); ti = np.arange(ir_n) / SR
 ir = rng.standard_normal((ir_n, 2)) * np.exp(-ti / .45)[:, None]

@@ -121,6 +121,15 @@ user tops up.
   cut-outs were missing from the opening frames.)
 - Name each render with a new version number. Delete partial renders so an old file is never sent by mistake.
 
+## The Time Keeper end card
+
+Every Time Keeper film ends the same way (the owner's choice, from the success story): on a near-black plate a gold
+clock hand sweeps once around and draws the logo, one tick as it starts, the double tick (`tick_pair`) as the screen
+falls to black, then 1.3 s of black. It lives in `video/brand/tk_endcard.py`; append it to the storyboard's scenes
+and do not change it per film. The music ends with the story (the end card scenes carry `"endcard"`, and
+`video/royal-oak/score_parts.py` writes no music under them), so the ticks are heard alone. An optional closing line
+can play over it (`caption`, `voice`), as "والوقت… كان مجرد البداية." did in the success story.
+
 ## Delivery
 
 - **Open on the cover.** WhatsApp and iMessage use the first frame as the thumbnail, and a paper film usually opens
