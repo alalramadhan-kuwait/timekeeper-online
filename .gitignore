@@ -2,3 +2,6 @@ node_modules
 dist
 .env
 .DS_Store
+
+# Voice source recordings (TK Voice). Audio stays out of git.
+voice-src/
