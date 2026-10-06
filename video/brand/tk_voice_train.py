@@ -125,6 +125,29 @@ def build_screened(keep_path: Path, name: str):
     print(f"{len(rows)} clips ({len(rows_in)} new) -> {out}")
 
 
+def retext(src_name: str, csv_name: str, name: str):
+    """New dataset with the same audio features but text from another metadata file (e.g. metadata-kw.csv)."""
+    from chatterbox.models.tokenizers import MTLTokenizer
+    from chatterbox.mtl_tts import REPO_ID, punc_norm
+    from huggingface_hub import hf_hub_download
+
+    fixes = json.loads(FIXES.read_text())
+    tok = MTLTokenizer(hf_hub_download(REPO_ID, "grapheme_mtl_merged_expanded_v1.json"))
+    feats = torch.load(SRC / src_name / "feats.pt")
+    out = SRC / name
+    out.mkdir(parents=True, exist_ok=True)
+    rows = []
+    for line in (SRC / src_name / csv_name).read_text().splitlines():
+        cid, text, split = line.split("|")
+        for a, b in fixes["replace"]:
+            text = text.replace(a, b)
+        feats[cid]["text"] = tok.text_to_tokens(punc_norm(text), language_id="ar")[0].cpu()
+        rows.append(f"{cid}|{text}|{split}")
+    (out / "metadata.csv").write_text("\n".join(rows) + "\n")
+    torch.save(feats, out / "feats.pt")
+    print(len(rows), "clips ->", out)
+
+
 # ---------------------------------------------------------------- LoRA
 
 class LoRA(nn.Module):
@@ -297,6 +320,7 @@ if __name__ == "__main__":
     p.add_argument("--rank", type=int, default=32)
     sub = p.add_subparsers(dest="cmd", required=True)
     b = sub.add_parser("build"); b.add_argument("audio", type=Path)
+    rt = sub.add_parser("retext"); rt.add_argument("src"); rt.add_argument("csv"); rt.add_argument("--name", default="dataset-v3")
     bs = sub.add_parser("build-screened"); bs.add_argument("keep", type=Path); bs.add_argument("--name", default="dataset-v2")
     t = sub.add_parser("train"); t.add_argument("--name", default="run1"); t.add_argument("--data", default="dataset"); t.add_argument("--steps", type=int, default=300)
     t.add_argument("--batch", type=int, default=1); t.add_argument("--lr", type=float, default=1e-4)
@@ -305,4 +329,5 @@ if __name__ == "__main__":
     s.add_argument("--cfg", type=float, default=0.5)
     a = p.parse_args()
     torch.set_num_threads(4)
-    {"build": lambda: build(a.audio), "build-screened": lambda: build_screened(a.keep, a.name), "train": lambda: train(a), "sample": lambda: sample(a)}[a.cmd]()
+    {"build": lambda: build(a.audio), "build-screened": lambda: build_screened(a.keep, a.name),
+     "retext": lambda: retext(a.src, a.csv, a.name), "train": lambda: train(a), "sample": lambda: sample(a)}[a.cmd]()
