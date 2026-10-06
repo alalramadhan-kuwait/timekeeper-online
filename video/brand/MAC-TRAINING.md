@@ -26,22 +26,24 @@ python3.11 -m venv ~/tkvoice
 
 ## 2. البيانات
 
-حط `feats.pt` و`metadata.csv` (يوصلونك مني) في المجلد `~/tk/voice-src/dataset/`:
+الملف `tk-voice-mac-data.zip` (2 MB، يوصلك مني) فيه `feats.pt` و`metadata.csv` و`ref.wav`. فكّه داخل `~/tk`:
 
 ```bash
-mkdir -p ~/tk/voice-src/dataset
-mv ~/Downloads/feats.pt ~/Downloads/metadata.csv ~/tk/voice-src/dataset/
+cd ~/tk && unzip ~/Downloads/tk-voice-mac-data.zip
 ```
+
+بعدها يصير عندك `~/tk/voice-src/dataset-v2/` و`~/tk/voice-src/ref.wav`.
 
 ## 3. التدريب
 
 ```bash
 cd ~/tk
 PYTORCH_ENABLE_MPS_FALLBACK=1 ~/tkvoice/bin/python video/brand/tk_voice_train.py --device mps \
-  train --name mac1 --steps 3000 --batch 4 --eval-every 250
+  train --data dataset-v2 --name mac1 --steps 2000 --batch 4 --lr 5e-5 --eval-every 250
 ```
 
 - خل الماك موصّل بالشاحن، ولا تسكّره. وإذا تبي تمنعه من النوم، استخدم `caffeinate -i` قبل الأمر.
+- 2000 خطوة × 4 مقاطع = تقريباً 12 دورة على الساعتين.
 - كل 250 خطوة يحفظ نسخة في `voice-src/ckpt/mac1/stepXXXXX.pt`، حجمها تقريباً 30 MB.
 - السطر اللي فيه `test_speech_loss` هو المؤشر: كل ما نزل الرقم كان أحسن. وإذا بدا يرتفع، معناه الموديل بدا يحفظ البيانات بدل ما يتعلم، فالنسخ اللي قبلها أحسن.
 
