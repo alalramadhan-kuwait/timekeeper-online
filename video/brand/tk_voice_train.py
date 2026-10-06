@@ -87,6 +87,44 @@ def build(audio: Path):
     print(f"{len(rows)} clips -> {DATA}")
 
 
+def build_screened(keep_path: Path, name: str):
+    """Add the screened channel clips (tk_voice_screen.py) to a dataset next to the Tudor episode."""
+    import re
+    from chatterbox.mtl_tts import ChatterboxMultilingualTTS, punc_norm
+
+    fixes = json.loads(FIXES.read_text())
+    keep = set(json.loads(keep_path.read_text()))
+    rows_in = [r for r in json.loads((SRC / "screen.json").read_text())
+               if r["id"] in keep and not re.search(r"[0-9\u0660-\u0669]", r["text"])]
+    out = SRC / name
+    (out / "wavs").mkdir(parents=True, exist_ok=True)
+    feats = torch.load(DATA / "feats.pt")                       # start from the Tudor episode
+    rows = (DATA / "metadata.csv").read_text().split("\n")
+    rows = [r for r in rows if r]
+    tts = ChatterboxMultilingualTTS.from_pretrained(device="cpu", t3_model="v3")
+    rng = random.Random(0)
+    for r in rows_in:
+        text = r["text"]
+        for a, b in fixes["replace"]:
+            text = text.replace(a, b)
+        wav_path = out / "wavs" / f"{r['id']}.wav"
+        subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", str(r["start"]), "-to", str(r["end"]), "-i", str(SRC / r["src"]),
+                        "-ac", "1", "-ar", str(SR24), "-af", "loudnorm=I=-20:TP=-2:LRA=11", "-c:a", "pcm_s16le",
+                        str(wav_path)], check=True)
+        w16 = ffmpeg_pcm(wav_path, SR16)
+        with torch.inference_mode():
+            speech, _ = tts.s3gen.tokenizer.forward([w16])
+            ve = torch.from_numpy(tts.ve.embeds_from_wavs([w16], sample_rate=SR16)).mean(0)
+            prompt, _ = tts.s3gen.tokenizer.forward([w16[: 6 * SR16]], max_len=tts.t3.hp.speech_cond_prompt_len)
+        feats[r["id"]] = {"text": tts.tokenizer.text_to_tokens(punc_norm(text), language_id="ar")[0].cpu(),
+                          "speech": torch.atleast_2d(speech)[0].cpu(), "ve": ve.cpu(),
+                          "prompt": torch.atleast_2d(prompt)[0].cpu()}
+        rows.append(f"{r['id']}|{text}|{'test' if rng.random() < 0.03 else 'train'}")
+    (out / "metadata.csv").write_text("\n".join(rows) + "\n")
+    torch.save(feats, out / "feats.pt")
+    print(f"{len(rows)} clips ({len(rows_in)} new) -> {out}")
+
+
 # ---------------------------------------------------------------- LoRA
 
 class LoRA(nn.Module):
@@ -162,8 +200,9 @@ def batchify(items, hp, device):
 
 def train(args):
     torch.manual_seed(0); random.seed(0)
-    feats = torch.load(DATA / "feats.pt")
-    split = dict(l.split("|")[0::2] for l in (DATA / "metadata.csv").read_text().split("\n") if l)
+    data = SRC / args.data
+    feats = torch.load(data / "feats.pt")
+    split = dict(l.split("|")[0::2] for l in (data / "metadata.csv").read_text().split("\n") if l)
     tr = [k for k, s in split.items() if s == "train"]; te = [k for k, s in split.items() if s == "test"]
 
     tts = load_tts(args.device)
@@ -245,11 +284,12 @@ if __name__ == "__main__":
     p.add_argument("--rank", type=int, default=32)
     sub = p.add_subparsers(dest="cmd", required=True)
     b = sub.add_parser("build"); b.add_argument("audio", type=Path)
-    t = sub.add_parser("train"); t.add_argument("--name", default="run1"); t.add_argument("--steps", type=int, default=300)
+    bs = sub.add_parser("build-screened"); bs.add_argument("keep", type=Path); bs.add_argument("--name", default="dataset-v2")
+    t = sub.add_parser("train"); t.add_argument("--name", default="run1"); t.add_argument("--data", default="dataset"); t.add_argument("--steps", type=int, default=300)
     t.add_argument("--batch", type=int, default=1); t.add_argument("--lr", type=float, default=1e-4)
     t.add_argument("--eval-every", type=int, default=50)
     s = sub.add_parser("sample"); s.add_argument("--ckpt"); s.add_argument("--exaggeration", type=float, default=0.4)
     s.add_argument("--cfg", type=float, default=0.5)
     a = p.parse_args()
     torch.set_num_threads(4)
-    {"build": lambda: build(a.audio), "train": lambda: train(a), "sample": lambda: sample(a)}[a.cmd]()
+    {"build": lambda: build(a.audio), "build-screened": lambda: build_screened(a.keep, a.name), "train": lambda: train(a), "sample": lambda: sample(a)}[a.cmd]()
