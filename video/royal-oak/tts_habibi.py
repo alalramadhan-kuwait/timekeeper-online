@@ -13,17 +13,12 @@ H = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(H, 'voice-habibi'); os.makedirs(os.path.join(OUT, 'clips'), exist_ok=True)
 REF_TEXT = 'وين تو الناس متى تصحى ومتى تفطر وتغير يبيلك ساعة يعني بالله تروح الشغل الساعة عشره.'
 SPEED = 0.9            # a little slower than the model's natural pace: a documentary narrator, not a conversation
-# Foreign names spelled for the model only (captions keep the normal spelling): diacritics steer the pronunciation
-# towards the original, without changing the voice. Longest first, so "أوديمار بيغيه" wins over "بيغيه".
+# English words are written in English for the model only (the owner asked for them to be read in English); the
+# captions keep the Arabic spelling. People's names and places that have an Arabic form stay in Arabic.
 PRON = {
-    'جيرالد جنتا': 'جِيرَالْد جِنْتَا', 'جنتا': 'جِنْتَا', 'جيرالد': 'جِيرَالْد',
-    'يونيفرسال جنيف': 'يُونِيفِيرْسَال جِنِيف', 'جنيف': 'جِنِيف', 'إس إيه إس': 'إِسْ إِيهْ إِسْ',
-    'البولروتر': 'البُولْرُوتَر', 'أوميغا': 'أُومِيغَا', 'الكونستليشن': 'الكُونْسْتِلِيشِن',
-    'أوديمار بيغيه': 'أُودِيمَار بِيغِيه', 'جورج غولاي': 'جُورْج غُولَاي', 'غولاي': 'غُولَاي',
-    'الرويال أوك': 'الرُّويَلْ أُوك', 'كارلو دي ماركي': 'كَارْلُو دِي مَارْكِي', 'شارل بوتي': 'شَارْل بُوتِي', 'شارل دورو': 'شَارْل دُورُو',
-    'تورينو': 'تُورِينُو', 'لوزان': 'لُوزَان', 'بازل': 'بَازِل', 'باريس': 'بَارِيس',
-    'سيكو': 'سِيكُو', 'الكوارتز': 'الكْوَارْتْز', 'كوارتز': 'كْوَارْتْز', 'الستيل': 'السْتِيل', 'ستيل': 'سْتِيل',
-    'ملم': 'مِلِّي', 'فرنك': 'فْرَنْك', 'الميكانيك': 'المِيكَانِيك',
+    'يونيفرسال جنيف': 'Universal جنيف', 'إس إيه إس': 'S.A.S', 'البولروتر': 'Polerouter', 'أوميغا': 'Omega',
+    'الكونستليشن': 'Constellation', 'أوديمار بيغيه': 'Audemars Piguet', 'الرويال أوك': 'Royal Oak',
+    'سيكو': 'Seiko', 'الكوارتز': 'quartz', 'كوارتز': 'quartz', 'ملم': 'ملي',
 }
 DIAC = re.compile('[\u064B-\u0652]')
 
@@ -60,7 +55,7 @@ if __name__ == '__main__':
     keys = args or ORDER
     path = os.path.join(OUT, 'clips.json')
     done = json.load(open(path)) if os.path.exists(path) else {}
-    todo = [k for k in keys if not (k in done and done[k]['text'] == text[k] and done[k].get('speed') == SPEED and os.path.exists(os.path.join(OUT, done[k]['file'])))]
+    todo = [k for k in keys if not (k in done and done[k]['text'] == text[k] and done[k].get('speed') == SPEED and done[k].get('spoken') == spoken(text[k]) and os.path.exists(os.path.join(OUT, done[k]['file'])))]
     if not todo: sys.exit('nothing to do')
     cfg = OmegaConf.load(str(files('f5_tts').joinpath('configs/F5TTS_v1_Base.yaml')))
     model = load_model(get_class('f5_tts.model.%s' % cfg.model.backbone), cfg.model.arch,
