@@ -4573,7 +4573,7 @@
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"300\" height=\"20\" viewBox=\"0 0 300 20\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><polygon points=\"0,10 40,0 40,20\" fill=\"#E7C89B\"/><polygon points=\"0,10 12,7 12,13\" fill=\"#2A2C31\"/><rect x=\"40\" y=\"0\" width=\"210\" height=\"20\" fill=\"#2E5D3A\"/><rect x=\"250\" y=\"0\" width=\"26\" height=\"20\" fill=\"#B9BEC4\"/><rect x=\"276\" y=\"0\" width=\"22\" height=\"20\" rx=\"4\" fill=\"#C77A7A\"/></svg>",
      "x": [
       [
-       0,
+       0.0,
        700
       ],
       [
@@ -4619,7 +4619,7 @@
      ],
      "y": [
       [
-       0,
+       0.0,
        760
       ],
       [
