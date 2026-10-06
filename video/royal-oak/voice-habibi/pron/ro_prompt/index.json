@@ -1,0 +1,39 @@
+{
+ "seed": 1234,
+ "speed": 0.9,
+ "model": "SAU model_200000",
+ "owner_span": [
+  0.0,
+  0.92
+ ],
+ "files": [
+  {
+   "kind": "name",
+   "spelling": "رويل اوك",
+   "text": "رويل اوك.",
+   "file": "01.wav",
+   "fix_duration": 8.45
+  },
+  {
+   "kind": "sentence",
+   "spelling": "رويل اوك",
+   "text": "بازل، ألف وتسعمية واثنين وسبعين. رويل اوك، بقطر تسعة وثلاثين ملم.",
+   "file": "02.wav",
+   "fix_duration": 13.46
+  },
+  {
+   "kind": "name",
+   "spelling": "رُويْلُوك",
+   "text": "رُويْلُوك.",
+   "file": "03.wav",
+   "fix_duration": 8.45
+  },
+  {
+   "kind": "sentence",
+   "spelling": "رُويْلُوك",
+   "text": "بازل، ألف وتسعمية واثنين وسبعين. رُويْلُوك، بقطر تسعة وثلاثين ملم.",
+   "file": "04.wav",
+   "fix_duration": 13.46
+  }
+ ]
+}

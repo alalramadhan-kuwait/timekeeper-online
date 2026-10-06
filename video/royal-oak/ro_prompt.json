@@ -1,0 +1,8 @@
+{"name": "ro_prompt",
+ "note": "The owner's own 'Royal Oak' (0.00-0.92 s of his recording) placed before the Gulf reference. Tests 1-2 tie it to the spelling the speech recogniser heard; 3-4 to the owner's closest baseline spelling.",
+ "owner": {"file": "/tmp/claude-0/-home-user-timekeeper-online/d7bc0191-5938-5d56-97a7-f6e89f9fa09a/scratchpad/owner/ro_owner16.wav", "start": 0.0, "end": 0.92},
+ "tests": [
+  {"kind": "name", "spelling": "رويل اوك", "text": "رويل اوك."},
+  {"kind": "sentence", "spelling": "رويل اوك", "text": "بازل، ألف وتسعمية واثنين وسبعين. رويل اوك، بقطر تسعة وثلاثين ملم."},
+  {"kind": "name", "spelling": "رُويْلُوك", "text": "رُويْلُوك."},
+  {"kind": "sentence", "spelling": "رُويْلُوك", "text": "بازل، ألف وتسعمية واثنين وسبعين. رُويْلُوك، بقطر تسعة وثلاثين ملم."}]}

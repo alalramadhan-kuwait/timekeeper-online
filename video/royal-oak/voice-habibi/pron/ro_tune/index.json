@@ -1,0 +1,72 @@
+{
+ "seed": 1234,
+ "speed": 0.9,
+ "model": "SAU model_200000",
+ "target": "Royal = ROY + əl, Oak = OHK (for the listener only, never sent to the model)",
+ "files": [
+  {
+   "file": "ro_01.wav",
+   "group": "ro",
+   "form": 1,
+   "text": "رُويْ يَلُوك.",
+   "same_as": null,
+   "fix_duration": 6.82
+  },
+  {
+   "file": "ro_02.wav",
+   "group": "ro",
+   "form": 2,
+   "text": "رُويْ يَلُوْك.",
+   "same_as": null,
+   "fix_duration": 6.82
+  },
+  {
+   "file": "ro_03.wav",
+   "group": "ro",
+   "form": 3,
+   "text": "رُويْ يَلُوكْ.",
+   "same_as": null,
+   "fix_duration": 6.82
+  },
+  {
+   "file": "ro_04.wav",
+   "group": "ro",
+   "form": 4,
+   "text": "رُويْ يَلُوْكْ.",
+   "same_as": null,
+   "fix_duration": 6.82
+  },
+  {
+   "file": "ro_05.wav",
+   "group": "ro",
+   "form": 5,
+   "text": "رُويْلُوك.",
+   "same_as": null,
+   "fix_duration": 6.82
+  },
+  {
+   "file": "ro_06.wav",
+   "group": "ro",
+   "form": 6,
+   "text": "رُويْلُوْك.",
+   "same_as": null,
+   "fix_duration": 6.82
+  },
+  {
+   "file": "ro_07.wav",
+   "group": "ro",
+   "form": 7,
+   "text": "رُويْلُوكْ.",
+   "same_as": null,
+   "fix_duration": 6.82
+  },
+  {
+   "file": "ro_08.wav",
+   "group": "ro",
+   "form": 8,
+   "text": "رُويْلُوْكْ.",
+   "same_as": null,
+   "fix_duration": 6.82
+  }
+ ]
+}

@@ -1,0 +1,5 @@
+{"name": "ro_tune",
+ "note": "Fine-tuning around the owner's baseline (forms 6 and 7 of ro_split: رُويْ يَلُوك and رُويْلُوك). Name only, no carrier sentence.",
+ "target": "Royal = ROY + əl, Oak = OHK (for the listener only, never sent to the model)",
+ "groups": {
+   "ro": ["رُويْ يَلُوك", "رُويْ يَلُوْك", "رُويْ يَلُوكْ", "رُويْ يَلُوْكْ", "رُويْلُوك", "رُويْلُوْك", "رُويْلُوكْ", "رُويْلُوْكْ"]}}
