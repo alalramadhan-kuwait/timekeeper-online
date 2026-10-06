@@ -30,10 +30,14 @@ LINES = {
 
 
 def transcribe(audio: Path, model: str) -> None:
+    import numpy as np
     from faster_whisper import WhisperModel
 
+    # Decode with ffmpeg: faster-whisper's PyAV path breaks on av>=15.
+    pcm = subprocess.run(["ffmpeg", "-v", "error", "-i", str(audio), "-ac", "1", "-ar", "16000",
+                          "-f", "f32le", "-"], capture_output=True, check=True).stdout
     m = WhisperModel(model, device="cpu", compute_type="int8")
-    segs, info = m.transcribe(str(audio), language="ar", word_timestamps=True,
+    segs, info = m.transcribe(np.frombuffer(pcm, np.float32), language="ar", word_timestamps=True,
                               vad_filter=True, beam_size=5)
     out = []
     for s in segs:
