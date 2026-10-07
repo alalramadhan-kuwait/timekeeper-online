@@ -27,6 +27,18 @@ FIXES = Path(__file__).resolve().parent / "voice-data/fixes.json"
 SR16, SR24 = 16000, 24000
 
 
+LEXICON = Path(__file__).resolve().parent / "voice-data/lexicon.json"
+
+
+def apply_lexicon(text: str) -> str:
+    """Respell words the voice says wrong (Ali's picks, voice-data/lexicon.json). Whole words only."""
+    import re
+    words = json.loads(LEXICON.read_text())["words"] if LEXICON.exists() else {}
+    for a, b in sorted(words.items(), key=lambda kv: -len(kv[0])):
+        text = re.sub(rf"(?<![\u0621-\u064A\u0686\u06AF]){re.escape(a)}(?![\u0621-\u064A\u0686\u06AF])", b, text)
+    return text
+
+
 def ffmpeg_pcm(path, sr, start=None, end=None):
     cmd = ["ffmpeg", "-v", "error"]
     if start is not None:
@@ -330,7 +342,7 @@ def sample(args):
         if (out / f"{k}.wav").exists():
             continue
         torch.manual_seed(0)
-        wav = tts.generate(text, language_id="ar", audio_prompt_path=str(SRC / "ref.wav"),
+        wav = tts.generate(apply_lexicon(text), language_id="ar", audio_prompt_path=str(SRC / "ref.wav"),
                            exaggeration=args.exaggeration, cfg_weight=args.cfg)
         torchaudio.save(str(out / f"{k}.wav"), wav, tts.sr)
         print(k, f"{wav.shape[-1] / tts.sr:.1f}s", flush=True)

@@ -13,7 +13,7 @@ import torchaudio
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from tk_voice_train import SRC, load_tts  # noqa: E402
 
-TESTS = [  # (word as written, sentence, spellings to try)
+TESTS1 = [  # round 1 (2026-10-07): (word as written, sentence, spellings to try)
     ("باچر", "إذا باچر غيرنا الموعد، دزلي خبر قبل لا تطلع من البيت.", ["باچر", "باتشر", "باجر"]),
     ("چذي", "چذي الشركات تفكر، تبيك تنتظر عشان تحس إنها نادرة.", ["چذي", "تشذي"]),
     ("القهوة", "لا تحاتي، أنا بمر عليك العصر وناخذ القهوة بالطريق.", ["القهوة", "الگهوة"]),
@@ -24,8 +24,16 @@ TESTS = [  # (word as written, sentence, spellings to try)
     ("بقطر", "الرويال أوك، بقطر تسعة وثلاثين ملم.", ["بقطر", "بگطر"]),
 ]
 
+TESTS2 = [  # round 2: the three words no round-1 spelling fixed
+    ("باچر", "إذا باچر غيرنا الموعد، دزلي خبر قبل لا تطلع من البيت.", ["باچِر", "باتچر", "باتشِر", "بااچر"]),
+    ("قبل", "والرسم أبيه باچر الصبح، ما انسوت مثلها قبل.", ["قَبِل", "گَبِل", "گبِل"]),
+    ("قرر", "كانت بداية أزمة الكوارتز، وغولاي قرر يخاطر.", ["قرّر", "گرّر", "گَرَّر"]),
+]
+
 ckpt = sys.argv[1]
-out = SRC / "spell"
+ROUND = int(sys.argv[2]) if len(sys.argv) > 2 else 1
+TESTS = TESTS1 if ROUND == 1 else TESTS2
+out = SRC / ("spell" if ROUND == 1 else f"spell{ROUND}")
 out.mkdir(parents=True, exist_ok=True)
 tts = load_tts("cpu", ckpt)
 tts.prepare_conditionals(str(SRC / "ref.wav"))
