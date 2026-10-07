@@ -231,6 +231,9 @@
   - `words`: per-word respellings. An entry whose `to` equals the word is a confirmed exception (Ali really says it that way).
   - `context`: words with more than one pronunciation. These are never applied automatically.
 - **Every entry has a status, and only VERIFIED is applied.** UNVERIFIED text stays exactly as written. Nothing is assumed.
+  - Exceptions (keep-as-written entries) need the same ear evidence as respellings.
+  - Words like القرآن or الكويت are not exceptions until they have been heard and confirmed.
+  - At start: 0 VERIFIED entries, and the rule is UNVERIFIED.
 - **How a word is resolved** (it is also tried with one prefix removed, from و ف ب ل ال بال وال لل):
   1. A context word stays as written.
   2. A VERIFIED word entry wins.
@@ -242,7 +245,10 @@
 - **Ear evidence comes in by listening rounds,** starting with round 4.
   - If round 4 shows ق→گ holds across everyday and formal words, the rule becomes VERIFIED, and the words Ali says with q become VERIFIED keep-entries.
   - If it doesn't hold, only the confirmed words are VERIFIED.
-- **The V5 now training** used the earlier blanket ق→گ text. It is **V5-draft**.
+- **Decision rule after round 4:**
+  - If ق→گ is near-uniform, use the general rule: a VERIFIED rule plus a few VERIFIED keep-entries, rather than verifying 475 words one at a time.
+  - If there are real differences, use the dictionary.
+- **The V5 now training** used the earlier blanket ق→گ text. It is **V5-draft**, an experiment only. It is never adopted before round 4.
   - If round 4 confirms the blanket rule, it is V5.
   - Otherwise V5 is rebuilt from the dictionary (VERIFIED only) and retrained with the same settings.
 
