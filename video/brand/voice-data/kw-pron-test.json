@@ -1,0 +1,215 @@
+{
+ "_note": "SEALED Kuwaiti pronunciation test (written 2026-10-07, before the transcript audit and before V5). Never used for training, transcript decisions, checkpoint choice or tuning. Tests patterns, not memorised words: each pattern appears in several different words and positions. Text is written in plain everyday spelling (no lexicon respellings), the way a script would be written. Each line has 'plain' (standard spelling, what the current LoRA was trained on) and 'kw' (Kuwaiti spelling, the V5 convention draft; final kw forms follow the agreed convention). Each model is tested on its own convention.",
+ "lines": [
+  {
+   "id": "kp01",
+   "pattern": "q-vs-g",
+   "pos": "start",
+   "kw": "گبل شهر، شريت سير جديد للساعة.",
+   "plain": "قبل شهر، شريت سير جديد للساعة."
+  },
+  {
+   "id": "kp02",
+   "pattern": "q-vs-g",
+   "pos": "middle",
+   "kw": "الوكيل گال لي إن الطلب يتأخر شوي.",
+   "plain": "الوكيل قال لي إن الطلب يتأخر شوي."
+  },
+  {
+   "id": "kp03",
+   "pattern": "q-vs-g",
+   "pos": "end",
+   "kw": "هذي الساعة ما تتعب، تعيش وايد وتبقى.",
+   "plain": "هذي الساعة ما تتعب، تعيش وايد وتبقى."
+  },
+  {
+   "id": "kp04",
+   "pattern": "q-kept",
+   "pos": "middle",
+   "kw": "القطعة نادرة، والقيمة بالمزاد تعدت توقعاتي.",
+   "plain": "القطعة نادرة، والقيمة بالمزاد تعدت توقعاتي."
+  },
+  {
+   "id": "kp05",
+   "pattern": "k-vs-ch",
+   "pos": "start",
+   "kw": "چم مرة قلت لك لا تفتح الظهر بنفسك؟",
+   "plain": "كم مرة قلت لك لا تفتح الظهر بنفسك؟"
+  },
+  {
+   "id": "kp06",
+   "pattern": "k-vs-ch",
+   "pos": "middle",
+   "kw": "أبي أشوف الساعة اللي عندچ قبل لا تبيعينها.",
+   "plain": "أبي أشوف الساعة اللي عندك قبل لا تبيعينها."
+  },
+  {
+   "id": "kp07",
+   "pattern": "k-vs-ch",
+   "pos": "end",
+   "kw": "لا تحاتين، الساعة بتوصل باچر، وأنا بخبرچ.",
+   "plain": "لا تحاتين، الساعة بتوصل باكر، وأنا بخبرك."
+  },
+  {
+   "id": "kp08",
+   "pattern": "k-kept",
+   "pos": "middle",
+   "kw": "الكالبر الأصلي أحسن من أي تعديل.",
+   "plain": "الكالبر الأصلي أحسن من أي تعديل."
+  },
+  {
+   "id": "kp09",
+   "pattern": "j-vs-y",
+   "pos": "start",
+   "kw": "يبت لك الساعة من دبي، وطلعت أحلى من الصور.",
+   "plain": "جبت لك الساعة من دبي، وطلعت أحلى من الصور."
+  },
+  {
+   "id": "kp10",
+   "pattern": "j-vs-y",
+   "pos": "middle",
+   "kw": "الأسبوع الياي بيوصل الطلب الثاني.",
+   "plain": "الأسبوع الجاي بيوصل الطلب الثاني."
+  },
+  {
+   "id": "kp11",
+   "pattern": "j-vs-y",
+   "pos": "end",
+   "kw": "دورت على هالموديل بكل مكان، وأخيراً لگيته يديد.",
+   "plain": "دورت على هالموديل بكل مكان، وأخيراً لقيته جديد."
+  },
+  {
+   "id": "kp12",
+   "pattern": "j-kept",
+   "pos": "middle",
+   "kw": "معرض جنيف هالسنة كان مزدحم وايد.",
+   "plain": "معرض جنيف هالسنة كان مزدحم وايد."
+  },
+  {
+   "id": "kp13",
+   "pattern": "verbs",
+   "pos": "middle",
+   "kw": "كل ما يشوف ساعة حلوة، ياخذها ويرجع يندم.",
+   "plain": "كل ما يشوف ساعة حلوة، ياخذها ويرجع يندم."
+  },
+  {
+   "id": "kp14",
+   "pattern": "verbs",
+   "pos": "start",
+   "kw": "يتذكر أول ساعة لبسها؟ كانت من أبوه.",
+   "plain": "يتذكر أول ساعة لبسها؟ كانت من أبوه."
+  },
+  {
+   "id": "kp15",
+   "pattern": "verbs",
+   "pos": "end",
+   "kw": "الموديل هذا كل يوم ينطلب، والكمية ما تكفي.",
+   "plain": "الموديل هذا كل يوم ينطلب، والكمية ما تكفي."
+  },
+  {
+   "id": "kp16",
+   "pattern": "verbs",
+   "pos": "middle",
+   "kw": "انشغلت بالشغل، ونسيت أعبي الساعة يومين.",
+   "plain": "انشغلت بالشغل، ونسيت أعبي الساعة يومين."
+  },
+  {
+   "id": "kp17",
+   "pattern": "connected",
+   "pos": "whole",
+   "kw": "شفيك؟ ليش ما رديت علي امبارح؟",
+   "plain": "شفيك؟ ليش ما رديت علي امبارح؟"
+  },
+  {
+   "id": "kp18",
+   "pattern": "connected",
+   "pos": "whole",
+   "kw": "خلاص، عطني ياها وأنا أشوف شلون أصلحها.",
+   "plain": "خلاص، عطني إياها وأنا أشوف شلون أصلحها."
+  },
+  {
+   "id": "kp19",
+   "pattern": "connected",
+   "pos": "whole",
+   "kw": "ترى ما عليك منهم، هم يحبون يكبرون السالفة.",
+   "plain": "ترى ما عليك منهم، هم يحبون يكبرون السالفة."
+  },
+  {
+   "id": "kp20",
+   "pattern": "affixes",
+   "pos": "middle",
+   "kw": "بساعتي، وبساعتك، وبساعاتهم، كلها نفس الحركة.",
+   "plain": "بساعتي، وبساعتك، وبساعاتهم، كلها نفس الحركة."
+  },
+  {
+   "id": "kp21",
+   "pattern": "affixes",
+   "pos": "middle",
+   "kw": "مابيعها، ولا راح أبدلها، هذي ذكرى.",
+   "plain": "مابيعها، ولا راح أبدلها، هذي ذكرى."
+  },
+  {
+   "id": "kp22",
+   "pattern": "question",
+   "pos": "whole",
+   "kw": "منو قال لك إنها مقلدة؟ شفت الأوراق؟",
+   "plain": "منو قال لك إنها مقلدة؟ شفت الأوراق؟"
+  },
+  {
+   "id": "kp23",
+   "pattern": "question",
+   "pos": "whole",
+   "kw": "وين لگيتها؟ بالمباركية ولا أونلاين؟",
+   "plain": "وين لقيتها؟ بالمباركية ولا أونلاين؟"
+  },
+  {
+   "id": "kp24",
+   "pattern": "numbers",
+   "pos": "middle",
+   "kw": "دفعت ألفين وثلاثمية وخمسين دينار، والفاتورة عندي.",
+   "plain": "دفعت ألفين وثلاثمية وخمسين دينار، والفاتورة عندي."
+  },
+  {
+   "id": "kp25",
+   "pattern": "numbers",
+   "pos": "end",
+   "kw": "الإصدار محدود بمية وخمسة وعشرين قطعة بس.",
+   "plain": "الإصدار محدود بمية وخمسة وعشرين قطعة بس."
+  },
+  {
+   "id": "kp26",
+   "pattern": "code-switch",
+   "pos": "middle",
+   "kw": "الـ dial شكله vintage، بس الـ lume جديد.",
+   "plain": "الـ dial شكله vintage، بس الـ lume جديد."
+  },
+  {
+   "id": "kp27",
+   "pattern": "code-switch",
+   "pos": "end",
+   "kw": "ودي أجرب الـ bracelet قبل لا أسوي order.",
+   "plain": "ودي أجرب الـ bracelet قبل لا أسوي order."
+  },
+  {
+   "id": "kp28",
+   "pattern": "watch-terms",
+   "pos": "middle",
+   "kw": "الرقاص يتحرك ثمانية وعشرين ألف وثمنمية مرة بالساعة.",
+   "plain": "الرقاص يتحرك ثمانية وعشرين ألف وثمنمية مرة بالساعة."
+  },
+  {
+   "id": "kp29",
+   "pattern": "watch-terms",
+   "pos": "end",
+   "kw": "هالموديل فيه تقويم دائم ومرحلة قمر.",
+   "plain": "هالموديل فيه تقويم دائم ومرحلة قمر."
+  },
+  {
+   "id": "kp30",
+   "pattern": "final-kuwaiti",
+   "pos": "end",
+   "kw": "اللي شريته أمس، طلع أحلى من اللي توقعته وايد.",
+   "plain": "اللي شريته أمس، طلع أحلى من اللي توقعته وايد."
+  }
+ ]
+}
