@@ -216,6 +216,15 @@
 - **Effect on the data:** 511 of 699 clips change, and 1114 words. Draft text: `voice-src/dataset-v5/metadata-kw.csv`.
   - V5 = same audio, clips and split as v4; only this text changes.
 
+**⚠ Correction (2026-10-07, after V5 started):** Ali says he misunderstood the ق question in rounds 1–3, so his ق answers are not reliable.
+- The 57/57 basis for ق→گ is withdrawn until it is re-checked.
+- **Re-check:** https://claude.ai/artifact/3ZpPHac8LvPkv6zSzBrUz3. It reuses the same 20 clips: the 17 from round 3 plus حق, قاعد and قبل.
+  - The question is one choice: گ (as in گاعد, the g in good) or Fusha ق (as in القرآن or قطر on the news), or unsure.
+- **Plan:**
+  - If the formal words come back as ق, they go into `keep_q` and V5 is retrained on the corrected text, with the same settings.
+  - The V5 run already under way continues for now (the CPU is otherwise idle). Its result counts only if the re-check confirms ق→گ.
+- The ك answers are unaffected: those had separate, clear options.
+
 **Convention as approved by Ali (2026-10-07), and V5 as built:**
 - **Data, not code.** The rules live in `voice-data/kw-convention.json` and `kw_convention()` reads them.
   - `default`: ق → گ.
