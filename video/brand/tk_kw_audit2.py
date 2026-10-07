@@ -34,6 +34,10 @@ ROUND3 = ["الوقت", "فقط", "أعتقد", "قدموا", "ننتقل", "ب�
           "تعقيدة", "الطاقة", "منطقة", "صديقي", "بالمستقبل", "فستقي", "فرق"]
 
 
+ROUND5 = ["حق", "قلنا", "تقريبا", "نقول", "نقدر", "فوق", "عقرب", "ننتقل", "طريقة", "يقدمون", "قدموها", "أزرق",
+          "يقول", "يقدر", "قال", "تقدرون", "أقول", "أقل", "قاموا", "عقب"]
+
+
 def bare(w):
     return re.sub(r"[^؀-ۿ]", "", w)
 
@@ -63,19 +67,21 @@ def main():
     lo = [c for c in cands if c["flag"] == "ق→g" and c["conf"] < 0.5]
     rng.shuffle(lo)
     want += [("ق→g-low", c["clip"], c["word"], c["text"]) for c in lo[:6]]
-    if len(sys.argv) > 1 and sys.argv[1] == "3":
+    if len(sys.argv) > 1 and sys.argv[1] in ("3", "5"):
         # round 3: ق words the recognizer never flagged, one clip per frequent word family, plus the other كم
         global OUT
-        OUT = A / "round3"
+        OUT = A / f"round{sys.argv[1]}"
+        heard_before = {(p["clip"], p["word"]) for p in json.loads((A / "round3/picks.json").read_text())} if sys.argv[1] == "5" else set()
         want = []
-        for fam in ROUND3:
-            hits = [(cid, t, tx) for cid, tx, _ in rows for t in tx.split() if bare(t) == fam]
+        for fam in (ROUND3 if sys.argv[1] == "3" else ROUND5):
+            hits = [(cid, t, tx) for cid, tx, _ in rows for t in tx.split() if bare(t) == fam and (cid, t) not in heard_before]
             if hits:
                 want.append(("ق-never", *rng.choice(hits)))
-        want += [("كم", cid, t, tx) for cid, tx, _ in rows for t in tx.split()
-                 if bare(t) in ("كم", "بكم", "وكم") and (cid, t) not in {(c["clip"], c["word"]) for c in cands}]
+        if sys.argv[1] == "3":
+            want += [("كم", cid, t, tx) for cid, tx, _ in rows for t in tx.split()
+                     if bare(t) in ("كم", "بكم", "وكم") and (cid, t) not in {(c["clip"], c["word"]) for c in cands}]
     # 3. ك→ch flags not yet heard (one per word)
-    seen = set() if not (len(sys.argv) > 1 and sys.argv[1] == "3") else {bare(c["word"]) for c in cands}
+    seen = set() if not (len(sys.argv) > 1 and sys.argv[1] in ("3", "5")) else {bare(c["word"]) for c in cands}
     for c in sorted((c for c in cands if c["flag"] == "ك→ch"), key=lambda c: -c["conf"]):
         if (c["clip"], c["word"]) in done or bare(c["word"]) in seen or bare(c["word"]).startswith(("شرك", "الشرك")):
             continue

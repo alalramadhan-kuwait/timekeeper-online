@@ -245,7 +245,19 @@
 - **Ear evidence comes in by listening rounds,** starting with round 4.
   - If round 4 shows ق→گ holds across everyday and formal words, the rule becomes VERIFIED, and the words Ali says with q become VERIFIED keep-entries.
   - If it doesn't hold, only the confirmed words are VERIFIED.
-- **Decision rule after round 4:**
+- **Round 4, by ear** (20 clips, clear گ / Fusha ق question). Ali had seen another source's predictions (all گ) before answering, but his answers differ from them, so they read as his own ear.
+  - **گ (11):** حقاً, قبل, قاعد, صديقي, الوقت, فرق, علاقة, فستقي, منطقة, تعقيدة, قدموا.
+  - **ق (7):** القالب, بالمستقبل, الطاقة, موقع, طريق, أعتقد, فقط.
+  - **Unsure (2):** ننتقل, أقل.
+  - **Result:** not uniform, so the ق→گ rule stays UNVERIFIED and the per-word dictionary is the method. The 18 sure words are now VERIFIED (1 clip each).
+  - Coverage so far: 235 of 1130 written ق, and 168 words respelled.
+  - Note: حقاً (really) was verified, not the Kuwaiti حق (for). They are different words.
+- **Round 5:** https://claude.ai/artifact/2w13hzDYMX1BeZDkGASjRe. The 19 most frequent unverified words (حق, قلنا, تقريبا, نقول, نقدر, فوق, عقرب, ...).
+  - It adds about 260 ق, which brings coverage to about 45%.
+  - Verifying a base word also covers its prefixed forms (بطريقة via طريقة).
+- **V5-draft (blanket ق→گ):** round 4 contradicts its premise for 7 of 18 words. It keeps running only to give Ali the 25/50/75% listening probes, and it is not a candidate model.
+  - The real V5 is built from the dictionary (VERIFIED only) after round 5.
+- **Decision rule after round 4** (kept for the record; applied above):
   - If ق→گ is near-uniform, use the general rule: a VERIFIED rule plus a few VERIFIED keep-entries, rather than verifying 475 words one at a time.
   - If there are real differences, use the dictionary.
 - **The V5 now training** used the earlier blanket ق→گ text. It is **V5-draft**, an experiment only. It is never adopted before round 4.

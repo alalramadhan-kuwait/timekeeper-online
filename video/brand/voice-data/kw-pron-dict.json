@@ -6,7 +6,7 @@
    "from": "ق",
    "to": "گ",
    "status": "UNVERIFIED",
-   "evidence": "recognizer: 486 of 1130 ق heard as g; ear: pending round 4 (rounds 1-3 withdrawn)"
+   "evidence": "recognizer: 486 of 1130 ق heard as g; ear round 4: g 11, q 7, unsure 2 of 20 -> not uniform, rule stays UNVERIFIED; per-word dictionary instead"
   }
  ],
  "words": {
@@ -19,17 +19,17 @@
   },
   "قاعد": {
    "to": "گاعد",
-   "status": "UNVERIFIED",
+   "status": "VERIFIED",
    "count": 51,
    "recognizer_g": "45/51",
-   "ear": null
+   "ear": "round 4 c06: g (1 clip)"
   },
   "قبل": {
    "to": "گبل",
-   "status": "UNVERIFIED",
+   "status": "VERIFIED",
    "count": 46,
    "recognizer_g": "38/46",
-   "ear": null
+   "ear": "round 4 c02: g (1 clip)"
   },
   "قلنا": {
    "to": "گلنا",
@@ -40,17 +40,17 @@
   },
   "الوقت": {
    "to": "الوگت",
-   "status": "UNVERIFIED",
+   "status": "VERIFIED",
    "count": 21,
    "recognizer_g": "0/21",
-   "ear": null
+   "ear": "round 4 c10: g (1 clip)"
   },
   "فقط": {
-   "to": "فگط",
-   "status": "UNVERIFIED",
+   "to": "فقط",
+   "status": "VERIFIED",
    "count": 18,
    "recognizer_g": "0/18",
-   "ear": null
+   "ear": "round 4 c19: q (1 clip)"
   },
   "تقريبا": {
    "to": "تگريبا",
@@ -60,11 +60,11 @@
    "ear": null
   },
   "أعتقد": {
-   "to": "أعتگد",
-   "status": "UNVERIFIED",
+   "to": "أعتقد",
+   "status": "VERIFIED",
    "count": 16,
    "recognizer_g": "0/16",
-   "ear": null
+   "ear": "round 4 c18: q (1 clip)"
   },
   "نقول": {
    "to": "نگول",
@@ -82,10 +82,10 @@
   },
   "قدموا": {
    "to": "گدموا",
-   "status": "UNVERIFIED",
+   "status": "VERIFIED",
    "count": 11,
    "recognizer_g": "0/11",
-   "ear": null
+   "ear": "round 4 c20: g (1 clip)"
   },
   "عقرب": {
    "to": "عگرب",
@@ -106,7 +106,7 @@
    "status": "UNVERIFIED",
    "count": 9,
    "recognizer_g": "0/9",
-   "ear": null
+   "ear": "round 4 c09: unsure (1 clip)"
   },
   "طريقة": {
    "to": "طريگة",
@@ -165,18 +165,18 @@
    "ear": null
   },
   "طريق": {
-   "to": "طريگ",
-   "status": "UNVERIFIED",
+   "to": "طريق",
+   "status": "VERIFIED",
    "count": 7,
    "recognizer_g": "0/7",
-   "ear": null
+   "ear": "round 4 c15: q (1 clip)"
   },
   "علاقة": {
    "to": "علاگة",
-   "status": "UNVERIFIED",
+   "status": "VERIFIED",
    "count": 7,
    "recognizer_g": "0/7",
-   "ear": null
+   "ear": "round 4 c12: g (1 clip)"
   },
   "أقول": {
    "to": "أگول",
@@ -190,7 +190,7 @@
    "status": "UNVERIFIED",
    "count": 7,
    "recognizer_g": "0/7",
-   "ear": null
+   "ear": "round 4 c16: unsure (1 clip)"
   },
   "تقدرون": {
    "to": "تگدرون",
@@ -221,11 +221,11 @@
    "ear": null
   },
   "موقع": {
-   "to": "موگع",
-   "status": "UNVERIFIED",
+   "to": "موقع",
+   "status": "VERIFIED",
    "count": 6,
    "recognizer_g": "0/6",
-   "ear": null
+   "ear": "round 4 c07: q (1 clip)"
   },
   "وقت": {
    "to": "وگت",
@@ -235,11 +235,11 @@
    "ear": null
   },
   "الطاقة": {
-   "to": "الطاگة",
-   "status": "UNVERIFIED",
+   "to": "الطاقة",
+   "status": "VERIFIED",
    "count": 6,
    "recognizer_g": "0/6",
-   "ear": null
+   "ear": "round 4 c05: q (1 clip)"
   },
   "القمر": {
    "to": "الگمر",
@@ -250,10 +250,10 @@
   },
   "صديقي": {
    "to": "صديگي",
-   "status": "UNVERIFIED",
+   "status": "VERIFIED",
    "count": 5,
    "recognizer_g": "0/5",
-   "ear": null
+   "ear": "round 4 c08: g (1 clip)"
   },
   "عقبها": {
    "to": "عگبها",
@@ -264,17 +264,17 @@
   },
   "تعقيدة": {
    "to": "تعگيدة",
-   "status": "UNVERIFIED",
+   "status": "VERIFIED",
    "count": 5,
    "recognizer_g": "0/5",
-   "ear": null
+   "ear": "round 4 c17: g (1 clip)"
   },
   "القالب": {
-   "to": "الگالب",
-   "status": "UNVERIFIED",
+   "to": "القالب",
+   "status": "VERIFIED",
    "count": 5,
    "recognizer_g": "0/5",
-   "ear": null
+   "ear": "round 4 c03: q (1 clip)"
   },
   "عقب": {
    "to": "عگب",
@@ -354,11 +354,11 @@
    "ear": null
   },
   "بالمستقبل": {
-   "to": "بالمستگبل",
-   "status": "UNVERIFIED",
+   "to": "بالمستقبل",
+   "status": "VERIFIED",
    "count": 4,
    "recognizer_g": "0/4",
-   "ear": null
+   "ear": "round 4 c04: q (1 clip)"
   },
   "الدقائق": {
    "to": "الدگائگ",
@@ -481,10 +481,10 @@
   },
   "منطقة": {
    "to": "منطگة",
-   "status": "UNVERIFIED",
+   "status": "VERIFIED",
    "count": 3,
    "recognizer_g": "0/3",
-   "ear": null
+   "ear": "round 4 c14: g (1 clip)"
   },
   "معقد": {
    "to": "معگد",
@@ -530,10 +530,10 @@
   },
   "فستقي": {
    "to": "فستگي",
-   "status": "UNVERIFIED",
+   "status": "VERIFIED",
    "count": 3,
    "recognizer_g": "0/3",
-   "ear": null
+   "ear": "round 4 c13: g (1 clip)"
   },
   "الأرقام": {
    "to": "الأرگام",
@@ -607,10 +607,10 @@
   },
   "فرق": {
    "to": "فرگ",
-   "status": "UNVERIFIED",
+   "status": "VERIFIED",
    "count": 2,
    "recognizer_g": "0/2",
-   "ear": null
+   "ear": "round 4 c11: g (1 clip)"
   },
   "يقرأ": {
    "to": "يگرأ",
@@ -936,10 +936,10 @@
   },
   "حقا": {
    "to": "حگا",
-   "status": "UNVERIFIED",
+   "status": "VERIFIED",
    "count": 2,
    "recognizer_g": "1/2",
-   "ear": null
+   "ear": "round 4 c01: g (1 clip)"
   },
   "وقالوا": {
    "to": "وگالوا",
