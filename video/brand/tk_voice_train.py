@@ -42,6 +42,15 @@ def apply_lexicon(text: str) -> str:
     return text
 
 
+def kw_convention(text: str) -> str:
+    """Ali's Kuwaiti spelling (VOICE-PLAN.md, transcript audit): write what he says.
+    By ear, every ق he was asked about was g (57/57, everyday and formal words alike), so ق -> گ.
+    ك stays ك (by ear only كم was ch, 1 of 13 flagged words), which he says چم. ج stays ج."""
+    import re
+    text = text.replace("ق", "گ")
+    return re.sub(r"(?<![ء-يچگ])([وب]?)كم(?![ء-يچگ])", r"\1چم", text)
+
+
 def ffmpeg_pcm(path, sr, start=None, end=None):
     cmd = ["ffmpeg", "-v", "error"]
     if start is not None:

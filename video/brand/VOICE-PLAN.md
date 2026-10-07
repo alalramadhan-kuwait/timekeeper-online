@@ -198,7 +198,23 @@
 - **ك→ch:** only كم was ch, 1 of 9. فيك, لكن, مشكورين, بشكل, شكلياً, يتكلمون and يشقلك were all k.
 - **Conclusion:** the recognizer misses Ali's g often, and its q is not reliable. The rule should be per word, not per instance: once a word is g, it is g everywhere.
 - **Still open, so round 3:** https://claude.ai/artifact/EzdFHokH7WYb7mdoPVDqRo. The 17 most frequent ق words that were never flagged (الوقت, فقط, أعتقد, قدموا, علاقة, طريق, ...). Are they really q?
-- **Convention:** drafted after round 3 and approved by Ali before V5 is built.
+
+**Audit round 3, Ali's ear (17 never-flagged ق words, one clip each):**
+- All 17 were g. That includes the most formal ones: الوقت, فقط, أعتقد, قدموا, ننتقل, علاقة, بالمستقبل, منطقة.
+- **Across all three rounds:** every ق Ali was asked about was g, 57 of 57.
+  - That puts the q rate below about 5% (95% upper bound).
+  - The recognizer's q is wrong for Ali. Its "q" is probably his g, or a uvular [ɢ].
+
+**Kuwaiti transcription convention (draft, waiting for Ali's OK; `kw_convention()` in `tk_voice_train.py`):**
+1. **ق → گ everywhere.** This is a rule from the ear evidence, not mechanical conversion: 57/57 by ear, across everyday and formal words.
+2. **ك stays ك, except the word كم → چم** (also بكم and وكم). By ear, ch appeared only in كم (1 of 13 flagged words); 4 instances in the data.
+3. **ج stays ج.** No y was confirmed. Words Ali says with y are already written with ي (ياي, وايد).
+4. **Everything else is unchanged.** That covers verbs, endings and affixes: the existing `fixes.json` respellings (شي, هذي, ياخذ, ...) stay.
+5. **The same function is used at inference.** For V5, the production input is `kw_convention(plain script)`.
+   - The sealed test file is not edited. Test B feeds V5 `kw_convention(plain)`.
+   - kp04 and the other lines tagged "q-kept" were written before the audit. They will be read as "does V5 say g there, as Ali does".
+- **Effect on the data:** 511 of 699 clips change, and 1114 words. Draft text: `voice-src/dataset-v5/metadata-kw.csv`.
+  - V5 = same audio, clips and split as v4; only this text changes.
 
 إذا ما طلع Chatterbox مناسب، ندوّر على بديل بنفس الشروط: رخصة تجارية، يدعم العربي، ويقبل تدريب على متحدث واحد.
 
