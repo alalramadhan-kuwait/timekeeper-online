@@ -34,18 +34,24 @@ TEN = {
     "nm04": BENCH["nm04"],                         # years
 }
 
+NOVEL = {r["id"]: r["text"] for r in json.loads((Path(__file__).resolve().parent / "voice-data/novel.json").read_text())["lines"]}
+
 p = argparse.ArgumentParser()
 p.add_argument("variant", choices=["A", "B", "C"])
 p.add_argument("--ckpt")
+p.add_argument("--set", choices=["ten", "novel"], default="ten",
+               help="novel = the 21-line stress test, generated only for the final blind test")
 a = p.parse_args()
+LINESET = NOVEL if a.set == "novel" else TEN
 torch.set_num_threads(4)
 out = SRC / "abc" / a.variant
 out.mkdir(parents=True, exist_ok=True)
 
 if a.variant == "A":
     ref = SRC / "abc/ref30.wav"
-    subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", "101.8", "-t", "30", "-i", str(SRC / "ZhOZyrX90nI.mp3"),
-                    "-ac", "1", "-ar", "24000", "-af", "loudnorm=I=-20:TP=-2:LRA=11", str(ref)], check=True)
+    if not ref.exists():
+        subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", "101.8", "-t", "30", "-i", str(SRC / "ZhOZyrX90nI.mp3"),
+                        "-ac", "1", "-ar", "24000", "-af", "loudnorm=I=-20:TP=-2:LRA=11", str(ref)], check=True)
     tts = load_tts("cpu")
     tts.prepare_conditionals(str(ref))
 elif a.variant == "B":
@@ -59,9 +65,11 @@ else:
     tts = load_tts("cpu", a.ckpt)
     tts.prepare_conditionals(str(SRC / "ref.wav"))
 
-for k, text in TEN.items():
+for k, text in LINESET.items():
+    if (out / f"{k}.wav").exists():
+        continue
     torch.manual_seed(0)
     w = tts.generate(text, language_id="ar", exaggeration=0.4, cfg_weight=0.5)
     torchaudio.save(str(out / f"{k}.wav"), w, tts.sr)
     print(a.variant, k, f"{w.shape[-1] / tts.sr:.1f}s", flush=True)
-(out / "lines.json").write_text(json.dumps(TEN, ensure_ascii=False, indent=1))
+(out / ("lines.json" if a.set == "ten" else "lines-novel.json")).write_text(json.dumps(LINESET, ensure_ascii=False, indent=1))

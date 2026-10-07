@@ -1,0 +1,26 @@
+{
+ "_note": "Novel-sentence stress test: written after training started, never used for training, validation or checkpoint choice. Generated only for the final blind A/B/C. The canary is deliberately absurd so it cannot exist in any recording.",
+ "lines": [
+  {"id": "nv01", "cat": "kuwaiti-new", "text": "إذا باچر غيرنا الموعد، دزلي خبر قبل لا تطلع من البيت."},
+  {"id": "nv02", "cat": "kuwaiti-new", "text": "لا تحاتي، أنا بمر عليك العصر وناخذ القهوة بالطريق."},
+  {"id": "nv03", "cat": "kuwaiti-new", "text": "ترى المكيف خربان من أمس، والفني يقول ما يقدر يجي إلا الخميس."},
+  {"id": "nv04", "cat": "kuwaiti-new", "text": "شفيك ساكت؟ قول اللي بخاطرك، محد بيزعل."},
+  {"id": "nv05", "cat": "odd-structure", "text": "الغريب إن الساعة الخضراء كانت أرخص، مع إنها وصلت الكويت متأخر."},
+  {"id": "nv06", "cat": "odd-structure", "text": "كل ما فتحت الدرج، لقيت حزام جلد ما أذكر متى شريته."},
+  {"id": "nv07", "cat": "odd-structure", "text": "العلبة كانت أثقل من الساعة نفسها، وهذا الشي ضحكني."},
+  {"id": "nv08", "cat": "odd-structure", "text": "لو المطر نزل يوم المزاد، يمكن ما كان أحد حضر أصلاً."},
+  {"id": "nv09", "cat": "new-names", "text": "كريستوف كلاريه وأرمين شتروم سوّوا شي ما توقعته."},
+  {"id": "nv10", "cat": "new-names", "text": "قابلت ماتيو من هاوتليانس، وكان يتكلم عن مونتريال وبرشلونة."},
+  {"id": "nv11", "cat": "new-names", "text": "جاكيه دروز، وفرانك مولر، وبوفيه، وزينيث، كلهم بنفس الشارع تقريباً."},
+  {"id": "nv12", "cat": "new-numbers", "text": "يمكن سنة ألفين وسبعة وأربعين نشوف ساعة تعيش مية سنة بدون صيانة."},
+  {"id": "nv13", "cat": "new-numbers", "text": "الحساب طلع سبعطعش دينار وخمسة وثلاثين فلس، مع التوصيل."},
+  {"id": "nv14", "cat": "new-numbers", "text": "الطيارة توصل الساعة ست واثنين وأربعين دقيقة الصبح."},
+  {"id": "nv15", "cat": "new-numbers", "text": "رقم القطعة أربعمية وتسعة من أصل خمسمية وعشرين."},
+  {"id": "nv16", "cat": "code-switch-new", "text": "أنا مو مقتنع بالـ finishing، بس الـ case proportions صراحة ممتازة."},
+  {"id": "nv17", "cat": "code-switch-new", "text": "الـ strap مو comfortable، فبدلته بـ rubber من الـ aftermarket."},
+  {"id": "nv18", "cat": "code-switch-new", "text": "حطيت الطلب online، بس الـ shipping ياخذ two weeks على الأقل."},
+  {"id": "nv19", "cat": "kuwaiti-new", "text": "خلاص اتفقنا، الأسبوع الياي نسوي الحلقة من الديوانية."},
+  {"id": "nv20", "cat": "odd-structure", "text": "الساعة وقفت بنص الليل، والصبح لقيتها شغالة كأن ما صار شي."},
+  {"id": "canary", "cat": "canary", "text": "باچر يوسف بياخذ الساعة البنفسجية حق المريخ الساعة سبع وسبع وثلاثين."}
+ ]
+}

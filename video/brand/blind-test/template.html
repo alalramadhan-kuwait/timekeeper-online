@@ -48,18 +48,19 @@ audio{flex:1;min-width:200px;height:36px}
 .dots button[aria-pressed="true"]{background:var(--dial);border-color:var(--dial);color:var(--card)}
 button:focus-visible{outline:2px solid var(--dial);outline-offset:2px}
 .note{font-size:.85rem;color:var(--muted);margin:0}
+.sec{font-family:var(--read);font-weight:600;font-size:1.15rem;margin:12px 0 0;color:var(--dial);text-wrap:balance}
 .notice{border:1px dashed var(--line);border-radius:8px;padding:10px 12px;font-size:.88rem;color:var(--muted)}
 @media (prefers-reduced-motion:reduce){.fill{transition:none}}
 </style>
 <main dir="rtl" lang="ar">
   <header>
-    <h1>اختبار صوت علي: ثلاث نسخ بدون أسماء</h1>
+    <h1>اختبار صوت علي</h1>
     <p class="lede">كل جملة لها ثلاث نسخ (س، ص، ع)، والترتيب يتغير من جملة لجملة. ما تدري أي نسخة هي القديمة وأي وحدة الجديدة. اسمعها كلها، وقيّم كل وحدة من 1 إلى 5، واختار الأحسن.</p>
     <ul class="how">
       <li><b>الصوت</b> يشبهني؟</li><li><b>الوضوح</b> الكلام مفهوم؟</li><li><b>النطق</b> الكلمات والأسماء صح؟</li><li><b>كويتي</b> اللهجة والإيقاع طبيعية؟</li>
     </ul>
   </header>
-  <div class="bar"><div class="track"><div class="fill" id="fill"></div></div><span class="count" id="count">0 / 10</span><span class="save" id="save"></span></div>
+  <div class="bar"><div class="track"><div class="fill" id="fill"></div></div><span class="count" id="count">0</span><span class="save" id="save"></span></div>
   <p class="notice" id="notice" hidden>التقييم محفوظ بهالجهاز بس، لأن الحفظ المشترك مو متاح بهالعرض.</p>
   <div id="list" style="display:grid;gap:18px"></div>
   <p class="note">التقييم ينحفظ أول بأول. تقدر تطلع وترجع تكمل.</p>
@@ -76,7 +77,14 @@ function keep(){ try{ localStorage.setItem("tkvoice-blind", JSON.stringify(state
 
 function render(){
   const list = $("#list"); list.textContent = "";
+  let sec = null;
   for (const it of ITEMS){
+    if (it.sec !== sec){
+      sec = it.sec;
+      const h = document.createElement("h2"); h.className = "sec";
+      h.textContent = sec === "novel" ? "جمل جديدة: ما انقالت ولا مرة، ولا شافها التدريب" : "الجمل الثابتة: الرويال أوك وجمل الاختبار";
+      list.append(h);
+    }
     const st = state[it.id] ||= {best:null, scores:{}};
     const card = document.createElement("section"); card.className = "card";
     const head = document.createElement("div"); head.className = "head";
