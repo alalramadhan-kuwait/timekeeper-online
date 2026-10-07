@@ -145,6 +145,23 @@
   - **Reporting:** the two tests are reported separately.
   - **Scores:** pronunciation, Kuwaiti naturalness, likeness and clarity, plus a separate prosody score to catch regressions.
 
+**Prosody experiments 3–4 (`tk_prosody_exp34.py`; 2 sentences × 1 seed per cell, so direction, not precision):**
+- **Punctuation**, phrase-final slope in st/s, base vs LoRA:
+
+  | Ending | Base | LoRA |
+  | --- | --- | --- |
+  | Full stop | −17.8 | **+1.6** |
+  | Question | +21.1 | +21.1 |
+  | Comma | +9.9 | +18.3 |
+  | Ellipsis | −4.8 | +2.7 |
+  | Exclamation | −9.8 | +23.8 |
+
+  LoRA has lost the full-stop fall, so it no longer ends sentences.
+- **Probable cause:** training clips are cut at any pause (4–12 s), so most end mid-sentence on a continuation contour (real clips' median final slope is +5.3). This fits the sentence-ending errors and LoRA dropping pauses.
+- **Intents:** both models vary by intent. LoRA varies more (range spread 5.2 st vs 2.7) but is about 25% faster with almost no pauses.
+- **Context, on base:** the same sentence ends differently inside a paragraph, so context matters. The LoRA paragraph cut failed and still needs checking.
+- **Plan change:** V5b, after V5 and separately measured: re-cut clips at sentence boundaries and set punctuation to match the actual ending.
+
 إذا ما طلع Chatterbox مناسب، ندوّر على بديل بنفس الشروط: رخصة تجارية، يدعم العربي، ويقبل تدريب على متحدث واحد.
 
 **الشفافية:** في حقوق كل فيلم نكتب "الراوي: صوت ذكاء اصطناعي من صوت (الاسم)، بموافقته". والموديل يبقى خاص، ما ينشر وما ينعطى لأحد.
