@@ -179,6 +179,20 @@
 - **Lower-bound caveat:** these counts are a floor. Words without a time alignment were skipped, and the recognizer can miss sounds.
 - **Listening check:** https://claude.ai/artifact/N63qCTbjqMcYPkXqsbqxoU (27 cases: 22 ق→g, 4 ك→ch, 1 ج→y).
 
+**Audit round 1, Ali's ear (27 cases):**
+- **ق→g:** 22 of 22 confirmed g. That holds at high confidence (15/15) and at medium confidence (7/7, lowest 0.50).
+- **ك→ch:** 0 of 4. He said k in شركة, شركات and اشتراك, and something else in بالتاك. The recognizer's ch is noise on these words.
+- **ج→y:** 0 of 1 (اجتماعية, something else).
+- **The pattern is lexical:**
+  - Everyday Kuwaiti words are almost always g: حق 60/75, قاعد 45/51, قبل 36/44, قلنا 16/16, نقدر 12/13, يقول 7/7, عقرب 10/10, القمر 5/5.
+  - Formal words are never flagged: الوقت 0/18, فقط 0/16, أعتقد 0/16, قدموا 0/11, ننتقل 0/9, علاقة 0/7.
+  - Some words are mixed: فوق 5/10, أزرق 3/8, تقريباً 2/10, طريقة 1/9.
+- **Still open, so round 2:** https://claude.ai/artifact/26BQ7CveH3Htzd59NybeRg (27 cases, blind to the recognizer, `tk_kw_audit2.py`).
+  - **12 unflagged ق in mostly-g words:** these decide between tagging each instance separately and tagging the whole word.
+  - **6 ق→g flags below 0.5 confidence.**
+  - **9 ك→ch flags not yet heard**, including كم and لكن.
+- **Convention:** drafted after round 2 and approved by Ali before V5 is built.
+
 إذا ما طلع Chatterbox مناسب، ندوّر على بديل بنفس الشروط: رخصة تجارية، يدعم العربي، ويقبل تدريب على متحدث واحد.
 
 **الشفافية:** في حقوق كل فيلم نكتب "الراوي: صوت ذكاء اصطناعي من صوت (الاسم)، بموافقته". والموديل يبقى خاص، ما ينشر وما ينعطى لأحد.
