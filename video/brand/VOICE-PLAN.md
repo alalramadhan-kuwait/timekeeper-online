@@ -167,6 +167,18 @@
   - **Contrast with base:** base reads both paragraphs cleanly, and its endings change with context.
   - **Likely same cause:** LoRA only saw 4–12 s clips cut mid-sentence. V5b should help, and until then, don't render whole paragraphs with this LoRA.
 
+**Transcript audit (2026-10-07, `tk_kw_audit.py`, all 699 clips; candidates only, pending Ali's ear):**
+- **Letters in the training text:** 1130 ق, 2193 ك, 784 ج.
+- **Candidates by sound:**
+  - **ق heard as g:** 486, which is 43% of all ق. Confidence: 405 high, 69 medium, 12 low.
+  - **ك heard as ch:** 17, or 0.8%.
+  - **ج heard as y:** 1.
+- **Clips affected:** 336 of 699 (48%). By split: 443 train, 28 val, 33 final.
+- **Most common words:** حق (60), قاعد (45), قبل (36), قلنا (16), نقدر (12), نقول (11), عقرب (10), يقول (7), يقدر (6), تقدرون (6), قال (6).
+- **Reading:** the contradictory supervision is concentrated on one sound. Ali's everyday Kuwaiti g (gaa'id, yigool, gabil, ḥag) is always written ق, so T3 learned that ق is sometimes q and sometimes g, with nothing in the text to tell which.
+- **Lower-bound caveat:** these counts are a floor. Words without a time alignment were skipped, and the recognizer can miss sounds.
+- **Listening check:** https://claude.ai/artifact/N63qCTbjqMcYPkXqsbqxoU (27 cases: 22 ق→g, 4 ك→ch, 1 ج→y).
+
 إذا ما طلع Chatterbox مناسب، ندوّر على بديل بنفس الشروط: رخصة تجارية، يدعم العربي، ويقبل تدريب على متحدث واحد.
 
 **الشفافية:** في حقوق كل فيلم نكتب "الراوي: صوت ذكاء اصطناعي من صوت (الاسم)، بموافقته". والموديل يبقى خاص، ما ينشر وما ينعطى لأحد.
