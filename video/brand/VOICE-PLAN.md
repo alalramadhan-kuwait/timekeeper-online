@@ -118,6 +118,18 @@
   - تكرار الراء في «قرر».
 - **حل الباقي:** هذي نطق من الموديل نفسه، وحلها بيانات تدريب نصها مكتوب على النطق الكويتي.
 
+**Prosody experiments 1–2 (2026-10-07; 9 held-out clips, val + final sessions; `tk_prosody_exp12.py`):**
+- Exp 1, real clip → S3 codes → S3Gen, compared with the real clip (medians):
+  - **Clip itself as voice prompt:** F0 contour correlation 0.74, energy correlation 0.95, pitch range kept 95%, timing exact.
+  - **Tudor ref.wav as voice prompt:** F0 correlation 0.64, energy correlation 0.88, pitch range kept 83%.
+  - So the codes carry most of the prosody, and S3Gen is not the main bottleneck. The choice of voice prompt costs some range.
+- Exp 2, the same held-out sentence generated and compared with the real one:
+  - **Base:** F0 correlation 0.02, phrase-final slope −9.5 st/s, 13% slower, extra pauses. It reads like a book.
+  - **LoRA:** F0 correlation 0.18, final slope −1.6 st/s, speed close to Ali's. But pitch range is 7.9 st against Ali's 9.4 st, compressed.
+  - **Ali:** final slope +5.3 st/s.
+- **Conclusion:** the loss is in T3's prediction (and the voice prompt), not in the representation. LoRA moves timing and phrase endings toward Ali but flattens the range.
+- **Next:** the exaggeration sweep, then a voice-prompt (reference clip) test.
+
 إذا ما طلع Chatterbox مناسب، ندوّر على بديل بنفس الشروط: رخصة تجارية، يدعم العربي، ويقبل تدريب على متحدث واحد.
 
 **الشفافية:** في حقوق كل فيلم نكتب "الراوي: صوت ذكاء اصطناعي من صوت (الاسم)، بموافقته". والموديل يبقى خاص، ما ينشر وما ينعطى لأحد.
