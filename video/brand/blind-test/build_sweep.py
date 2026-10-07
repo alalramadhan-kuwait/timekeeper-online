@@ -12,8 +12,10 @@ ROOT = Path(__file__).resolve().parents[3]
 D = ROOT / "voice-src/sweep" / sys.argv[1]
 OUT = D / "page"
 (OUT / "audio").mkdir(parents=True, exist_ok=True)
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from tk_voice_sweep import PARAGRAPH  # noqa: E402
+import re  # noqa: E402
+# read the paragraph without importing tk_voice_sweep (it parses argv and loads models on import)
+_src = (Path(__file__).resolve().parents[1] / "tk_voice_sweep.py").read_text()
+PARAGRAPH = "".join(re.findall(r'"([^"]*)"', re.search(r"PARAGRAPH = \((.*?)\)\n", _src, re.S).group(1)))
 
 renders = sorted(p.stem for p in D.glob("*.wav"))
 random.Random(f"sweep-{sys.argv[1]}").shuffle(renders)
