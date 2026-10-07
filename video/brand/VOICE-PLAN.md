@@ -216,6 +216,33 @@
 - **Effect on the data:** 511 of 699 clips change, and 1114 words. Draft text: `voice-src/dataset-v5/metadata-kw.csv`.
   - V5 = same audio, clips and split as v4; only this text changes.
 
+**Convention as approved by Ali (2026-10-07), and V5 as built:**
+- **Data, not code.** The rules live in `voice-data/kw-convention.json` and `kw_convention()` reads them.
+  - `default`: ق → گ.
+  - `keep_q`: whole words Ali really says with q (names, foreign words, Fusha, anything found later). Matched with or without the و ف ب ل ال prefixes. It starts empty.
+  - `word_map`: confirmed whole-word respellings. It also starts empty.
+  - `pending`: كم → چم sits here. It was heard by ear in 1 clip, which is not yet strong enough, so V5 tests ق→گ alone.
+  - Latin-script words are never touched.
+- **What V5 changes:** only ق→گ, verified mechanically.
+  - Every V5 line equals its v4 line with ق replaced by گ. 509 of 699 clips changed; no ق remains.
+  - For the 190 unchanged clips, the text tokens are identical to v4.
+  - The speech and voice features are byte-identical to v4.
+  - Same clip ids and the same train/val/final split. No re-cut, no punctuation change.
+  - گ is a real token in the Chatterbox tokenizer (id 1589, ق is 1488), not UNK.
+- **Bug caught on the way:** `retext` re-applied `fixes.json`, which is not idempotent. It doubled letters in 30 clips (للأمانة → لللأمانة).
+  - V5 is built with `fixes_on=False`.
+  - Side finding: v4's own text already carries some of those doubled letters (اللأمانة, ييبدعون) from an earlier double application. They are kept as they are in V5, so the comparison stays controlled. Clean them in a later version.
+- **V5 training run:** `tk_voice_train.py train --data dataset-v5 --name v5 --steps 2250 --lr 5e-5 --eval-every 150 --patience 3`.
+  - Same base, LoRA rank, seed, lr and eval cadence as v4.
+  - `--steps 2250` matches v4's actual training length: v4's run ended at step 2253, and its pick was step 2250. This keeps the training budget equal.
+  - The checkpoint is picked on val loss only.
+  - V5's val loss is on گ text, so it is not comparable to v4's number. Only the blind tests compare the two.
+- **After V5:**
+  - **Test A (controlled 2×2):** both models, the same sealed text, run once as plain and once as `kw_convention(plain)`.
+  - **Test B (production):** v4 + plain against V5 + `kw_convention(plain)`.
+  - The sealed `kw-pron-test.json` is not edited.
+  - V5b (re-cutting at sentence ends) stays separate, after the V5 result.
+
 إذا ما طلع Chatterbox مناسب، ندوّر على بديل بنفس الشروط: رخصة تجارية، يدعم العربي، ويقبل تدريب على متحدث واحد.
 
 **الشفافية:** في حقوق كل فيلم نكتب "الراوي: صوت ذكاء اصطناعي من صوت (الاسم)، بموافقته". والموديل يبقى خاص، ما ينشر وما ينعطى لأحد.

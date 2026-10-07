@@ -42,13 +42,30 @@ def apply_lexicon(text: str) -> str:
     return text
 
 
+KW = Path(__file__).resolve().parent / "voice-data/kw-convention.json"
+AR = "\u0621-\u064A\u0686\u06AF"
+PREFIX = r"(?:و|ف|ب|ل|ال|وال|بال|فال|لل|ول|وب)?"
+
+
 def kw_convention(text: str) -> str:
-    """Ali's Kuwaiti spelling (VOICE-PLAN.md, transcript audit): write what he says.
-    By ear, every ق he was asked about was g (57/57, everyday and formal words alike), so ق -> گ.
-    ك stays ك (by ear only كم was ch, 1 of 13 flagged words), which he says چم. ج stays ج."""
+    """Ali's Kuwaiti spelling (voice-data/kw-convention.json; VOICE-PLAN.md, transcript audit): write what he says.
+    Default ق -> گ (57/57 by ear), except words listed in keep_q; word_map holds confirmed whole-word respellings.
+    Latin-script words are never touched."""
     import re
-    text = text.replace("ق", "گ")
-    return re.sub(r"(?<![ء-يچگ])([وب]?)كم(?![ء-يچگ])", r"\1چم", text)
+    conv = json.loads(KW.read_text())
+
+    def word(m):
+        w = m.group(0)
+        bare = re.sub(rf"[^{AR}]", "", w)
+        for k, v in conv["word_map"].items():
+            if re.fullmatch(PREFIX + re.escape(k), bare):
+                return w.replace(k, v)
+        if any(re.fullmatch(PREFIX + re.escape(k), bare) for k in conv["keep_q"]):
+            return w
+        for a, b in conv["default"].items():
+            w = w.replace(a, b)
+        return w
+    return re.sub(rf"[{AR}\u064B-\u0652]+", word, text)
 
 
 def ffmpeg_pcm(path, sr, start=None, end=None):
@@ -149,8 +166,9 @@ def build_screened(keep_path: Path, name: str):
     print(f"{len(rows)} clips ({len(rows_in)} new) -> {out}")
 
 
-def retext(src_name: str, csv_name: str, name: str):
-    """New dataset with the same audio features but text from another metadata file (e.g. metadata-kw.csv)."""
+def retext(src_name: str, csv_name: str, name: str, fixes_on=True):
+    """New dataset with the same audio features but text from another metadata file (e.g. metadata-kw.csv).
+    fixes_on=False keeps the text exactly as given (fixes.json is not idempotent: re-applying it doubles some letters)."""
     from chatterbox.models.tokenizers import MTLTokenizer
     from chatterbox.mtl_tts import REPO_ID, punc_norm
     from huggingface_hub import hf_hub_download
@@ -163,7 +181,7 @@ def retext(src_name: str, csv_name: str, name: str):
     rows = []
     for line in (SRC / src_name / csv_name).read_text().splitlines():
         cid, text, split = line.split("|")
-        for a, b in fixes["replace"]:
+        for a, b in fixes["replace"] if fixes_on else []:
             text = text.replace(a, b)
         feats[cid]["text"] = tok.text_to_tokens(punc_norm(text), language_id="ar")[0].cpu()
         rows.append(f"{cid}|{text}|{split}")
