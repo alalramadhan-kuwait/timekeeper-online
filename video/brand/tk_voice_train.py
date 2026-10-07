@@ -272,7 +272,8 @@ def train(args):
         return float(np.mean(tot)) if tot else float("nan")
 
     log = open(out / "log.tsv", "a")
-    print(f"step 0  val_speech_loss {evaluate():.3f}", flush=True)
+    best = [evaluate(), 0, 0]   # [val loss, step, evals without improvement]
+    print(f"step 0  val_speech_loss {best[0]:.3f}", flush=True)
     step, t0 = 0, time.time()
     while step < args.steps:
         random.shuffle(tr)
@@ -285,10 +286,21 @@ def train(args):
             torch.nn.utils.clip_grad_norm_(params, 1.0)
             opt.step(); sched.step(); step += 1
             msg = f"step {step}  speech {ls.item():.3f}  text {lt.item():.3f}  {(time.time() - t0) / step:.1f}s/step"
+            stop = False
             if step % args.eval_every == 0 or step == args.steps:
-                msg += f"  val_speech_loss {evaluate():.3f}"
+                v = evaluate()
+                msg += f"  val_speech_loss {v:.3f}"
                 torch.save(lora_state(t3), out / f"step{step:05d}.pt")
+                if v < best[0]:
+                    best[:] = [v, step, 0]
+                else:
+                    best[2] += 1
+                    stop = args.patience and best[2] >= args.patience
+                msg += f"  (best {best[0]:.3f} @ {best[1]})"
             print(msg, flush=True); log.write(msg + "\n"); log.flush()
+            if stop:
+                print(f"early stop: no val improvement for {args.patience} evals; best step {best[1]}", flush=True)
+                return
             if step >= args.steps:
                 break
 
@@ -337,6 +349,7 @@ if __name__ == "__main__":
     t.add_argument("--batch", type=int, default=1); t.add_argument("--lr", type=float, default=1e-4)
     t.add_argument("--eval-every", type=int, default=50)
     t.add_argument("--resume", help="LoRA checkpoint to continue from")
+    t.add_argument("--patience", type=int, default=0, help="stop after this many evals without val improvement")
     s = sub.add_parser("sample"); s.add_argument("--ckpt"); s.add_argument("--exaggeration", type=float, default=0.4)
     s.add_argument("--cfg", type=float, default=0.5)
     s.add_argument("--bench", action="store_true", help="generate the 40-line benchmark instead")
