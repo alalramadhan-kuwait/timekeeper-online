@@ -161,6 +161,11 @@
 - **Intents:** both models vary by intent. LoRA varies more (range spread 5.2 st vs 2.7) but is about 25% faster with almost no pauses.
 - **Context, on base:** the same sentence ends differently inside a paragraph, so context matters. The LoRA paragraph cut failed and still needs checking.
 - **Plan change:** V5b, after V5 and separately measured: re-cut clips at sentence boundaries and set punctuation to match the actual ending.
+- **Paragraph context with LoRA:**
+  - **Garbled targets:** LoRA garbles the target inside a paragraph ("وهذا نخلها اجلة … بوتها", "كيف يعرف الناس صليه").
+  - **Rushing:** it runs short, 7.6 s against base's 10.0 s.
+  - **Contrast with base:** base reads both paragraphs cleanly, and its endings change with context.
+  - **Likely same cause:** LoRA only saw 4–12 s clips cut mid-sentence. V5b should help, and until then, don't render whole paragraphs with this LoRA.
 
 إذا ما طلع Chatterbox مناسب، ندوّر على بديل بنفس الشروط: رخصة تجارية، يدعم العربي، ويقبل تدريب على متحدث واحد.
 
