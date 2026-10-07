@@ -242,6 +242,16 @@
   - **Test B (production):** v4 + plain against V5 + `kw_convention(plain)`.
   - The sealed `kw-pron-test.json` is not edited.
   - V5b (re-cutting at sentence ends) stays separate, after the V5 result.
+- **Progress listening (Ali's request):** `tk_progress_probe.py` renders 3 new ق-heavy lines (`voice-data/progress-probe.json`).
+  - It renders v4 plus V5 at 25%, 50% and 75% (steps 600, 1200 and 1650), and pauses training while it renders.
+  - These lines are not in any test set, and they are never used to pick the checkpoint.
+- **Online check (2026-10-07):** found no Kuwaiti speech or TTS dataset with a commercial licence.
+  - Open Arabic sets are MSA: ArVoice (CC-BY-4.0), Arabic Speech Corpus, ClArTTS.
+  - The Gulf work is Emirati: the Ramsa corpus. The dialect-TTS papers fine-tune XTTS, which is NC and excluded here.
+  - Useful ideas:
+    - Dialect labels or conditioning, as the zero-shot dialect TTS papers do. This is our fallback path if V5 does not help.
+    - Gulf ك→ch is mostly female address and informal speech, which matches the audit: in Ali's narration only كم.
+  - Ali's own recordings stay the main data.
 
 إذا ما طلع Chatterbox مناسب، ندوّر على بديل بنفس الشروط: رخصة تجارية، يدعم العربي، ويقبل تدريب على متحدث واحد.
 
