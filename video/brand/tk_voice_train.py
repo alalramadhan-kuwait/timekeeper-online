@@ -249,6 +249,8 @@ def train(args):
     for p in t3.parameters():
         p.requires_grad_(False)
     n = add_lora(t3, args.rank)
+    if args.resume:  # continue from saved LoRA weights (optimizer restarts; warm-up keeps it gentle)
+        t3.load_state_dict(torch.load(args.resume, map_location="cpu"), strict=False)
     t3.to(args.device).train()
     params = [p for p in t3.parameters() if p.requires_grad]
     print(f"LoRA on {len(n)} projections, {sum(p.numel() for p in params) / 1e6:.1f}M trainable; "
@@ -325,6 +327,7 @@ if __name__ == "__main__":
     t = sub.add_parser("train"); t.add_argument("--name", default="run1"); t.add_argument("--data", default="dataset"); t.add_argument("--steps", type=int, default=300)
     t.add_argument("--batch", type=int, default=1); t.add_argument("--lr", type=float, default=1e-4)
     t.add_argument("--eval-every", type=int, default=50)
+    t.add_argument("--resume", help="LoRA checkpoint to continue from")
     s = sub.add_parser("sample"); s.add_argument("--ckpt"); s.add_argument("--exaggeration", type=float, default=0.4)
     s.add_argument("--cfg", type=float, default=0.5)
     a = p.parse_args()

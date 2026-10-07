@@ -26,20 +26,21 @@ python3.11 -m venv ~/tkvoice
 
 ## 2. البيانات
 
-الملف `tk-voice-mac-data.zip` (2 MB، يوصلك مني) فيه `feats.pt` و`metadata.csv` و`ref.wav`. فكّه داخل `~/tk`:
+الملف `tk-voice-mac-data.zip` (31 MB، يوصلك مني) فيه `feats.pt` و`metadata.csv` (نص كويتي) و`ref.wav` وآخر نسخة مدربة `cpu4-step01000.pt` عشان الماك يكمل منها. فكّه داخل `~/tk`:
 
 ```bash
 cd ~/tk && unzip ~/Downloads/tk-voice-mac-data.zip
 ```
 
-بعدها يصير عندك `~/tk/voice-src/dataset-v2/` و`~/tk/voice-src/ref.wav`.
+بعدها يصير عندك `~/tk/voice-src/dataset-v3/` و`~/tk/voice-src/ref.wav`.
 
 ## 3. التدريب
 
 ```bash
 cd ~/tk
 PYTORCH_ENABLE_MPS_FALLBACK=1 ~/tkvoice/bin/python video/brand/tk_voice_train.py --device mps \
-  train --data dataset-v2 --name mac1 --steps 2000 --batch 4 --lr 5e-5 --eval-every 250
+  train --data dataset-v3 --name mac1 --steps 2000 --batch 4 --lr 5e-5 --eval-every 250 \
+  --resume voice-src/cpu4-step01000.pt
 ```
 
 - خل الماك موصّل بالشاحن، ولا تسكّره. وإذا تبي تمنعه من النوم، استخدم `caffeinate -i` قبل الأمر.
