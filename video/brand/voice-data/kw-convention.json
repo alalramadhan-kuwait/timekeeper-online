@@ -1,7 +1,0 @@
-{
- "_note": "Ali's Kuwaiti spelling for training text and inference input (VOICE-PLAN.md, transcript audit). Default: ق -> گ (57/57 by ear). keep_q: words he really says with q (names, foreign words, Fusha, anything found later); matched as whole words, with or without و ف ب ل ال prefixes. word_map: confirmed whole-word respellings. pending: heard but not yet strong enough to apply.",
- "default": {"ق": "گ"},
- "keep_q": [],
- "word_map": {},
- "pending": {"كم": {"to": "چم", "evidence": "ch by ear in 1 clip (round 2, b19); recognizer heard tʃ in 1 more; 4 instances in the data", "decision": "not applied in V5: V5 tests ق→گ alone"}}
-}

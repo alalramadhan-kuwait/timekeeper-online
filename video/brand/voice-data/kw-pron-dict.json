@@ -1,0 +1,3347 @@
+{
+ "_note": "Ali's personal pronunciation dictionary (TK Voice). Turns written text into what Ali actually says, for training text and inference input. Three layers: rules (letter-level, e.g. ق→گ), words (per-word respelling or keep-as-is exceptions), context (words with more than one pronunciation; never applied automatically). Only status VERIFIED is applied; UNVERIFIED entries are left exactly as written until Ali's ear confirms them. Word keys are bare forms (no punctuation, no tanween); a word also matches after stripping one prefix (وبال وال بال فال لل ال و ف ب ل) when the bare form itself is not listed. Evidence: 'ear' = Ali's listening answers; recognizer counts are hints only (it misses many g). Rounds 1-3 ق answers were withdrawn (question misunderstood); ear evidence for ق starts at round 4.",
+ "rules": [
+  {
+   "id": "qaf-g",
+   "from": "ق",
+   "to": "گ",
+   "status": "UNVERIFIED",
+   "evidence": "recognizer: 486 of 1130 ق heard as g; ear: pending round 4 (rounds 1-3 withdrawn)"
+  }
+ ],
+ "words": {
+  "حق": {
+   "to": "حگ",
+   "status": "UNVERIFIED",
+   "count": 75,
+   "recognizer_g": "60/75",
+   "ear": null
+  },
+  "قاعد": {
+   "to": "گاعد",
+   "status": "UNVERIFIED",
+   "count": 51,
+   "recognizer_g": "45/51",
+   "ear": null
+  },
+  "قبل": {
+   "to": "گبل",
+   "status": "UNVERIFIED",
+   "count": 46,
+   "recognizer_g": "38/46",
+   "ear": null
+  },
+  "قلنا": {
+   "to": "گلنا",
+   "status": "UNVERIFIED",
+   "count": 22,
+   "recognizer_g": "21/22",
+   "ear": null
+  },
+  "الوقت": {
+   "to": "الوگت",
+   "status": "UNVERIFIED",
+   "count": 21,
+   "recognizer_g": "0/21",
+   "ear": null
+  },
+  "فقط": {
+   "to": "فگط",
+   "status": "UNVERIFIED",
+   "count": 18,
+   "recognizer_g": "0/18",
+   "ear": null
+  },
+  "تقريبا": {
+   "to": "تگريبا",
+   "status": "UNVERIFIED",
+   "count": 17,
+   "recognizer_g": "2/17",
+   "ear": null
+  },
+  "أعتقد": {
+   "to": "أعتگد",
+   "status": "UNVERIFIED",
+   "count": 16,
+   "recognizer_g": "0/16",
+   "ear": null
+  },
+  "نقول": {
+   "to": "نگول",
+   "status": "UNVERIFIED",
+   "count": 16,
+   "recognizer_g": "14/16",
+   "ear": null
+  },
+  "نقدر": {
+   "to": "نگدر",
+   "status": "UNVERIFIED",
+   "count": 13,
+   "recognizer_g": "12/13",
+   "ear": null
+  },
+  "قدموا": {
+   "to": "گدموا",
+   "status": "UNVERIFIED",
+   "count": 11,
+   "recognizer_g": "0/11",
+   "ear": null
+  },
+  "عقرب": {
+   "to": "عگرب",
+   "status": "UNVERIFIED",
+   "count": 10,
+   "recognizer_g": "10/10",
+   "ear": null
+  },
+  "فوق": {
+   "to": "فوگ",
+   "status": "UNVERIFIED",
+   "count": 10,
+   "recognizer_g": "5/10",
+   "ear": null
+  },
+  "ننتقل": {
+   "to": "ننتگل",
+   "status": "UNVERIFIED",
+   "count": 9,
+   "recognizer_g": "0/9",
+   "ear": null
+  },
+  "طريقة": {
+   "to": "طريگة",
+   "status": "UNVERIFIED",
+   "count": 9,
+   "recognizer_g": "1/9",
+   "ear": null
+  },
+  "أزرق": {
+   "to": "أزرگ",
+   "status": "UNVERIFIED",
+   "count": 8,
+   "recognizer_g": "3/8",
+   "ear": null
+  },
+  "يقدمون": {
+   "to": "يگدمون",
+   "status": "UNVERIFIED",
+   "count": 8,
+   "recognizer_g": "0/8",
+   "ear": null
+  },
+  "بطريقة": {
+   "to": "بطريگة",
+   "status": "UNVERIFIED",
+   "count": 8,
+   "recognizer_g": "0/8",
+   "ear": null
+  },
+  "قدموها": {
+   "to": "گدموها",
+   "status": "UNVERIFIED",
+   "count": 8,
+   "recognizer_g": "0/8",
+   "ear": null
+  },
+  "الأزرق": {
+   "to": "الأزرگ",
+   "status": "UNVERIFIED",
+   "count": 8,
+   "recognizer_g": "3/8",
+   "ear": null
+  },
+  "يقول": {
+   "to": "يگول",
+   "status": "UNVERIFIED",
+   "count": 7,
+   "recognizer_g": "7/7",
+   "ear": null
+  },
+  "يقدر": {
+   "to": "يگدر",
+   "status": "UNVERIFIED",
+   "count": 7,
+   "recognizer_g": "6/7",
+   "ear": null
+  },
+  "طريق": {
+   "to": "طريگ",
+   "status": "UNVERIFIED",
+   "count": 7,
+   "recognizer_g": "0/7",
+   "ear": null
+  },
+  "علاقة": {
+   "to": "علاگة",
+   "status": "UNVERIFIED",
+   "count": 7,
+   "recognizer_g": "0/7",
+   "ear": null
+  },
+  "أقول": {
+   "to": "أگول",
+   "status": "UNVERIFIED",
+   "count": 7,
+   "recognizer_g": "6/7",
+   "ear": null
+  },
+  "أقل": {
+   "to": "أگل",
+   "status": "UNVERIFIED",
+   "count": 7,
+   "recognizer_g": "0/7",
+   "ear": null
+  },
+  "تقدرون": {
+   "to": "تگدرون",
+   "status": "UNVERIFIED",
+   "count": 7,
+   "recognizer_g": "6/7",
+   "ear": null
+  },
+  "قال": {
+   "to": "گال",
+   "status": "UNVERIFIED",
+   "count": 7,
+   "recognizer_g": "6/7",
+   "ear": null
+  },
+  "وقتها": {
+   "to": "وگتها",
+   "status": "UNVERIFIED",
+   "count": 6,
+   "recognizer_g": "0/6",
+   "ear": null
+  },
+  "قبلها": {
+   "to": "گبلها",
+   "status": "UNVERIFIED",
+   "count": 6,
+   "recognizer_g": "5/6",
+   "ear": null
+  },
+  "موقع": {
+   "to": "موگع",
+   "status": "UNVERIFIED",
+   "count": 6,
+   "recognizer_g": "0/6",
+   "ear": null
+  },
+  "وقت": {
+   "to": "وگت",
+   "status": "UNVERIFIED",
+   "count": 6,
+   "recognizer_g": "0/6",
+   "ear": null
+  },
+  "الطاقة": {
+   "to": "الطاگة",
+   "status": "UNVERIFIED",
+   "count": 6,
+   "recognizer_g": "0/6",
+   "ear": null
+  },
+  "القمر": {
+   "to": "الگمر",
+   "status": "UNVERIFIED",
+   "count": 6,
+   "recognizer_g": "6/6",
+   "ear": null
+  },
+  "صديقي": {
+   "to": "صديگي",
+   "status": "UNVERIFIED",
+   "count": 5,
+   "recognizer_g": "0/5",
+   "ear": null
+  },
+  "عقبها": {
+   "to": "عگبها",
+   "status": "UNVERIFIED",
+   "count": 5,
+   "recognizer_g": "4/5",
+   "ear": null
+  },
+  "تعقيدة": {
+   "to": "تعگيدة",
+   "status": "UNVERIFIED",
+   "count": 5,
+   "recognizer_g": "0/5",
+   "ear": null
+  },
+  "القالب": {
+   "to": "الگالب",
+   "status": "UNVERIFIED",
+   "count": 5,
+   "recognizer_g": "0/5",
+   "ear": null
+  },
+  "عقب": {
+   "to": "عگب",
+   "status": "UNVERIFIED",
+   "count": 5,
+   "recognizer_g": "4/5",
+   "ear": null
+  },
+  "قاموا": {
+   "to": "گاموا",
+   "status": "UNVERIFIED",
+   "count": 4,
+   "recognizer_g": "4/4",
+   "ear": null
+  },
+  "العقرب": {
+   "to": "العگرب",
+   "status": "UNVERIFIED",
+   "count": 4,
+   "recognizer_g": "4/4",
+   "ear": null
+  },
+  "قدموه": {
+   "to": "گدموه",
+   "status": "UNVERIFIED",
+   "count": 4,
+   "recognizer_g": "0/4",
+   "ear": null
+  },
+  "تقدر": {
+   "to": "تگدر",
+   "status": "UNVERIFIED",
+   "count": 4,
+   "recognizer_g": "4/4",
+   "ear": null
+  },
+  "العقارب": {
+   "to": "العگارب",
+   "status": "UNVERIFIED",
+   "count": 4,
+   "recognizer_g": "4/4",
+   "ear": null
+  },
+  "قام": {
+   "to": "گام",
+   "status": "UNVERIFIED",
+   "count": 4,
+   "recognizer_g": "4/4",
+   "ear": null
+  },
+  "قالوا": {
+   "to": "گالوا",
+   "status": "UNVERIFIED",
+   "count": 4,
+   "recognizer_g": "4/4",
+   "ear": null
+  },
+  "عقارب": {
+   "to": "عگارب",
+   "status": "UNVERIFIED",
+   "count": 4,
+   "recognizer_g": "4/4",
+   "ear": null
+  },
+  "تعقيدات": {
+   "to": "تعگيدات",
+   "status": "UNVERIFIED",
+   "count": 4,
+   "recognizer_g": "0/4",
+   "ear": null
+  },
+  "يقولون": {
+   "to": "يگولون",
+   "status": "UNVERIFIED",
+   "count": 4,
+   "recognizer_g": "2/4",
+   "ear": null
+  },
+  "بالمستقبل": {
+   "to": "بالمستگبل",
+   "status": "UNVERIFIED",
+   "count": 4,
+   "recognizer_g": "0/4",
+   "ear": null
+  },
+  "الدقائق": {
+   "to": "الدگائگ",
+   "status": "UNVERIFIED",
+   "count": 4,
+   "recognizer_g": "4/4",
+   "ear": null
+  },
+  "قدمه": {
+   "to": "گدمه",
+   "status": "UNVERIFIED",
+   "count": 4,
+   "recognizer_g": "0/4",
+   "ear": null
+  },
+  "قطعة": {
+   "to": "گطعة",
+   "status": "UNVERIFIED",
+   "count": 4,
+   "recognizer_g": "2/4",
+   "ear": null
+  },
+  "توقيت": {
+   "to": "توگيت",
+   "status": "UNVERIFIED",
+   "count": 4,
+   "recognizer_g": "0/4",
+   "ear": null
+  },
+  "أقرب": {
+   "to": "أگرب",
+   "status": "UNVERIFIED",
+   "count": 4,
+   "recognizer_g": "3/4",
+   "ear": null
+  },
+  "دقيقة": {
+   "to": "دگيگة",
+   "status": "UNVERIFIED",
+   "count": 4,
+   "recognizer_g": "3/4",
+   "ear": null
+  },
+  "وحق": {
+   "to": "وحگ",
+   "status": "UNVERIFIED",
+   "count": 3,
+   "recognizer_g": "2/3",
+   "ear": null
+  },
+  "أقدر": {
+   "to": "أگدر",
+   "status": "UNVERIFIED",
+   "count": 3,
+   "recognizer_g": "3/3",
+   "ear": null
+  },
+  "قدمت": {
+   "to": "گدمت",
+   "status": "UNVERIFIED",
+   "count": 3,
+   "recognizer_g": "0/3",
+   "ear": null
+  },
+  "يسوقونها": {
+   "to": "يسوگونها",
+   "status": "UNVERIFIED",
+   "count": 3,
+   "recognizer_g": "0/3",
+   "ear": null
+  },
+  "تقديم": {
+   "to": "تگديم",
+   "status": "UNVERIFIED",
+   "count": 3,
+   "recognizer_g": "0/3",
+   "ear": null
+  },
+  "قامت": {
+   "to": "گامت",
+   "status": "UNVERIFIED",
+   "count": 3,
+   "recognizer_g": "3/3",
+   "ear": null
+  },
+  "تقدم": {
+   "to": "تگدم",
+   "status": "UNVERIFIED",
+   "count": 3,
+   "recognizer_g": "0/3",
+   "ear": null
+  },
+  "زرقة": {
+   "to": "زرگة",
+   "status": "UNVERIFIED",
+   "count": 3,
+   "recognizer_g": "3/3",
+   "ear": null
+  },
+  "بالتعليقات": {
+   "to": "بالتعليگات",
+   "status": "UNVERIFIED",
+   "count": 3,
+   "recognizer_g": "0/3",
+   "ear": null
+  },
+  "قاعدين": {
+   "to": "گاعدين",
+   "status": "UNVERIFIED",
+   "count": 3,
+   "recognizer_g": "3/3",
+   "ear": null
+  },
+  "قراءة": {
+   "to": "گراءة",
+   "status": "UNVERIFIED",
+   "count": 3,
+   "recognizer_g": "1/3",
+   "ear": null
+  },
+  "منطقة": {
+   "to": "منطگة",
+   "status": "UNVERIFIED",
+   "count": 3,
+   "recognizer_g": "0/3",
+   "ear": null
+  },
+  "معقد": {
+   "to": "معگد",
+   "status": "UNVERIFIED",
+   "count": 3,
+   "recognizer_g": "0/3",
+   "ear": null
+  },
+  "معقدة": {
+   "to": "معگدة",
+   "status": "UNVERIFIED",
+   "count": 3,
+   "recognizer_g": "0/3",
+   "ear": null
+  },
+  "نعتقد": {
+   "to": "نعتگد",
+   "status": "UNVERIFIED",
+   "count": 3,
+   "recognizer_g": "0/3",
+   "ear": null
+  },
+  "الأقل": {
+   "to": "الأگل",
+   "status": "UNVERIFIED",
+   "count": 3,
+   "recognizer_g": "0/3",
+   "ear": null
+  },
+  "قريبا": {
+   "to": "گريبا",
+   "status": "UNVERIFIED",
+   "count": 3,
+   "recognizer_g": "0/3",
+   "ear": null
+  },
+  "قلت": {
+   "to": "گلت",
+   "status": "UNVERIFIED",
+   "count": 3,
+   "recognizer_g": "3/3",
+   "ear": null
+  },
+  "فستقي": {
+   "to": "فستگي",
+   "status": "UNVERIFIED",
+   "count": 3,
+   "recognizer_g": "0/3",
+   "ear": null
+  },
+  "الأرقام": {
+   "to": "الأرگام",
+   "status": "UNVERIFIED",
+   "count": 3,
+   "recognizer_g": "0/3",
+   "ear": null
+  },
+  "تلاقيهم": {
+   "to": "تلاگيهم",
+   "status": "UNVERIFIED",
+   "count": 3,
+   "recognizer_g": "2/3",
+   "ear": null
+  },
+  "حقنا": {
+   "to": "حگنا",
+   "status": "UNVERIFIED",
+   "count": 3,
+   "recognizer_g": "3/3",
+   "ear": null
+  },
+  "وقال": {
+   "to": "وگال",
+   "status": "UNVERIFIED",
+   "count": 3,
+   "recognizer_g": "2/3",
+   "ear": null
+  },
+  "قصة": {
+   "to": "گصة",
+   "status": "UNVERIFIED",
+   "count": 3,
+   "recognizer_g": "1/3",
+   "ear": null
+  },
+  "يقدرون": {
+   "to": "يگدرون",
+   "status": "UNVERIFIED",
+   "count": 3,
+   "recognizer_g": "1/3",
+   "ear": null
+  },
+  "يفرق": {
+   "to": "يفرگ",
+   "status": "UNVERIFIED",
+   "count": 3,
+   "recognizer_g": "3/3",
+   "ear": null
+  },
+  "وقاعد": {
+   "to": "وگاعد",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "2/2",
+   "ear": null
+  },
+  "قدم": {
+   "to": "گدم",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "0/2",
+   "ear": null
+  },
+  "السوق": {
+   "to": "السوگ",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "2/2",
+   "ear": null
+  },
+  "فرق": {
+   "to": "فرگ",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "0/2",
+   "ear": null
+  },
+  "يقرأ": {
+   "to": "يگرأ",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "2/2",
+   "ear": null
+  },
+  "قريب": {
+   "to": "گريب",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "2/2",
+   "ear": null
+  },
+  "يقدمونه": {
+   "to": "يگدمونه",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "0/2",
+   "ear": null
+  },
+  "وأعتقد": {
+   "to": "وأعتگد",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "0/2",
+   "ear": null
+  },
+  "فقد": {
+   "to": "فگد",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "1/2",
+   "ear": null
+  },
+  "قولتهم": {
+   "to": "گولتهم",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "2/2",
+   "ear": null
+  },
+  "عقوبها": {
+   "to": "عگوبها",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "2/2",
+   "ear": null
+  },
+  "قدرنا": {
+   "to": "گدرنا",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "2/2",
+   "ear": null
+  },
+  "ينطبق": {
+   "to": "ينطبگ",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "0/2",
+   "ear": null
+  },
+  "أرقام": {
+   "to": "أرگام",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "0/2",
+   "ear": null
+  },
+  "بيقول": {
+   "to": "بيگول",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "2/2",
+   "ear": null
+  },
+  "الشقر": {
+   "to": "الشگر",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "0/2",
+   "ear": null
+  },
+  "وقف": {
+   "to": "وگف",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "0/2",
+   "ear": null
+  },
+  "قد": {
+   "to": "گد",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "0/2",
+   "ear": null
+  },
+  "بالسوق": {
+   "to": "بالسوگ",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "0/2",
+   "ear": null
+  },
+  "وقتنا": {
+   "to": "وگتنا",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "0/2",
+   "ear": null
+  },
+  "ينتقل": {
+   "to": "ينتگل",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "1/2",
+   "ear": null
+  },
+  "ووقتها": {
+   "to": "ووگتها",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "0/2",
+   "ear": null
+  },
+  "خلنقول": {
+   "to": "خلنگول",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "2/2",
+   "ear": null
+  },
+  "سوق": {
+   "to": "سوگ",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "2/2",
+   "ear": null
+  },
+  "أصدقان": {
+   "to": "أصدگان",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "0/2",
+   "ear": null
+  },
+  "قائمة": {
+   "to": "گائمة",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "1/2",
+   "ear": null
+  },
+  "وعقبها": {
+   "to": "وعگبها",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "2/2",
+   "ear": null
+  },
+  "الطوق": {
+   "to": "الطوگ",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "1/2",
+   "ear": null
+  },
+  "بقطع": {
+   "to": "بگطع",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "0/2",
+   "ear": null
+  },
+  "باقتصار": {
+   "to": "باگتصار",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "0/2",
+   "ear": null
+  },
+  "انتقلت": {
+   "to": "انتگلت",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "0/2",
+   "ear": null
+  },
+  "بوقت": {
+   "to": "بوگت",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "0/2",
+   "ear": null
+  },
+  "الأوقات": {
+   "to": "الأوگات",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "0/2",
+   "ear": null
+  },
+  "لقت": {
+   "to": "لگت",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "0/2",
+   "ear": null
+  },
+  "أعقد": {
+   "to": "أعگد",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "0/2",
+   "ear": null
+  },
+  "تعتقد": {
+   "to": "تعتگد",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "0/2",
+   "ear": null
+  },
+  "قا": {
+   "to": "گا",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "2/2",
+   "ear": null
+  },
+  "تقول": {
+   "to": "تگول",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "2/2",
+   "ear": null
+  },
+  "الرقمية": {
+   "to": "الرگمية",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "0/2",
+   "ear": null
+  },
+  "حقها": {
+   "to": "حگها",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "1/2",
+   "ear": null
+  },
+  "أتفق": {
+   "to": "أتفگ",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "0/2",
+   "ear": null
+  },
+  "مقابلة": {
+   "to": "مگابلة",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "0/2",
+   "ear": null
+  },
+  "قابلناه": {
+   "to": "گابلناه",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "0/2",
+   "ear": null
+  },
+  "قوة": {
+   "to": "گوة",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "0/2",
+   "ear": null
+  },
+  "نقدم": {
+   "to": "نگدم",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "0/2",
+   "ear": null
+  },
+  "بنقدر": {
+   "to": "بنگدر",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "1/2",
+   "ear": null
+  },
+  "وأقول": {
+   "to": "وأگول",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "2/2",
+   "ear": null
+  },
+  "وتقدرون": {
+   "to": "وتگدرون",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "1/2",
+   "ear": null
+  },
+  "خنقول": {
+   "to": "خنگول",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "2/2",
+   "ear": null
+  },
+  "بالموقع": {
+   "to": "بالموگع",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "0/2",
+   "ear": null
+  },
+  "حقا": {
+   "to": "حگا",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "1/2",
+   "ear": null
+  },
+  "وقالوا": {
+   "to": "وگالوا",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "2/2",
+   "ear": null
+  },
+  "للدقائق": {
+   "to": "للدگائگ",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "2/2",
+   "ear": null
+  },
+  "قل": {
+   "to": "گل",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "1/2",
+   "ear": null
+  },
+  "قاية": {
+   "to": "گاية",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "1/2",
+   "ear": null
+  },
+  "هنقول": {
+   "to": "هنگول",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "2/2",
+   "ear": null
+  },
+  "التعقيدة": {
+   "to": "التعگيدة",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "0/2",
+   "ear": null
+  },
+  "الطريقة": {
+   "to": "الطريگة",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "0/2",
+   "ear": null
+  },
+  "نشقل": {
+   "to": "نشگل",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "0/2",
+   "ear": null
+  },
+  "نوقفه": {
+   "to": "نوگفه",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "0/2",
+   "ear": null
+  },
+  "الفرق": {
+   "to": "الفرگ",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "2/2",
+   "ear": null
+  },
+  "قطع": {
+   "to": "گطع",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "0/2",
+   "ear": null
+  },
+  "قنقر": {
+   "to": "گنگر",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "0/2",
+   "ear": null
+  },
+  "طاقة": {
+   "to": "طاگة",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "0/2",
+   "ear": null
+  },
+  "أقدموها": {
+   "to": "أگدموها",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "0/2",
+   "ear": null
+  },
+  "خنقل": {
+   "to": "خنگل",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "2/2",
+   "ear": null
+  },
+  "تاق": {
+   "to": "تاگ",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "2/2",
+   "ear": null
+  },
+  "سبق": {
+   "to": "سبگ",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "0/2",
+   "ear": null
+  },
+  "الأفريق": {
+   "to": "الأفريگ",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "0/2",
+   "ear": null
+  },
+  "تنقص": {
+   "to": "تنگص",
+   "status": "UNVERIFIED",
+   "count": 2,
+   "recognizer_g": "0/2",
+   "ear": null
+  },
+  "الفقارة": {
+   "to": "الفگارة",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "القراب": {
+   "to": "الگراب",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "يثق": {
+   "to": "يثگ",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "عبقري": {
+   "to": "عبگري",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "وتسويقيا": {
+   "to": "وتسويگيا",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "انتقال": {
+   "to": "انتگال",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "نقل": {
+   "to": "نگل",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "حقه": {
+   "to": "حگه",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "والدقايق": {
+   "to": "والدگايگ",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "يفرقون": {
+   "to": "يفرگون",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "الدقايق": {
+   "to": "الدگايگ",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "دقايق": {
+   "to": "دگايگ",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "العقربين": {
+   "to": "العگربين",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "للدقايق": {
+   "to": "للدگايگ",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "قدمتها": {
+   "to": "گدمتها",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "ومقابل": {
+   "to": "ومگابل",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "تلقى": {
+   "to": "تلگى",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "والإقبال": {
+   "to": "والإگبال",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "قابلية": {
+   "to": "گابلية",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "مقابل": {
+   "to": "مگابل",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "قولاتهم": {
+   "to": "گولاتهم",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "ثقاتكم": {
+   "to": "ثگاتكم",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "يقدرنا": {
+   "to": "يگدرنا",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "القوشي": {
+   "to": "الگوشي",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "فأعتقد": {
+   "to": "فأعتگد",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "توقع": {
+   "to": "توگع",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "اتبقى": {
+   "to": "اتبگى",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "طاق": {
+   "to": "طاگ",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "نقلطا": {
+   "to": "نگلطا",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "بيقولها": {
+   "to": "بيگولها",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "نتقل": {
+   "to": "نتگل",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "وأقولها": {
+   "to": "وأگولها",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "قرونوا": {
+   "to": "گرونوا",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "موقعهم": {
+   "to": "موگعهم",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "تتوقع": {
+   "to": "تتوگع",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "مستقبل": {
+   "to": "مستگبل",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "قلناه": {
+   "to": "گلناه",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "الحلقة": {
+   "to": "الحلگة",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "النقطة": {
+   "to": "النگطة",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "والتوقع": {
+   "to": "والتوگع",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "قراءات": {
+   "to": "گراءات",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "قلتها": {
+   "to": "گلتها",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "تتحقق": {
+   "to": "تتحگگ",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "قرر": {
+   "to": "گرر",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "وقعد": {
+   "to": "وگعد",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "معقل": {
+   "to": "معگل",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "يقعدوا": {
+   "to": "يگعدوا",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "وقابلوا": {
+   "to": "وگابلوا",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "قرروا": {
+   "to": "گرروا",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "مساق": {
+   "to": "مساگ",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "وتقديم": {
+   "to": "وتگديم",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "القروب": {
+   "to": "الگروب",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "بريقيا": {
+   "to": "بريگيا",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "فقعد": {
+   "to": "فگعد",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "القيوشي": {
+   "to": "الگيوشي",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "قيوشي": {
+   "to": "گيوشي",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "حقب": {
+   "to": "حگب",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "قروب": {
+   "to": "گروب",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "مستقلة": {
+   "to": "مستگلة",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "فقاموا": {
+   "to": "فگاموا",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "نقبل": {
+   "to": "نگبل",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "بتعليقات": {
+   "to": "بتعليگات",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "قرور": {
+   "to": "گرور",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "تسبقهم": {
+   "to": "تسبگهم",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "يعتقد": {
+   "to": "يعتگد",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "بطوق": {
+   "to": "بطوگ",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "للطوق": {
+   "to": "للطوگ",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "مقامة": {
+   "to": "مگامة",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "والإلقاف": {
+   "to": "والإلگاف",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "قفل": {
+   "to": "گفل",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "بالقلط": {
+   "to": "بالگلط",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "لقياس": {
+   "to": "لگياس",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "للدكايق": {
+   "to": "للدكايگ",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "سباق": {
+   "to": "سباگ",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "لنقطة": {
+   "to": "لنگطة",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "لنوقفة": {
+   "to": "لنوگفة",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "نقرر": {
+   "to": "نگرر",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "تعتقدون": {
+   "to": "تعتگدون",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "تستحق": {
+   "to": "تستحگ",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "بالقناة": {
+   "to": "بالگناة",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "مقسم": {
+   "to": "مگسم",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "قسمين": {
+   "to": "گسمين",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "قسم": {
+   "to": "گسم",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "بالفريق": {
+   "to": "بالفريگ",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "تقصر": {
+   "to": "تگصر",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "قادة": {
+   "to": "گادة",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "مرموقة": {
+   "to": "مرموگة",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "يتقلد": {
+   "to": "يتگلد",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "مقابلات": {
+   "to": "مگابلات",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "المستقبل": {
+   "to": "المستگبل",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "قاعدت": {
+   "to": "گاعدت",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "اللاصيقة": {
+   "to": "اللاصيگة",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "تقتصر": {
+   "to": "تگتصر",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "وقد": {
+   "to": "وگد",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "وقفوها": {
+   "to": "وگفوها",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "قاع": {
+   "to": "گاع",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "يخلق": {
+   "to": "يخلگ",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "الأناقة": {
+   "to": "الأناگة",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "تعقت": {
+   "to": "تعگت",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "قاينزل": {
+   "to": "گاينزل",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "قالت": {
+   "to": "گالت",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "بتعقيدات": {
+   "to": "بتعگيدات",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "نقتلك": {
+   "to": "نگتلك",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "أتوقع": {
+   "to": "أتوگع",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "الفستقي": {
+   "to": "الفستگي",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "تعقيدها": {
+   "to": "تعگيدها",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "الفسترقي": {
+   "to": "الفسترگي",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "يقوم": {
+   "to": "يگوم",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "مقارنة": {
+   "to": "مگارنة",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "لحق": {
+   "to": "لحگ",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "توقف": {
+   "to": "توگف",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "يوقفون": {
+   "to": "يوگفون",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "توقفو": {
+   "to": "توگفو",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "متوقع": {
+   "to": "متوگع",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "يبقى": {
+   "to": "يبگى",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "قليلا": {
+   "to": "گليلا",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "الأصدقاء": {
+   "to": "الأصدگاء",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "وقاع": {
+   "to": "وگاع",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "أذقة": {
+   "to": "أذگة",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "وقاي": {
+   "to": "وگاي",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "بتقلها": {
+   "to": "بتگلها",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "التصويقي": {
+   "to": "التصويگي",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "حرق": {
+   "to": "حرگ",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "وحرق": {
+   "to": "وحرگ",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "قسموه": {
+   "to": "گسموه",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "قمت": {
+   "to": "گمت",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "تسويقيا": {
+   "to": "تسويگيا",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "المنطقة": {
+   "to": "المنطگة",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "أطلقت": {
+   "to": "أطلگت",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "اقتراحات": {
+   "to": "اگتراحات",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "التسويقي": {
+   "to": "التسويگي",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "نقله": {
+   "to": "نگله",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "القريب": {
+   "to": "الگريب",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "وقتك": {
+   "to": "وگتك",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "قصرت": {
+   "to": "گصرت",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "ويقولون": {
+   "to": "ويگولون",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "بالليقع": {
+   "to": "بالليگع",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "ننقذ": {
+   "to": "ننگذ",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "قراءتهم": {
+   "to": "گراءتهم",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "بقول": {
+   "to": "بگول",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "تراقب": {
+   "to": "تراگب",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "التفقين": {
+   "to": "التفگين",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "أقصد": {
+   "to": "أگصد",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "قيمته": {
+   "to": "گيمته",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "قابله": {
+   "to": "گابله",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "يعتقدون": {
+   "to": "يعتگدون",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "نتفق": {
+   "to": "نتفگ",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "علاقاتنا": {
+   "to": "علاگاتنا",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "يقدروا": {
+   "to": "يگدروا",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "حينقا": {
+   "to": "حينگا",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "الصديق": {
+   "to": "الصديگ",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "اللوقات": {
+   "to": "اللوگات",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "محقولة": {
+   "to": "محگولة",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "بأقول": {
+   "to": "بأگول",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "فقراءة": {
+   "to": "فگراءة",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "وعقارب": {
+   "to": "وعگارب",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "يقلنا": {
+   "to": "يگلنا",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "مراقزين": {
+   "to": "مراگزين",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "مراقزة": {
+   "to": "مراگزة",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "يرقزون": {
+   "to": "يرگزون",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "المقوة": {
+   "to": "المگوة",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "حقوات": {
+   "to": "حگوات",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "فقدان": {
+   "to": "فگدان",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "مقاوم": {
+   "to": "مگاوم",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "عملاقة": {
+   "to": "عملاگة",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "قلطان": {
+   "to": "گلطان",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "وقدموها": {
+   "to": "وگدموها",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "مقطوعة": {
+   "to": "مگطوعة",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "وقفه": {
+   "to": "وگفه",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "وقدمه": {
+   "to": "وگدمه",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "زرقا": {
+   "to": "زرگا",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "إيقاف": {
+   "to": "إيگاف",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "متوقعين": {
+   "to": "متوگعين",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "تقديمه": {
+   "to": "تگديمه",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "توقعنا": {
+   "to": "توگعنا",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "بالعميق": {
+   "to": "بالعميگ",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "قدر": {
+   "to": "گدر",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "للأزرق": {
+   "to": "للأزرگ",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "خلننتقل": {
+   "to": "خلننتگل",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "لقلتهم": {
+   "to": "لگلتهم",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "وقدموا": {
+   "to": "وگدموا",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "قطيناها": {
+   "to": "گطيناها",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "تقدمة": {
+   "to": "تگدمة",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "تقاوم": {
+   "to": "تگاوم",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "مقناطيسي": {
+   "to": "مگناطيسي",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "بننتقل": {
+   "to": "بننتگل",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "قاعدتنا": {
+   "to": "گاعدتنا",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "تقطيتني": {
+   "to": "تگطيتني",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "نقطي": {
+   "to": "نگطي",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "قادت": {
+   "to": "گادت",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "أقدمون": {
+   "to": "أگدمون",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "أقدموا": {
+   "to": "أگدموا",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "عقربين": {
+   "to": "عگربين",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "نشق": {
+   "to": "نشگ",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "يشقلك": {
+   "to": "يشگلك",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "ووقفة": {
+   "to": "ووگفة",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "وطريقتهم": {
+   "to": "وطريگتهم",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "وقطع": {
+   "to": "وگطع",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "قاليه": {
+   "to": "گاليه",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "وقاله": {
+   "to": "وگاله",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "ونقرر": {
+   "to": "ونگرر",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "القديمة": {
+   "to": "الگديمة",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "توقيتين": {
+   "to": "توگيتين",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "الدقائي": {
+   "to": "الدگائي",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "أطق": {
+   "to": "أطگ",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "التسويق": {
+   "to": "التسويگ",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "قمة": {
+   "to": "گمة",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "يطلق": {
+   "to": "يطلگ",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "أطلاق": {
+   "to": "أطلاگ",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "لعلاقة": {
+   "to": "لعلاگة",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "يقدمونها": {
+   "to": "يگدمونها",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "الرزاق": {
+   "to": "الرزاگ",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "واللقطات": {
+   "to": "واللگطات",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "قع": {
+   "to": "گع",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "تيقاب": {
+   "to": "تيگاب",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "قرناها": {
+   "to": "گرناها",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "علاقات": {
+   "to": "علاگات",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "قوساج": {
+   "to": "گوساج",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "للدقائي": {
+   "to": "للدگائي",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "ويقول": {
+   "to": "ويگول",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "نقزة": {
+   "to": "نگزة",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "ثقيل": {
+   "to": "ثگيل",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "قطيتنا": {
+   "to": "گطيتنا",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "وقبل": {
+   "to": "وگبل",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "عريقة": {
+   "to": "عريگة",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "ثقافية": {
+   "to": "ثگافية",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "قلة": {
+   "to": "گلة",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "وقصتها": {
+   "to": "وگصتها",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "بالأرقام": {
+   "to": "بالأرگام",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "قصهم": {
+   "to": "گصهم",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "أوقات": {
+   "to": "أوگات",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "حقول": {
+   "to": "حگول",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "التعقيدات": {
+   "to": "التعگيدات",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "يقلب": {
+   "to": "يگلب",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "وطريقة": {
+   "to": "وطريگة",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "نقلب": {
+   "to": "نگلب",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "فنقدر": {
+   "to": "فنگدر",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "تنقز": {
+   "to": "تنگز",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "العقرة": {
+   "to": "العگرة",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "موقعنا": {
+   "to": "موگعنا",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "نقدرنا": {
+   "to": "نگدرنا",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "الباينيق": {
+   "to": "الباينيگ",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "أفقية": {
+   "to": "أفگية",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "فوقت": {
+   "to": "فوگت",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "بأوقف": {
+   "to": "بأوگف",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "خلنشقل": {
+   "to": "خلنشگل",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "شقلناه": {
+   "to": "شگلناه",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "نقد": {
+   "to": "نگد",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "قرب": {
+   "to": "گرب",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "والعقرب": {
+   "to": "والعگرب",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "قرار": {
+   "to": "گرار",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "بنتقل": {
+   "to": "بنتگل",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "القارد": {
+   "to": "الگارد",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "قعنا": {
+   "to": "گعنا",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "تقطيتنا": {
+   "to": "تگطيتنا",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "ينقذ": {
+   "to": "ينگذ",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "هالحقبة": {
+   "to": "هالحگبة",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "الدقيقة": {
+   "to": "الدگيگة",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "فيقدروا": {
+   "to": "فيگدروا",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "يوقف": {
+   "to": "يوگف",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "الشموقة": {
+   "to": "الشموگة",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "مستقعى": {
+   "to": "مستگعى",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "القائمة": {
+   "to": "الگائمة",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "دقيناد": {
+   "to": "دگيناد",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "والتحقق": {
+   "to": "والتحگگ",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "ودقائق": {
+   "to": "ودگائگ",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "يعقد": {
+   "to": "يعگد",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "الزراق": {
+   "to": "الزراگ",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "توهيقون": {
+   "to": "توهيگون",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "قالب": {
+   "to": "گالب",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "مقاومة": {
+   "to": "مگاومة",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "التطبيق": {
+   "to": "التطبيگ",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "يقولونها": {
+   "to": "يگولونها",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "عقد": {
+   "to": "عگد",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "تقويم": {
+   "to": "تگويم",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "القادم": {
+   "to": "الگادم",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "مستقبلا": {
+   "to": "مستگبلا",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "التحقيدات": {
+   "to": "التحگيدات",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "بتعليقاتكم": {
+   "to": "بتعليگاتكم",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "دقة": {
+   "to": "دگة",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "قليل": {
+   "to": "گليل",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "المعقدة": {
+   "to": "المعگدة",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "بالقطب": {
+   "to": "بالگطب",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "ويقدرون": {
+   "to": "ويگدرون",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "تقطياتنا": {
+   "to": "تگطياتنا",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "مننتقل": {
+   "to": "مننتگل",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "قللوها": {
+   "to": "گللوها",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "بتقديم": {
+   "to": "بتگديم",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "تقدمت": {
+   "to": "تگدمت",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "القبل": {
+   "to": "الگبل",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "واعتقد": {
+   "to": "واعتگد",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "برقام": {
+   "to": "برگام",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "قدمها": {
+   "to": "گدمها",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "وقلنا": {
+   "to": "وگلنا",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "نقدمونا": {
+   "to": "نگدمونا",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "يقصون": {
+   "to": "يگصون",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "قدموهم": {
+   "to": "گدموهم",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "أقلبها": {
+   "to": "أگلبها",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "والقدم": {
+   "to": "والگدم",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "قدروا": {
+   "to": "گدروا",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "فمقاربة": {
+   "to": "فمگاربة",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "حقبة": {
+   "to": "حگبة",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "الحقبة": {
+   "to": "الحگبة",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "والرقلياتر": {
+   "to": "والرگلياتر",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "للسوق": {
+   "to": "للسوگ",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "فقال": {
+   "to": "فگال",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "ومعقدة": {
+   "to": "ومعگدة",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "أدق": {
+   "to": "أدگ",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "مسبوق": {
+   "to": "مسبوگ",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "يتزلق": {
+   "to": "يتزلگ",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "الصبق": {
+   "to": "الصبگ",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "شقار": {
+   "to": "شگار",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "مستقلها": {
+   "to": "مستگلها",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "وقفنا": {
+   "to": "وگفنا",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "أوقف": {
+   "to": "أوگف",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "المتبقية": {
+   "to": "المتبگية",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "تطبيق": {
+   "to": "تطبيگ",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "نتوقع": {
+   "to": "نتوگع",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "قربل": {
+   "to": "گربل",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "قابل": {
+   "to": "گابل",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "تتوقعون": {
+   "to": "تتوگعون",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "0/1",
+   "ear": null
+  },
+  "قولة": {
+   "to": "گولة",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "أقولها": {
+   "to": "أگولها",
+   "status": "UNVERIFIED",
+   "count": 1,
+   "recognizer_g": "1/1",
+   "ear": null
+  },
+  "كم": {
+   "to": "چم",
+   "status": "UNVERIFIED",
+   "count": 4,
+   "recognizer_ch": "2/4",
+   "ear": "ch in 1 clip (round 2 b19, clear options)"
+  }
+ },
+ "context": {}
+}

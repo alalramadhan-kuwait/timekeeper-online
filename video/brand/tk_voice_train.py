@@ -42,28 +42,33 @@ def apply_lexicon(text: str) -> str:
     return text
 
 
-KW = Path(__file__).resolve().parent / "voice-data/kw-convention.json"
+KW = Path(__file__).resolve().parent / "voice-data/kw-pron-dict.json"
 AR = "\u0621-\u064A\u0686\u06AF"
-PREFIX = r"(?:و|ف|ب|ل|ال|وال|بال|فال|لل|ول|وب)?"
+PREFIXES = ("وبال", "وال", "بال", "فال", "لل", "ال", "و", "ف", "ب", "ل")
 
 
-def kw_convention(text: str) -> str:
-    """Ali's Kuwaiti spelling (voice-data/kw-convention.json; VOICE-PLAN.md, transcript audit): write what he says.
-    Default ق -> گ (57/57 by ear), except words listed in keep_q; word_map holds confirmed whole-word respellings.
+def kw_convention(text: str, d=None) -> str:
+    """Ali's pronunciation dictionary (voice-data/kw-pron-dict.json): written text -> what Ali says.
+    Only VERIFIED entries apply. Per word (also tried without one prefix): a context word is left as written; a
+    VERIFIED word entry wins (its 'to'; to == word means a confirmed exception); otherwise the VERIFIED rules apply.
     Latin-script words are never touched."""
     import re
-    conv = json.loads(KW.read_text())
+    d = d or json.loads(KW.read_text())
+    words, ctx = d["words"], d.get("context", {})
+    rules = [r for r in d["rules"] if r["status"] == "VERIFIED"]
 
     def word(m):
         w = m.group(0)
         bare = re.sub(rf"[^{AR}]", "", w)
-        for k, v in conv["word_map"].items():
-            if re.fullmatch(PREFIX + re.escape(k), bare):
-                return w.replace(k, v)
-        if any(re.fullmatch(PREFIX + re.escape(k), bare) for k in conv["keep_q"]):
-            return w
-        for a, b in conv["default"].items():
-            w = w.replace(a, b)
+        keys = [bare] + [bare[len(p):] for p in PREFIXES if bare.startswith(p) and len(bare) > len(p) + 1]
+        if any(k in ctx for k in keys):
+            return w                                   # more than one pronunciation: never automatic
+        for k in keys:
+            e = words.get(k)
+            if e and e["status"] == "VERIFIED":
+                return w.replace(k, e["to"])           # confirmed respelling, or confirmed keep (to == word)
+        for r in rules:                                # unlisted or UNVERIFIED words follow the VERIFIED rules
+            w = w.replace(r["from"], r["to"])
         return w
     return re.sub(rf"[{AR}\u064B-\u0652]+", word, text)
 

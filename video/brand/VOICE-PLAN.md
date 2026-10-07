@@ -225,7 +225,28 @@
   - The V5 run already under way continues for now (the CPU is otherwise idle). Its result counts only if the re-check confirms ق→گ.
 - The ك answers are unaffected: those had separate, clear options.
 
-**Convention as approved by Ali (2026-10-07), and V5 as built:**
+**Pronunciation dictionary (replaces the single rule; `voice-data/kw-pron-dict.json`, applied by `kw_convention()`):**
+- **Three layers:**
+  - `rules`: letter level, e.g. ق→گ.
+  - `words`: per-word respellings. An entry whose `to` equals the word is a confirmed exception (Ali really says it that way).
+  - `context`: words with more than one pronunciation. These are never applied automatically.
+- **Every entry has a status, and only VERIFIED is applied.** UNVERIFIED text stays exactly as written. Nothing is assumed.
+- **How a word is resolved** (it is also tried with one prefix removed, from و ف ب ل ال بال وال لل):
+  1. A context word stays as written.
+  2. A VERIFIED word entry wins.
+  3. Otherwise the VERIFIED rules apply.
+  4. Latin script is never touched.
+- **Seeded with every ق word in the training text:** 475 entries plus كم.
+  - Each has its count and the recognizer's g count, which is a hint only.
+  - All start UNVERIFIED, and so does the ق→گ rule, because the round 1–3 ق answers were withdrawn.
+- **Ear evidence comes in by listening rounds,** starting with round 4.
+  - If round 4 shows ق→گ holds across everyday and formal words, the rule becomes VERIFIED, and the words Ali says with q become VERIFIED keep-entries.
+  - If it doesn't hold, only the confirmed words are VERIFIED.
+- **The V5 now training** used the earlier blanket ق→گ text. It is **V5-draft**.
+  - If round 4 confirms the blanket rule, it is V5.
+  - Otherwise V5 is rebuilt from the dictionary (VERIFIED only) and retrained with the same settings.
+
+**Earlier draft (superseded by the dictionary above): convention as approved by Ali (2026-10-07), and V5-draft as built:**
 - **Data, not code.** The rules live in `voice-data/kw-convention.json` and `kw_convention()` reads them.
   - `default`: ق → گ.
   - `keep_q`: whole words Ali really says with q (names, foreign words, Fusha, anything found later). Matched with or without the و ف ب ل ال prefixes. It starts empty.
