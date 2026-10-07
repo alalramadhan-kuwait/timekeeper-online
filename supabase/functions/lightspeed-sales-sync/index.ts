@@ -37,6 +37,8 @@ const kuwaitDay = (iso: string) => new Date(new Date(iso).getTime() + 3 * 3600_0
 const SALE_PAGES_PER_RUN = 40;
 const CUSTOMER_PAGES_PER_RUN = 30;
 const PAGE = 500;
+/* Products named from Lightspeed per run, for lines the stock snapshot cannot name. */
+const NAME_FETCHES_PER_RUN = 40;
 
 interface LsSale {
   id: string; outlet_id?: string; register_id?: string; user_id?: string; customer_id?: string;
@@ -114,8 +116,17 @@ Deno.serve(async (req: Request) => {
 
     /* Product names from our own stock snapshot, written onto each line so it
        still reads sensibly after the product is retired from the catalogue. */
-    const { data: stock } = await admin.from("lightspeed_stock").select("product_id, sku, name, brand");
-    const product = new Map((stock ?? []).map((p) => [p.product_id as string, p]));
+    /* Read in pages: one request returns at most 1,000 rows and the snapshot holds ~9,500, which is how
+       nine sold lines in ten came to be stored with no name and printed as "Item" on the day report. */
+    type Named = { product_id: string; sku: string | null; name: string | null; brand: string | null };
+    const product = new Map<string, Named>();
+    for (let from = 0; ; from += 1000) {
+      const { data: stock, error } = await admin.from("lightspeed_stock")
+        .select("product_id, sku, name, brand").order("product_id").range(from, from + 999);
+      if (error) throw new Error(`stock names: ${error.message}`);
+      for (const p of (stock ?? []) as Named[]) if (p.name && !product.has(p.product_id)) product.set(p.product_id, p);
+      if (!stock || stock.length < 1000) break;
+    }
 
     // ── sales ─────────────────────────────────────────────────────────
     let cursor = await readState(admin, "sales");
@@ -209,6 +220,34 @@ Deno.serve(async (req: Request) => {
       last_success_at: new Date().toISOString(), last_error: null,
     });
 
+    // ── names for lines the stock snapshot cannot name ────────────────
+    /* A product that is retired, has no stock, or is a service (gift wrap, engraving) is not in the
+       snapshot, so its lines stay unnamed. Ask Lightspeed for a few such products each run, newest sales
+       first, and write the name onto every line of that product. One that Lightspeed no longer knows is
+       marked so it is not asked for again. */
+    let named = 0;
+    {
+      const { data: nameless } = await admin.from("lightspeed_sale_items")
+        .select("product_id").is("name", null).not("product_id", "is", null)
+        .order("synced_at", { ascending: false }).limit(3000);
+      const ids = [...new Set((nameless ?? []).map((r) => r.product_id as string))].slice(0, NAME_FETCHES_PER_RUN);
+      for (const id of ids) {
+        let p: { name?: string; variant_name?: string; sku?: string; brand?: { name?: string } | null; brand_name?: string } | null = null;
+        try {
+          const body = await lsGet<{ data?: typeof p }>(`${base}/api/2.0/products/${id}`, token);
+          p = body.data ?? null;
+        } catch (e) {
+          if (!/→ 404/.test(String(e))) continue;   // a passing error: try again next run
+        }
+        const known = product.get(id);
+        const name = blank(p?.variant_name) ?? blank(p?.name) ?? known?.name ?? "Product no longer in Lightspeed";
+        const { error } = await admin.from("lightspeed_sale_items")
+          .update({ name, sku: blank(p?.sku) ?? known?.sku ?? null, brand: blank(p?.brand?.name) ?? blank(p?.brand_name) ?? known?.brand ?? null })
+          .eq("product_id", id).is("name", null);
+        if (!error) named++;
+      }
+    }
+
     // ── customers: the same walk, kept minimal ─────────────────────────
     let cCursor = await readState(admin, "customers");
     let customersSeen = 0, cPages = 0, customersCaughtUp = false;
@@ -256,6 +295,7 @@ Deno.serve(async (req: Request) => {
       ok: true, took_ms: Date.now() - t0, token_refreshed: refreshed,
       sales: { seen: salesSeen, pages, cursor_from: startedAt, cursor_to: cursor, caught_up: salesCaughtUp, statuses: statusSeen },
       customers: { seen: customersSeen, pages: cPages, cursor_to: cCursor, caught_up: customersCaughtUp },
+      products_named: named,
     };
     await finish("ok", { products_synced: salesSeen, error: salesCaughtUp ? null : `not yet caught up (cursor ${cursor})` });
     return json(summary);
