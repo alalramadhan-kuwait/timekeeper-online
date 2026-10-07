@@ -233,7 +233,9 @@ def train(args):
     data = SRC / args.data
     feats = torch.load(data / "feats.pt")
     split = dict(l.split("|")[0::2] for l in (data / "metadata.csv").read_text().split("\n") if l)
-    tr = [k for k, s in split.items() if s == "train"]; te = [k for k, s in split.items() if s == "test"]
+    tr = [k for k, s in split.items() if s == "train"]
+    # Checkpoints are chosen on "val" ("test" in older datasets). "final" clips are never touched here.
+    te = [k for k, s in split.items() if s == "val"] or [k for k, s in split.items() if s == "test"]
 
     # The voice prompt must come from a *different* clip: a prompt cut from the target clip lets T3 copy it,
     # and at inference (prompt = ref.wav) that shortcut is gone and the speech falls apart.
@@ -254,7 +256,7 @@ def train(args):
     t3.to(args.device).train()
     params = [p for p in t3.parameters() if p.requires_grad]
     print(f"LoRA on {len(n)} projections, {sum(p.numel() for p in params) / 1e6:.1f}M trainable; "
-          f"{len(tr)} train / {len(te)} test clips", flush=True)
+          f"{len(tr)} train / {len(te)} val clips", flush=True)
     opt = torch.optim.AdamW(params, lr=args.lr, weight_decay=0.0)
     sched = torch.optim.lr_scheduler.LambdaLR(opt, lambda s: min(1.0, (s + 1) / 20))
     out = SRC / "ckpt" / args.name
@@ -270,7 +272,7 @@ def train(args):
         return float(np.mean(tot)) if tot else float("nan")
 
     log = open(out / "log.tsv", "a")
-    print(f"step 0  test_speech_loss {evaluate():.3f}", flush=True)
+    print(f"step 0  val_speech_loss {evaluate():.3f}", flush=True)
     step, t0 = 0, time.time()
     while step < args.steps:
         random.shuffle(tr)
@@ -284,7 +286,7 @@ def train(args):
             opt.step(); sched.step(); step += 1
             msg = f"step {step}  speech {ls.item():.3f}  text {lt.item():.3f}  {(time.time() - t0) / step:.1f}s/step"
             if step % args.eval_every == 0 or step == args.steps:
-                msg += f"  test_speech_loss {evaluate():.3f}"
+                msg += f"  val_speech_loss {evaluate():.3f}"
                 torch.save(lora_state(t3), out / f"step{step:05d}.pt")
             print(msg, flush=True); log.write(msg + "\n"); log.flush()
             if step >= args.steps:
@@ -302,13 +304,20 @@ def sample(args):
     torch.manual_seed(0)
     tts = load_tts(args.device, args.ckpt, args.rank)
     clips = json.loads(CLIPS.read_text())
-    lines = {k: (v or clips[k]["text"]) for k, v in LINES.items()}
-    for row in (DATA / "metadata.csv").read_text().split("\n"):
-        if row.endswith("|test"):
-            cid, text, _ = row.split("|"); lines[cid] = text
-    out = SRC / "samples" / (Path(args.ckpt).parent.name + "-" + Path(args.ckpt).stem if args.ckpt else "base")
+    if args.bench:   # the fixed 40-line blind benchmark
+        lines = {r["id"]: r["text"] for r in json.loads((Path(__file__).resolve().parent / "voice-data/benchmark.json").read_text())["lines"]}
+    else:
+        lines = {k: (v or clips[k]["text"]) for k, v in LINES.items()}
+        for row in (DATA / "metadata.csv").read_text().split("\n"):
+            if row.endswith("|test"):
+                cid, text, _ = row.split("|"); lines[cid] = text
+    tag = Path(args.ckpt).parent.name + "-" + Path(args.ckpt).stem if args.ckpt else "base"
+    out = SRC / ("bench" if args.bench else "samples") / tag
     out.mkdir(parents=True, exist_ok=True)
     for k, text in lines.items():
+        if (out / f"{k}.wav").exists():
+            continue
+        torch.manual_seed(0)
         wav = tts.generate(text, language_id="ar", audio_prompt_path=str(SRC / "ref.wav"),
                            exaggeration=args.exaggeration, cfg_weight=args.cfg)
         torchaudio.save(str(out / f"{k}.wav"), wav, tts.sr)
@@ -330,6 +339,7 @@ if __name__ == "__main__":
     t.add_argument("--resume", help="LoRA checkpoint to continue from")
     s = sub.add_parser("sample"); s.add_argument("--ckpt"); s.add_argument("--exaggeration", type=float, default=0.4)
     s.add_argument("--cfg", type=float, default=0.5)
+    s.add_argument("--bench", action="store_true", help="generate the 40-line benchmark instead")
     a = p.parse_args()
     torch.set_num_threads(4)
     {"build": lambda: build(a.audio), "build-screened": lambda: build_screened(a.keep, a.name),
