@@ -1,0 +1,119 @@
+<title>تدقيق النطق الكويتي</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Noto+Naskh+Arabic:wght@500;600&display=swap">
+<style>
+/* Layout: one column, parts of 10; each card = a real clip of Ali, the transcript word, what the recognizer heard. RTL. */
+:root{
+  --paper:#f2f4f3; --card:#ffffff; --ink:#18211e; --muted:#5d6b66; --line:#d9e0dd;
+  --dial:#1f4d3f; --dial-soft:#e3eeea; --mark:#8a5a12; --mark-soft:#f6ecd9; --ok:#2f7a4f;
+  --ui:"IBM Plex Sans Arabic",system-ui,"Segoe UI",Tahoma,sans-serif;
+  --read:"Noto Naskh Arabic","IBM Plex Sans Arabic",serif;
+  --mono:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#121816; --card:#1a2220; --ink:#e7eeeb; --muted:#9aa8a3; --line:#2b3633;
+  --dial:#7fc3a9; --dial-soft:#1f302b; --mark:#e9b86a; --mark-soft:#33291a; --ok:#7fd1a0; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#121816; --card:#1a2220; --ink:#e7eeeb; --muted:#9aa8a3; --line:#2b3633;
+  --dial:#7fc3a9; --dial-soft:#1f302b; --mark:#e9b86a; --mark-soft:#33291a; --ok:#7fd1a0; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--ui);font-size:15px;line-height:1.6;padding-inline:16px;padding-block:0 48px}
+main{max-width:720px;margin-inline:auto;display:grid;gap:14px}
+header{padding-block:26px 4px;display:grid;gap:6px}
+h1{font-family:var(--read);font-weight:600;font-size:1.8rem;line-height:1.3;margin:0;text-wrap:balance}
+.lede{color:var(--muted);margin:0;max-width:62ch}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:2;background:var(--paper);padding-block:10px;display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;border-bottom:1px solid var(--line);font-size:.86rem;color:var(--muted)}
+.part{font:inherit;font-size:.85rem;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:4px 12px;cursor:pointer;font-variant-numeric:tabular-nums}
+.part[aria-pressed="true"]{background:var(--dial);border-color:var(--dial);color:var(--card)}
+.save{margin-inline-start:auto}.save.ok{color:var(--ok)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;display:grid;gap:10px}
+.top{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.num{font-variant-numeric:tabular-nums;color:var(--muted);font-size:.85rem;min-width:2ch}
+audio{flex:1;min-width:200px;height:36px}
+.sent{font-family:var(--read);font-size:1.12rem;line-height:1.8;margin:0}
+.sent mark{background:var(--mark-soft);color:var(--mark);border-radius:4px;padding:0 3px}
+.meta{font-size:.8rem;color:var(--muted);display:flex;gap:12px;flex-wrap:wrap}
+.meta code{font-family:var(--mono);direction:ltr;unicode-bidi:isolate}
+.q{font-size:.9rem}
+.opts{display:flex;flex-wrap:wrap;gap:8px}
+.opt{font:inherit;font-size:.9rem;border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:999px;padding:5px 14px;cursor:pointer}
+.opt[aria-pressed="true"]{background:var(--dial);border-color:var(--dial);color:var(--card)}
+button:focus-visible{outline:2px solid var(--dial);outline-offset:2px}
+.notice{border:1px dashed var(--line);border-radius:8px;padding:10px 12px;font-size:.88rem;color:var(--muted)}
+</style>
+<main dir="rtl" lang="ar">
+  <header>
+    <h1>شنو قلت فعلاً؟</h1>
+    <p class="lede">هذي مقاطع حقيقية من تسجيلاتك اللي تدرب عليها الموديل. الكلمة المعلّمة مكتوبة بالنص بشكل، وجهاز التعرف على الأصوات سمعها بشكل ثاني. اسمع المقطع وقلي شنو قلت أنت. ترى الجهاز يغلط، فأذنك هي الحكم.</p>
+  </header>
+  <div class="bar" id="bar"></div>
+  <p class="notice" id="notice" hidden>الإجابات محفوظة بهالجهاز بس.</p>
+  <div id="list" style="display:grid;gap:14px"></div>
+</main>
+<script>
+const ITEMS = __ITEMS__;
+const PART = 10;
+const OPTIONS = {"ق→g":[["g","g (گ)"],["q","ق فصحى"],["other","شي ثاني"]],
+                 "ق→dʒ":[["dʒ","ج (مثل طريج)"],["q","ق فصحى"],["g","g (گ)"],["other","شي ثاني"]],
+                 "ك→ch":[["ch","ch (چ)"],["k","ك"],["other","شي ثاني"]],
+                 "ج→y":[["y","ي (مثل ياي)"],["j","ج"],["other","شي ثاني"]]};
+const state = {};
+let db = null, part = 0;
+const $ = s => document.querySelector(s);
+function load(){ try{ return JSON.parse(localStorage.getItem("tkvoice-audit")||"{}"); }catch(e){ return {}; } }
+function keep(){ try{ localStorage.setItem("tkvoice-audit", JSON.stringify(state)); }catch(e){} }
+function render(){
+  const bar = $("#bar"); bar.textContent = "";
+  const parts = Math.ceil(ITEMS.length / PART);
+  for (let i = 0; i < parts; i++){
+    const sl = ITEMS.slice(i*PART, (i+1)*PART), done = sl.filter(it => state[it.id]).length;
+    const b = document.createElement("button"); b.type = "button"; b.className = "part";
+    b.textContent = `الجزء ${i+1} (${done}/${sl.length})`; b.setAttribute("aria-pressed", String(i === part));
+    b.addEventListener("click", () => { part = i; render(); window.scrollTo(0, 0); });
+    bar.append(b);
+  }
+  const sv = document.createElement("span"); sv.className = "save"; sv.id = "save"; bar.append(sv);
+  const list = $("#list"); list.textContent = "";
+  for (const it of ITEMS.slice(part*PART, (part+1)*PART)){
+    const card = document.createElement("section"); card.className = "card";
+    const top = document.createElement("div"); top.className = "top";
+    const num = document.createElement("span"); num.className = "num"; num.textContent = it.n;
+    const au = document.createElement("audio"); au.controls = true; au.preload = "none"; au.src = it.src;
+    au.addEventListener("play", () => document.querySelectorAll("audio").forEach(a => { if (a !== au) a.pause(); }));
+    top.append(num, au); card.append(top);
+    const p = document.createElement("p"); p.className = "sent";
+    it.context.split(/\s+/).forEach((w, i) => {
+      if (i) p.append(" ");
+      if (i === it.wordIndex){ const m = document.createElement("mark"); m.textContent = w; p.append(m); } else p.append(w);
+    });
+    card.append(p);
+    const meta = document.createElement("div"); meta.className = "meta";
+    const a = document.createElement("span"); a.textContent = "الجهاز سمع: ";
+    const c = document.createElement("code"); c.textContent = it.heard; a.append(c);
+    meta.append(a); card.append(meta);
+    const q = document.createElement("div"); q.className = "q"; q.textContent = `«${it.word}»: شنو قلت؟`;
+    const opts = document.createElement("div"); opts.className = "opts";
+    for (const [val, lab] of OPTIONS[it.flag]){
+      const b = document.createElement("button"); b.type = "button"; b.className = "opt"; b.textContent = lab;
+      b.setAttribute("aria-pressed", String(state[it.id] === val));
+      b.addEventListener("click", () => { state[it.id] = val; save(it); render(); });
+      opts.append(b);
+    }
+    card.append(q, opts); list.append(card);
+  }
+}
+function save(it){
+  keep(); if (!db) return;
+  const s = $("#save"); if (s){ s.textContent = "يحفظ…"; s.className = "save"; }
+  db.doc("audit/" + it.id).set({ answer: state[it.id], word: it.word, flag: it.flag, at: new Date().toISOString() })
+    .then(() => { const s = $("#save"); if (s){ s.textContent = "محفوظ"; s.className = "save ok"; } })
+    .catch(() => { const s = $("#save"); if (s) s.textContent = "ما انحفظ"; });
+}
+Object.assign(state, load()); render();
+(async () => {
+  db = window.claude?.use ? await window.claude.use("db") : null;
+  if (!db){ $("#notice").hidden = false; return; }
+  try{ const snap = await db.collection("audit").get();
+    snap.docs.forEach(d => { const v = d.data(); if (v) state[d.id] = v.answer; }); keep(); render(); }catch(e){}
+})();
+</script>
