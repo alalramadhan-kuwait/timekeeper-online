@@ -30,6 +30,10 @@ OUT = A / "round2"
 torch.set_num_threads(4)
 
 
+ROUND3 = ["الوقت", "فقط", "أعتقد", "قدموا", "ننتقل", "بطريقة", "أقل", "علاقة", "طريق", "موقع", "القالب",
+          "تعقيدة", "الطاقة", "منطقة", "صديقي", "بالمستقبل", "فستقي", "فرق"]
+
+
 def bare(w):
     return re.sub(r"[^؀-ۿ]", "", w)
 
@@ -59,8 +63,19 @@ def main():
     lo = [c for c in cands if c["flag"] == "ق→g" and c["conf"] < 0.5]
     rng.shuffle(lo)
     want += [("ق→g-low", c["clip"], c["word"], c["text"]) for c in lo[:6]]
+    if len(sys.argv) > 1 and sys.argv[1] == "3":
+        # round 3: ق words the recognizer never flagged, one clip per frequent word family, plus the other كم
+        global OUT
+        OUT = A / "round3"
+        want = []
+        for fam in ROUND3:
+            hits = [(cid, t, tx) for cid, tx, _ in rows for t in tx.split() if bare(t) == fam]
+            if hits:
+                want.append(("ق-never", *rng.choice(hits)))
+        want += [("كم", cid, t, tx) for cid, tx, _ in rows for t in tx.split()
+                 if bare(t) in ("كم", "بكم", "وكم") and (cid, t) not in {(c["clip"], c["word"]) for c in cands}]
     # 3. ك→ch flags not yet heard (one per word)
-    seen = set()
+    seen = set() if not (len(sys.argv) > 1 and sys.argv[1] == "3") else {bare(c["word"]) for c in cands}
     for c in sorted((c for c in cands if c["flag"] == "ك→ch"), key=lambda c: -c["conf"]):
         if (c["clip"], c["word"]) in done or bare(c["word"]) in seen or bare(c["word"]).startswith(("شرك", "الشرك")):
             continue
@@ -106,18 +121,17 @@ def main():
                         "-ac", "1", "-b:a", "96k", str(OUT / "page/audio" / name)], check=True)
         ws = text.split()
         lo_, hi_ = max(0, wi - 6), wi + 7
-        items.append({"id": f"b{n:02d}", "n": n, "kind": kind, "flag": "ك→ch" if kind == "ك→ch" else "ق→g",
+        items.append({"id": f"b{n:02d}", "n": n, "kind": kind, "flag": "ك→ch" if kind in ("ك→ch", "كم") else "ق→g",
                       "word": word, "heard": " ".join(heard), "context": " ".join(ws[lo_:hi_]),
                       "wordIndex": wi - lo_, "src": f"audio/{name}", "clip": cid})
     (OUT / "picks.json").write_text(json.dumps(items, ensure_ascii=False, indent=1))
     page = (Path(__file__).parent / "blind-test/audit-template.html").read_text()
-    page = page.replace("<title>تدقيق النطق الكويتي</title>", "<title>تدقيق النطق ٢</title>")
-    page = page.replace("const PART = 10;", "const PART = 9;")
+    page = page.replace("<title>تدقيق النطق الكويتي</title>", "<title>تدقيق النطق ٢</title>" if OUT.name == "round2" else "<title>تدقيق النطق ٣</title>")
+    page = page.replace("const PART = 10;", "const PART = 9;" if OUT.name == "round2" else "const PART = 7;")
     # blind to the recognizer this time: no "heard" line, so the ear decides alone
     page = page.replace("meta.append(a); card.append(meta);", "")
     lede = re.search(r'<p class="lede">.*?</p>', page).group(0)
-    page = page.replace(lede, '<p class="lede">الجولة الثانية: الحالات اللي الجولة الأولى ما حسمتها. '
-                        'هالمرة ما أوريك شنو سمع الجهاز، عشان أذنك بروحها تحكم. اسمع الكلمة المعلّمة وقلي شنو قلت.</p>')
+    page = page.replace(lede, '<p class="lede">' + ("الجولة الثالثة: كلمات فيها ق ما علّمها الجهاز ولا مرة، وكلمة كم. " if OUT.name == "round3" else "الجولة الثانية: الحالات اللي الجولة الأولى ما حسمتها. ") + 'هالمرة ما أوريك شنو سمع الجهاز، عشان أذنك بروحها تحكم. اسمع الكلمة المعلّمة وقلي شنو قلت.</p>')
     page = page.replace("__ITEMS__", json.dumps([{k: v for k, v in it.items() if k not in ("clip", "kind")} for it in items],
                                                 ensure_ascii=False))
     (OUT / "page/index.html").write_text(page)

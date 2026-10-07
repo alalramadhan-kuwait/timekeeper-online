@@ -191,7 +191,14 @@
   - **12 unflagged ق in mostly-g words:** these decide between tagging each instance separately and tagging the whole word.
   - **6 ق→g flags below 0.5 confidence.**
   - **9 ك→ch flags not yet heard**, including كم and لكن.
-- **Convention:** drafted after round 2 and approved by Ali before V5 is built.
+
+**Audit round 2, Ali's ear (27 cases, recognizer hidden):**
+- **Unflagged ق in mostly-g words:** g in 12 of 12. That includes the 5 where the recognizer clearly heard q (قبل, تقريباً twice, طريقة, فوق).
+- **Low-confidence ق→g flags:** g in 6 of 6.
+- **ك→ch:** only كم was ch, 1 of 9. فيك, لكن, مشكورين, بشكل, شكلياً, يتكلمون and يشقلك were all k.
+- **Conclusion:** the recognizer misses Ali's g often, and its q is not reliable. The rule should be per word, not per instance: once a word is g, it is g everywhere.
+- **Still open, so round 3:** https://claude.ai/artifact/EzdFHokH7WYb7mdoPVDqRo. The 17 most frequent ق words that were never flagged (الوقت, فقط, أعتقد, قدموا, علاقة, طريق, ...). Are they really q?
+- **Convention:** drafted after round 3 and approved by Ali before V5 is built.
 
 إذا ما طلع Chatterbox مناسب، ندوّر على بديل بنفس الشروط: رخصة تجارية، يدعم العربي، ويقبل تدريب على متحدث واحد.
 
