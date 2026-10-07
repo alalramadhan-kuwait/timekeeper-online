@@ -130,6 +130,21 @@
 - **Conclusion:** the loss is in T3's prediction (and the voice prompt), not in the representation. LoRA moves timing and phrase endings toward Ali but flattens the range.
 - **Next:** the exaggeration sweep, then a voice-prompt (reference clip) test.
 
+**Kuwaiti pronunciation track (from 2026-10-07):** a controlled experiment before adding any hours.
+- **Sealed test:** `voice-data/kw-pron-test.json`, 30 lines, frozen at commit 609749e, sha256 6b12befc3616e356…
+  - Never changed after this point, including its kw spellings, whatever the audit shows.
+  - Never used for training, transcript decisions, checkpoint choice or tuning.
+- **Audit:** `tk_kw_audit.py` flags q/g, k/ch and j/y candidates. Its output is not ground truth: Ali checks representative cases by ear before any spelling rule.
+- **V5:**
+  - Same audio, same 699 clips, same session split, same base model and training settings.
+  - Only the transcripts change.
+  - Checkpoint chosen on validation only.
+- **Evaluation:**
+  - **Test A (controlled):** current LoRA and V5 read the same text, once all plain and once all kw.
+  - **Test B (production):** current LoRA + plain against V5 + kw.
+  - **Reporting:** the two tests are reported separately.
+  - **Scores:** pronunciation, Kuwaiti naturalness, likeness and clarity, plus a separate prosody score to catch regressions.
+
 إذا ما طلع Chatterbox مناسب، ندوّر على بديل بنفس الشروط: رخصة تجارية، يدعم العربي، ويقبل تدريب على متحدث واحد.
 
 **الشفافية:** في حقوق كل فيلم نكتب "الراوي: صوت ذكاء اصطناعي من صوت (الاسم)، بموافقته". والموديل يبقى خاص، ما ينشر وما ينعطى لأحد.
