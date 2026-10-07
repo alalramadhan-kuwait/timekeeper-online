@@ -1,0 +1,144 @@
+<title>اختبار صوت علي</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Noto+Naskh+Arabic:wght@500;600&display=swap">
+<style>
+/* Layout: one narrow column of listening cards, a sticky progress strip; RTL. */
+:root{
+  --paper:#f2f4f3; --card:#ffffff; --ink:#18211e; --muted:#5d6b66; --line:#d9e0dd;
+  --dial:#1f4d3f; --dial-soft:#e3eeea; --steel:#8a9792; --ok:#2f7a4f;
+  --ui:"IBM Plex Sans Arabic",system-ui,"Segoe UI",Tahoma,sans-serif;
+  --read:"Noto Naskh Arabic","IBM Plex Sans Arabic",serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#121816; --card:#1a2220; --ink:#e7eeeb; --muted:#9aa8a3; --line:#2b3633;
+  --dial:#7fc3a9; --dial-soft:#1f302b; --steel:#6f7d78; --ok:#7fd1a0; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#121816; --card:#1a2220; --ink:#e7eeeb; --muted:#9aa8a3; --line:#2b3633;
+  --dial:#7fc3a9; --dial-soft:#1f302b; --steel:#6f7d78; --ok:#7fd1a0; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--ui);font-size:15px;line-height:1.6;padding-inline:16px;padding-block:0 48px}
+main{max-width:760px;margin-inline:auto;display:grid;gap:18px}
+header{padding-block:28px 6px;display:grid;gap:8px}
+h1{font-family:var(--read);font-weight:600;font-size:1.9rem;line-height:1.3;margin:0;text-wrap:balance}
+.lede{color:var(--muted);margin:0;max-width:62ch}
+.how{display:flex;flex-wrap:wrap;gap:6px 14px;color:var(--muted);font-size:.86rem;margin:0;padding:0;list-style:none}
+.how b{color:var(--ink);font-weight:600}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:2;background:var(--paper);padding-block:10px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--line)}
+.track{flex:1;height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.fill{height:100%;width:0;background:var(--dial);transition:width .25s}
+.count{font-variant-numeric:tabular-nums;font-size:.86rem;color:var(--muted);min-width:7ch;text-align:left}
+.save{font-size:.8rem;color:var(--muted);min-width:9ch}
+.save.ok{color:var(--ok)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px 16px;display:grid;gap:14px}
+.head{display:flex;gap:12px;align-items:baseline}
+.num{font-variant-numeric:tabular-nums;color:var(--steel);font-size:.85rem;min-width:2.2ch}
+.line{font-family:var(--read);font-size:1.22rem;line-height:1.8;margin:0;min-width:0}
+.opt{display:grid;gap:10px;padding:12px;border-radius:8px;border:1px solid var(--line)}
+.opt.best{border-color:var(--dial);background:var(--dial-soft)}
+.top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.lab{font-family:var(--read);font-weight:600;font-size:1.15rem;width:2.2rem;height:2.2rem;display:grid;place-items:center;border-radius:50%;background:var(--dial);color:var(--card)}
+audio{flex:1;min-width:200px;height:36px}
+.pick{font:inherit;font-size:.85rem;border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:999px;padding:4px 12px;cursor:pointer}
+.opt.best .pick{background:var(--dial);color:var(--card);border-color:var(--dial)}
+.scales{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px 14px}
+.scale{display:grid;gap:4px;min-width:0}
+.scale span{font-size:.78rem;color:var(--muted);letter-spacing:.01em}
+.dots{display:flex;gap:4px}
+.dots button{flex:1;font:inherit;font-size:.82rem;font-variant-numeric:tabular-nums;border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:6px;padding:3px 0;cursor:pointer}
+.dots button[aria-pressed="true"]{background:var(--dial);border-color:var(--dial);color:var(--card)}
+button:focus-visible{outline:2px solid var(--dial);outline-offset:2px}
+.note{font-size:.85rem;color:var(--muted);margin:0}
+.notice{border:1px dashed var(--line);border-radius:8px;padding:10px 12px;font-size:.88rem;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){.fill{transition:none}}
+</style>
+<main dir="rtl" lang="ar">
+  <header>
+    <h1>اختبار صوت علي: ثلاث نسخ بدون أسماء</h1>
+    <p class="lede">كل جملة لها ثلاث نسخ (س، ص، ع)، والترتيب يتغير من جملة لجملة. ما تدري أي نسخة هي القديمة وأي وحدة الجديدة. اسمعها كلها، وقيّم كل وحدة من 1 إلى 5، واختار الأحسن.</p>
+    <ul class="how">
+      <li><b>الصوت</b> يشبهني؟</li><li><b>الوضوح</b> الكلام مفهوم؟</li><li><b>النطق</b> الكلمات والأسماء صح؟</li><li><b>كويتي</b> اللهجة والإيقاع طبيعية؟</li>
+    </ul>
+  </header>
+  <div class="bar"><div class="track"><div class="fill" id="fill"></div></div><span class="count" id="count">0 / 10</span><span class="save" id="save"></span></div>
+  <p class="notice" id="notice" hidden>التقييم محفوظ بهالجهاز بس، لأن الحفظ المشترك مو متاح بهالعرض.</p>
+  <div id="list" style="display:grid;gap:18px"></div>
+  <p class="note">التقييم ينحفظ أول بأول. تقدر تطلع وترجع تكمل.</p>
+</main>
+<script>
+const ITEMS = __ITEMS__;
+const SCALES = [["voice","الصوت"],["clarity","الوضوح"],["pron","النطق"],["kw","كويتي"]];
+const state = {};            // id -> {best, scores:{label:{key:n}}}
+let db = null;
+const $ = s => document.querySelector(s);
+
+function load(){ try{ return JSON.parse(localStorage.getItem("tkvoice-blind")||"{}"); }catch(e){ return {}; } }
+function keep(){ try{ localStorage.setItem("tkvoice-blind", JSON.stringify(state)); }catch(e){} }
+
+function render(){
+  const list = $("#list"); list.textContent = "";
+  for (const it of ITEMS){
+    const st = state[it.id] ||= {best:null, scores:{}};
+    const card = document.createElement("section"); card.className = "card";
+    const head = document.createElement("div"); head.className = "head";
+    const num = document.createElement("span"); num.className = "num"; num.textContent = it.n;
+    const p = document.createElement("p"); p.className = "line"; p.textContent = it.text;
+    head.append(num, p); card.append(head);
+    for (const o of it.opts){
+      const box = document.createElement("div"); box.className = "opt" + (st.best===o.label ? " best" : "");
+      const top = document.createElement("div"); top.className = "top";
+      const lab = document.createElement("span"); lab.className = "lab"; lab.textContent = o.label;
+      const au = document.createElement("audio"); au.controls = true; au.preload = "none"; au.src = o.src;
+      au.addEventListener("play", () => document.querySelectorAll("audio").forEach(a => { if (a!==au) a.pause(); }));
+      const pick = document.createElement("button"); pick.className = "pick"; pick.type = "button";
+      pick.textContent = st.best===o.label ? "الأحسن ✓" : "الأحسن";
+      pick.addEventListener("click", () => { st.best = o.label; save(it.id); render(); });
+      top.append(lab, au, pick); box.append(top);
+      const scales = document.createElement("div"); scales.className = "scales";
+      for (const [key, name] of SCALES){
+        const sc = document.createElement("div"); sc.className = "scale";
+        const s = document.createElement("span"); s.textContent = name;
+        const dots = document.createElement("div"); dots.className = "dots";
+        for (let v=1; v<=5; v++){
+          const b = document.createElement("button"); b.type = "button"; b.textContent = v;
+          b.setAttribute("aria-label", `${name} ${v} من 5، النسخة ${o.label}`);
+          b.setAttribute("aria-pressed", String((st.scores[o.label]||{})[key]===v));
+          b.addEventListener("click", () => { (st.scores[o.label] ||= {})[key] = v; save(it.id); render(); });
+          dots.append(b);
+        }
+        sc.append(s, dots); scales.append(sc);
+      }
+      box.append(scales); card.append(box);
+    }
+    list.append(card);
+  }
+  const done = ITEMS.filter(it => state[it.id]?.best).length;
+  $("#count").textContent = `${done} / ${ITEMS.length}`;
+  $("#fill").style.width = (100*done/ITEMS.length) + "%";
+}
+
+const pending = {};
+function save(id){
+  keep();
+  if (!db) return;
+  clearTimeout(pending[id]);
+  $("#save").textContent = "يحفظ…"; $("#save").className = "save";
+  pending[id] = setTimeout(async () => {
+    try{
+      await db.doc("ratings/" + id).set({ best: state[id].best, scores: state[id].scores, at: new Date().toISOString() });
+      $("#save").textContent = "محفوظ"; $("#save").className = "save ok";
+    }catch(e){ $("#save").textContent = "ما انحفظ"; }
+  }, 500);
+}
+
+Object.assign(state, load());
+render();
+(async () => {
+  db = window.claude?.use ? await window.claude.use("db") : null;
+  if (!db){ $("#notice").hidden = false; return; }
+  try{
+    const snap = await db.collection("ratings").get();
+    snap.docs.forEach(d => { const v = d.data(); if (v) state[d.id] = { best: v.best ?? null, scores: v.scores || {} }; });
+    keep(); render();
+  }catch(e){}
+})();
+</script>
