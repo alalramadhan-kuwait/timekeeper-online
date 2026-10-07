@@ -48,6 +48,9 @@ audio{flex:1;min-width:200px;height:36px}
 .dots button[aria-pressed="true"]{background:var(--dial);border-color:var(--dial);color:var(--card)}
 button:focus-visible{outline:2px solid var(--dial);outline-offset:2px}
 .note{font-size:.85rem;color:var(--muted);margin:0}
+.parts{display:flex;flex-wrap:wrap;gap:8px}
+.part{font:inherit;font-size:.85rem;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:5px 14px;cursor:pointer;font-variant-numeric:tabular-nums}
+.part[aria-pressed="true"]{background:var(--dial);border-color:var(--dial);color:var(--card)}
 .sec{font-family:var(--read);font-weight:600;font-size:1.15rem;margin:12px 0 0;color:var(--dial);text-wrap:balance}
 .notice{border:1px dashed var(--line);border-radius:8px;padding:10px 12px;font-size:.88rem;color:var(--muted)}
 @media (prefers-reduced-motion:reduce){.fill{transition:none}}
@@ -57,7 +60,7 @@ button:focus-visible{outline:2px solid var(--dial);outline-offset:2px}
     <h1>اختبار صوت علي</h1>
     <p class="lede">كل جملة لها ثلاث نسخ (س، ص، ع)، والترتيب يتغير من جملة لجملة. ما تدري أي نسخة هي القديمة وأي وحدة الجديدة. اسمعها كلها، وقيّم كل وحدة من 1 إلى 5، واختار الأحسن.</p>
     <ul class="how">
-      <li><b>الصوت</b> يشبهني؟</li><li><b>الوضوح</b> الكلام مفهوم؟</li><li><b>النطق</b> الكلمات والأسماء صح؟</li><li><b>كويتي</b> اللهجة والإيقاع طبيعية؟</li>
+      <li><b>الصوت</b> يشبهني؟</li><li><b>الوضوح</b> الكلام مفهوم؟</li><li><b>النطق</b> الكلمات والأسماء صح؟</li><li><b>كويتي</b> اللهجة طبيعية؟</li><li><b>النغمة والإيقاع</b> الصوت يطلع وينزل، والضغط والوقفات والسرعة مثل كلامي؟</li>
     </ul>
   </header>
   <div class="bar"><div class="track"><div class="fill" id="fill"></div></div><span class="count" id="count">0</span><span class="save" id="save"></span></div>
@@ -67,7 +70,10 @@ button:focus-visible{outline:2px solid var(--dial);outline-offset:2px}
 </main>
 <script>
 const ITEMS = __ITEMS__;
-const SCALES = [["voice","الصوت"],["clarity","الوضوح"],["pron","النطق"],["kw","كويتي"]];
+const SCALES = [["voice","الصوت"],["clarity","الوضوح"],["pron","النطق"],["kw","كويتي"],["prosody","النغمة والإيقاع"]];
+const PART = 7;   // lines per part, so one sitting stays short
+let part = 0;
+try { part = Number(localStorage.getItem("tkvoice-blind-part") || 0) || 0; } catch(e) {}
 const state = {};            // id -> {best, scores:{label:{key:n}}}
 let db = null;
 const $ = s => document.querySelector(s);
@@ -77,8 +83,21 @@ function keep(){ try{ localStorage.setItem("tkvoice-blind", JSON.stringify(state
 
 function render(){
   const list = $("#list"); list.textContent = "";
+  const parts = Math.ceil(ITEMS.length / PART);
+  part = Math.min(part, parts - 1);
+  const nav = document.createElement("div"); nav.className = "parts";
+  for (let i = 0; i < parts; i++){
+    const b = document.createElement("button"); b.type = "button"; b.className = "part";
+    const slice = ITEMS.slice(i * PART, (i + 1) * PART);
+    const done = slice.filter(it => state[it.id]?.best).length;
+    b.textContent = `الجزء ${i + 1} (${done}/${slice.length})`;
+    b.setAttribute("aria-pressed", String(i === part));
+    b.addEventListener("click", () => { part = i; try { localStorage.setItem("tkvoice-blind-part", i); } catch(e) {} render(); window.scrollTo(0, 0); });
+    nav.append(b);
+  }
+  list.append(nav);
   let sec = null;
-  for (const it of ITEMS){
+  for (const it of ITEMS.slice(part * PART, (part + 1) * PART)){
     if (it.sec !== sec){
       sec = it.sec;
       const h = document.createElement("h2"); h.className = "sec";
