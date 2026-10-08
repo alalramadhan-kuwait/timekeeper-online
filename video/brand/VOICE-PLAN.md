@@ -328,9 +328,17 @@
   - **Blocked:** its codec `neuphonic/neucodec` (Apache-2.0) is login-gated. It needs `HF_TOKEN` in the environment settings, from an HF account that accepted its terms. Third-party mirrors are not used.
   - Script: `tk_audar_ref.py` (separate venv `/root/audar`, torch 2.8).
 - **FasihTTS «ar-kw-male-1»:** not found in a web search. The only Fasih TTS found is MSA. Ali to send the link.
-- **Habibi-TTS:** stays excluded (F5-TTS derivative, non-commercial). Its public samples can be listened to, but it is not run.
+- **Licence policy for the research track (Ali, 2026-10-08):** models are not excluded just because they are non-commercial.
+  - The current goal is an experimental model and listening research, not a product.
+  - Licence limits stay documented here.
+  - Weights and data are never redistributed.
+  - Anything that ends up in the production TK voice for Time Keeper films still needs a licence that allows it.
+- **Habibi-TTS** ([card](https://huggingface.co/SWivid/Habibi-TTS)) **is back in, for research comparison only.**
+  - The Unified, SAU and UAE checkpoints are CC-BY-NC-SA-4.0 (restricted by the SADA and Mixat datasets). The other dialects are Apache-2.0.
+  - F5-TTS base. There is no Kuwaiti ID, so it runs as Unified with `--dialect UAE`, the closest Gulf variety.
+  - It lives in its own venv, `/root/habibi`.
 - **Kuwait Dialect Speech Dataset** ([AhmedEladl/kuwait-dialect-speech-dataset](https://huggingface.co/datasets/AhmedEladl/kuwait-dialect-speech-dataset)): 31,633 clips, 3.7 GB, 22 kHz.
-  - The dataset card has **no licence**, so it cannot be used for training.
+  - The dataset card has **no licence**. Inspecting and analysing it is OK for research. No licence does not mean permission to train, so it is not used for training.
   - A sample of 40 rows shows podcast chunks, transcribed in standard spelling (قاعدين, فقعدنا, قلنا, all with ق). It has the same blind spot as our own transcripts, and there are junk rows ("اااا…").
   - `normalized_text` = `text`. So it carries **no Kuwaiti spelling rules** to mine. It could only help as audio, and that is ruled out by the missing licence.
 - **The benchmark** (Ali's plan): 30 held-out sentences from the `final` split, the ones richest in ق/ك/ج (257 letters).
