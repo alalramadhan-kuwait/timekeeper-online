@@ -60,7 +60,7 @@ button:focus-visible{outline:2px solid var(--dial);outline-offset:2px}
 </main>
 <script>
 const ITEMS = __ITEMS__;
-const PART = 5;  // one session = one part
+const PART = 3;  // one session = one part (Ali: 3 sentences per session)
 const SCALES = [];
 const TYPES = [];
 const state = {};   // "<item>-<letter>" -> {pron, madd, pause, types:[], bad:[]}
@@ -70,14 +70,18 @@ function load(){ try{ return JSON.parse(localStorage.getItem("tkvoice-refcmp")||
 function keep(){ try{ localStorage.setItem("tkvoice-refcmp", JSON.stringify(state)); }catch(e){} }
 const key = (it, o) => it.id + "-" + o.label;
 function rated(it){ return !!(state[it.id + "-pick"] || {}).pick; }
-function btn(cls, text, pressed, fn){ const b = document.createElement("button"); b.type = "button"; b.className = cls; b.textContent = text; b.setAttribute("aria-pressed", String(pressed)); b.addEventListener("click", fn); return b; }
-function render(){
+function btn(cls, text, pressed, fn){ const b = document.createElement("button"); b.type = "button"; b.className = cls; b.textContent = text; b.setAttribute("aria-pressed", String(pressed)); b.addEventListener("click", () => fn(b)); return b; }
+function renderBar(){
   const bar = $("#bar"); bar.textContent = "";
   for (let i = 0; i < Math.ceil(ITEMS.length / PART); i++){
     const sl = ITEMS.slice(i*PART, (i+1)*PART);
     bar.append(btn("part", `الجزء ${i+1} (${sl.filter(rated).length}/${sl.length})`, i === part, () => { part = i; render(); window.scrollTo(0, 0); }));
   }
   const sv = document.createElement("span"); sv.className = "save"; sv.id = "save"; bar.append(sv);
+}
+// Taps update buttons in place (no re-render), so the audio that is playing keeps playing.
+function render(){
+  renderBar();
   const list = $("#list"); list.textContent = "";
   for (const it of ITEMS.slice(part*PART, (part+1)*PART)){
     const card = document.createElement("section"); card.className = "card";
@@ -94,24 +98,27 @@ function render(){
       for (const [sk, sl] of SCALES){
         const row = document.createElement("div"); row.className = "scale";
         const lab = document.createElement("span"); lab.textContent = sl; row.append(lab);
-        for (let n = 1; n <= 5; n++) row.append(btn("dot", n, st[sk] === n, () => { st[sk] = n; save(it, o); render(); }));
+        for (let n = 1; n <= 5; n++) row.append(btn("dot", n, st[sk] === n, b => { st[sk] = n; save(it, o); row.querySelectorAll(".dot").forEach(x => x.setAttribute("aria-pressed", String(x === b))); }));
         v.append(row);
       }
       const ty = document.createElement("div"); ty.className = "types";
-      for (const [tk, tl] of TYPES) ty.append(btn("chip", tl, st.types.includes(tk), () => {
-        st.types = st.types.includes(tk) ? st.types.filter(x => x !== tk) : [...st.types, tk]; save(it, o); render(); }));
+      for (const [tk, tl] of TYPES) ty.append(btn("chip", tl, st.types.includes(tk), b => {
+        st.types = st.types.includes(tk) ? st.types.filter(x => x !== tk) : [...st.types, tk]; save(it, o);
+        b.setAttribute("aria-pressed", String(st.types.includes(tk))); }));
       v.append(ty);
       const h = document.createElement("div"); h.className = "hint"; h.textContent = "الكلمات اللي انقالت غلط:"; v.append(h);
       const ws = document.createElement("div"); ws.className = "words";
-      it.text.split(/\s+/).forEach((w, i) => ws.append(btn("w", w, st.bad.includes(i), () => {
-        st.bad = st.bad.includes(i) ? st.bad.filter(x => x !== i) : [...st.bad, i].sort((a, b) => a - b); save(it, o); render(); })));
+      it.text.split(/\s+/).forEach((w, i) => ws.append(btn("w", w, st.bad.includes(i), b => {
+        st.bad = st.bad.includes(i) ? st.bad.filter(x => x !== i) : [...st.bad, i].sort((a, b) => a - b); save(it, o);
+        b.setAttribute("aria-pressed", String(st.bad.includes(i))); })));
       v.append(ws); card.append(v);
     }
     const pk = state[it.id + "-pick"] ||= {};
     const q = document.createElement("div"); q.className = "scale";
     const ql = document.createElement("span"); ql.textContent = "أي وحدة أقرب لنطقك؟"; q.append(ql);
     for (const [v, l] of [...it.opts.map(o => [o.label, o.label]), ["same", "نفس الشي"]])
-      q.append(btn("chip", l, pk.pick === v, () => { pk.pick = v; savePick(it); render(); }));
+      q.append(btn("chip", l, pk.pick === v, b => { pk.pick = v; savePick(it);
+        q.querySelectorAll(".chip").forEach(x => x.setAttribute("aria-pressed", String(x === b))); renderBar(); }));
     card.append(q);
     list.append(card);
   }
@@ -157,6 +164,6 @@ Object.assign(state, load()); render();
       if (d.id === "note") state.note = { text: v.text || "" };
       else if (d.id.endsWith("-pick")) state[d.id] = { pick: v.pick };
       else state[d.id] = { types: v.types || [], bad: v.bad || [] }; });
-    keep(); render(); }catch(e){}
+    keep(); if (![...document.querySelectorAll("audio")].some(a => !a.paused)) render(); }catch(e){}
 })();
 </script>

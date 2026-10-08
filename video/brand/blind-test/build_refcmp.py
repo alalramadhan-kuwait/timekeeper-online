@@ -2,7 +2,7 @@
 present in voice-src/refcmp/<model>/ for that sentence, under letters fixed for the session (one hidden random mapping per session: Ali compares
 'voice أ' and 'voice ب' across a session, so letters must not move between sentences). The key
 (sentence -> letter -> model) stays in voice-src/refcmp/blind-key.json. Output: voice-src/refcmp/page/
-Usage: python3 build_refcmp.py <part 1-6> v4 habibi [audar ...]   (Ali's sessions: 5 sentences each)
+Usage: python3 build_refcmp.py <part 1-6> v4 habibi [audar ...]   (Ali's sessions: 3 sentences each)
 """
 import json
 import random
@@ -13,6 +13,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 R = ROOT / "voice-src/refcmp"
 PART = int(sys.argv[1])
+SIZE = 3                                          # Ali: 3 sentences per session
 OUT = R / f"page{PART}"
 (OUT / "audio").mkdir(parents=True, exist_ok=True)
 models = sys.argv[2:]
@@ -31,7 +32,7 @@ def mp3(src, name):
 order = list(models)
 random.SystemRandom().shuffle(order)             # one hidden mapping for the whole session: أ is the same model throughout
 for n, ln in enumerate(lines, 1):
-    if not (PART - 1) * 5 < n <= PART * 5:
+    if not (PART - 1) * SIZE < n <= PART * SIZE:
         continue
     have = [m for m in order if (R / m / f"{ln['id']}.wav").exists()]
     opts = []
