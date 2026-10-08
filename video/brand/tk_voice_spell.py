@@ -37,9 +37,15 @@ TESTS3 = [  # round 3 (2026-10-08): Ali's marks on the V5-draft 75% probe; separ
     ("گبلهم…", S3, ["گبلهم…", "گبلهم.", "گبلهُم…"]),                                               # extra مّ at the end: pause, or vowel?
 ]
 
+S4 = "يقولون الطريگ طويل بس أنا أقدر أوصل گبلهم…"   # round 3: طويل without the comma was right
+TESTS4 = [  # round 4: Ali's own spellings, each against the previous form as reference
+    ("أدور", "گاعد أدور على ساعة قديمة، بس الوگت ما يكفي…", ["أدور", "ادُوّر", "ادُور"]),
+    ("گبلهم…", S4, ["گبلهم…", "گَبْلَهُم.", "گَبْلَهُم", "گبلهم"]),          # tashkeel vs dropping the end pause
+]
+
 ckpt = sys.argv[1]
 ROUND = int(sys.argv[2]) if len(sys.argv) > 2 else 1
-TESTS = {1: TESTS1, 2: TESTS2, 3: TESTS3}[ROUND]
+TESTS = {1: TESTS1, 2: TESTS2, 3: TESTS3, 4: TESTS4}[ROUND]
 out = SRC / ("spell" if ROUND == 1 else f"spell{ROUND}")
 out.mkdir(parents=True, exist_ok=True)
 tts = load_tts("cpu", ckpt)

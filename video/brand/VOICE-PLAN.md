@@ -311,6 +311,13 @@
   - أدور / أَدُور / أدُور
   - طويل، / طَوِيل، / طويل with no comma: vowels or pause?
   - گبلهم… / گبلهم. / گبلهُم…: pause type or vowel?
+- **Spelling round 3, Ali's picks:**
+  - **طويل:** the version without the comma was right. The doubled ل came from the comma pause, not the spelling. Phrase-final lengthening is confirmed as one cause of invented doubling.
+  - **أدور:** none of the three.
+  - **گبلهم:** none of the three.
+- **Spelling round 4** (Ali's own spellings, each against the previous form; nothing goes into the dictionary until Ali approves the sound): https://claude.ai/artifact/N5zfBPYq2oz5pR1sAwE8rC
+  - **أدور:** أدور (previous) / ادُوّر (Ali's) / ادُور (no shadda, to check the "rotate" risk).
+  - **گبلهم** (sentence now has طويل without the comma): گبلهم… (previous) / گَبْلَهُم. / گَبْلَهُم with no end mark / گبلهم with no end mark. This separates the effect of the tashkeel from dropping the end pause.
 - **V5-draft training stopped at step 1713** (the process ended, probably a container restart). Best val: 4.584 at step 1650. It is not a candidate model, so it is not resumed.
 - **Online check (2026-10-07):** found no Kuwaiti speech or TTS dataset with a commercial licence.
   - Open Arabic sets are MSA: ArVoice (CC-BY-4.0), Arabic Speech Corpus, ClArTTS.
