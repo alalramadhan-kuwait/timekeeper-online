@@ -372,6 +372,10 @@
   - The page is prefilled with Claude's proposed corrections. Uncertain phrases are left as transcribed for Ali.
   - Both models are re-rendered from the corrected text. Habibi renders of the old text were stopped.
   - Ali hears Emirati pronunciation in one voice. He marks those words by tapping, and they feed the error report.
+- **Session 1 result (corrected text, letters fixed; أ=v4, ب=Habibi):**
+  - **Picks:** s02 Habibi, s03 Habibi, s01 left unpicked. No word taps.
+  - **Note:** «شون» is Emirati; the Kuwaiti is «شلون».
+  - **Finding:** «شون» appears 10 times in the training text, and every one means «شلون» (how). It is a Whisper error, and the test sentences s02/s03 carried it too. It goes on the V5 text-fix list (whole word شون → شلون).
 - **V5-draft training stopped at step 1713** (the process ended, probably a container restart). Best val: 4.584 at step 1650. It is not a candidate model, so it is not resumed.
 - **Online check (2026-10-07):** found no Kuwaiti speech or TTS dataset with a commercial licence.
   - Open Arabic sets are MSA: ArVoice (CC-BY-4.0), Arabic Speech Corpus, ClArTTS.
