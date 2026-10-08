@@ -108,6 +108,7 @@ Data
 - Answer only from the results of the tools. Call a tool for every question about stock, sales, brands, products or buying. Never answer figures from memory or from earlier turns without calling again when the question changes.
 - Quote numbers exactly as the tools give them. You may round KD to whole dinars and fractions to whole percent (0.589 = 59%). Never add, subtract, average or otherwise compute a figure the tools did not return.
 - For a named product, call find_products first. If it matches more than one product and the question does not settle which, list the matches with their stock and ask which one.
+- Lightspeed names brands and products in English. When the owner writes a name in Arabic letters (نيفادا, دنيسون, هوفمان), use its English spelling in tool calls (Nivada, Dennison, Hoffman). If a brand finds nothing, look it up with find_products in English before saying it is not there.
 - Outlets: avenues (Time Keeper - Avenues), time_gallery (Time Gallery), hq (the HQ stock, which online and WhatsApp orders ship from).
 - Stock is as of the morning sync; sales are through yesterday. The app shows these dates above your answer, so do not repeat them at length.
 
@@ -123,7 +124,8 @@ Form
 - Separate what the data says from your reading of it. In English use the headings "Facts" and "Reading"; in Arabic "الأرقام" and "قراءتي". Leave out "Reading" when there is nothing to interpret.
 - Reply in the language of the question. Arabic questions get simple Kuwaiti Arabic. Keep product names and SKUs as Lightspeed writes them.
 - Phones first: short lines, short bullet lists, tables of at most four columns and ten rows.
-- Follow-up questions continue the conversation: keep the brand, product, outlet and period from before unless the owner changes them.`;
+- Follow-up questions continue the conversation: keep the brand, product, outlet and period from before unless the owner changes them.
+- Never mention tools, functions, queries or system errors by name. If figures could not be fetched, say plainly that they are not available right now.`;
 
 type Json = Record<string, unknown>;
 
@@ -201,7 +203,9 @@ Deno.serve(async (req: Request) => {
 
   const contextNote = Object.keys(context).length
     ? `\n\n[Earlier in this conversation the owner was looking at: ${JSON.stringify(context)}]` : "";
-  const firstTurn: Anthropic.MessageParam = { role: "user", content: question + contextNote };
+  // the reply's language follows the question, decided here rather than left to the model
+  const langNote = /[\u0600-\u06FF]/.test(question) ? "\n\n[Reply in Kuwaiti Arabic.]" : "\n\n[Reply in English.]";
+  const firstTurn: Anthropic.MessageParam = { role: "user", content: question + contextNote + langNote };
 
   const client = new Anthropic({ apiKey: Deno.env.get("ANTHROPIC_API_KEY")! });
   const started = Date.now();
@@ -219,7 +223,7 @@ Deno.serve(async (req: Request) => {
     // one retry on the stronger model, told what failed
     const why = run.error ? "" : `\n\n[Your previous answer used figures that are not in the tool results: ${checks!.ungrounded.join(", ")}. Use only figures the tools return.]`;
     const retry = await converse(client, admin, RETRY, purpose === "test" ? "test" : "retry", userId,
-      [...history, { role: "user", content: question + contextNote + why }]);
+      [...history, { role: "user", content: question + contextNote + langNote + why }]);
     ledgerIds.push(...retry.ledger);
     const retryChecks = retry.error ? null : groundingCheck(retry.reply, retry.results, question, history);
     attempts.push({ model: RETRY, checks: retryChecks, error: retry.error, cost_usd: retry.cost });
@@ -314,7 +318,9 @@ async function converse(client: Anthropic, admin: SupabaseClient, model: string,
       if (!fn) { out.push({ type: "tool_result", tool_use_id: use.id, content: "Unknown tool", is_error: true }); continue; }
       const args: Json = {};
       for (const [k, v] of Object.entries(input)) if (v !== null && v !== undefined && v !== "") args[`p_${k}`] = v;
-      const { data, error } = await admin.rpc(fn, args);
+      let { data, error } = await admin.rpc(fn, args);
+      // a busy moment can push a calculation past the 8 s limit; try once more
+      if (error && /statement timeout/i.test(error.message)) ({ data, error } = await admin.rpc(fn, args));
       calls.push({ name: use.name, input, ms: Date.now() - t0, ...(error ? { error: error.message } : {}) });
       if (error) { out.push({ type: "tool_result", tool_use_id: use.id, content: `Error: ${error.message}`, is_error: true }); continue; }
       results.push({ tool: use.name, input, result: data });
@@ -353,7 +359,8 @@ function knownNumbers(results: Json[], extra: string[]): { nums: number[]; dates
     if (typeof v === "number") nums.push(v);
     else if (typeof v === "string") fromText(v);
     else if (Array.isArray(v)) v.forEach(walk);
-    else if (v && typeof v === "object") Object.values(v).forEach(walk);
+    // field names carry periods too ("sold_90d"), which answers may quote
+    else if (v && typeof v === "object") for (const [k, x] of Object.entries(v)) { fromText(k.replace(/_/g, " ")); walk(x); }
   };
   results.forEach(walk);
   extra.forEach((s) => fromText(toLatin(s)));
@@ -379,8 +386,10 @@ function groundingCheck(reply: string, results: Json[], question: string, histor
     if (Number.isInteger(n) && Math.abs(n) <= 12) continue;              // list numbering, months, small counts
     if (n >= 2020 && n <= 2030 && Number.isInteger(n)) continue;          // a year
     const pct = !!m[2];
-    const ok = nums.some((k) => Math.abs(k - n) <= Math.max(0.5, Math.abs(k) * 0.005)
-      || (pct && Math.abs(k * 100 - n) <= 0.6));
+    // signs are compared loosely: "RQ - 23" in a product name reads as -23 in some spellings
+    const a = Math.abs(n);
+    const ok = nums.some((k) => { const b = Math.abs(k); return Math.abs(b - a) <= Math.max(0.5, b * 0.005)
+      || (pct && Math.abs(b * 100 - a) <= 0.6); });
     if (!ok) ungrounded.push(m[0].trim());
   }
   return { ok: ungrounded.length === 0, ungrounded: [...new Set(ungrounded)], numbers_checked: checked, fallback: false };
@@ -416,24 +425,33 @@ function buildStrip(results: Json[]) {
 
 /** When no reading passes the checks: the key figures, straight from the calculations. */
 function plainData(results: Json[], question: string): string {
-  const ar = /[؀-ۿ]/.test(question);
+  const ar = /[\u0600-\u06FF]/.test(question);
   const head = ar ? "ما قدرت أعطيك قراءة موثوقة لهذا السؤال. هذي الأرقام كما هي من الحسابات:" :
     "I could not give a reading I can stand behind. Here are the figures as the calculations returned them:";
+  const words = (k: string) => k.replace(/_/g, " ");
+  const figures = (o: Json) => Object.entries(o).filter(([k, v]) => typeof v === "number" && k !== "score").slice(0, 5)
+    .map(([k, v]) => `${words(k)} ${(v as number).toLocaleString("en-US")}`).join(", ");
+  const labelOf = (o: Json) => String(o.name ?? o.brand ?? o.signal ?? o.class ?? o.product_type ?? o.outlet ?? o.ownership ?? "");
   const lines: string[] = [head];
   for (const r of results.slice(0, 3)) {
-    const res = r.result as Json;
-    lines.push(`\n**${r.tool}**`);
-    for (const [k, v] of Object.entries(res ?? {})) {
-      if (k === "header" || k === "rules" || k === "notes" || v === null) continue;
+    lines.push("");
+    for (const [k, v] of Object.entries((r.result as Json) ?? {})) {
+      if (["header", "rules", "notes", "confidence", "class_confidence"].includes(k) || v === null) continue;
+      if (typeof v === "number") { lines.push(`- ${words(k)}: ${v.toLocaleString("en-US")}`); continue; }
       if (Array.isArray(v)) {
-        for (const item of v.slice(0, 5)) {
+        lines.push(`**${words(k)}**`);
+        for (const item of v.slice(0, 8)) {
           const o = item as Json;
-          const label = o.name ?? o.brand ?? o.signal ?? "";
-          const figs = Object.entries(o).filter(([kk, vv]) => typeof vv === "number" && kk !== "score").slice(0, 4)
-            .map(([kk, vv]) => `${kk.replace(/_/g, " ")} ${vv}`).join(", ");
-          lines.push(`- ${label}${figs ? `: ${figs}` : ""}${o.status ? ` (${o.status})` : ""}`);
+          const f = figures(o);
+          lines.push(`- ${[labelOf(o), o.ownership && labelOf(o) !== o.ownership ? `(${o.ownership})` : ""].join(" ").trim()}${f ? `: ${f}` : ""}${o.status ? ` (${o.status})` : ""}`);
         }
-      } else if (typeof v === "number") lines.push(`- ${k.replace(/_/g, " ")}: ${v}`);
+      } else if (typeof v === "object") {
+        lines.push(`**${words(k)}**`);
+        for (const [kk, vv] of Object.entries(v as Json).slice(0, 8)) {
+          if (vv && typeof vv === "object" && !Array.isArray(vv)) { const f = figures(vv as Json); if (f) lines.push(`- ${words(kk)}: ${f}`); }
+          else if (typeof vv === "number") lines.push(`- ${words(kk)}: ${vv.toLocaleString("en-US")}`);
+        }
+      }
     }
   }
   return lines.join("\n");
