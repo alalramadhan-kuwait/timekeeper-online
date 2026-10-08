@@ -432,6 +432,10 @@
 - **Ali (2026-10-08): stop comparing against the old models.** v4 and Habibi aren't good enough to be a useful baseline.
   - V5 is judged on its own (`tk_v5_ab.py --solo`): each sentence rated زين / مقبول / مو زين, with wrong words tapped and one free note.
   - v4's 30 renders already exist (`voice-src/v5ab/v4`). They are kept for my own analysis only, not shown.
+- **V5 vs v4, blind, in parts of 3 sealed lines** (`tk_v5_part.py`; one hidden mapping per part):
+  - **Part 1:** kp01 V5, kp02 v4, kp03 V5, so V5 wins 2/3.
+  - **Ali's note:** Arabic needs diacritics (تشكيل) to fix a word's pronunciation; without them the model guesses (e.g. أدور).
+  - **Candidate next step:** an automatic diacritiser on the input. MSA diacritisers won't know Kuwaiti forms, so it would be tested by ear like the dictionary. Our tashkeel trials were mixed: طَوِيل didn't help; the pause did.
 - **Test 1 (reference clip):** Ali picked the current `ref.wav` (Tudor episode) out of 4 real clips. The prompt clip is not the problem; it is kept.
 - **Test 2 (LoRA strength, v4, blind, 2 sentences):**
   - pr1: full LoRA (1.0). pr3: 0.5. Strengths 0 and 0.75 were never picked.
