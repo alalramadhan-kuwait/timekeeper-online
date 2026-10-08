@@ -327,7 +327,9 @@
   - It runs on CPU via llama.cpp (GGUF) and clones a voice from 5–15 s.
   - **Blocked:** its codec `neuphonic/neucodec` (Apache-2.0) is login-gated. It needs `HF_TOKEN` in the environment settings, from an HF account that accepted its terms. Third-party mirrors are not used.
   - Script: `tk_audar_ref.py` (separate venv `/root/audar`, torch 2.8).
-- **FasihTTS «ar-kw-male-1»:** not found in a web search. The only Fasih TTS found is MSA. Ali to send the link.
+- **FasihTTS** (https://www.fasihtts.com/en/dialects/kuwaiti-arabic-tts):
+  - The page loads, but it is a JavaScript app with a REST API that needs an account and key. Pricing isn't readable.
+  - **Set aside for now** (Ali: don't stall the project on it). It needs an API key in the environment settings and the cost shown first.
 - **Licence policy for the research track (Ali, 2026-10-08):** models are not excluded just because they are non-commercial.
   - The current goal is an experimental model and listening research, not a product.
   - Licence limits stay documented here.
@@ -344,6 +346,18 @@
 - **The benchmark** (Ali's plan): 30 held-out sentences from the `final` split, the ones richest in ق/ك/ج (257 letters).
   - Ali's real recording of each is the reference, compared against the current v4 model and Audar. Script: `tk_refcmp.py`.
   - These are listening comparisons only. Nothing trains on them or picks a checkpoint from them.
+- **30-sentence blind comparison**
+  - Built with `blind-test/build_refcmp.py`, with `refcmp-template.html` as the page template.
+  - **The page:**
+    - Ali's real recording is a labelled reference.
+    - The models are anonymous letters, shuffled per sentence. The key is in `voice-src/refcmp/blind-key.json`.
+    - Per version: 1–5 for Kuwaiti pronunciation, lengthening/doubling, and pauses.
+    - Error types: wrong letter, extra lengthening, extra doubling, misplaced pause, wrong vowel, missing/extra word.
+    - Tappable wrong words.
+  - Parts of 5 sentences.
+  - Habibi uses UAE as a Gulf reference only; it is not assumed closest to Kuwaiti.
+  - **Output:** a report of the recurring errors and their likely causes, not just a ranking.
+  - The first round is v4 vs Habibi. Audar and Fasih join later, if they become available.
 - **V5-draft training stopped at step 1713** (the process ended, probably a container restart). Best val: 4.584 at step 1650. It is not a candidate model, so it is not resumed.
 - **Online check (2026-10-07):** found no Kuwaiti speech or TTS dataset with a commercial licence.
   - Open Arabic sets are MSA: ArVoice (CC-BY-4.0), Arabic Speech Corpus, ClArTTS.
