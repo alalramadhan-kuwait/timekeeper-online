@@ -57,25 +57,6 @@ export default function AskPage() {
   const [error, setError] = useState<string | null>(null);
   const endRef = useRef<HTMLDivElement>(null);
 
-  async function loadLatest() {
-    const { data: conv } = await supabase.from('ai_conversations').select('id')
-      .order('updated_at', { ascending: false }).limit(1).maybeSingle();
-    if (!conv) return;
-    const { data: rows } = await supabase.from('ai_messages').select('id, role, content, checks, model, created_at')
-      .eq('conversation_id', conv.id).order('created_at');
-    const ids = (rows ?? []).filter((r) => r.role === 'assistant').map((r) => r.id);
-    const { data: fb } = ids.length
-      ? await supabase.from('ai_feedback').select('message_id, verdict').in('message_id', ids)
-      : { data: [] as { message_id: string; verdict: 'right' | 'wrong' }[] };
-    const verdicts = new Map((fb ?? []).map((f) => [f.message_id, f.verdict]));
-    setConversationId(conv.id);
-    setMessages((rows ?? []).map((r) => ({
-      id: r.id, role: r.role, content: r.content, model: r.model,
-      strip: (r.checks as { strip?: Strip } | null)?.strip ?? null,
-      verdict: verdicts.get(r.id) ?? null,
-    })));
-  }
-
   useEffect(() => {
     if (!user) return;
     (async () => {
@@ -84,7 +65,7 @@ export default function AskPage() {
       if (!ok) return;
       const { data: st } = await supabase.functions.invoke('stock-assistant', { body: { action: 'status' } });
       if (st?.ok) setStatus(st);
-      await loadLatest();
+      // every visit starts a fresh conversation; follow-ups carry context within it
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);

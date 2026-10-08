@@ -1,5 +1,13 @@
 [
   {
+    "version": "3.4.1",
+    "date": "2026-10-08",
+    "title": "Ask starts fresh",
+    "changes": [
+      "Opening Ask now starts a new, empty conversation instead of showing the last one."
+    ]
+  },
+  {
     "version": "3.4.0",
     "date": "2026-10-08",
     "title": "Ask: questions about stock and sales",
