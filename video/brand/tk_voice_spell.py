@@ -30,9 +30,16 @@ TESTS2 = [  # round 2: the three words no round-1 spelling fixed
     ("قرر", "كانت بداية أزمة الكوارتز، وغولاي قرر يخاطر.", ["قرّر", "گرّر", "گَرَّر"]),
 ]
 
+S3 = "يقولون الطريگ طويل، بس أنا أقدر أوصل گبلهم…"
+TESTS3 = [  # round 3 (2026-10-08): Ali's marks on the V5-draft 75% probe; separates spelling, vowels and pauses
+    ("أدور", "گاعد أدور على ساعة قديمة، بس الوگت ما يكفي…", ["أدور", "أَدُور", "أدُور"]),            # adoor (look for), not adawwir
+    ("طويل،", S3, ["طويل،", "طَوِيل،", "طويل"]),                                                  # extra لّ: vowels, or the comma pause?
+    ("گبلهم…", S3, ["گبلهم…", "گبلهم.", "گبلهُم…"]),                                               # extra مّ at the end: pause, or vowel?
+]
+
 ckpt = sys.argv[1]
 ROUND = int(sys.argv[2]) if len(sys.argv) > 2 else 1
-TESTS = TESTS1 if ROUND == 1 else TESTS2
+TESTS = {1: TESTS1, 2: TESTS2, 3: TESTS3}[ROUND]
 out = SRC / ("spell" if ROUND == 1 else f"spell{ROUND}")
 out.mkdir(parents=True, exist_ok=True)
 tts = load_tts("cpu", ckpt)

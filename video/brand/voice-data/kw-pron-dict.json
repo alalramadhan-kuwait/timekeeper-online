@@ -165,11 +165,11 @@
    "ear": null
   },
   "طريق": {
-   "to": "طريق",
+   "to": "طريگ",
    "status": "VERIFIED",
    "count": 7,
    "recognizer_g": "0/7",
-   "ear": "round 4 c15: q (1 clip)"
+   "ear": "round 4 c15: q in that clip; 2026-10-08 Ali on the 75% probe: الطريق must be الطريگ (explicit). Latest explicit instruction wins; the round-4 clip may have been a formal moment -> watch for context"
   },
   "علاقة": {
    "to": "علاگة",
@@ -3341,7 +3341,32 @@
    "count": 4,
    "recognizer_ch": "2/4",
    "ear": "ch in 1 clip (round 2 b19, clear options)"
+  },
+  "قبلهم": {
+   "count": 0,
+   "to": "گبلهم",
+   "status": "VERIFIED",
+   "ear": "2026-10-08 Ali on the 75% probe: گبلهم (explicit)"
   }
  },
- "context": {}
+ "context": {
+  "أدور": {
+   "status": "UNVERIFIED",
+   "variants": {
+    "search": {
+     "to": "أَدُور",
+     "meaning": "أبحث (أدور على ساعة)",
+     "cue": "followed by على"
+    },
+    "rotate": {
+     "to": "أدَوِّر",
+     "meaning": "ألفّ الشي"
+    }
+   },
+   "evidence": "2026-10-08 75% probe: model said أدوّر in «أدور على ساعة»; Ali: should be أَدُور. Spelling test round 3 picks the respelling"
+  }
+ },
+ "_issues_not_spelling": {
+  "gemination": "2026-10-08: model adds a doubled consonant Ali never says: طويل، -> طويلّ (before a comma), گبلهم… -> گبلهمّ (sentence end). Both sit before a pause, so likely phrase-final lengthening, not spelling. Spelling round 3 separates vowels vs pause. Rule: never add shadda that Ali does not say."
+ }
 }

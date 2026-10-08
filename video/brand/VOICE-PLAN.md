@@ -298,6 +298,20 @@
   - 50% (20:59) and 75% (21:46) were rendered after the dictionary landed. Only VERIFIED words were گ: گاعد, الوگت, گبل; the rest stayed ق.
   - So 25% against 50/75% mixes a text change with more training. The probe now writes the exact text it used to `<tag>.json`.
   - Ali is marking the wrong words in the 75% probe sentence by sentence: https://claude.ai/artifact/G1TGb6n1pHNCEizPbfAig8
+- **Ali's marks on the 75% probe (2026-10-08).** Sentence 2 was clean. Four errors in three different kinds:
+  1. **ق:**
+     - **الطريق → الطريگ.** He gave this explicitly, but round 4 heard q in a طريق clip. The latest explicit instruction wins: VERIFIED گ, flagged for context.
+     - **قبلهم → گبلهم:** VERIFIED.
+  2. **Invented doubling:** طويل، became طويلّ, and گبلهم… became گبلهمّ.
+     - Both come right before a pause, so this is probably phrase-final lengthening rather than spelling.
+     - Rule: never add a shadda Ali doesn't say. Logged as `_issues_not_spelling`.
+  3. **Meaning-dependent vowels:** «أدور على ساعة» came out أدوّر (turn it round) instead of أَدُور (look for).
+     - It goes in the `context` layer. It is not a fixed replacement.
+- **Spelling test round 3:** https://claude.ai/artifact/7j9XgHQVvjZWexWEMFxLuE. `tk_voice_spell.py ... 3`, using the same V5-draft step 1650 checkpoint the marks came from.
+  - أدور / أَدُور / أدُور
+  - طويل، / طَوِيل، / طويل with no comma: vowels or pause?
+  - گبلهم… / گبلهم. / گبلهُم…: pause type or vowel?
+- **V5-draft training stopped at step 1713** (the process ended, probably a container restart). Best val: 4.584 at step 1650. It is not a candidate model, so it is not resumed.
 - **Online check (2026-10-07):** found no Kuwaiti speech or TTS dataset with a commercial licence.
   - Open Arabic sets are MSA: ArVoice (CC-BY-4.0), Arabic Speech Corpus, ClArTTS.
   - The Gulf work is Emirati: the Ramsa corpus. The dialect-TTS papers fine-tune XTTS, which is NC and excluded here.
