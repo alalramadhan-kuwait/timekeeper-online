@@ -386,7 +386,24 @@
   - **Scope:** 166 clips changed (139 in train), 340 words.
   - **Unchanged:** same audio, features and split. fixes.json is not re-applied.
   - **Training:** same settings as v4 (2250 steps, lr 5e-5, eval every 150, patience 3). The checkpoint is chosen on val only.
-  - **Then one short test:** 3 sentences, v4 against V5.
+  - **Training scale (corrected wording):** batch 1, 616 train clips, so 2250 steps ≈ **3.65 epochs**, not 2250 passes. Split: 616 train / 41 val / 42 final, by recording session. Val is checked every 150 steps.
+  - **What the 166 corrected clips rest on** (139 train / 9 val / 18 final):
+    - **170 replacements of dictionary words** (قاعد 53, قبل 46, الوقت 20, قدموا 12, طريق 7, علاقة 6, …).
+      - Each word was ear-verified on **one clip** and then applied to every instance. That is a per-word generalisation, not a per-instance check.
+      - طريق also has conflicting evidence: round 4 heard ق in one clip; Ali later said explicitly «الطريگ».
+      - The recognizer heard g in most instances of the big words (قاعد 45/51, قبل 36/44), which supports it, but it is not proof.
+    - **22 غ→ق Whisper fixes:** spelling corrections only, with no claim about g.
+    - **8 شون→شلون:** Ali's flag plus context.
+    - **134 word changes in the 9 by-ear sentences:** these are in the `final` split, so they don't affect training.
+    - **No universal ق→گ.** The rule stays UNVERIFIED. Unverified words and the words Ali says with ق are untouched.
+  - **Per-instance check of the largest words (round 6):** 15 more train clips (قاعد 3, قبل 3, الوقت 3, قدموا 2, طريق 2, علاقة 2). https://claude.ai/artifact/Sh9KkNsCZ1NjgmRLm76ffL
+    - If any come back as ق, those words become context entries, and V5 is rebuilt and retrained.
+  - **Blind test, widened (reviewer):** all 30 sealed lines, as one page in parts of 3. `tk_v5_ab.py`.
+    - Production setup: v4 reads the plain line; V5 reads `kw_convention(plain)`, which changes only قبل in kp01, kp06 and kp27.
+    - For those 3 lines, V5 is also rendered on the plain text, for a controlled check.
+    - Identical settings: ref.wav, seed 0, exaggeration 0.4, cfg 0.5, the «…» end.
+    - The report covers wins **and regressions**, by pattern.
+  - **Validation reported separately:** `tk_val_cross.py` gives both models on both texts (val and final), because V5's own val loss is on different text and isn't comparable to v4's.
 - **V5-draft training stopped at step 1713** (the process ended, probably a container restart). Best val: 4.584 at step 1650. It is not a candidate model, so it is not resumed.
 - **Online check (2026-10-07):** found no Kuwaiti speech or TTS dataset with a commercial licence.
   - Open Arabic sets are MSA: ArVoice (CC-BY-4.0), Arabic Speech Corpus, ClArTTS.

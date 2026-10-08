@@ -1,4 +1,4 @@
-"""The short v4-vs-V5 test Ali asked for (2026-10-08): 3 sealed sentences (kw-pron-test.json, unedited), production
+"""The v4-vs-V5 blind test (2026-10-08, widened to all 30 sealed sentences in parts of 3 at the reviewer's request) (kw-pron-test.json, unedited), production
 setup (Test B): v4 reads the plain line, V5 reads kw_convention(plain) from the dictionary. Same prompt, seed 0,
 exaggeration 0.4, cfg 0.5, end pause «…». Blind page with one hidden mapping (أ/ب fixed for the 3 lines).
 Usage: tk_v5_ab.py <v5 ckpt>   -> voice-src/v5ab/{v4,v5}/<id>.wav, page/, key.json
@@ -16,7 +16,7 @@ import torchaudio
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from tk_voice_train import SRC, kw_convention, load_tts  # noqa: E402
 
-IDS = ["kp01", "kp02", "kp22"]
+IDS = [l["id"] for l in json.loads((Path(__file__).parent / "voice-data/kw-pron-test.json").read_text())["lines"]]  # all 30
 D = SRC / "v5ab"
 sealed = {l["id"]: l for l in json.loads((Path(__file__).parent / "voice-data/kw-pron-test.json").read_text())["lines"]}
 end = lambda t: t if re.search(r"[؟?]\s*$", t) else re.sub(r"[.…]*\s*$", "", t.rstrip()) + "…"
@@ -29,10 +29,17 @@ for model, ckpt, conv in (("v4", str(SRC / "ckpt/v4/step02250.pt"), False), ("v5
     for k in IDS:
         t = end(kw_convention(sealed[k]["plain"]) if conv else sealed[k]["plain"])
         texts[f"{model}/{k}"] = t
+        if (D / model / f"{k}.wav").exists():
+            continue
         torch.manual_seed(0)
         w = tts.generate(t, language_id="ar", exaggeration=0.4, cfg_weight=0.5)
         torchaudio.save(str(D / model / f"{k}.wav"), w, tts.sr)
         print(model, k, t, flush=True)
+        if conv and t != end(sealed[k]["plain"]):     # controlled extra: V5 on the plain line too (analysis only)
+            torch.manual_seed(0)
+            w = tts.generate(end(sealed[k]["plain"]), language_id="ar", exaggeration=0.4, cfg_weight=0.5)
+            (D / "v5-plain").mkdir(exist_ok=True)
+            torchaudio.save(str(D / "v5-plain" / f"{k}.wav"), w, tts.sr)
     del tts
 order = ["v4", "v5"]
 random.SystemRandom().shuffle(order)

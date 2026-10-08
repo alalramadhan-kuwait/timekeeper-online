@@ -38,11 +38,15 @@ ROUND5 = ["حق", "قلنا", "تقريبا", "نقول", "نقدر", "فوق", 
           "يقول", "يقدر", "قال", "تقدرون", "أقول", "أقل", "قاموا", "عقب"]
 
 
+ROUND6 = {"قاعد": 3, "قبل": 3, "الوقت": 3, "قدموا": 2, "طريق": 2, "علاقة": 2}   # per-instance check of V5's words
+
+
 def bare(w):
     return re.sub(r"[^؀-ۿ]", "", w)
 
 
 def main():
+    global OUT
     cands = json.loads((A / "candidates.json").read_text())
     done = {(p["clip"], p["word"]) for p in json.loads((A / "picks.json").read_text())}
     rows = [l.split("|") for l in (SRC / "dataset-v4/metadata.csv").read_text().splitlines() if l]
@@ -67,9 +71,21 @@ def main():
     lo = [c for c in cands if c["flag"] == "ق→g" and c["conf"] < 0.5]
     rng.shuffle(lo)
     want += [("ق→g-low", c["clip"], c["word"], c["text"]) for c in lo[:6]]
-    if len(sys.argv) > 1 and sys.argv[1] in ("3", "5"):
+    if len(sys.argv) > 1 and sys.argv[1] == "6":
+        # round 6: V5 respells every instance of an ear-verified word; check more instances of the biggest ones
+        OUT = A / "round6"
+        heard = set()
+        for r in ("picks.json", "round2/picks.json", "round3/picks.json", "round4/picks.json", "round5/picks.json"):
+            if (A / r).exists():
+                heard |= {p.get("clip") for p in json.loads((A / r).read_text())}
+        want = []
+        for fam, n in ROUND6.items():
+            hits = [(cid, t, tx) for cid, tx, sp in rows if sp == "train" and cid not in heard
+                    for t in tx.split() if bare(t) == fam]
+            rng.shuffle(hits)
+            want += [("v5-instance", *h) for h in hits[:n]]
+    elif len(sys.argv) > 1 and sys.argv[1] in ("3", "5"):
         # round 3: ق words the recognizer never flagged, one clip per frequent word family, plus the other كم
-        global OUT
         OUT = A / f"round{sys.argv[1]}"
         heard_before = {(p["clip"], p["word"]) for p in json.loads((A / "round3/picks.json").read_text())} if sys.argv[1] == "5" else set()
         want = []
@@ -81,7 +97,7 @@ def main():
             want += [("كم", cid, t, tx) for cid, tx, _ in rows for t in tx.split()
                      if bare(t) in ("كم", "بكم", "وكم") and (cid, t) not in {(c["clip"], c["word"]) for c in cands}]
     # 3. ك→ch flags not yet heard (one per word)
-    seen = set() if not (len(sys.argv) > 1 and sys.argv[1] in ("3", "5")) else {bare(c["word"]) for c in cands}
+    seen = set() if not (len(sys.argv) > 1 and sys.argv[1] in ("3", "5", "6")) else {bare(c["word"]) for c in cands}
     for c in sorted((c for c in cands if c["flag"] == "ك→ch"), key=lambda c: -c["conf"]):
         if (c["clip"], c["word"]) in done or bare(c["word"]) in seen or bare(c["word"]).startswith(("شرك", "الشرك")):
             continue
