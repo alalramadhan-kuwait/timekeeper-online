@@ -376,6 +376,17 @@
   - **Picks:** s02 Habibi, s03 Habibi, s01 left unpicked. No word taps.
   - **Note:** «شون» is Emirati; the Kuwaiti is «شلون».
   - **Finding:** «شون» appears 10 times in the training text, and every one means «شلون» (how). It is a Whisper error, and the test sentences s02/s03 carried it too. It goes on the V5 text-fix list (whole word شون → شلون).
+- **Comparison stopped after session 2 (Ali, 2026-10-08).** The remaining Habibi sessions add little, so the time goes to the model instead.
+- **V5, the real one** (`tk_v5_text.py` → `voice-src/dataset-v5`; the earlier blanket-rule run is renamed `dataset-v5-draft` / `ckpt/v5-draft`):
+  - **Text corrections:**
+    - Whisper's غ-for-g words get their real spelling, 12 words (الأرغام → الأرقام …).
+    - شون → شلون.
+    - The 9 comparison sentences use Ali's by-ear text.
+    - The dictionary is applied, VERIFIED entries only.
+  - **Scope:** 166 clips changed (139 in train), 340 words.
+  - **Unchanged:** same audio, features and split. fixes.json is not re-applied.
+  - **Training:** same settings as v4 (2250 steps, lr 5e-5, eval every 150, patience 3). The checkpoint is chosen on val only.
+  - **Then one short test:** 3 sentences, v4 against V5.
 - **V5-draft training stopped at step 1713** (the process ended, probably a container restart). Best val: 4.584 at step 1650. It is not a candidate model, so it is not resumed.
 - **Online check (2026-10-07):** found no Kuwaiti speech or TTS dataset with a commercial licence.
   - Open Arabic sets are MSA: ArVoice (CC-BY-4.0), Arabic Speech Corpus, ClArTTS.
