@@ -86,9 +86,11 @@ function render(){
   for (const it of ITEMS.slice(part*PART, (part+1)*PART)){
     const card = document.createElement("section"); card.className = "card";
     const p = document.createElement("p"); p.className = "sent"; p.textContent = `${it.n}. ${it.text}`; card.append(p);
-    const rr = document.createElement("div"); rr.className = "refrow";
-    const rb = document.createElement("b"); rb.textContent = "صوتك الحقيقي";
-    rr.append(rb, audioEl(it.ref)); card.append(rr);
+    if (it.ref){                                   // no reference for new sentences Ali never recorded
+      const rr = document.createElement("div"); rr.className = "refrow";
+      const rb = document.createElement("b"); rb.textContent = "صوتك الحقيقي";
+      rr.append(rb, audioEl(it.ref)); card.append(rr);
+    }
     for (const o of it.opts){
       const k = key(it, o), st = state[k] ||= {types:[], bad:[]};
       const v = document.createElement("div"); v.className = "ver";
