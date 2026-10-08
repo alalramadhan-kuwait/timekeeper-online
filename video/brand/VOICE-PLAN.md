@@ -293,6 +293,11 @@
 - **Progress listening (Ali's request):** `tk_progress_probe.py` renders 3 new ق-heavy lines (`voice-data/progress-probe.json`).
   - It renders v4 plus V5 at 25%, 50% and 75% (steps 600, 1200 and 1650), and pauses training while it renders.
   - These lines are not in any test set, and they are never used to pick the checkpoint.
+- **Probe caveat (found 2026-10-08):** the probes did not all get the same input text, because `kw_convention` read whichever spelling file was current at render time.
+  - 25% (19:48) was rendered with the blanket rule, so every ق was گ.
+  - 50% (20:59) and 75% (21:46) were rendered after the dictionary landed. Only VERIFIED words were گ: گاعد, الوگت, گبل; the rest stayed ق.
+  - So 25% against 50/75% mixes a text change with more training. The probe now writes the exact text it used to `<tag>.json`.
+  - Ali is marking the wrong words in the 75% probe sentence by sentence: https://claude.ai/artifact/G1TGb6n1pHNCEizPbfAig8
 - **Online check (2026-10-07):** found no Kuwaiti speech or TTS dataset with a commercial licence.
   - Open Arabic sets are MSA: ArVoice (CC-BY-4.0), Arabic Speech Corpus, ClArTTS.
   - The Gulf work is Emirati: the Ramsa corpus. The dialect-TTS papers fine-tune XTTS, which is NC and excluded here.
