@@ -1,5 +1,16 @@
 [
   {
+    "version": "3.4.0",
+    "date": "2026-10-08",
+    "title": "Ask: questions about stock and sales",
+    "changes": [
+      "Owners have a new Ask page. Ask in English or Arabic about stock, sales, brands, or what to buy or reorder, and get an answer from Lightspeed's figures.",
+      "Every answer shows the period it covers, when stock and sales were last updated, and anything estimated or missing.",
+      "Follow-up questions keep the brand, product and period, so there's no need to repeat them.",
+      "Tap thumbs up or down on an answer to say whether it was right, and what was wrong."
+    ]
+  },
+  {
     "version": "3.3.0",
     "date": "2026-10-06",
     "title": "Clock-ins not closed, person by person",

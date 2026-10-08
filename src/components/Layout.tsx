@@ -1,7 +1,7 @@
 import { NavLink, Outlet, useLocation, useSearchParams } from 'react-router-dom';
 import {
   LayoutDashboard, Briefcase, TrendingUp, Hourglass, Truck, Handshake,
-  Star, Users, CalendarRange, LogOut, Watch, Menu, Contact, Settings, Gem, ClipboardCheck, PhoneCall, Boxes, History, UserRound, Wrench, Instagram, Megaphone, Target, Sparkles, Activity, Gauge, Inbox, ClipboardList, ChevronDown, BellRing, Bell, Download, Share, type LucideIcon,
+  Star, Users, CalendarRange, LogOut, Watch, Menu, Contact, Settings, Gem, ClipboardCheck, PhoneCall, Boxes, History, UserRound, Wrench, Instagram, Megaphone, Target, Sparkles, Activity, Gauge, Inbox, ClipboardList, ChevronDown, BellRing, Bell, Download, Share, MessageSquare, type LucideIcon,
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useAuth, Role } from '../context/AuthContext';
@@ -141,8 +141,17 @@ export default function Layout() {
     if (getInstallPrompt()) { await promptInstall(); setCanInstall(!!getInstallPrompt()); }
     else if (isIos()) setShowIosHelp(true);
   }
-  const groups = groupsFor(role, pageAccess);
   const location = useLocation();
+
+  // Ask is for the owners on stock_ai_access, whatever their role; the backend checks again
+  const [askAllowed, setAskAllowed] = useState(false);
+  useEffect(() => {
+    if (!user) return;
+    supabase.rpc('stock_ai_allowed').then(({ data }) => setAskAllowed(!!data), () => setAskAllowed(false));
+  }, [user?.id]);
+  const groups = groupsFor(role, pageAccess).map((g, gi) => (gi === 0 && user && askAllowed
+    ? { ...g, items: [...g.items.slice(0, 1), { to: '/ask', label: 'Ask', icon: MessageSquare, roles: [] }, ...g.items.slice(1)] }
+    : g));
 
   // which section contains the current route (so it opens automatically)
   const activeGroup = groups.find((g) => g.title && g.items.some((n) => n.to !== '/' && location.pathname.startsWith(n.to)))?.title ?? null;
