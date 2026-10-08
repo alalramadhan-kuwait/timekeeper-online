@@ -1,0 +1,1503 @@
+{
+ "width": 720,
+ "height": 1280,
+ "fps": 30,
+ "dir": "rtl",
+ "style": {
+  "banner": {
+   "paper": "#F3F0E8",
+   "ink": "#111111",
+   "upper": false,
+   "ls": 0,
+   "tape": "rgba(186,182,172,.88)",
+   "torn": 0.5,
+   "size": 34
+  },
+  "caption": {
+   "font": "var(--f-banner)"
+  },
+  "grain": 0.42,
+  "vignette": 0.8
+ },
+ "themes": {
+  "tk-bone": {
+   "bg": "#E4DFD3",
+   "blot": [
+    "#EFEBE1",
+    "#D5CFC1"
+   ],
+   "floor": "#C9C3B4",
+   "floorTop": "#DDD7C9",
+   "capBg": "#111111",
+   "capInk": "#FFFFFF"
+  },
+  "tk-linen": {
+   "bg": "#CFC7B5",
+   "blot": [
+    "#DDD6C6",
+    "#BDB5A2"
+   ],
+   "floor": "#B3AB98",
+   "floorTop": "#C7BFAD",
+   "capBg": "#111111",
+   "capInk": "#FFFFFF"
+  },
+  "tk-graphite": {
+   "bg": "#34373E",
+   "blot": [
+    "#43474F",
+    "#25272C"
+   ],
+   "floor": "#222428",
+   "floorTop": "#383B42",
+   "capBg": "#F3F0E8",
+   "capInk": "#111111"
+  },
+  "tk-ink": {
+   "bg": "#16181C",
+   "blot": [
+    "#22252B",
+    "#0D0E11"
+   ],
+   "floor": "#0F1013",
+   "floorTop": "#272A31",
+   "capBg": "#F3F0E8",
+   "capInk": "#111111"
+  },
+  "tk-black": {
+   "bg": "#050505",
+   "blot": [
+    "#0B0B0B",
+    "#000000"
+   ],
+   "floor": "#050505",
+   "floorTop": "#111111",
+   "capBg": "#F3F0E8",
+   "capInk": "#111111"
+  }
+ },
+ "audio": {
+  "musicGain": -20
+ },
+ "scenes": [
+  {
+   "id": "s01",
+   "voice": "voice-fahed/proc/s01.wav",
+   "theme": "tk-graphite",
+   "banner": "اتصلت بالمحل… محد رد",
+   "transition": "cut",
+   "elements": [
+    {
+     "type": "shape",
+     "kind": "rect",
+     "w": 560,
+     "h": 150,
+     "color": "#5A3E2B",
+     "tex": "wood",
+     "x": 360,
+     "y": 890
+    },
+    {
+     "type": "watch",
+     "size": 150,
+     "strap": false,
+     "x": 560,
+     "y": 400,
+     "time": [
+      10,
+      9,
+      0
+     ],
+     "rate": 40
+    },
+    {
+     "type": "phone",
+     "label": "📞",
+     "w": 200,
+     "h": 380,
+     "x": 300,
+     "y": 640,
+     "rot": -8,
+     "idle": {
+      "type": "shake",
+      "amp": 9,
+      "speed": 3,
+      "until": 3.2
+     }
+    },
+    {
+     "type": "burst",
+     "size": 150,
+     "text": "رن!",
+     "color": "#F9BE2A",
+     "x": 470,
+     "y": 520,
+     "in": {
+      "type": "pop",
+      "at": 0.0
+     },
+     "idle": "pulse",
+     "out": {
+      "type": "fade",
+      "at": 3.3
+     }
+    },
+    {
+     "type": "burst",
+     "size": 110,
+     "text": "رن!",
+     "color": "#F9BE2A",
+     "x": 160,
+     "y": 470,
+     "in": {
+      "type": "pop",
+      "at": 0.5
+     },
+     "out": {
+      "type": "fade",
+      "at": 3.3
+     }
+    },
+    {
+     "type": "text",
+     "text": "…",
+     "font": "banner",
+     "size": 120,
+     "color": "#F3F0E8",
+     "x": 360,
+     "y": 330,
+     "in": {
+      "type": "pop",
+      "at": 3.3
+     }
+    }
+   ],
+   "captions": "تبي تعرف شكثر عندك بضاعة؟ لا تتصل بالمحل… محد بيرد.",
+   "bannerAt": -1,
+   "voiceAt": 0.05,
+   "pad": 0.15
+  },
+  {
+   "id": "s02",
+   "voice": "voice-fahed/proc/s02.wav",
+   "theme": "tk-bone",
+   "banner": "قبل: ٢٠ صفحة لسؤال واحد",
+   "transition": "slide",
+   "elements": [
+    {
+     "type": "card",
+     "w": 230,
+     "h": 140,
+     "header": "Lightspeed",
+     "headerColor": "#1F2C55",
+     "headerInk": "#F3F0E8",
+     "headerH": 44,
+     "headerSize": 22,
+     "x": 180,
+     "y": 420,
+     "rot": -8,
+     "in": {
+      "type": "drop",
+      "at": 0.15
+     },
+     "idle": {
+      "type": "wiggle",
+      "amp": 2
+     }
+    },
+    {
+     "type": "card",
+     "w": 230,
+     "h": 140,
+     "header": "Excel",
+     "headerColor": "#1F2C55",
+     "headerInk": "#F3F0E8",
+     "headerH": 44,
+     "headerSize": 22,
+     "x": 520,
+     "y": 380,
+     "rot": 7,
+     "in": {
+      "type": "drop",
+      "at": 0.37
+     },
+     "idle": {
+      "type": "wiggle",
+      "amp": 2
+     }
+    },
+    {
+     "type": "card",
+     "w": 230,
+     "h": 140,
+     "header": "تقرير المبيعات",
+     "headerColor": "#1F2C55",
+     "headerInk": "#F3F0E8",
+     "headerH": 44,
+     "headerSize": 22,
+     "x": 240,
+     "y": 620,
+     "rot": 5,
+     "in": {
+      "type": "drop",
+      "at": 0.59
+     },
+     "idle": {
+      "type": "wiggle",
+      "amp": 2
+     }
+    },
+    {
+     "type": "card",
+     "w": 230,
+     "h": 140,
+     "header": "المخزون",
+     "headerColor": "#1F2C55",
+     "headerInk": "#F3F0E8",
+     "headerH": 44,
+     "headerSize": 22,
+     "x": 500,
+     "y": 640,
+     "rot": -6,
+     "in": {
+      "type": "drop",
+      "at": 0.81
+     },
+     "idle": {
+      "type": "wiggle",
+      "amp": 2
+     }
+    },
+    {
+     "type": "card",
+     "w": 230,
+     "h": 140,
+     "header": "Lightspeed",
+     "headerColor": "#1F2C55",
+     "headerInk": "#F3F0E8",
+     "headerH": 44,
+     "headerSize": 22,
+     "x": 360,
+     "y": 500,
+     "rot": 3,
+     "in": {
+      "type": "drop",
+      "at": 1.03
+     },
+     "idle": {
+      "type": "wiggle",
+      "amp": 2
+     }
+    },
+    {
+     "type": "card",
+     "w": 230,
+     "h": 140,
+     "header": "فواتير",
+     "headerColor": "#1F2C55",
+     "headerInk": "#F3F0E8",
+     "headerH": 44,
+     "headerSize": 22,
+     "x": 140,
+     "y": 760,
+     "rot": -4,
+     "in": {
+      "type": "drop",
+      "at": 1.25
+     },
+     "idle": {
+      "type": "wiggle",
+      "amp": 2
+     }
+    },
+    {
+     "type": "card",
+     "w": 230,
+     "h": 140,
+     "header": "طلبات",
+     "headerColor": "#1F2C55",
+     "headerInk": "#F3F0E8",
+     "headerH": 44,
+     "headerSize": 22,
+     "x": 580,
+     "y": 790,
+     "rot": 9,
+     "in": {
+      "type": "drop",
+      "at": 1.47
+     },
+     "idle": {
+      "type": "wiggle",
+      "amp": 2
+     }
+    },
+    {
+     "type": "shape",
+     "kind": "round",
+     "w": 150,
+     "h": 200,
+     "color": "#3A3D44",
+     "text": "± × ÷",
+     "ink": "#F3F0E8",
+     "size": 34,
+     "x": 600,
+     "y": 520,
+     "in": {
+      "type": "slideR",
+      "at": 1.6
+     },
+     "rot": [
+      [
+       1.6,
+       0
+      ],
+      [
+       2.4,
+       25
+      ],
+      [
+       3.2,
+       -20
+      ]
+     ],
+     "idle": {
+      "type": "shake",
+      "amp": 4,
+      "speed": 2
+     }
+    },
+    {
+     "type": "mascot",
+     "x": 360,
+     "y": 960,
+     "look": [
+      [
+       0,
+       "worried"
+      ],
+      [
+       3.6,
+       "sleepy"
+      ]
+     ],
+     "idle": "bob",
+     "in": {
+      "type": "rise",
+      "at": 0.1
+     }
+    },
+    {
+     "type": "bubble",
+     "text": "خلاص، باجر أشوف",
+     "w": 300,
+     "h": 84,
+     "x": 470,
+     "y": 700,
+     "tail": "l",
+     "in": {
+      "type": "pop",
+      "at": 3.4
+     }
+    },
+    {
+     "type": "sparkles",
+     "count": 18,
+     "radius": 260,
+     "colors": [
+      "#F3F0E8",
+      "#D5CFC1"
+     ],
+     "shape": "rect",
+     "at": 1.0,
+     "loop": true,
+     "x": 360,
+     "y": 560
+    }
+   ],
+   "captions": "قبل: عشرين صفحة، آلة حاسبة، وآخر شي تقول: خلاص، باجر أشوف.",
+   "voiceAt": 0.1,
+   "pad": 0.15
+  },
+  {
+   "id": "s03",
+   "voice": "voice-fahed/proc/s03.wav",
+   "theme": "tk-linen",
+   "banner": "الحين؟ هذا محمد",
+   "transition": "push",
+   "camera": {
+    "zoom": [
+     [
+      0,
+      1
+     ],
+     [
+      1.2,
+      1
+     ],
+     [
+      2.4,
+      1.7,
+      "inOutCubic"
+     ]
+    ],
+    "x": [
+     [
+      1.2,
+      360
+     ],
+     [
+      2.4,
+      450,
+      "inOutCubic"
+     ]
+    ],
+    "y": [
+     [
+      1.2,
+      600
+     ],
+     [
+      2.4,
+      800,
+      "inOutCubic"
+     ]
+    ]
+   },
+   "floor": false,
+   "elements": [
+    {
+     "type": "phone",
+     "src": "assets/screen-dashboard.png",
+     "w": 330,
+     "h": 690,
+     "x": 360,
+     "y": 600,
+     "z": 1
+    },
+    {
+     "type": "shape",
+     "kind": "circle",
+     "w": 120,
+     "h": 120,
+     "color": "#F9BE2A",
+     "x": 480,
+     "y": 860,
+     "in": {
+      "type": "pop",
+      "at": 2.4
+     },
+     "out": {
+      "type": "fade",
+      "at": 3.0
+     },
+     "z": 3
+    },
+    {
+     "type": "image",
+     "src": "assets/mohammed.png",
+     "frame": false,
+     "w": 240,
+     "h": 270,
+     "x": 470,
+     "y": 900,
+     "anchor": "b",
+     "person": true,
+     "in": {
+      "type": "rise",
+      "at": 2.9,
+      "from": 200
+     },
+     "idle": {
+      "type": "bob",
+      "amp": 4
+     },
+     "rot": [
+      [
+       2.9,
+       0
+      ],
+      [
+       3.5,
+       -6
+      ],
+      [
+       4.2,
+       4
+      ]
+     ],
+     "z": 4
+    },
+    {
+     "type": "sparkles",
+     "count": 14,
+     "radius": 150,
+     "color": "#F9BE2A",
+     "at": 2.9,
+     "x": 470,
+     "y": 780,
+     "z": 5
+    }
+   ],
+   "captions": "الحين؟ بزاوية الشاشة واحد لابس نظارات ودايم مبتسم. هذا محمد.",
+   "voiceAt": 0.1,
+   "pad": 0.15
+  },
+  {
+   "id": "s04",
+   "voice": "voice-fahed/proc/s04.wav",
+   "theme": "tk-bone",
+   "banner": "اسأله أي شي",
+   "transition": "slide",
+   "elements": [
+    {
+     "type": "phone",
+     "src": "assets/screen-hello.png",
+     "w": 330,
+     "h": 690,
+     "x": 260,
+     "y": 650
+    },
+    {
+     "type": "image",
+     "src": "assets/mohammed.png",
+     "frame": false,
+     "w": 230,
+     "h": 259,
+     "x": 560,
+     "y": 960,
+     "anchor": "b",
+     "person": true,
+     "in": {
+      "type": "slideL",
+      "at": 0.2
+     },
+     "rot": [
+      [
+       0.4,
+       0
+      ],
+      [
+       1.2,
+       8
+      ],
+      [
+       2.0,
+       8
+      ],
+      [
+       2.4,
+       0
+      ]
+     ],
+     "idle": {
+      "type": "bob",
+      "amp": 3
+     }
+    },
+    {
+     "type": "bubble",
+     "text": "عندنا هوفمان باندا؟",
+     "w": 330,
+     "h": 84,
+     "x": 300,
+     "y": 360,
+     "tail": "r",
+     "size": 28,
+     "in": {
+      "type": "pop",
+      "at": 0.35
+     }
+    }
+   ],
+   "captions": "اسأله: عندنا هوفمان باندا؟",
+   "voiceAt": 0.1,
+   "pad": 0.15
+  },
+  {
+   "id": "s05",
+   "voice": "voice-fahed/proc/s05.wav",
+   "theme": "tk-linen",
+   "banner": "يرد بالأرقام… وليش",
+   "transition": "slide",
+   "elements": [
+    {
+     "type": "phone",
+     "src": "assets/screen-thinking.png",
+     "w": 320,
+     "h": 669,
+     "x": 270,
+     "y": 600,
+     "out": {
+      "type": "fade",
+      "at": 0.9,
+      "dur": 0.3
+     }
+    },
+    {
+     "type": "phone",
+     "src": "assets/screen-answer.png",
+     "w": 320,
+     "h": 669,
+     "x": 270,
+     "y": 600,
+     "in": {
+      "type": "fade",
+      "at": 0.9,
+      "dur": 0.3
+     }
+    },
+    {
+     "type": "sticky",
+     "label": "أرقام توضيحية",
+     "w": 170,
+     "h": 80,
+     "x": 590,
+     "y": 330,
+     "rot": 6,
+     "in": {
+      "type": "pop",
+      "at": 1.0
+     }
+    },
+    {
+     "type": "burst",
+     "size": 150,
+     "text": "١٥",
+     "color": "#F9BE2A",
+     "x": 580,
+     "y": 560,
+     "in": {
+      "type": "pop",
+      "at": 2.6
+     },
+     "idle": "pulse"
+    },
+    {
+     "type": "image",
+     "src": "assets/mohammed.png",
+     "frame": false,
+     "w": 200,
+     "h": 225,
+     "x": 590,
+     "y": 960,
+     "anchor": "b",
+     "person": true,
+     "in": {
+      "type": "rise",
+      "at": 0.2
+     },
+     "idle": {
+      "type": "bob",
+      "amp": 3
+     },
+     "rot": [
+      [
+       2.6,
+       0
+      ],
+      [
+       3.0,
+       -8
+      ],
+      [
+       3.6,
+       0
+      ]
+     ]
+    }
+   ],
+   "captions": "يقولك: خلصت من كل الفروع، تبيع خمس بالشهر، اطلب خمسطعش. وليش.",
+   "voiceAt": 0.1,
+   "pad": 0.15
+  },
+  {
+   "id": "s06",
+   "voice": "voice-fahed/proc/s06.wav",
+   "theme": "tk-bone",
+   "banner": "عربي؟ إنجليزي؟ يفهم",
+   "transition": "slide",
+   "elements": [
+    {
+     "type": "bubble",
+     "text": "شكثر باقي؟",
+     "w": 250,
+     "h": 80,
+     "x": 200,
+     "y": 380,
+     "tail": "r",
+     "in": {
+      "type": "pop",
+      "at": 0.3
+     }
+    },
+    {
+     "type": "bubble",
+     "text": "How many left?",
+     "w": 270,
+     "h": 80,
+     "x": 520,
+     "y": 470,
+     "tail": "l",
+     "in": {
+      "type": "pop",
+      "at": 1.0
+     }
+    },
+    {
+     "type": "bubble",
+     "text": "هوفمان كم في موجود؟",
+     "w": 320,
+     "h": 80,
+     "x": 250,
+     "y": 570,
+     "tail": "r",
+     "in": {
+      "type": "pop",
+      "at": 1.8
+     }
+    },
+    {
+     "type": "image",
+     "src": "assets/mohammed.png",
+     "frame": false,
+     "w": 300,
+     "h": 338,
+     "x": 360,
+     "y": 960,
+     "anchor": "b",
+     "person": true,
+     "in": {
+      "type": "rise",
+      "at": 0.1
+     },
+     "rot": [
+      [
+       0.6,
+       0
+      ],
+      [
+       0.8,
+       5
+      ],
+      [
+       1.0,
+       0
+      ],
+      [
+       1.3,
+       5
+      ],
+      [
+       1.5,
+       0
+      ],
+      [
+       2.1,
+       5
+      ],
+      [
+       2.3,
+       0
+      ]
+     ]
+    },
+    {
+     "type": "stamp",
+     "text": "✓",
+     "color": "#2E7D4F",
+     "size": 90,
+     "x": 560,
+     "y": 650,
+     "in": {
+      "type": "slam",
+      "at": 2.4
+     }
+    }
+   ],
+   "captions": "تكلمه عربي، إنجليزي، حتى عربي مكسّر… يفهم.",
+   "voiceAt": 0.1,
+   "pad": 0.15
+  },
+  {
+   "id": "s07",
+   "voice": "voice-fahed/proc/s07.wav",
+   "theme": "tk-linen",
+   "banner": "ما يألّف أرقام",
+   "transition": "slide",
+   "elements": [
+    {
+     "type": "card",
+     "w": 120,
+     "h": 150,
+     "label": "0",
+     "x": 150,
+     "y": 520,
+     "rot": -4,
+     "in": {
+      "type": "drop",
+      "at": 0.2
+     }
+    },
+    {
+     "type": "text",
+     "text": "0",
+     "x": 150,
+     "y": 520,
+     "size": 64,
+     "color": "#111111",
+     "font": "banner",
+     "in": {
+      "type": "drop",
+      "at": 0.2
+     },
+     "rot": -4
+    },
+    {
+     "type": "sparkles",
+     "count": 8,
+     "radius": 70,
+     "color": "#2E7D4F",
+     "at": 1.5,
+     "x": 150,
+     "y": 520
+    },
+    {
+     "type": "card",
+     "w": 120,
+     "h": 150,
+     "label": "19",
+     "x": 290,
+     "y": 520,
+     "rot": 3,
+     "in": {
+      "type": "drop",
+      "at": 0.35
+     }
+    },
+    {
+     "type": "text",
+     "text": "19",
+     "x": 290,
+     "y": 520,
+     "size": 64,
+     "color": "#111111",
+     "font": "banner",
+     "in": {
+      "type": "drop",
+      "at": 0.35
+     },
+     "rot": 3
+    },
+    {
+     "type": "sparkles",
+     "count": 8,
+     "radius": 70,
+     "color": "#2E7D4F",
+     "at": 1.75,
+     "x": 290,
+     "y": 520
+    },
+    {
+     "type": "card",
+     "w": 120,
+     "h": 150,
+     "label": "80",
+     "x": 430,
+     "y": 520,
+     "rot": -2,
+     "in": {
+      "type": "drop",
+      "at": 0.5
+     }
+    },
+    {
+     "type": "text",
+     "text": "80",
+     "x": 430,
+     "y": 520,
+     "size": 64,
+     "color": "#111111",
+     "font": "banner",
+     "in": {
+      "type": "drop",
+      "at": 0.5
+     },
+     "rot": -2
+    },
+    {
+     "type": "sparkles",
+     "count": 8,
+     "radius": 70,
+     "color": "#2E7D4F",
+     "at": 2.0,
+     "x": 430,
+     "y": 520
+    },
+    {
+     "type": "card",
+     "w": 120,
+     "h": 150,
+     "label": "15",
+     "x": 570,
+     "y": 520,
+     "rot": 5,
+     "in": {
+      "type": "drop",
+      "at": 0.6499999999999999
+     }
+    },
+    {
+     "type": "text",
+     "text": "15",
+     "x": 570,
+     "y": 520,
+     "size": 64,
+     "color": "#111111",
+     "font": "banner",
+     "in": {
+      "type": "drop",
+      "at": 0.6499999999999999
+     },
+     "rot": 5
+    },
+    {
+     "type": "sparkles",
+     "count": 8,
+     "radius": 70,
+     "color": "#2E7D4F",
+     "at": 2.25,
+     "x": 570,
+     "y": 520
+    },
+    {
+     "type": "stamp",
+     "text": "متشيّك ✓",
+     "color": "#2E7D4F",
+     "size": 46,
+     "x": 360,
+     "y": 640,
+     "rot": -8,
+     "in": {
+      "type": "slam",
+      "at": 2.3
+     }
+    },
+    {
+     "type": "text",
+     "text": "أرقام توضيحية",
+     "x": 360,
+     "y": 700,
+     "size": 24,
+     "color": "#555",
+     "font": "banner"
+    },
+    {
+     "type": "image",
+     "src": "assets/mohammed.png",
+     "frame": false,
+     "w": 200,
+     "h": 225,
+     "x": 360,
+     "y": 960,
+     "anchor": "b",
+     "person": true,
+     "in": {
+      "type": "rise",
+      "at": 0.1
+     },
+     "idle": {
+      "type": "bob",
+      "amp": 3
+     }
+    }
+   ],
+   "captions": "وما يألّف أرقام. كل رقم يتشيّك قبل ما يوصلك.",
+   "voiceAt": 0.1,
+   "pad": 0.15
+  },
+  {
+   "id": "s08",
+   "voice": "voice-fahed/proc/s08.wav",
+   "theme": "tk-bone",
+   "banner": "بضاعة أمانة؟",
+   "transition": "slide",
+   "elements": [
+    {
+     "type": "watch",
+     "size": 230,
+     "x": 220,
+     "y": 520,
+     "time": [
+      10,
+      10,
+      30
+     ],
+     "in": {
+      "type": "pop",
+      "at": 0.2
+     }
+    },
+    {
+     "type": "card",
+     "w": 150,
+     "h": 80,
+     "label": "أمانة",
+     "color": "#F9BE2A",
+     "x": 330,
+     "y": 650,
+     "rot": 10,
+     "pin": true,
+     "in": {
+      "type": "drop",
+      "at": 0.8
+     }
+    },
+    {
+     "type": "stamp",
+     "text": "لا تشتري",
+     "color": "#B3261E",
+     "size": 34,
+     "x": 250,
+     "y": 330,
+     "rot": -8,
+     "in": {
+      "type": "slam",
+      "at": 2.0
+     }
+    },
+    {
+     "type": "image",
+     "src": "assets/mohammed.png",
+     "frame": false,
+     "w": 230,
+     "h": 259,
+     "x": 560,
+     "y": 960,
+     "anchor": "b",
+     "person": true,
+     "in": {
+      "type": "slideL",
+      "at": 0.3
+     },
+     "rot": [
+      [
+       1.8,
+       0
+      ],
+      [
+       2.2,
+       -6
+      ],
+      [
+       2.8,
+       0
+      ]
+     ]
+    },
+    {
+     "type": "bubble",
+     "text": "كلّم المورد",
+     "w": 220,
+     "h": 76,
+     "x": 540,
+     "y": 430,
+     "tail": "r",
+     "in": {
+      "type": "pop",
+      "at": 2.6
+     }
+    }
+   ],
+   "captions": "والبضاعة الأمانة؟ يقولك: لا تشتري، كلّم المورد.",
+   "voiceAt": 0.1,
+   "pad": 0.15
+  },
+  {
+   "id": "s09",
+   "voice": "voice-fahed/proc/s09.wav",
+   "theme": "tk-graphite",
+   "banner": "لا إجازة… ولا «باجر»",
+   "transition": "slide",
+   "elements": [
+    {
+     "type": "stopwatch",
+     "size": 160,
+     "x": 560,
+     "y": 380,
+     "sweep": [
+      [
+       0,
+       0
+      ],
+      [
+       4,
+       6
+      ]
+     ]
+    },
+    {
+     "type": "card",
+     "w": 150,
+     "h": 90,
+     "label": "إجازة",
+     "x": 160,
+     "y": 380,
+     "rot": -6,
+     "in": {
+      "type": "pop",
+      "at": 0.5
+     },
+     "out": {
+      "type": "fade",
+      "at": 1.4
+     }
+    },
+    {
+     "type": "stamp",
+     "text": "✗",
+     "color": "#B3261E",
+     "size": 70,
+     "x": 160,
+     "y": 380,
+     "in": {
+      "type": "slam",
+      "at": 1.0
+     },
+     "out": {
+      "type": "fade",
+      "at": 1.4
+     }
+    },
+    {
+     "type": "card",
+     "w": 150,
+     "h": 90,
+     "label": "زيادة",
+     "x": 160,
+     "y": 380,
+     "rot": 5,
+     "in": {
+      "type": "pop",
+      "at": 1.5
+     },
+     "out": {
+      "type": "fade",
+      "at": 2.4
+     }
+    },
+    {
+     "type": "stamp",
+     "text": "✗",
+     "color": "#B3261E",
+     "size": 70,
+     "x": 160,
+     "y": 380,
+     "in": {
+      "type": "slam",
+      "at": 2.0
+     },
+     "out": {
+      "type": "fade",
+      "at": 2.4
+     }
+    },
+    {
+     "type": "card",
+     "w": 150,
+     "h": 90,
+     "label": "باجر",
+     "x": 160,
+     "y": 380,
+     "rot": -3,
+     "in": {
+      "type": "pop",
+      "at": 2.5
+     }
+    },
+    {
+     "type": "stamp",
+     "text": "✗",
+     "color": "#B3261E",
+     "size": 70,
+     "x": 160,
+     "y": 380,
+     "in": {
+      "type": "slam",
+      "at": 3.0
+     }
+    },
+    {
+     "type": "image",
+     "src": "assets/mohammed.png",
+     "frame": false,
+     "w": 300,
+     "h": 338,
+     "x": 360,
+     "y": 960,
+     "anchor": "b",
+     "person": true,
+     "in": {
+      "type": "rise",
+      "at": 0.1
+     },
+     "idle": {
+      "type": "bob",
+      "amp": 3
+     }
+    },
+    {
+     "type": "cup",
+     "size": 0.9,
+     "x": 520,
+     "y": 940,
+     "in": {
+      "type": "slideL",
+      "at": 0.4
+     }
+    }
+   ],
+   "captions": "محمد ما ياخذ إجازة، ولا يطلب زيادة، ولا يقول باجر.",
+   "voiceAt": 0.1,
+   "pad": 0.15
+  },
+  {
+   "id": "s10",
+   "voice": "voice-fahed/proc/s10.wav",
+   "theme": "tk-bone",
+   "banner": "اسأل محمد",
+   "transition": "slide",
+   "elements": [
+    {
+     "type": "image",
+     "src": "assets/mohammed.png",
+     "frame": false,
+     "w": 340,
+     "h": 383,
+     "x": 360,
+     "y": 900,
+     "anchor": "b",
+     "person": true,
+     "in": {
+      "type": "pop",
+      "at": 0.1
+     },
+     "rot": [
+      [
+       0.4,
+       0
+      ],
+      [
+       0.7,
+       6
+      ],
+      [
+       1.0,
+       -6
+      ],
+      [
+       1.3,
+       6
+      ],
+      [
+       1.6,
+       0
+      ]
+     ]
+    },
+    {
+     "type": "shape",
+     "kind": "pill",
+     "w": 330,
+     "h": 70,
+     "color": "#F9BE2A",
+     "text": "للملاك بس 🤫",
+     "font": "banner",
+     "size": 30,
+     "ink": "#111111",
+     "x": 360,
+     "y": 330,
+     "in": {
+      "type": "pop",
+      "at": 1.4
+     }
+    },
+    {
+     "type": "sparkles",
+     "count": 16,
+     "radius": 200,
+     "color": "#F9BE2A",
+     "at": 0.2,
+     "x": 360,
+     "y": 600
+    }
+   ],
+   "captions": "اسأل محمد. بس للملاك… السموحة.",
+   "voiceAt": 0.1,
+   "pad": 0.15
+  },
+  {
+   "theme": "tk-ink",
+   "floor": false,
+   "elements": [
+    {
+     "type": "svg",
+     "w": 760,
+     "h": 1320,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"760\" height=\"1320\" viewBox=\"0 0 760 1320\"><rect width=\"760\" height=\"1320\" fill=\"#111111\"/></svg>",
+     "x": 360,
+     "y": 640,
+     "anchor": "c",
+     "z": 1,
+     "depth": 0,
+     "still": true
+    },
+    {
+     "type": "reveal",
+     "src": "../../public/icon-512.png",
+     "x": 360,
+     "y": 560,
+     "w": 380,
+     "h": 380,
+     "z": 20,
+     "reveal": [
+      [
+       0.3,
+       0
+      ],
+      [
+       2.3,
+       1,
+       "inOutSine"
+      ]
+     ]
+    },
+    {
+     "type": "svg",
+     "w": 40,
+     "h": 300,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"40\" height=\"300\" viewBox=\"0 0 40 300\"><rect x=\"16\" y=\"0\" width=\"8\" height=\"300\" rx=\"4\" fill=\"#C9A35F\"/><circle cx=\"20\" cy=\"290\" r=\"14\" fill=\"#C9A35F\"/></svg>",
+     "x": 360,
+     "y": 560,
+     "anchor": "b",
+     "z": 30,
+     "still": true,
+     "rot": [
+      [
+       0.3,
+       0
+      ],
+      [
+       2.3,
+       360,
+       "inOutSine"
+      ]
+     ],
+     "opacity": [
+      [
+       0.3,
+       0
+      ],
+      [
+       0.4,
+       1
+      ],
+      [
+       2.3,
+       1
+      ],
+      [
+       2.6,
+       0
+      ]
+     ]
+    },
+    {
+     "type": "svg",
+     "w": 760,
+     "h": 1320,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"760\" height=\"1320\" viewBox=\"0 0 760 1320\"><rect width=\"760\" height=\"1320\" fill=\"#000000\"/></svg>",
+     "x": 360,
+     "y": 640,
+     "anchor": "c",
+     "z": 90,
+     "depth": 0,
+     "still": true,
+     "opacity": [
+      [
+       3.6,
+       0
+      ],
+      [
+       4.5,
+       1
+      ]
+     ]
+    }
+   ],
+   "dur": 4.5,
+   "silent": true,
+   "transition": "fade",
+   "endcard": "timekeeper",
+   "sfx": [
+    {
+     "at": 0.3,
+     "name": "tick",
+     "gain": -12
+    },
+    {
+     "at": 3.6,
+     "name": "tick_pair",
+     "gain": -8
+    }
+   ],
+   "camera": {
+    "zoom": [
+     [
+      0,
+      1.0
+     ],
+     [
+      4.5,
+      1.08
+     ]
+    ],
+    "x": [
+     [
+      0,
+      360
+     ]
+    ],
+    "y": [
+     [
+      0,
+      600
+     ]
+    ]
+   },
+   "banner": ""
+  },
+  {
+   "theme": "tk-ink",
+   "floor": false,
+   "elements": [
+    {
+     "type": "svg",
+     "w": 760,
+     "h": 1320,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"760\" height=\"1320\" viewBox=\"0 0 760 1320\"><rect width=\"760\" height=\"1320\" fill=\"#000000\"/></svg>",
+     "x": 360,
+     "y": 640,
+     "anchor": "c",
+     "z": 1,
+     "depth": 0,
+     "still": true
+    }
+   ],
+   "dur": 0.7,
+   "silent": true,
+   "transition": "cut",
+   "endcard": "timekeeper",
+   "banner": ""
+  }
+ ]
+}
