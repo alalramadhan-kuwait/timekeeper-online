@@ -34,8 +34,14 @@ def txt(t, x, y, size=44, color=INK, **kw):
     return dict({"type": "text", "text": t, "x": x, "y": y, "size": size, "color": color, "font": "banner"}, **kw)
 
 
-NARRATOR = os.environ.get("NARRATOR", "fahed")   # fahed (Ali's pick, 2026-10-08) | v5 | habibi
-VOICE_DIR = {"v5": "voice/proc", "fahed": "voice-fahed/proc", "habibi": "voice-habibi"}[NARRATOR]
+NARRATOR = os.environ.get("NARRATOR", "fahed-msa")   # fahed-msa (Ali's pick, 2026-10-08) | fahed | v5 | habibi
+VOICE_DIR = {"v5": "voice/proc", "fahed": "voice-fahed/proc", "fahed-msa": "voice-fahed-msa/proc", "habibi": "voice-habibi"}[NARRATOR]
+MSA = NARRATOR.endswith("-msa")
+# on-screen text in فصحى for the MSA cut (the app's own screenshots stay as they are)
+MSA_TEXT = {"اتصلت بالمحل… محد رد": "اتصلتَ بالمحل… لم يرد أحد", "الحين؟ هذا محمد": "والآن؟ هذا محمد", "اسأله أي شي": "اسأله ما تشاء",
+            "يرد بالأرقام… وليش": "يجيب بالأرقام… والسبب", "ما يألّف أرقام": "لا يخترع الأرقام", "لا إجازة… ولا «باجر»": "لا إجازة… ولا «غدًا»",
+            "خلاص، باجر أشوف": "سأنظر غدًا", "عندنا هوفمان باندا؟": "هل لدينا هوفمان باندا؟", "شكثر باقي؟": "كم تبقّى؟",
+            "متشيّك ✓": "تم التحقق ✓", "كلّم المورد": "تواصل مع المورد", "باجر": "غدًا", "للملاك بس 🤫": "للمُلّاك فقط 🤫", "لا تشتري": "لا تشترِ"}
 
 
 def v(n):
@@ -148,7 +154,15 @@ scenes.append({"id": "s10", "voice": v(10), "theme": "tk-bone", "banner": "اس�
     {"type": "sparkles", "count": 16, "radius": 200, "color": YELLOW, "at": 0.2, "x": 360, "y": 600},
   ]})
 
-NARR = {k: t for k, t in json.load(open(os.path.join(HERE, 'narration.json'))).items() if not k.startswith('_')}
+NARR = {k: t for k, t in json.load(open(os.path.join(HERE, 'narration-msa.json' if MSA else 'narration.json'))).items() if not k.startswith('_')}
+if MSA:
+    def _msa(o):
+        if isinstance(o, dict):
+            return {k: _msa(v) for k, v in o.items()}
+        if isinstance(o, list):
+            return [_msa(v) for v in o]
+        return MSA_TEXT.get(o, o) if isinstance(o, str) else o
+    scenes[:] = _msa(scenes)
 for sc in scenes:
     sc["captions"] = NARR[sc["id"]]
 scenes[0]["bannerAt"] = -1                # the hook text is on screen in frame 1

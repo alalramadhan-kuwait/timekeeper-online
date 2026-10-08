@@ -21,14 +21,16 @@ if CA.exists():
 HERE = Path(__file__).resolve().parent
 VOICE = "ar-KW-FahedNeural"
 RATE = sys.argv[sys.argv.index("--rate") + 1] if "--rate" in sys.argv else "+0%"
-lines = {k: t for k, t in json.loads((HERE / "narration.json").read_text()).items() if not k.startswith("_")}
-out = HERE / "voice-fahed"
+MSA = "--msa" in sys.argv          # read narration-msa.json (فصحى) into voice-fahed-msa/
+lines = {k: t for k, t in json.loads((HERE / ("narration-msa.json" if MSA else "narration.json")).read_text()).items() if not k.startswith("_")}
+out = HERE / ("voice-fahed-msa" if MSA else "voice-fahed")
 out.mkdir(exist_ok=True)
 
 
 async def main():
     for k, t in lines.items():
-        await edge_tts.Communicate(t.replace("…", "،"), VOICE, rate=RATE)   # «…» makes Fahed pause too long.save(str(out / f"{k}.mp3"))
+        # «…» makes Fahed pause too long, so it is read as a comma
+        await edge_tts.Communicate(t.replace("…", "،"), VOICE, rate=RATE).save(str(out / f"{k}.mp3"))
         subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", str(out / f"{k}.mp3"), "-ac", "1", "-ar", "24000", str(out / f"{k}.wav")], check=True)
         print(k, t, flush=True)
 
