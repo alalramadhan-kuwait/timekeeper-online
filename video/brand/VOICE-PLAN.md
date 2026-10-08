@@ -318,6 +318,24 @@
 - **Spelling round 4** (Ali's own spellings, each against the previous form; nothing goes into the dictionary until Ali approves the sound): https://claude.ai/artifact/N5zfBPYq2oz5pR1sAwE8rC
   - **أدور:** أدور (previous) / ادُوّر (Ali's) / ادُور (no shadda, to check the "rotate" risk).
   - **گبلهم** (sentence now has طويل without the comma): گبلهم… (previous) / گَبْلَهُم. / گَبْلَهُم with no end mark / گبلهم with no end mark. This separates the effect of the tashkeel from dropping the end pause.
+- **Spelling round 4** (no audio picks). Phoneme read-out: the "no end mark" variant equals the full-stop variant byte for byte, because Chatterbox adds a full stop. گَبْلَهُم lost its «هم» (came out گبلا).
+
+**Ali's decision (2026-10-08): stop ad-hoc tashkeel trials, and run one limited reference comparison with ready-made Gulf models.** Comparison only; their outputs are never training data.
+- **Audar-TTS-V1-Turbo** ([card](https://huggingface.co/audarai/Audar-TTS-V1-Turbo)).
+  - Licence: AudarAI Community License v1.0. Research and evaluation are allowed, and limited commercial use is allowed for small entities (under 50 staff, under USD 2M revenue, under USD 250k attributable revenue, among other limits). Time Keeper should qualify; Ali to confirm.
+  - §5(c) forbids using its outputs to train a competing general-purpose model. That isn't our case, and we don't train on them anyway.
+  - It runs on CPU via llama.cpp (GGUF) and clones a voice from 5–15 s.
+  - **Blocked:** its codec `neuphonic/neucodec` (Apache-2.0) is login-gated. It needs `HF_TOKEN` in the environment settings, from an HF account that accepted its terms. Third-party mirrors are not used.
+  - Script: `tk_audar_ref.py` (separate venv `/root/audar`, torch 2.8).
+- **FasihTTS «ar-kw-male-1»:** not found in a web search. The only Fasih TTS found is MSA. Ali to send the link.
+- **Habibi-TTS:** stays excluded (F5-TTS derivative, non-commercial). Its public samples can be listened to, but it is not run.
+- **Kuwait Dialect Speech Dataset** ([AhmedEladl/kuwait-dialect-speech-dataset](https://huggingface.co/datasets/AhmedEladl/kuwait-dialect-speech-dataset)): 31,633 clips, 3.7 GB, 22 kHz.
+  - The dataset card has **no licence**, so it cannot be used for training.
+  - A sample of 40 rows shows podcast chunks, transcribed in standard spelling (قاعدين, فقعدنا, قلنا, all with ق). It has the same blind spot as our own transcripts, and there are junk rows ("اااا…").
+  - `normalized_text` = `text`. So it carries **no Kuwaiti spelling rules** to mine. It could only help as audio, and that is ruled out by the missing licence.
+- **The benchmark** (Ali's plan): 30 held-out sentences from the `final` split, the ones richest in ق/ك/ج (257 letters).
+  - Ali's real recording of each is the reference, compared against the current v4 model and Audar. Script: `tk_refcmp.py`.
+  - These are listening comparisons only. Nothing trains on them or picks a checkpoint from them.
 - **V5-draft training stopped at step 1713** (the process ended, probably a container restart). Best val: 4.584 at step 1650. It is not a candidate model, so it is not resumed.
 - **Online check (2026-10-07):** found no Kuwaiti speech or TTS dataset with a commercial licence.
   - Open Arabic sets are MSA: ArVoice (CC-BY-4.0), Arabic Speech Corpus, ClArTTS.
