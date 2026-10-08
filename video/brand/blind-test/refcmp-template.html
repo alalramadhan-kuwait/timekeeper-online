@@ -60,7 +60,7 @@ button:focus-visible{outline:2px solid var(--dial);outline-offset:2px}
 </main>
 <script>
 const ITEMS = __ITEMS__;
-const PART = 5;
+const PART = 5;  // one session = one part
 const SCALES = [["pron","النطق الكويتي"],["madd","المد والتشديد"],["pause","الوقفات"]];
 const TYPES = [["letter","حرف غلط (ق/ك/ج…)"],["madd","مد زايد"],["shadda","تشديد زايد"],["pause","وقفة بغير مكانها"],["vowel","حركة غلط"],["missing","كلمة ناقصة أو زايدة"]];
 const state = {};   // "<item>-<letter>" -> {pron, madd, pause, types:[], bad:[]}
