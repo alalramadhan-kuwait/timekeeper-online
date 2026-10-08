@@ -438,6 +438,9 @@
   - **Part 3:** kp07, kp08, kp09 all V5 (3/3). Running total: V5 8/9.
   - **Part 4:** kp10, kp11, kp12 all V5 (3/3). Running total: V5 11/12.
   - The letter mapping changed between parts (أ in part 2, ب in parts 3 and 4), and Ali followed V5 each time, so this is not position bias.
+  - **Part 5:** kp13 V5; kp14 and kp15 went to v4, so V5 1/3. Running total: V5 12/15.
+    - **Regressions so far:** kp02 «الوكيل قال لي إن الطلب يتأخر شوي.», kp14 «يتذكر أول ساعة لبسها؟ كانت من أبوه.», kp15 «الموديل هذا كل يوم ينطلب، والكمية ما تكفي.».
+    - Two of the three are verb-pattern lines.
   - **Ali's note:** Arabic needs diacritics (تشكيل) to fix a word's pronunciation; without them the model guesses (e.g. أدور).
   - **Candidate next step:** an automatic diacritiser on the input. MSA diacritisers won't know Kuwaiti forms, so it would be tested by ear like the dictionary. Our tashkeel trials were mixed: طَوِيل didn't help; the pause did.
 - **Test 1 (reference clip):** Ali picked the current `ref.wav` (Tudor episode) out of 4 real clips. The prompt clip is not the problem; it is kept.
