@@ -429,6 +429,9 @@
 - **V5 training ended early at step 2064**, killed by a container restart; the follow-up chain was killed with it.
   - Val speech loss: 4.651 @750, 4.637 @900, 4.615 @1050, 4.605 @1200, 4.608 @1350, 4.594 @1500, 4.585 @1650, **4.573 @1800 (best)**, 4.579 @1950.
   - The checkpoint is chosen on val only: **step 1800**. That is ~2.9 epochs, against v4's 3.65, so the training budget differs slightly; noted for the comparison.
+- **Ali (2026-10-08): stop comparing against the old models.** v4 and Habibi aren't good enough to be a useful baseline.
+  - V5 is judged on its own (`tk_v5_ab.py --solo`): each sentence rated زين / مقبول / مو زين, with wrong words tapped and one free note.
+  - v4's 30 renders already exist (`voice-src/v5ab/v4`). They are kept for my own analysis only, not shown.
 - **Test 1 (reference clip):** Ali picked the current `ref.wav` (Tudor episode) out of 4 real clips. The prompt clip is not the problem; it is kept.
 - **Test 2 (LoRA strength, v4, blind, 2 sentences):**
   - pr1: full LoRA (1.0). pr3: 0.5. Strengths 0 and 0.75 were never picked.

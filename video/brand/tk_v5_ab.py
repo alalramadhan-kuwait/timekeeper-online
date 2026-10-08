@@ -22,7 +22,9 @@ sealed = {l["id"]: l for l in json.loads((Path(__file__).parent / "voice-data/kw
 end = lambda t: t if re.search(r"[؟?]\s*$", t) else re.sub(r"[.…]*\s*$", "", t.rstrip()) + "…"
 torch.set_num_threads(4)
 texts = {}
-for model, ckpt, conv in (("v4", str(SRC / "ckpt/v4/step02250.pt"), False), ("v5", sys.argv[1], True)):
+SOLO = "--solo" in sys.argv   # Ali (2026-10-08): the old models are not good enough to compare against; judge V5 on its own
+MODELS = (("v5", sys.argv[1], True),) if SOLO else (("v4", str(SRC / "ckpt/v4/step02250.pt"), False), ("v5", sys.argv[1], True))
+for model, ckpt, conv in MODELS:
     (D / model).mkdir(parents=True, exist_ok=True)
     tts = load_tts("cpu", ckpt)
     tts.prepare_conditionals(str(SRC / "ref.wav"))
@@ -41,7 +43,7 @@ for model, ckpt, conv in (("v4", str(SRC / "ckpt/v4/step02250.pt"), False), ("v5
             (D / "v5-plain").mkdir(exist_ok=True)
             torchaudio.save(str(D / "v5-plain" / f"{k}.wav"), w, tts.sr)
     del tts
-order = ["v4", "v5"]
+order = ["v5"] if SOLO else ["v4", "v5"]
 random.SystemRandom().shuffle(order)
 (D / "page/audio").mkdir(parents=True, exist_ok=True)
 items = []
@@ -53,10 +55,17 @@ for n, k in enumerate(IDS, 1):
                         str(D / "page/audio" / name)], check=True)
         opts.append({"label": "أب"[i], "src": f"audio/{name}"})
     items.append({"id": k, "n": n, "text": sealed[k]["plain"], "ref": None, "opts": opts})
-(D / "key.json").write_text(json.dumps({"أ": order[0], "ب": order[1], "v5_ckpt": sys.argv[1], "texts": texts},
+(D / "key.json").write_text(json.dumps({**{"أب"[i]: m for i, m in enumerate(order)}, "v5_ckpt": sys.argv[1], "texts": texts},
                                        ensure_ascii=False, indent=1))
 page = (Path(__file__).parent / "blind-test/refcmp-template.html").read_text()
 page = page.replace("<h1>نفس الجملة، كذا نسخة</h1>", "<h1>القديم ولا الجديد؟</h1>")
 page = page.replace("فوق كل جملة تسجيلك الحقيقي، وهو المرجع. تحته صوتين", "جمل جديدة ما سجلتها أنت. كل جملة فيها صوتين")
+if SOLO:
+    page = page.replace("<h1>القديم ولا الجديد؟</h1>", "<h1>الموديل الجديد</h1>")
+    page = page.replace("جمل جديدة ما سجلتها أنت. كل جملة فيها صوتين: <b>أ</b> و<b>ب</b>. في هالجلسة كلها «أ» نفس الموديل و«ب» نفس الموديل، بس ما تدري أي واحد. لكل جملة: اختار أي وحدة أقرب لنطقك، واضغط على الكلمات اللي انقالت غلط إذا تبي. وفي الآخر اكتب انطباعك عن «أ» و«ب».",
+                        "جمل جديدة ما سجلتها أنت، بصوت الموديل الجديد. لكل جملة: قيّم النطق الكويتي، واضغط على الكلمات اللي انقالت غلط. وفي الآخر اكتب انطباعك.")
+    page = page.replace('[...it.opts.map(o => [o.label, o.label]), ["same", "نفس الشي"]]', '[["good", "زين"], ["ok", "مقبول"], ["bad", "مو زين"]]')
+    page = page.replace('ql.textContent = "أي وحدة أقرب لنطقك؟"', 'ql.textContent = "النطق الكويتي؟"')
+    page = page.replace('nl.textContent = "انطباعك عن «أ» و«ب» (اللهجة، الوقفات، أي شي):"', 'nl.textContent = "انطباعك (النطق، الشبه بصوتك، الوقفات، أي شي):"')
 (D / "page/index.html").write_text(page.replace("__ITEMS__", json.dumps(items, ensure_ascii=False)))
 print("page ->", D / "page")
