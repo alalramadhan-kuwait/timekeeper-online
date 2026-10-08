@@ -406,6 +406,26 @@
     - Identical settings: ref.wav, seed 0, exaggeration 0.4, cfg 0.5, the «…» end.
     - The report covers wins **and regressions**, by pattern.
   - **Validation reported separately:** `tk_val_cross.py` gives both models on both texts (val and final), because V5's own val loss is on different text and isn't comparable to v4's.
+- **Exaggeration sweep result** (Ali rated it 2026-10-07; read 10-08; the Golay paragraph, scores 1–5):
+
+  | model / exaggeration | pron | prosody | voice | reel |
+  |---|---|---|---|---|
+  | LoRA 0.25 (**his best**) | 2 | 4 | 5 | 3 |
+  | LoRA 0.4 | 1 | 5 | 5 | 1 |
+  | LoRA 0.5 / 0.7 / 0.9 | 1 | – | – | – |
+  | base 0.25 | 1 | 5 | 4 | 4 |
+  | base 0.4 | 4 | 4 | 1 | 1 |
+  | base 0.5 | 3 | 5 | 2 | – |
+  | base 0.7 | – | 5 | 1 | – |
+  | base 0.9 | 4 | 5 | 3 | 2 |
+
+  - **The trade:** the base model pronounces better but doesn't sound like Ali; the LoRA sounds like him but pronounces worse.
+  - So the fine-tune itself costs pronunciation, not only the text. (This was a paragraph, and the LoRA is known to garble inside paragraphs.)
+  - **Next test: LoRA strength at inference** (`tk_lora_blend.py`: 0 = base, 0.5, 0.75, 1 = full), to find a blend.
+- **Ali asked for 3 tests while V5 trains:**
+  1. Which real clip the narrator should imitate (`refpick`: ref.wav + 3 other clips).
+  2. LoRA strength.
+  3. V5 against v4.
 - **V5-draft training stopped at step 1713** (the process ended, probably a container restart). Best val: 4.584 at step 1650. It is not a candidate model, so it is not resumed.
 - **Online check (2026-10-07):** found no Kuwaiti speech or TTS dataset with a commercial licence.
   - Open Arabic sets are MSA: ArVoice (CC-BY-4.0), Arabic Speech Corpus, ClArTTS.
