@@ -1,5 +1,13 @@
 [
   {
+    "version": "3.5.1",
+    "date": "2026-10-08",
+    "title": "A new face for Mohammed",
+    "changes": [
+      "Ask Mohammed has a new drawn portrait that is easier to make out at small size."
+    ]
+  },
+  {
     "version": "3.5.0",
     "date": "2026-10-08",
     "title": "Ask Mohammed",
