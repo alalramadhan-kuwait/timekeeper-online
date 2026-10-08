@@ -365,6 +365,13 @@
   - One hidden random mapping per session (أ = the same model in all 5 sentences).
   - The page is lighter: per sentence, "which is closer to how you say it" (أ / ب / same), optional word taps, and one free-text note per session.
   - Session 1 was republished this way.
+- **Comparison text problem (Ali, 2026-10-08):** the held-out sentences use Whisper's transcripts, which are full of errors.
+  - Examples: غليل, بساكم, بالحالم, سوكربرغ, بودكاستان كيبر.
+  - Whisper writes Ali's g as غ in about 20 training words: الأرغام, تغريبا, نغدر, غرروا, تغديم, الرغمية, مغاومة, and more. These get fixed in V5's text along with the dictionary.
+  - Before testing, Ali corrects the 9 test sentences (3 sessions × 3) against his own recordings: https://claude.ai/artifact/RkmR33rYHUk1nm9LmMr9zv
+  - The page is prefilled with Claude's proposed corrections. Uncertain phrases are left as transcribed for Ali.
+  - Both models are re-rendered from the corrected text. Habibi renders of the old text were stopped.
+  - Ali hears Emirati pronunciation in one voice. He marks those words by tapping, and they feed the error report.
 - **V5-draft training stopped at step 1713** (the process ended, probably a container restart). Best val: 4.584 at step 1650. It is not a candidate model, so it is not resumed.
 - **Online check (2026-10-07):** found no Kuwaiti speech or TTS dataset with a commercial licence.
   - Open Arabic sets are MSA: ArVoice (CC-BY-4.0), Arabic Speech Corpus, ClArTTS.
