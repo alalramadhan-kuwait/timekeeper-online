@@ -435,6 +435,7 @@
 - **V5 vs v4, blind, in parts of 3 sealed lines** (`tk_v5_part.py`; one hidden mapping per part):
   - **Part 1:** kp01 V5, kp02 v4, kp03 V5, so V5 wins 2/3.
   - **Part 2:** kp04, kp05, kp06 all V5 (3/3). Running total: V5 5/6.
+  - **Part 3:** kp07, kp08, kp09 all V5 (3/3). Running total: V5 8/9.
   - **Ali's note:** Arabic needs diacritics (تشكيل) to fix a word's pronunciation; without them the model guesses (e.g. أدور).
   - **Candidate next step:** an automatic diacritiser on the input. MSA diacritisers won't know Kuwaiti forms, so it would be tested by ear like the dictionary. Our tashkeel trials were mixed: طَوِيل didn't help; the pause did.
 - **Test 1 (reference clip):** Ali picked the current `ref.wav` (Tudor episode) out of 4 real clips. The prompt clip is not the problem; it is kept.
