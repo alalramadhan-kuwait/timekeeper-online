@@ -441,6 +441,7 @@
   - **Part 5:** kp13 V5; kp14 and kp15 went to v4, so V5 1/3. Running total: V5 12/15.
     - **Regressions so far:** kp02 «الوكيل قال لي إن الطلب يتأخر شوي.», kp14 «يتذكر أول ساعة لبسها؟ كانت من أبوه.», kp15 «الموديل هذا كل يوم ينطلب، والكمية ما تكفي.».
     - Two of the three are verb-pattern lines.
+  - **Part 6:** kp16 V5, kp17 v4 («شفيك؟ ليش ما رديت علي امبارح؟», connected speech), kp18 V5, so V5 2/3. Running total: V5 14/18.
   - **Ali's note:** Arabic needs diacritics (تشكيل) to fix a word's pronunciation; without them the model guesses (e.g. أدور).
   - **Candidate next step:** an automatic diacritiser on the input. MSA diacritisers won't know Kuwaiti forms, so it would be tested by ear like the dictionary. Our tashkeel trials were mixed: طَوِيل didn't help; the pause did.
 - **Test 1 (reference clip):** Ali picked the current `ref.wav` (Tudor episode) out of 4 real clips. The prompt clip is not the problem; it is kept.
