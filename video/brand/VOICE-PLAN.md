@@ -358,6 +358,13 @@
   - Habibi uses UAE as a Gulf reference only; it is not assumed closest to Kuwaiti.
   - **Output:** a report of the recurring errors and their likely causes, not just a ranking.
   - The first round is v4 vs Habibi. Audar and Fasih join later, if they become available.
+- **Session 1, first version: inconclusive.** The letters were shuffled per sentence, and Ali assumed «أ» was the same model throughout.
+  - In that version «أ» was Habibi in s01/s05 and v4 in s02–s04. The key is kept in `blind-key-session1-v1.json`.
+  - His notes: «أ» better but some words sound Saudi; «ب» weaker on pronunciation and dialect, but calm, excellent pauses. These mix the two models, so they are not attributable.
+- **Fix:**
+  - One hidden random mapping per session (أ = the same model in all 5 sentences).
+  - The page is lighter: per sentence, "which is closer to how you say it" (أ / ب / same), optional word taps, and one free-text note per session.
+  - Session 1 was republished this way.
 - **V5-draft training stopped at step 1713** (the process ended, probably a container restart). Best val: 4.584 at step 1650. It is not a candidate model, so it is not resumed.
 - **Online check (2026-10-07):** found no Kuwaiti speech or TTS dataset with a commercial licence.
   - Open Arabic sets are MSA: ArVoice (CC-BY-4.0), Arabic Speech Corpus, ClArTTS.

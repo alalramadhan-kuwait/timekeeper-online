@@ -52,7 +52,7 @@ button:focus-visible{outline:2px solid var(--dial);outline-offset:2px}
 <main dir="rtl" lang="ar">
   <header>
     <h1>نفس الجملة، كذا نسخة</h1>
-    <p class="lede">فوق كل جملة تسجيلك الحقيقي، وهو المرجع. تحته نسخ بحروف (أ، ب، ج) والترتيب يتغير من جملة لجملة، فما تدري أي موديل أي نسخة. لكل نسخة: قيّم من 1 إلى 5، علّم نوع الغلط إذا فيه، واضغط على الكلمات اللي انقالت غلط.</p>
+    <p class="lede">فوق كل جملة تسجيلك الحقيقي، وهو المرجع. تحته صوتين: <b>أ</b> و<b>ب</b>. في هالجلسة كلها «أ» نفس الموديل و«ب» نفس الموديل، بس ما تدري أي واحد. لكل جملة: اختار أي وحدة أقرب لنطقك، واضغط على الكلمات اللي انقالت غلط إذا تبي. وفي الآخر اكتب انطباعك عن «أ» و«ب».</p>
   </header>
   <div class="bar" id="bar"></div>
   <p class="notice" id="notice" hidden>التقييم محفوظ بهالجهاز بس.</p>
@@ -61,15 +61,15 @@ button:focus-visible{outline:2px solid var(--dial);outline-offset:2px}
 <script>
 const ITEMS = __ITEMS__;
 const PART = 5;  // one session = one part
-const SCALES = [["pron","النطق الكويتي"],["madd","المد والتشديد"],["pause","الوقفات"]];
-const TYPES = [["letter","حرف غلط (ق/ك/ج…)"],["madd","مد زايد"],["shadda","تشديد زايد"],["pause","وقفة بغير مكانها"],["vowel","حركة غلط"],["missing","كلمة ناقصة أو زايدة"]];
+const SCALES = [];
+const TYPES = [];
 const state = {};   // "<item>-<letter>" -> {pron, madd, pause, types:[], bad:[]}
 let db = null, part = 0;
 const $ = s => document.querySelector(s);
 function load(){ try{ return JSON.parse(localStorage.getItem("tkvoice-refcmp")||"{}"); }catch(e){ return {}; } }
 function keep(){ try{ localStorage.setItem("tkvoice-refcmp", JSON.stringify(state)); }catch(e){} }
 const key = (it, o) => it.id + "-" + o.label;
-function rated(it){ return it.opts.every(o => { const s = state[key(it, o)]; return s && SCALES.every(([k]) => s[k]); }); }
+function rated(it){ return !!(state[it.id + "-pick"] || {}).pick; }
 function btn(cls, text, pressed, fn){ const b = document.createElement("button"); b.type = "button"; b.className = cls; b.textContent = text; b.setAttribute("aria-pressed", String(pressed)); b.addEventListener("click", fn); return b; }
 function render(){
   const bar = $("#bar"); bar.textContent = "";
@@ -107,8 +107,27 @@ function render(){
         st.bad = st.bad.includes(i) ? st.bad.filter(x => x !== i) : [...st.bad, i].sort((a, b) => a - b); save(it, o); render(); })));
       v.append(ws); card.append(v);
     }
+    const pk = state[it.id + "-pick"] ||= {};
+    const q = document.createElement("div"); q.className = "scale";
+    const ql = document.createElement("span"); ql.textContent = "أي وحدة أقرب لنطقك؟"; q.append(ql);
+    for (const [v, l] of [...it.opts.map(o => [o.label, o.label]), ["same", "نفس الشي"]])
+      q.append(btn("chip", l, pk.pick === v, () => { pk.pick = v; savePick(it); render(); }));
+    card.append(q);
     list.append(card);
   }
+  const nc = document.createElement("section"); nc.className = "card";
+  const nl = document.createElement("label"); nl.htmlFor = "note"; nl.className = "hint"; nl.textContent = "انطباعك عن «أ» و«ب» (اللهجة، الوقفات، أي شي):";
+  const ta = document.createElement("textarea"); ta.id = "note"; ta.rows = 3; ta.value = (state.note || {}).text || "";
+  ta.style.cssText = "font:inherit;width:100%;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink)";
+  ta.addEventListener("change", () => { state.note = {text: ta.value}; keep(); if (db) db.doc("ratings/note").set({ text: ta.value, at: new Date().toISOString() }).catch(() => {}); });
+  nc.append(nl, ta); list.append(nc);
+}
+function savePick(it){
+  keep(); if (!db) return;
+  const s = $("#save"); if (s){ s.textContent = "يحفظ…"; s.className = "save"; }
+  db.doc("ratings/" + it.id + "-pick").set({ item: it.id, pick: state[it.id + "-pick"].pick, at: new Date().toISOString() })
+    .then(() => { const s = $("#save"); if (s){ s.textContent = "محفوظ"; s.className = "save ok"; } })
+    .catch(() => { const s = $("#save"); if (s) s.textContent = "ما انحفظ"; });
 }
 function audioEl(src){
   const au = document.createElement("audio"); au.controls = true; au.preload = "none"; au.src = src;
@@ -134,7 +153,10 @@ Object.assign(state, load()); render();
   db = window.claude?.use ? await window.claude.use("db") : null;
   if (!db){ $("#notice").hidden = false; return; }
   try{ const snap = await db.collection("ratings").get();
-    snap.docs.forEach(d => { const v = d.data(); if (v) state[d.id] = { pron: v.pron || undefined, madd: v.madd || undefined, pause: v.pause || undefined, types: v.types || [], bad: v.bad || [] }; });
+    snap.docs.forEach(d => { const v = d.data(); if (!v) return;
+      if (d.id === "note") state.note = { text: v.text || "" };
+      else if (d.id.endsWith("-pick")) state[d.id] = { pick: v.pick };
+      else state[d.id] = { types: v.types || [], bad: v.bad || [] }; });
     keep(); render(); }catch(e){}
 })();
 </script>

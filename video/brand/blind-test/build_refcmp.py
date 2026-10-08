@@ -1,5 +1,6 @@
 """Blind page for the 30-sentence reference comparison: Ali's real recording (labelled reference) + every model
-present in voice-src/refcmp/<model>/ for that sentence, shuffled per sentence under letters. The key
+present in voice-src/refcmp/<model>/ for that sentence, under letters fixed for the session (one hidden random mapping per session: Ali compares
+'voice أ' and 'voice ب' across a session, so letters must not move between sentences). The key
 (sentence -> letter -> model) stays in voice-src/refcmp/blind-key.json. Output: voice-src/refcmp/page/
 Usage: python3 build_refcmp.py <part 1-6> v4 habibi [audar ...]   (Ali's sessions: 5 sentences each)
 """
@@ -27,11 +28,12 @@ def mp3(src, name):
     return f"audio/{name}"
 
 
+order = list(models)
+random.SystemRandom().shuffle(order)             # one hidden mapping for the whole session: أ is the same model throughout
 for n, ln in enumerate(lines, 1):
     if not (PART - 1) * 5 < n <= PART * 5:
         continue
-    have = [m for m in models if (R / m / f"{ln['id']}.wav").exists()]
-    random.SystemRandom().shuffle(have)          # fresh per build; the key is written in the same run
+    have = [m for m in order if (R / m / f"{ln['id']}.wav").exists()]
     opts = []
     for i, m in enumerate(have):
         key.setdefault(f"s{n:02d}", {"clip": ln["id"]})[letters[i]] = m
