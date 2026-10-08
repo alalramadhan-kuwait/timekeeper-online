@@ -398,6 +398,8 @@
     - **No universal ق→گ.** The rule stays UNVERIFIED. Unverified words and the words Ali says with ق are untouched.
   - **Per-instance check of the largest words (round 6):** 15 more train clips (قاعد 3, قبل 3, الوقت 3, قدموا 2, طريق 2, علاقة 2). https://claude.ai/artifact/Sh9KkNsCZ1NjgmRLm76ffL
     - If any come back as ق, those words become context entries, and V5 is rebuilt and retrained.
+    - **Ali's decision (2026-10-08): skip the check.** "In Kuwaiti they're all one": a word he says with گ is گ in every instance. So V5's per-word generalisation stands as his rule; it was not checked instance by instance.
+    - The 7 words he chose ق in round 4 (فقط, أعتقد, الطاقة, موقع, القالب, بالمستقبل, …) stay ق. The general ق→گ rule stays UNVERIFIED.
   - **Blind test, widened (reviewer):** all 30 sealed lines, as one page in parts of 3. `tk_v5_ab.py`.
     - Production setup: v4 reads the plain line; V5 reads `kw_convention(plain)`, which changes only قبل in kp01, kp06 and kp27.
     - For those 3 lines, V5 is also rendered on the plain text, for a controlled check.
