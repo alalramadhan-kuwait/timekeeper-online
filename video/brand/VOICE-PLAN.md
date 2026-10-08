@@ -426,6 +426,11 @@
   1. Which real clip the narrator should imitate (`refpick`: ref.wav + 3 other clips).
   2. LoRA strength.
   3. V5 against v4.
+- **Test 1 (reference clip):** Ali picked the current `ref.wav` (Tudor episode) out of 4 real clips. The prompt clip is not the problem; it is kept.
+- **Test 2 (LoRA strength, v4, blind, 2 sentences):**
+  - pr1: full LoRA (1.0). pr3: 0.5. Strengths 0 and 0.75 were never picked.
+  - Note: "the likeness is good, but some pronunciation isn't".
+  - With 2 sentences this is not conclusive. A half-strength LoRA is worth keeping as a candidate: re-test it on V5 together with the 30-line set if V5 alone does not fix pronunciation.
 - **V5-draft training stopped at step 1713** (the process ended, probably a container restart). Best val: 4.584 at step 1650. It is not a candidate model, so it is not resumed.
 - **Online check (2026-10-07):** found no Kuwaiti speech or TTS dataset with a commercial licence.
   - Open Arabic sets are MSA: ArVoice (CC-BY-4.0), Arabic Speech Corpus, ClArTTS.
