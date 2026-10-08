@@ -31,7 +31,7 @@ for n, ln in enumerate(lines, 1):
     if not (PART - 1) * 5 < n <= PART * 5:
         continue
     have = [m for m in models if (R / m / f"{ln['id']}.wav").exists()]
-    random.Random(f"refcmp-{n}").shuffle(have)
+    random.SystemRandom().shuffle(have)          # fresh per build; the key is written in the same run
     opts = []
     for i, m in enumerate(have):
         key.setdefault(f"s{n:02d}", {"clip": ln["id"]})[letters[i]] = m
