@@ -444,6 +444,14 @@
   - **Part 6:** kp16 V5, kp17 v4 («شفيك؟ ليش ما رديت علي امبارح؟», connected speech), kp18 V5, so V5 2/3. Running total: V5 14/18.
   - **Ali's note:** Arabic needs diacritics (تشكيل) to fix a word's pronunciation; without them the model guesses (e.g. أدور).
   - **Candidate next step:** an automatic diacritiser on the input. MSA diacritisers won't know Kuwaiti forms, so it would be tested by ear like the dictionary. Our tashkeel trials were mixed: طَوِيل didn't help; the pause did.
+- **Machine clean-up (2026-10-08, Ali):**
+  - **Deleted checkpoints:**
+    - `ckpt/v5-draft`, `run1`, `cpu2` and `cpu3`.
+    - Every v4 checkpoint except step 2250.
+    - Every V5 checkpoint except steps 1800 and 1950.
+  - **Deleted the Audar install and model.** Reinstall if an HF token is added.
+  - **Deleted the unused faster-whisper-small model.**
+  - **Kept:** `sep/` (needed for the V5b re-cut), the datasets, `ckpt/cpu4` (the Mac resume point), and the transcription and phoneme models.
 - **Test 1 (reference clip):** Ali picked the current `ref.wav` (Tudor episode) out of 4 real clips. The prompt clip is not the problem; it is kept.
 - **Test 2 (LoRA strength, v4, blind, 2 sentences):**
   - pr1: full LoRA (1.0). pr3: 0.5. Strengths 0 and 0.75 were never picked.
