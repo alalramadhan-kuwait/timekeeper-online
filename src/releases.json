@@ -1,5 +1,15 @@
 [
   {
+    "version": "3.5.0",
+    "date": "2026-10-08",
+    "title": "Ask Mohammed",
+    "changes": [
+      "Ask is now “Ask Mohammed”: a face in the corner of every page. Tap it to ask about stock, sales or what to buy, then close it and carry on.",
+      "The conversation stays while you move between pages, and starts fresh the next time you open the app.",
+      "The separate Ask page is gone from the menu."
+    ]
+  },
+  {
     "version": "3.4.1",
     "date": "2026-10-08",
     "title": "Ask starts fresh",

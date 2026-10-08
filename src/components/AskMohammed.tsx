@@ -1,14 +1,18 @@
 import { useEffect, useRef, useState } from 'react';
-import { MessageSquare, Send, Plus, ThumbsUp, ThumbsDown, AlertTriangle, Lock } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
+import { Send, Plus, ThumbsUp, ThumbsDown, AlertTriangle, X } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-import { Spinner } from '../components/ui';
+import avatar from '../assets/ask-mohammed.webp';
 
 /**
- * Ask: the owners' stock analyst. Answers come from the stock-assistant backend,
- * which only runs fixed calculations; this screen never sees an API key or
- * queries stock itself. The strip above each answer (period, freshness, gaps) is
- * written by the backend, not the model.
+ * Ask Mohammed: the owners' stock analyst, a face in the corner of every page.
+ * Answers come from the stock-assistant backend, which only runs fixed
+ * calculations; this screen never sees an API key or queries stock itself. The
+ * strip above each answer (period, freshness, gaps) is written by the backend,
+ * not the model. Rendered by Layout only for users on stock_ai_access, and the
+ * backend checks again.
+ *
+ * The conversation lives as long as the app is open, across pages; opening the
+ * app again starts a fresh one.
  */
 
 interface Strip {
@@ -18,17 +22,16 @@ interface Strip {
 }
 interface Msg {
   id?: string; role: 'user' | 'assistant'; content: string; strip?: Strip | null;
-  model?: string | null; verdict?: 'right' | 'wrong' | null; pending?: boolean;
+  model?: string | null; verdict?: 'right' | 'wrong' | null;
 }
 interface Status { enabled: boolean; has_key: boolean; budget?: { warn: boolean; blocked: boolean } }
 
 const SUGGESTIONS = [
-  'How much stock do we have, owned vs consignment?',
-  'What should I reorder this month?',
-  'Why did Nivada sales drop?',
+  'شكثر عندنا بضاعة، ملكنا والأمانة؟',
   'شنو أكثر شي انباع آخر ٣ شهور؟',
-  'عندنا Hoffman Panda؟',
+  'شنو أطلب هالشهر؟',
   'لو عندي ٥٠٠٠ دينار شنو أشتري؟',
+  'Why did Nivada sales drop?',
 ];
 
 const REASONS: { key: string; label: string }[] = [
@@ -46,9 +49,17 @@ async function invokeError(error: unknown): Promise<string> {
   return 'Something went wrong. Try again.';
 }
 
-export default function AskPage() {
-  const { user } = useAuth();
-  const [allowed, setAllowed] = useState<boolean | null>(null);
+function Face({ size, thinking = false }: { size: number; thinking?: boolean }) {
+  return (
+    <span className={`relative block shrink-0 rounded-full bg-amber-400 ring-2 ring-white overflow-hidden ${thinking ? 'animate-pulse' : ''}`}
+      style={{ width: size, height: size }}>
+      <img src={avatar} alt="" width={size} height={size} className="w-full h-full object-cover" draggable={false} />
+    </span>
+  );
+}
+
+export default function AskMohammed() {
+  const [open, setOpen] = useState(false);
   const [status, setStatus] = useState<Status | null>(null);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Msg[]>([]);
@@ -56,24 +67,27 @@ export default function AskPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const endRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  // whether it is switched on, read when the window first opens
+  useEffect(() => {
+    if (!open || status) return;
+    supabase.functions.invoke('stock-assistant', { body: { action: 'status' } })
+      .then(({ data }) => { if (data?.ok) setStatus(data); }, () => {});
+  }, [open, status]);
+
+  useEffect(() => { if (open) endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }); }, [open, messages.length, busy]);
 
   useEffect(() => {
-    if (!user) return;
-    (async () => {
-      const { data: ok } = await supabase.rpc('stock_ai_allowed');
-      setAllowed(!!ok);
-      if (!ok) return;
-      const { data: st } = await supabase.functions.invoke('stock-assistant', { body: { action: 'status' } });
-      if (st?.ok) setStatus(st);
-      // every visit starts a fresh conversation; follow-ups carry context within it
-    })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id]);
-
-  useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }); }, [messages.length, busy]);
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [open]);
 
   function newChat() {
     setConversationId(null); setMessages([]); setError(null); setText('');
+    inputRef.current?.focus();
   }
 
   async function ask(q?: string) {
@@ -94,47 +108,56 @@ export default function AskPage() {
     setMessages((m) => [...m, { id: data.message_id, role: 'assistant', content: data.reply, strip: data.strip, model: data.model }]);
   }
 
-  if (allowed === null) return <Spinner />;
-  if (!allowed) {
+  const off = status && !status.enabled;
+
+  if (!open) {
     return (
-      <div className="max-w-md mx-auto mt-16 text-center text-slate-500">
-        <Lock className="mx-auto mb-3 text-slate-400" size={28} />
-        <p>Ask is limited to the owners.</p>
-      </div>
+      <button onClick={() => setOpen(true)} aria-label="اسأل محمد — Ask Mohammed" title="اسأل محمد"
+        className="fixed z-40 rounded-full shadow-lg shadow-slate-900/20 hover:scale-105 transition-transform focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-300"
+        style={{ right: 'calc(1rem + var(--sa-r))', bottom: 'calc(1rem + var(--sa-b))' }}>
+        <Face size={56} thinking={busy} />
+        {busy && <span className="absolute -top-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-amber-500 ring-2 ring-white animate-ping" />}
+      </button>
     );
   }
 
-  const off = status && !status.enabled;
   return (
-    <div className="max-w-3xl mx-auto flex flex-col" style={{ minHeight: 'calc(100dvh - 7rem)' }}>
-      <div className="flex items-center gap-3 mb-3">
-        <MessageSquare size={20} className="text-amber-500" />
-        <div className="flex-1">
-          <h1 className="text-xl font-bold text-slate-800 leading-tight">Ask</h1>
-          <p className="text-xs text-slate-500">Stock and sales from Lightspeed, in English or Arabic</p>
+    <div role="dialog" aria-label="اسأل محمد"
+      className="fixed z-50 inset-0 md:inset-auto md:right-4 md:bottom-4 md:w-[420px] md:h-[min(680px,calc(100dvh-2rem))] md:rounded-2xl md:border md:border-slate-200 md:shadow-2xl bg-slate-50 flex flex-col overflow-hidden"
+      style={{ paddingTop: 'var(--sa-t)' }}>
+      <div className="flex items-center gap-3 px-4 py-3 bg-white border-b border-slate-200">
+        <Face size={40} thinking={busy} />
+        <div className="flex-1 min-w-0">
+          <div className="font-bold text-slate-800 leading-tight">اسأل محمد</div>
+          <div className="text-[11px] text-slate-500 truncate">{busy ? 'يشيك على الأرقام…' : 'المخزون والمبيعات من Lightspeed'}</div>
         </div>
         {messages.length > 0 && (
-          <button onClick={newChat} className="flex items-center gap-1 text-sm px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50">
+          <button onClick={newChat} className="flex items-center gap-1 text-sm px-2.5 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50">
             <Plus size={15} /> New
           </button>
         )}
+        <button onClick={() => setOpen(false)} aria-label="Close" className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100"><X size={20} /></button>
       </div>
 
-      {off && (
-        <div className="mb-3 flex gap-2 items-start rounded-lg bg-amber-50 border border-amber-200 px-3 py-2 text-sm text-amber-800">
-          <AlertTriangle size={16} className="mt-0.5 shrink-0" />
-          <span>{status!.has_key ? 'Ask is being tested and is not switched on yet.' : 'Ask is waiting for its AI key to be set up.'}</span>
-        </div>
-      )}
-      {status?.budget?.warn && !status.budget.blocked && (
-        <div className="mb-3 text-xs text-amber-700">This month's AI budget is 80% used.</div>
-      )}
-
-      <div className="flex-1 space-y-4 pb-4">
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+        {off && (
+          <div className="flex gap-2 items-start rounded-lg bg-amber-50 border border-amber-200 px-3 py-2 text-sm text-amber-800">
+            <AlertTriangle size={16} className="mt-0.5 shrink-0" />
+            <span>{status!.has_key ? 'Ask is being tested and is not switched on yet.' : 'Ask is waiting for its AI key to be set up.'}</span>
+          </div>
+        )}
+        {status?.budget?.warn && !status.budget.blocked && (
+          <div className="text-xs text-amber-700">This month's AI budget is 80% used.</div>
+        )}
         {messages.length === 0 && !busy && (
-          <div className="pt-6">
-            <p className="text-sm text-slate-500 mb-3">Try:</p>
-            <div className="flex flex-wrap gap-2">
+          <div className="pt-2">
+            <div className="flex items-end gap-2">
+              <Face size={32} />
+              <div dir="rtl" className="rounded-2xl rounded-bl-sm bg-white border border-slate-200 px-4 py-2.5 text-[15px] text-slate-800">
+                هلا، أنا محمد. اسألني عن المخزون والمبيعات، أو شنو تشتري.
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2 mt-4">
               {SUGGESTIONS.map((s) => (
                 <button key={s} dir="auto" disabled={!!off} onClick={() => ask(s)}
                   className="text-sm px-3 py-2 rounded-full bg-white border border-slate-200 text-slate-700 hover:border-amber-300 disabled:opacity-50">
@@ -149,12 +172,12 @@ export default function AskPage() {
           : <Answer key={m.id ?? `a${i}`} msg={m} onVerdict={(v) => setMessages((all) => all.map((x) => (x.id === m.id ? { ...x, verdict: v } : x)))} />)}
         {busy && (
           <div className="flex items-center gap-2 text-sm text-slate-500">
+            <Face size={28} thinking />
             <span className="inline-flex gap-1">
               <span className="h-1.5 w-1.5 rounded-full bg-slate-400 animate-bounce" />
               <span className="h-1.5 w-1.5 rounded-full bg-slate-400 animate-bounce [animation-delay:120ms]" />
               <span className="h-1.5 w-1.5 rounded-full bg-slate-400 animate-bounce [animation-delay:240ms]" />
             </span>
-            Checking the figures…
           </div>
         )}
         {error && <div className="text-sm text-red-600">{error}</div>}
@@ -162,11 +185,11 @@ export default function AskPage() {
       </div>
 
       <form onSubmit={(e) => { e.preventDefault(); ask(); }}
-        className="sticky bottom-0 bg-slate-50 pt-2 flex gap-2 items-end" style={{ paddingBottom: 'calc(0.5rem + var(--sa-b, 0px))' }}>
-        <textarea id="ask-input" dir="auto" rows={1} value={text} disabled={!!off}
+        className="bg-white border-t border-slate-200 px-3 pt-2 flex gap-2 items-end" style={{ paddingBottom: 'calc(0.5rem + var(--sa-b, 0px))' }}>
+        <textarea id="ask-input" ref={inputRef} dir="auto" rows={1} value={text} disabled={!!off} autoFocus
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); ask(); } }}
-          placeholder={off ? 'Not switched on yet' : 'Ask about stock, sales or what to buy…'}
+          placeholder={off ? 'Not switched on yet' : 'اسأل محمد…'}
           className="flex-1 resize-none rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-[16px] max-h-40 focus:outline-none focus:ring-2 focus:ring-amber-300 disabled:bg-slate-100" />
         <button type="submit" disabled={busy || !text.trim() || !!off} aria-label="Send"
           className="h-11 w-11 shrink-0 rounded-xl bg-amber-500 text-white flex items-center justify-center disabled:opacity-40">
