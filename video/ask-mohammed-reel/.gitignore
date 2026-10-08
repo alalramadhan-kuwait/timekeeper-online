@@ -1,0 +1,4 @@
+voice/
+*.log
+render/
+*.mp4
