@@ -48,13 +48,15 @@ audio{flex:1;min-width:200px;height:36px}
 .w[aria-pressed="true"]{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
 textarea{font:inherit;width:100%;min-height:2.6em;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink);resize:vertical}
 button:focus-visible,textarea:focus-visible{outline:2px solid var(--dial);outline-offset:2px}
+details summary{cursor:pointer}
+.choices:has(>span:empty)>span{display:none}
 .notice{border:1px dashed var(--line);border-radius:8px;padding:10px 12px;font-size:.88rem;color:var(--muted);margin:0}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 <main dir="rtl" lang="ar">
   <header>
     <h1>صوت علي بدون تسجيل</h1>
-    <p class="lede">هذي أول تجربة تلقائية: فهد (صوت كويتي جاهز من مايكروسوفت) يقرا النص، وبعدين نحوله لصوت علي. ما سجّل أحد شي. كل جملة تمشي بالترتيب: اسمع فهد وحدد كلماته الغلط، بعدين اسمع النتيجة بصوت علي. 3 صفحات، كل صفحة 3 جمل.</p>
+    <p class="lede">صوت علي بدون ما أحد يسجل. لكل جملة: اسمع، وجاوب على الأسئلة. 3 صفحات، كل صفحة 3 جمل. إجاباتك توصلني على طول.</p>
   </header>
   <div class="bar" id="bar"></div>
   <p class="notice" id="notice" hidden>إجاباتك تنحفظ في هالجهاز بس. لما تخلص، اضغط «انسخ الإجابات» تحت والصقها لي بالمحادثة.</p>
@@ -110,27 +112,27 @@ function render() {
     const card = el("article", "card");
     card.append(el("p", "hint", "جملة " + it.n), el("p", "sent", it.text));
 
-    // the blind A/B comes first, before the Fahed version has been heard anywhere on the card
+    // three questions per sentence (plus a blind A/B for the «اسأل محمد» lines, asked before the result is heard)
     const steps = [];
     if (it.audio.a) {
-      const s0 = step("", "مقارنة مع قرايتك", "وحدة منهم قرايتك المحولة، والثانية فهد المحول. ما تدري أي وحدة");
+      const s0 = step("", "أيهم أحسن؟", "وحدة قرايتك والثانية تلقائية");
       s0.append(player("أ", it.audio.a), player("ب", it.audio.b),
-        choice("أيهم أحسن؟", [["A", "أ"], ["B", "ب"], ["same", "نفس الشي"]], () => s.ab, v => { s.ab = v; save(); }));
+        choice("", [["A", "أ"], ["B", "ب"], ["same", "نفس الشي"]], () => s.ab, v => { s.ab = v; save(); }));
       steps.push(s0);
     }
-    const s1 = step("", "فهد قبل التحويل", "النطق يجي من هني");
-    s1.append(player("فهد", it.audio.tts), el("p", "hint", "اضغط على أي كلمة نطقها غلط بالكويتي. إذا كلها صح لا تضغط شي."), words(it.text, s.ttsWrong, save));
-    const s2 = step("", "بصوت علي", "النتيجة النهائية");
+    const s2 = step("", "يبين صوت علي؟");
     if (it.audio.ref) s2.append(player(it.refLabel, it.audio.ref, true));
-    s2.append(player("النتيجة", it.audio.final),
-      choice("هذا صوت علي؟", [["yes", "إي"], ["no", "لا"]], () => s.ali, v => { s.ali = v; save(); }),
-      el("p", "hint", "كلمات صارت غلط أو مو واضحة بعد التحويل (وكانت صح عند فهد):"), words(it.text, s.finalWrong, save));
-    const s3 = step("", "قبل التحسين وبعده", "السرعة والنبرة والوضوح");
-    s3.append(player("قبل التحسين", it.audio.vc), player("بعد التحسين", it.audio.final),
-      choice("أيهم أحسن؟", [["before", "قبل"], ["after", "بعد"], ["same", "نفس الشي"]], () => s.post, v => { s.post = v; save(); }));
-    steps.push(s1, s2, s3);
+    s2.append(player("الصوت", it.audio.final),
+      choice("", [["yes", "إي"], ["no", "لا"]], () => s.ali, v => { s.ali = v; save(); }));
+    const s3 = step("", "في كلمة انقالت غلط؟", "اضغط عليها");
+    s3.append(words(it.text, s.finalWrong, save));
+    const s4 = step("", "أي نسخة أحسن؟");
+    s4.append(player("نسخة ١", it.audio.vc), player("نسخة ٢", it.audio.final),
+      choice("", [["before", "١"], ["after", "٢"], ["same", "نفس الشي"]], () => s.post, v => { s.post = v; save(); }));
+    steps.push(s2, s3, s4);
     steps.forEach((x, i) => { x.querySelector(".n").textContent = "١٢٣٤"[i] + " "; });
     card.append(...steps);
+    const det = el("details"); det.append(el("summary", "hint", "فهد قبل التحويل (للمقارنة، مو لازم)"), player("فهد", it.audio.tts)); card.append(det);
     const ta = el("textarea"); ta.id = "note-" + it.id; ta.placeholder = "ملاحظة (اختياري)"; ta.value = s.note;
     ta.addEventListener("input", () => { s.note = ta.value; save(); });
     card.append(ta);
