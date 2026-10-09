@@ -1,7 +1,7 @@
 import { NavLink, Outlet, useLocation, useSearchParams } from 'react-router-dom';
 import {
   LayoutDashboard, Briefcase, TrendingUp, Hourglass, Truck, Handshake,
-  Star, Users, CalendarRange, LogOut, Watch, Menu, Contact, Settings, Gem, ClipboardCheck, PhoneCall, Boxes, History, UserRound, Wrench, Instagram, Megaphone, Target, Sparkles, Activity, Gauge, Inbox, ClipboardList, ChevronDown, BellRing, Bell, Download, Share, type LucideIcon,
+  Star, Users, CalendarRange, LogOut, Watch, Menu, Contact, Settings, Gem, ClipboardCheck, PhoneCall, Boxes, History, UserRound, Wrench, Instagram, Megaphone, Target, Sparkles, Activity, Gauge, Inbox, ClipboardList, ChevronDown, BellRing, Bell, Download, Share, Castle, type LucideIcon,
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useAuth, Role } from '../context/AuthContext';
@@ -213,6 +213,13 @@ export default function Layout() {
           </div>
         </div>
         <nav className="flex-1 overflow-y-auto py-3">
+          {/* owners only (stock_ai_access); the World checks again on the server */}
+          {askAllowed && (
+            <NavLink to="/world" onClick={() => setOpen(false)}
+              className="mx-3 mb-2 flex items-center gap-3 rounded-lg bg-amber-400/10 px-3 py-2 text-sm font-medium text-amber-300 hover:bg-amber-400/20">
+              <Castle size={16} /> <span className="flex-1">Time Keeper World</span>
+            </NavLink>
+          )}
           {(() => {
             const NavItem = (n: NavItem) => (
               <NavLink

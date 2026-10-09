@@ -31,6 +31,7 @@ import { AdsPage } from './pages/Ads';
 import { ClientAdsPage } from './pages/ClientAds';
 import { MarketingOverviewPage } from './pages/MarketingOverview';
 import { Spinner } from './components/ui';
+import WorldRoute from './components/WorldRoute';
 
 /** The manager runs the day, so admin and manager land on the manager's screen; the owner's money view is at /owner. Everyone else keeps the role-based dashboard. */
 function Home() {
@@ -49,6 +50,8 @@ function Shell() {
 
   return (
     <Routes>
+      {/* owners only, full screen, outside the usual chrome */}
+      <Route path="/world" element={<WorldRoute />} />
       <Route element={<Layout />}>
         <Route path="/" element={<Home />} />
         <Route path="/owner" element={g('/owner', <Dashboard title="Owner view" />)} />
