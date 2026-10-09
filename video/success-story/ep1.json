@@ -1,0 +1,1610 @@
+{
+ "title": "قبل تايم كيبر",
+ "episode": 1,
+ "width": 720,
+ "height": 1280,
+ "fps": 30,
+ "maxWords": 4,
+ "style": {
+  "banner": {
+   "paper": "#F3F0E8",
+   "ink": "#111111",
+   "upper": false,
+   "ls": 0,
+   "tape": "rgba(186,182,172,.88)",
+   "torn": 0.5,
+   "size": 34
+  },
+  "caption": {
+   "font": "var(--f-banner)"
+  },
+  "grain": 0.42,
+  "vignette": 0.8
+ },
+ "themes": {
+  "tk-bone": {
+   "bg": "#E4DFD3",
+   "blot": [
+    "#EFEBE1",
+    "#D5CFC1"
+   ],
+   "floor": "#C9C3B4",
+   "floorTop": "#DDD7C9",
+   "capBg": "#111111",
+   "capInk": "#FFFFFF"
+  },
+  "tk-linen": {
+   "bg": "#CFC7B5",
+   "blot": [
+    "#DDD6C6",
+    "#BDB5A2"
+   ],
+   "floor": "#B3AB98",
+   "floorTop": "#C7BFAD",
+   "capBg": "#111111",
+   "capInk": "#FFFFFF"
+  },
+  "tk-graphite": {
+   "bg": "#34373E",
+   "blot": [
+    "#43474F",
+    "#25272C"
+   ],
+   "floor": "#222428",
+   "floorTop": "#383B42",
+   "capBg": "#F3F0E8",
+   "capInk": "#111111"
+  },
+  "tk-ink": {
+   "bg": "#16181C",
+   "blot": [
+    "#22252B",
+    "#0D0E11"
+   ],
+   "floor": "#0F1013",
+   "floorTop": "#272A31",
+   "capBg": "#F3F0E8",
+   "capInk": "#111111"
+  },
+  "tk-black": {
+   "bg": "#050505",
+   "blot": [
+    "#0B0B0B",
+    "#000000"
+   ],
+   "floor": "#050505",
+   "floorTop": "#111111",
+   "capBg": "#F3F0E8",
+   "capInk": "#111111"
+  }
+ },
+ "audio": {
+  "autoSfx": true,
+  "music": "renders/ep1_score_temp.wav",
+  "musicGain": -17
+ },
+ "scenes": [
+  {
+   "id": "E1-S01",
+   "status": "METAPHOR",
+   "dur": 3.8,
+   "theme": "tk-black",
+   "floor": false,
+   "elements": [
+    {
+     "type": "watch",
+     "x": 360,
+     "y": 640,
+     "size": 560,
+     "strap": false,
+     "numerals": "arabic",
+     "brand": "",
+     "date": false,
+     "scale": [
+      [
+       0,
+       1.75
+      ],
+      [
+       3.6,
+       1.0,
+       "inOutCubic"
+      ]
+     ],
+     "time": [
+      10,
+      8,
+      40
+     ],
+     "still": true,
+     "guilloche": true
+    }
+   ],
+   "banner": "",
+   "claims": [
+    "Opening image only: a mechanical watch seconds hand. No factual claim."
+   ],
+   "note": "Silence except the watch. Camera pulls back from the dial.",
+   "beds": [
+    {
+     "name": "watch_run",
+     "from": 0.0,
+     "to": 3.8,
+     "gain": -14
+    }
+   ],
+   "silent": true
+  },
+  {
+   "id": "E1-S02",
+   "status": "FOUNDER",
+   "dur": 7.0,
+   "theme": "tk-ink",
+   "floor": false,
+   "elements": [
+    {
+     "type": "map",
+     "x": 360,
+     "y": 620,
+     "w": 660,
+     "h": 760,
+     "view": [
+      [
+       0,
+       {
+        "lon": -98,
+        "lat": 38.5,
+        "span": 58
+       }
+      ]
+     ],
+     "sea": "#CCC6B7",
+     "land": "#F4F1E8",
+     "pins": [],
+     "routes": [],
+     "states": true,
+     "unfold": {
+      "at": 0.2,
+      "dur": 1.5
+     }
+    }
+   ],
+   "banner": "",
+   "vo": "قبل تايم كيبر… ما كان في شركة. ولا محل. ولا حتى خطة.",
+   "captions": "قبل تايم كيبر… | ما كان في شركة. | ولا محل. | ولا حتى خطة.",
+   "claims": [
+    "Before Time Keeper there was no company, no store and no plan (founder testimony)."
+   ],
+   "note": "A paper map of the United States unfolds.",
+   "sfx": [
+    {
+     "at": 0.2,
+     "name": "paper_tear",
+     "gain": -12
+    }
+   ],
+   "transition": "fade"
+  },
+  {
+   "id": "E1-S03",
+   "status": "FOUNDER",
+   "dur": 6.0,
+   "theme": "tk-bone",
+   "floor": true,
+   "elements": [
+    {
+     "type": "puppet",
+     "x": 190,
+     "y": 960,
+     "size": 1.0,
+     "character": "ali-alramadhan",
+     "initial": "ع ر",
+     "top": "#43464D",
+     "opacity": [
+      [
+       0,
+       0.35
+      ],
+      [
+       3.6,
+       1
+      ]
+     ],
+     "pose": "stand",
+     "in": {
+      "type": "rise",
+      "at": 0.8
+     }
+    },
+    {
+     "type": "puppet",
+     "x": 360,
+     "y": 960,
+     "size": 1.0,
+     "character": "mohammad-alyousifi",
+     "initial": "م ي",
+     "top": "#8D9198",
+     "opacity": [
+      [
+       0,
+       0.35
+      ],
+      [
+       3.6,
+       1
+      ]
+     ],
+     "pose": "stand",
+     "in": {
+      "type": "rise",
+      "at": 1.4
+     }
+    },
+    {
+     "type": "puppet",
+     "x": 530,
+     "y": 960,
+     "size": 1.0,
+     "character": "ali-alyousifi",
+     "initial": "ع ي",
+     "top": "#6C7078",
+     "opacity": [
+      [
+       0,
+       0.35
+      ],
+      [
+       3.6,
+       1
+      ]
+     ],
+     "pose": "stand",
+     "in": {
+      "type": "rise",
+      "at": 2.0
+     }
+    },
+    {
+     "type": "watch",
+     "x": 360,
+     "y": 470,
+     "size": 250,
+     "strap": false,
+     "numerals": "arabic",
+     "time": [
+      10,
+      9,
+      0
+     ],
+     "in": {
+      "type": "pop",
+      "at": 3.6
+     },
+     "idle": "pulse"
+    }
+   ],
+   "banner": "",
+   "vo": "كانوا ثلاثة شباب… يجمعهم شيء واحد: حب الساعات.",
+   "captions": "كانوا ثلاثة شباب… | يجمعهم شيء واحد: | حب الساعات.",
+   "claims": [
+    "Three young men united by a love of watches (founder testimony)."
+   ],
+   "note": "Three founder rigs appear as silhouettes; a watch lights up on \"love of watches\".",
+   "sfx": [
+    {
+     "at": 0.9,
+     "name": "paper_place",
+     "gain": -12
+    },
+    {
+     "at": 1.5,
+     "name": "paper_place",
+     "gain": -12
+    },
+    {
+     "at": 2.1,
+     "name": "paper_place",
+     "gain": -12
+    },
+    {
+     "at": 3.7,
+     "name": "clasp",
+     "gain": -10
+    }
+   ]
+  },
+  {
+   "id": "E1-S04",
+   "status": "FOUNDER",
+   "dur": 8.0,
+   "theme": "tk-ink",
+   "floor": false,
+   "elements": [
+    {
+     "type": "map",
+     "x": 360,
+     "y": 520,
+     "w": 640,
+     "h": 520,
+     "view": [
+      [
+       0,
+       {
+        "lon": -98,
+        "lat": 38.5,
+        "span": 58
+       }
+      ],
+      [
+       2.6,
+       {
+        "lon": -105.27,
+        "lat": 40.0,
+        "span": 9
+       },
+       "inOutCubic"
+      ]
+     ],
+     "sea": "#CCC6B7",
+     "land": "#F4F1E8",
+     "pins": [
+      {
+       "id": "bou",
+       "lon": -105.27,
+       "lat": 40.01,
+       "label": "BOULDER",
+       "at": 2.4
+      }
+     ],
+     "routes": [],
+     "states": true
+    },
+    {
+     "type": "photo",
+     "asset": "ep1_boulder_university",
+     "x": 360,
+     "y": 850,
+     "w": 380,
+     "aspect": 1.5,
+     "label": "BOULDER",
+     "desc": "Ali Al-Ramadhan + Ali Al-Yousifi, university years in Boulder",
+     "rot": [
+      [
+       0,
+       -9
+      ],
+      [
+       0.9,
+       -3,
+       "outBack"
+      ]
+     ],
+     "in": {
+      "type": "drop",
+      "at": 3.6,
+      "dur": 0.6
+     }
+    }
+   ],
+   "banner": "BOULDER — COLORADO",
+   "vo": "في بولدر، كولورادو… التقى علي الرمضان وعلي اليوسفي، وهم يدرسون.",
+   "captions": "في بولدر، | كولورادو… | التقى علي الرمضان وعلي اليوسفي، | وهم يدرسون.",
+   "claims": [
+    "Ali Al-Ramadhan and Ali Al-Yousifi met while studying in Boulder, Colorado (founder testimony)."
+   ],
+   "note": "Real university photographs of the two Alis go in the polaroid.",
+   "sfx": [
+    {
+     "at": 2.5,
+     "name": "pin",
+     "gain": -8
+    },
+    {
+     "at": 3.8,
+     "name": "paper_place",
+     "gain": -8
+    }
+   ]
+  },
+  {
+   "id": "E1-S05",
+   "status": "FOUNDER",
+   "dur": 6.5,
+   "theme": "tk-bone",
+   "floor": true,
+   "elements": [
+    {
+     "type": "watch",
+     "x": 360,
+     "y": 430,
+     "size": 440,
+     "strap": false,
+     "numerals": "arabic",
+     "date": false,
+     "opacity": 0.2,
+     "behind": true,
+     "still": true,
+     "time": [
+      10,
+      9,
+      0
+     ]
+    },
+    {
+     "type": "card",
+     "x": 360,
+     "y": 845,
+     "w": 470,
+     "h": 34,
+     "tex": "wood",
+     "color": "#fff",
+     "edge": "cut",
+     "z": 20
+    },
+    {
+     "type": "card",
+     "x": 165.0,
+     "y": 907,
+     "w": 22,
+     "h": 90,
+     "tex": "wood",
+     "color": "#fff",
+     "z": 19
+    },
+    {
+     "type": "card",
+     "x": 555.0,
+     "y": 907,
+     "w": 22,
+     "h": 90,
+     "tex": "wood",
+     "color": "#fff",
+     "z": 19
+    },
+    {
+     "type": "puppet",
+     "x": 235,
+     "y": 960,
+     "size": 1.1,
+     "character": "ali-alramadhan",
+     "initial": "ع ر",
+     "top": "#43464D",
+     "pose": "sitTalk",
+     "talk": true,
+     "in": {
+      "type": "rise",
+      "at": 0.2
+     }
+    },
+    {
+     "type": "puppet",
+     "x": 485,
+     "y": 960,
+     "size": 1.1,
+     "character": "ali-alyousifi",
+     "initial": "ع ي",
+     "top": "#6C7078",
+     "pose": "sit",
+     "flip": true,
+     "in": {
+      "type": "rise",
+      "at": 0.5
+     }
+    },
+    {
+     "type": "cup",
+     "x": 285,
+     "y": 832,
+     "size": 0.62,
+     "z": 25
+    },
+    {
+     "type": "cup",
+     "x": 440,
+     "y": 832,
+     "size": 0.62,
+     "z": 25
+    },
+    {
+     "type": "watch",
+     "x": 362,
+     "y": 828,
+     "size": 110,
+     "strap": false,
+     "anchor": "b",
+     "z": 25,
+     "numerals": "arabic",
+     "in": {
+      "type": "pop",
+      "at": 1.4
+     }
+    },
+    {
+     "type": "bubble",
+     "x": 200,
+     "y": 480,
+     "w": 120,
+     "h": 70,
+     "kind": "thought",
+     "text": "؟",
+     "in": {
+      "type": "pop",
+      "at": 3.4
+     },
+     "z": 40
+    },
+    {
+     "type": "bubble",
+     "x": 520,
+     "y": 500,
+     "w": 120,
+     "h": 70,
+     "kind": "thought",
+     "text": "؟",
+     "in": {
+      "type": "pop",
+      "at": 4.0
+     },
+     "z": 40
+    }
+   ],
+   "banner": "",
+   "vo": "وشوي شوي… صارت الساعات تدخل بكلامهم.",
+   "captions": "وشوي شوي… | صارت الساعات تدخل بكلامهم.",
+   "claims": [
+    "Their friendship and watch interest developed while studying in the US (founder testimony). They are discovering, not yet experts."
+   ],
+   "note": "Two founders talk over coffee with one watch on the table. Question marks, no expertise.",
+   "sfx": [
+    {
+     "at": 1.4,
+     "name": "paper_place",
+     "gain": -12
+    },
+    {
+     "at": 3.5,
+     "name": "pin",
+     "gain": -10
+    }
+   ]
+  },
+  {
+   "id": "E1-S06",
+   "status": "FOUNDER",
+   "dur": 7.0,
+   "theme": "tk-ink",
+   "floor": false,
+   "elements": [
+    {
+     "type": "map",
+     "x": 360,
+     "y": 520,
+     "w": 640,
+     "h": 520,
+     "view": [
+      [
+       0,
+       {
+        "lon": -105.27,
+        "lat": 40.0,
+        "span": 9
+       }
+      ],
+      [
+       1.4,
+       {
+        "lon": -111,
+        "lat": 36.5,
+        "span": 24
+       },
+       "inOutCubic"
+      ]
+     ],
+     "sea": "#CCC6B7",
+     "land": "#F4F1E8",
+     "pins": [
+      {
+       "id": "bou",
+       "lon": -105.27,
+       "lat": 40.01,
+       "label": "BOULDER",
+       "at": 0
+      },
+      {
+       "id": "la",
+       "lon": -118.24,
+       "lat": 34.05,
+       "label": "LOS ANGELES",
+       "at": 2.9
+      }
+     ],
+     "routes": [
+      {
+       "from": "bou",
+       "to": "la",
+       "at": 1.7,
+       "dur": 1.3
+      }
+     ],
+     "states": true
+    },
+    {
+     "type": "photo",
+     "asset": "ep1_losangeles_meeting",
+     "x": 360,
+     "y": 850,
+     "w": 380,
+     "aspect": 1.5,
+     "label": "LOS ANGELES",
+     "desc": "Meeting Mohammad bin Wail Al-Yousifi in Los Angeles",
+     "rot": [
+      [
+       0,
+       9
+      ],
+      [
+       0.9,
+       3,
+       "outBack"
+      ]
+     ],
+     "in": {
+      "type": "drop",
+      "at": 3.4,
+      "dur": 0.6
+     }
+    }
+   ],
+   "banner": "LOS ANGELES — CALIFORNIA",
+   "vo": "وفي لوس أنجلوس، كاليفورنيا… تعرفوا على محمد بن وائل اليوسفي.",
+   "captions": "وفي لوس أنجلوس، | كاليفورنيا… | تعرفوا على محمد بن وائل اليوسفي.",
+   "claims": [
+    "Mohammad bin Wail Al-Yousifi was met in Los Angeles, California (founder testimony)."
+   ],
+   "note": "Map unfolds west; a paper plane travels Boulder to Los Angeles. Real photo of the meeting goes in the polaroid.",
+   "sfx": [
+    {
+     "at": 1.6,
+     "name": "plane",
+     "gain": -14
+    },
+    {
+     "at": 3.5,
+     "name": "paper_place",
+     "gain": -8
+    }
+   ]
+  },
+  {
+   "id": "E1-S07",
+   "status": "FOUNDER",
+   "dur": 5.0,
+   "theme": "tk-bone",
+   "floor": true,
+   "elements": [
+    {
+     "type": "watch",
+     "x": 360,
+     "y": 430,
+     "size": 440,
+     "strap": false,
+     "numerals": "arabic",
+     "date": false,
+     "opacity": 0.2,
+     "behind": true,
+     "still": true,
+     "time": [
+      10,
+      9,
+      0
+     ]
+    },
+    {
+     "type": "card",
+     "x": 360,
+     "y": 845,
+     "w": 560,
+     "h": 34,
+     "tex": "wood",
+     "color": "#fff",
+     "edge": "cut",
+     "z": 20
+    },
+    {
+     "type": "card",
+     "x": 120.0,
+     "y": 907,
+     "w": 22,
+     "h": 90,
+     "tex": "wood",
+     "color": "#fff",
+     "z": 19
+    },
+    {
+     "type": "card",
+     "x": 600.0,
+     "y": 907,
+     "w": 22,
+     "h": 90,
+     "tex": "wood",
+     "color": "#fff",
+     "z": 19
+    },
+    {
+     "type": "puppet",
+     "x": 150,
+     "y": 960,
+     "size": 1.1,
+     "character": "ali-alramadhan",
+     "initial": "ع ر",
+     "top": "#43464D",
+     "pose": "sitTalk",
+     "in": {
+      "type": "rise",
+      "at": 0.1
+     }
+    },
+    {
+     "type": "puppet",
+     "x": 360,
+     "y": 960,
+     "size": 1.1,
+     "character": "mohammad-alyousifi",
+     "initial": "م ي",
+     "top": "#8D9198",
+     "pose": "sit",
+     "in": {
+      "type": "rise",
+      "at": 0.3
+     }
+    },
+    {
+     "type": "puppet",
+     "x": 570,
+     "y": 960,
+     "size": 1.1,
+     "character": "ali-alyousifi",
+     "initial": "ع ي",
+     "top": "#6C7078",
+     "pose": "sit",
+     "flip": true,
+     "in": {
+      "type": "rise",
+      "at": 0.5
+     }
+    },
+    {
+     "type": "cup",
+     "x": 200,
+     "y": 832,
+     "size": 0.6,
+     "z": 25,
+     "in": {
+      "type": "pop",
+      "at": 0.8
+     }
+    },
+    {
+     "type": "cup",
+     "x": 360,
+     "y": 832,
+     "size": 0.6,
+     "z": 25,
+     "in": {
+      "type": "pop",
+      "at": 1.6
+     }
+    },
+    {
+     "type": "cup",
+     "x": 520,
+     "y": 832,
+     "size": 0.6,
+     "z": 25,
+     "in": {
+      "type": "pop",
+      "at": 2.4000000000000004
+     }
+    },
+    {
+     "type": "watch",
+     "x": 270,
+     "y": 828,
+     "size": 96,
+     "strap": false,
+     "anchor": "b",
+     "z": 25,
+     "dialColor": "#17171A",
+     "handColor": "#F1EEE6",
+     "markerColor": "#F1EEE6",
+     "in": {
+      "type": "pop",
+      "at": 1.0
+     }
+    },
+    {
+     "type": "watch",
+     "x": 360,
+     "y": 828,
+     "size": 96,
+     "strap": false,
+     "anchor": "b",
+     "z": 25,
+     "dialColor": "#F1EEE6",
+     "handColor": "#111",
+     "markerColor": "#111",
+     "in": {
+      "type": "pop",
+      "at": 1.8
+     }
+    },
+    {
+     "type": "watch",
+     "x": 450,
+     "y": 828,
+     "size": 96,
+     "strap": false,
+     "anchor": "b",
+     "z": 25,
+     "dialColor": "#B9BDC4",
+     "handColor": "#111",
+     "markerColor": "#111",
+     "in": {
+      "type": "pop",
+      "at": 2.6
+     }
+    }
+   ],
+   "banner": "",
+   "vo": "وصاروا ثلاثة.",
+   "captions": "وصاروا ثلاثة.",
+   "claims": [
+    "The three founders came together (founder testimony)."
+   ],
+   "note": "Three coffee cups, three watches, one table.",
+   "sfx": [
+    {
+     "at": 0.8,
+     "name": "paper_place",
+     "gain": -10
+    },
+    {
+     "at": 1.6,
+     "name": "paper_place",
+     "gain": -10
+    },
+    {
+     "at": 2.4,
+     "name": "paper_place",
+     "gain": -10
+    }
+   ]
+  },
+  {
+   "id": "E1-S08",
+   "status": "FOUNDER",
+   "dur": 7.0,
+   "theme": "tk-ink",
+   "floor": false,
+   "elements": [
+    {
+     "type": "map",
+     "x": 360,
+     "y": 560,
+     "w": 640,
+     "h": 640,
+     "view": [
+      [
+       0,
+       {
+        "lon": -98,
+        "lat": 38.5,
+        "span": 58
+       }
+      ],
+      [
+       1.6,
+       {
+        "lon": -30,
+        "lat": 36,
+        "span": 170
+       },
+       "inOutCubic"
+      ],
+      [
+       4.0,
+       {
+        "lon": 48,
+        "lat": 29.4,
+        "span": 30
+       },
+       "inOutCubic"
+      ]
+     ],
+     "sea": "#CCC6B7",
+     "land": "#F4F1E8",
+     "pins": [
+      {
+       "id": "bou",
+       "lon": -105.27,
+       "lat": 40.01,
+       "label": "BOULDER",
+       "at": 0
+      },
+      {
+       "id": "kw",
+       "lon": 47.98,
+       "lat": 29.37,
+       "label": "KUWAIT",
+       "at": 4.2
+      }
+     ],
+     "routes": [
+      {
+       "from": "bou",
+       "to": "kw",
+       "at": 1.2,
+       "dur": 2.6,
+       "curve": 0.12
+      }
+     ],
+     "highlight": [
+      {
+       "n": "Kuwait",
+       "at": 4.0,
+       "color": "#111111"
+      }
+     ]
+    },
+    {
+     "type": "suitcase",
+     "x": 190,
+     "y": 960,
+     "w": 150,
+     "sticker": "TK",
+     "in": {
+      "type": "drop",
+      "at": 0.1
+     },
+     "z": 30
+    },
+    {
+     "type": "suitcase",
+     "x": 330,
+     "y": 960,
+     "w": 120,
+     "color": "#5B5F68",
+     "in": {
+      "type": "drop",
+      "at": 0.3
+     },
+     "z": 30
+    },
+    {
+     "type": "towers",
+     "x": 560,
+     "y": 960,
+     "h": 330,
+     "in": {
+      "type": "rise",
+      "at": 4.4,
+      "dur": 0.8
+     },
+     "z": 30
+    }
+   ],
+   "banner": "KUWAIT",
+   "vo": "وبعد الدراسة… رجعوا الكويت.",
+   "captions": "وبعد الدراسة… | رجعوا الكويت.",
+   "claims": [
+    "The founders returned to Kuwait after their studies in the US (founder testimony)."
+   ],
+   "note": "Suitcases, plane USA to Kuwait, Kuwait Towers rise from paper.",
+   "sfx": [
+    {
+     "at": 0.4,
+     "name": "clasp",
+     "gain": -10
+    },
+    {
+     "at": 1.3,
+     "name": "plane",
+     "gain": -12
+    },
+    {
+     "at": 4.6,
+     "name": "paper_slide",
+     "gain": -10
+    }
+   ]
+  },
+  {
+   "id": "E1-S09",
+   "status": "FOUNDER",
+   "dur": 7.0,
+   "theme": "tk-bone",
+   "floor": true,
+   "elements": [
+    {
+     "type": "watch",
+     "x": 360,
+     "y": 430,
+     "size": 440,
+     "strap": false,
+     "numerals": "arabic",
+     "date": false,
+     "opacity": 0.2,
+     "behind": true,
+     "still": true,
+     "time": [
+      10,
+      9,
+      0
+     ]
+    },
+    {
+     "type": "card",
+     "x": 360,
+     "y": 845,
+     "w": 600,
+     "h": 34,
+     "tex": "wood",
+     "color": "#fff",
+     "edge": "cut",
+     "z": 20
+    },
+    {
+     "type": "card",
+     "x": 100.0,
+     "y": 907,
+     "w": 22,
+     "h": 90,
+     "tex": "wood",
+     "color": "#fff",
+     "z": 19
+    },
+    {
+     "type": "card",
+     "x": 620.0,
+     "y": 907,
+     "w": 22,
+     "h": 90,
+     "tex": "wood",
+     "color": "#fff",
+     "z": 19
+    },
+    {
+     "type": "puppet",
+     "x": 130,
+     "y": 960,
+     "size": 1.1,
+     "character": "ali-alramadhan",
+     "initial": "ع ر",
+     "top": "#43464D",
+     "pose": "sitTalk",
+     "talk": true,
+     "in": {
+      "type": "rise",
+      "at": 0.1
+     }
+    },
+    {
+     "type": "puppet",
+     "x": 360,
+     "y": 960,
+     "size": 1.1,
+     "character": "mohammad-alyousifi",
+     "initial": "م ي",
+     "top": "#8D9198",
+     "pose": "sitWatch",
+     "in": {
+      "type": "rise",
+      "at": 0.2
+     }
+    },
+    {
+     "type": "puppet",
+     "x": 590,
+     "y": 960,
+     "size": 1.1,
+     "character": "ali-alyousifi",
+     "initial": "ع ي",
+     "top": "#6C7078",
+     "pose": "sit",
+     "flip": true,
+     "talk": true,
+     "talkFrom": 2.0,
+     "in": {
+      "type": "rise",
+      "at": 0.3
+     }
+    },
+    {
+     "type": "laptop",
+     "x": 215,
+     "y": 832,
+     "w": 150,
+     "z": 25,
+     "in": {
+      "type": "pop",
+      "at": 0.8
+     }
+    },
+    {
+     "type": "card",
+     "x": 360,
+     "y": 818,
+     "w": 110,
+     "h": 74,
+     "label": "WATCH",
+     "labelSize": 18,
+     "rot": -8,
+     "z": 26,
+     "in": {
+      "type": "pop",
+      "at": 1.4
+     }
+    },
+    {
+     "type": "phone",
+     "x": 465,
+     "y": 836,
+     "w": 54,
+     "h": 100,
+     "anchor": "b",
+     "z": 26,
+     "in": {
+      "type": "pop",
+      "at": 1.8
+     }
+    },
+    {
+     "type": "watch",
+     "x": 520,
+     "y": 828,
+     "size": 96,
+     "strap": false,
+     "anchor": "b",
+     "z": 26,
+     "dialColor": "#17171A",
+     "handColor": "#F1EEE6",
+     "markerColor": "#F1EEE6",
+     "in": {
+      "type": "pop",
+      "at": 2.2
+     }
+    },
+    {
+     "type": "cup",
+     "x": 300,
+     "y": 832,
+     "size": 0.6,
+     "z": 25
+    }
+   ],
+   "banner": "",
+   "vo": "وكانت لهم جلسات… ساعات على الطاولة، وكلام ما ينتهي.",
+   "captions": "وكانت لهم جلسات… | ساعات على الطاولة، | وكلام ما ينتهي.",
+   "claims": [
+    "After returning to Kuwait, the three kept meeting and talking about watches (founder testimony)."
+   ],
+   "note": "Phones, laptop, watch magazines and watches on the table.",
+   "sfx": [
+    {
+     "at": 0.8,
+     "name": "paper_place",
+     "gain": -12
+    },
+    {
+     "at": 1.8,
+     "name": "click",
+     "gain": -14
+    },
+    {
+     "at": 2.8,
+     "name": "paper_place",
+     "gain": -12
+    }
+   ]
+  },
+  {
+   "id": "E1-S10",
+   "status": "FOUNDER",
+   "dur": 10.0,
+   "theme": "tk-graphite",
+   "floor": false,
+   "elements": [
+    {
+     "type": "text",
+     "text": "ENGLISH",
+     "x": 215,
+     "y": 330,
+     "size": 38,
+     "font": "banner",
+     "weight": 800,
+     "color": "#F3F0E8",
+     "ls": 0.12,
+     "upper": false,
+     "shadow": false,
+     "in": {
+      "type": "fade",
+      "at": 2.6
+     }
+    },
+    {
+     "type": "text",
+     "text": "عربي",
+     "x": 560,
+     "y": 330,
+     "size": 38,
+     "font": "banner",
+     "weight": 800,
+     "color": "#F3F0E8",
+     "shadow": false,
+     "in": {
+      "type": "fade",
+      "at": 2.6
+     }
+    },
+    {
+     "type": "card",
+     "x": 208,
+     "y": 880,
+     "w": 270,
+     "h": 56,
+     "label": "WATCH GUIDE",
+     "labelSize": 20,
+     "color": "#F3F0E8",
+     "rot": -2.4000000000000004,
+     "in": {
+      "type": "drop",
+      "at": 3.0,
+      "dur": 0.45
+     }
+    },
+    {
+     "type": "card",
+     "x": 222,
+     "y": 820,
+     "w": 270,
+     "h": 56,
+     "label": "MOVEMENTS",
+     "labelSize": 20,
+     "color": "#F3F0E8",
+     "rot": -0.8,
+     "in": {
+      "type": "drop",
+      "at": 3.5,
+      "dur": 0.45
+     }
+    },
+    {
+     "type": "card",
+     "x": 208,
+     "y": 760,
+     "w": 270,
+     "h": 56,
+     "label": "REVIEWS",
+     "labelSize": 20,
+     "color": "#F3F0E8",
+     "rot": 0.8,
+     "in": {
+      "type": "drop",
+      "at": 4.0,
+      "dur": 0.45
+     }
+    },
+    {
+     "type": "card",
+     "x": 222,
+     "y": 700,
+     "w": 270,
+     "h": 56,
+     "label": "HISTORY",
+     "labelSize": 20,
+     "color": "#F3F0E8",
+     "rot": 2.4000000000000004,
+     "in": {
+      "type": "drop",
+      "at": 4.5,
+      "dur": 0.45
+     }
+    },
+    {
+     "type": "card",
+     "x": 208,
+     "y": 640,
+     "w": 270,
+     "h": 56,
+     "label": "BUYING TIPS",
+     "labelSize": 20,
+     "color": "#F3F0E8",
+     "rot": -1.6,
+     "in": {
+      "type": "drop",
+      "at": 5.0,
+      "dur": 0.45
+     }
+    },
+    {
+     "type": "card",
+     "x": 222,
+     "y": 580,
+     "w": 270,
+     "h": 56,
+     "label": "COMPLICATIONS",
+     "labelSize": 20,
+     "color": "#F3F0E8",
+     "rot": 0.0,
+     "in": {
+      "type": "drop",
+      "at": 5.5,
+      "dur": 0.45
+     }
+    },
+    {
+     "type": "card",
+     "x": 208,
+     "y": 520,
+     "w": 270,
+     "h": 56,
+     "label": "BRAND STORIES",
+     "labelSize": 20,
+     "color": "#F3F0E8",
+     "rot": 1.6,
+     "in": {
+      "type": "drop",
+      "at": 6.0,
+      "dur": 0.45
+     }
+    },
+    {
+     "type": "card",
+     "x": 560,
+     "y": 880,
+     "w": 130,
+     "h": 46,
+     "label": "بالعربي",
+     "labelSize": 18,
+     "color": "#F3F0E8",
+     "rot": 2,
+     "in": {
+      "type": "drop",
+      "at": 6.2,
+      "dur": 0.45
+     }
+    }
+   ],
+   "banner": "المشكلة",
+   "vo": "كل ما تعمقنا أكثر بعالم الساعات… اكتشفنا مشكلة. المعلومات موجودة… لكن أغلبها مو بالعربي.",
+   "captions": "كل ما تعمقنا أكثر بعالم الساعات… | اكتشفنا مشكلة. | المعلومات موجودة… | لكن أغلبها مو بالعربي.",
+   "claims": [
+    "Their discussions exposed a lack of accessible Arabic watch information (founder testimony). The pile sizes are a visual metaphor, not a measurement."
+   ],
+   "note": "English information piles up; Arabic stays tiny.",
+   "sfx": [
+    {
+     "at": 3.0,
+     "name": "paper_place",
+     "gain": -13
+    },
+    {
+     "at": 3.5,
+     "name": "paper_place",
+     "gain": -13
+    },
+    {
+     "at": 4.0,
+     "name": "paper_place",
+     "gain": -13
+    },
+    {
+     "at": 4.5,
+     "name": "paper_place",
+     "gain": -13
+    },
+    {
+     "at": 5.0,
+     "name": "paper_place",
+     "gain": -13
+    },
+    {
+     "at": 5.5,
+     "name": "paper_place",
+     "gain": -13
+    },
+    {
+     "at": 8.0,
+     "name": "pin",
+     "gain": -8
+    }
+   ]
+  },
+  {
+   "id": "E1-S11",
+   "status": "FOUNDER",
+   "dur": 9.0,
+   "theme": "tk-bone",
+   "floor": false,
+   "elements": [
+    {
+     "type": "card",
+     "x": 360,
+     "y": 420,
+     "w": 560,
+     "h": 112,
+     "style": "sticky",
+     "color": "#F3F0E8",
+     "pin": true,
+     "pinColor": "#111111",
+     "label": "ليش هالساعة غالية؟",
+     "labelSize": 30,
+     "labelFont": "banner",
+     "rot": -2.2,
+     "in": {
+      "type": "pop",
+      "at": 0.6
+     }
+    },
+    {
+     "type": "card",
+     "x": 360,
+     "y": 570,
+     "w": 560,
+     "h": 112,
+     "style": "sticky",
+     "color": "#FFFFFF",
+     "pin": true,
+     "pinColor": "#111111",
+     "label": "شنو يعني حركة ميكانيكية؟",
+     "labelSize": 30,
+     "labelFont": "banner",
+     "rot": 1.8,
+     "in": {
+      "type": "pop",
+      "at": 2.4
+     }
+    },
+    {
+     "type": "card",
+     "x": 360,
+     "y": 720,
+     "w": 560,
+     "h": 112,
+     "style": "sticky",
+     "color": "#E9E4D8",
+     "pin": true,
+     "pinColor": "#111111",
+     "label": "شنو الفرق بين ساعة وساعة؟",
+     "labelSize": 30,
+     "labelFont": "banner",
+     "rot": -1.4,
+     "in": {
+      "type": "pop",
+      "at": 4.2
+     }
+    },
+    {
+     "type": "card",
+     "x": 360,
+     "y": 870,
+     "w": 560,
+     "h": 112,
+     "style": "sticky",
+     "color": "#F8F5EE",
+     "pin": true,
+     "pinColor": "#111111",
+     "label": "ليش ساعة تستاهل… وساعة لا؟",
+     "labelSize": 30,
+     "labelFont": "banner",
+     "rot": 2.2,
+     "in": {
+      "type": "pop",
+      "at": 6.0
+     }
+    }
+   ],
+   "banner": "الأسئلة",
+   "claims": [
+    "Example questions beginners ask. Wording supplied by the founders in the brief."
+   ],
+   "note": "No narration: the questions are physical cards. Tick bed underneath.",
+   "sfx": [
+    {
+     "at": 0.6,
+     "name": "paper_place",
+     "gain": -9
+    },
+    {
+     "at": 2.4,
+     "name": "paper_place",
+     "gain": -9
+    },
+    {
+     "at": 4.2,
+     "name": "paper_place",
+     "gain": -9
+    },
+    {
+     "at": 6.0,
+     "name": "paper_place",
+     "gain": -9
+    }
+   ],
+   "beds": [
+    {
+     "name": "watch_run",
+     "from": 0,
+     "to": 9,
+     "gain": -26
+    }
+   ]
+  },
+  {
+   "id": "E1-S12",
+   "status": "FOUNDER",
+   "dur": 5.0,
+   "theme": "tk-ink",
+   "floor": false,
+   "elements": [
+    {
+     "type": "image",
+     "x": 360,
+     "y": 560,
+     "w": 190,
+     "h": 190,
+     "src": "../../public/icon-512.png",
+     "pad": 12,
+     "rot": -2,
+     "in": {
+      "type": "pop",
+      "at": 3.1,
+      "dur": 0.7
+     }
+    }
+   ],
+   "banner": "",
+   "vo": "قلنا… ليش ما نبسطها؟",
+   "captions": "قلنا… | ليش ما نبسطها؟",
+   "claims": [
+    "The decision to simplify watches for an Arabic audience (founder testimony)."
+   ],
+   "note": "Everything stops. Silence. A small Time Keeper mark appears. NOT yet a business.",
+   "silent": true
+  },
+  {
+   "id": "E1-S13",
+   "status": "FOUNDER",
+   "dur": 4.5,
+   "theme": "tk-ink",
+   "floor": false,
+   "elements": [
+    {
+     "type": "image",
+     "x": 360,
+     "y": 560,
+     "w": 190,
+     "h": 190,
+     "src": "../../public/icon-512.png",
+     "pad": 12,
+     "rot": -2
+    }
+   ],
+   "banner": "",
+   "vo": "وهني… بدأت الفكرة.",
+   "captions": "وهني… | بدأت الفكرة.",
+   "claims": [
+    "The idea began here (founder testimony)."
+   ],
+   "note": "End of episode 1. Hold on the mark, tick returns once.",
+   "sfx": [
+    {
+     "at": 3.4,
+     "name": "tick_pair",
+     "gain": -10
+    }
+   ],
+   "transition": "cut"
+  }
+ ]
+}

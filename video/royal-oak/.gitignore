@@ -1,0 +1,9 @@
+# Real photographs, narration audio and renders stay out of git. voice/fetch.sh + voice/tighten.py and sfx.py rebuild the audio.
+assets/*
+!assets/README.md
+renders/
+*.mp4
+*.wav
+*.mp3
+__pycache__/
+*.m4a

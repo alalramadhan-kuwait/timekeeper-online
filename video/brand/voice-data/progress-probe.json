@@ -1,0 +1,8 @@
+{
+ "_note": "Progress probe for listening to V5 while it trains (25/50/75%). New lines, not in the sealed, novel, benchmark or training sets; never used to pick a checkpoint (that stays on val loss).",
+ "lines": {
+  "pr1": "قاعد أدور على ساعة قديمة، بس الوقت ما يكفي.",
+  "pr2": "قبل لا تشتري، اسأل عن القطعة وقيمتها الحقيقية.",
+  "pr3": "يقولون الطريق طويل، بس أنا أقدر أوصل قبلهم."
+ }
+}

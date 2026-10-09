@@ -1,0 +1,86 @@
+<title>تصحيح نص الجمل</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Noto+Naskh+Arabic:wght@500;600&display=swap">
+<style>
+/* One card per sentence: Ali's recording + an editable box prefilled with Claude's proposed correction. RTL. */
+:root{
+  --paper:#f2f4f3; --card:#ffffff; --ink:#18211e; --muted:#5d6b66; --line:#d9e0dd;
+  --dial:#1f4d3f; --ok:#2f7a4f;
+  --ui:"IBM Plex Sans Arabic",system-ui,"Segoe UI",Tahoma,sans-serif;
+  --read:"Noto Naskh Arabic","IBM Plex Sans Arabic",serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#121816; --card:#1a2220; --ink:#e7eeeb; --muted:#9aa8a3; --line:#2b3633; --dial:#7fc3a9; --ok:#7fd1a0; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#121816; --card:#1a2220; --ink:#e7eeeb; --muted:#9aa8a3; --line:#2b3633; --dial:#7fc3a9; --ok:#7fd1a0; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--ui);font-size:15px;line-height:1.6;padding-inline:16px;padding-block:0 48px}
+main{max-width:720px;margin-inline:auto;display:grid;gap:14px}
+header{padding-block:26px 4px;display:grid;gap:6px}
+h1{font-family:var(--read);font-weight:600;font-size:1.8rem;line-height:1.3;margin:0}
+.lede{color:var(--muted);margin:0}
+.bar{position:sticky;top:0;z-index:2;background:var(--paper);padding-block:10px;border-bottom:1px solid var(--line);font-size:.86rem;color:var(--muted);display:flex;gap:12px}
+.save{margin-inline-start:auto}.save.ok{color:var(--ok)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;display:grid;gap:10px}
+.top{display:flex;gap:10px;align-items:center}
+.num{color:var(--muted);font-size:.85rem;min-width:2ch;font-variant-numeric:tabular-nums}
+audio{flex:1;min-width:200px;height:36px}
+textarea{font-family:var(--read);font-size:1.08rem;line-height:1.8;width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink);resize:vertical}
+.old{font-size:.8rem;color:var(--muted)}
+.ok-btn{font:inherit;font-size:.85rem;border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:999px;padding:4px 12px;cursor:pointer;justify-self:start}
+.ok-btn[aria-pressed="true"]{background:var(--dial);border-color:var(--dial);color:var(--card)}
+</style>
+<main dir="rtl" lang="ar">
+  <header>
+    <h1>صحّح نص الجمل</h1>
+    <p class="lede">هذا تسجيلك الحقيقي، وتحته النص مثل ما صححته أنا من التفريغ. اسمع وعدّل النص مباشرة بحيث يطابق اللي قلته بالضبط، بلهجتك. لما يصير صح، اضغط «تمام».</p>
+  </header>
+  <div class="bar"><span>تمام: <b id="done">0</b> من <b id="total">0</b></span><span class="save" id="save"></span></div>
+  <div id="list" style="display:grid;gap:14px"></div>
+</main>
+<script>
+const ITEMS = __ITEMS__;
+const state = {};
+let db = null;
+const $ = s => document.querySelector(s);
+function count(){ $("#done").textContent = ITEMS.filter(it => (state[it.id] || {}).ok).length; $("#total").textContent = ITEMS.length; }
+function render(){
+  const list = $("#list"); list.textContent = "";
+  for (const it of ITEMS){
+    const st = state[it.id] ||= { text: it.text, ok: false };
+    const card = document.createElement("section"); card.className = "card";
+    const top = document.createElement("div"); top.className = "top";
+    const n = document.createElement("span"); n.className = "num"; n.textContent = it.n;
+    const au = document.createElement("audio"); au.controls = true; au.preload = "none"; au.src = it.src;
+    au.addEventListener("play", () => document.querySelectorAll("audio").forEach(a => { if (a !== au) a.pause(); }));
+    top.append(n, au);
+    const ta = document.createElement("textarea"); ta.rows = 4; ta.value = st.text;
+    ta.addEventListener("input", () => { st.text = ta.value; st.ok = false; ok.setAttribute("aria-pressed", "false"); ok.textContent = "تمام"; save(it); count(); });
+    const old = document.createElement("p"); old.className = "old"; old.textContent = "التفريغ الأصلي: " + it.old;
+    const ok = document.createElement("button"); ok.type = "button"; ok.className = "ok-btn";
+    ok.textContent = st.ok ? "تمام ✓" : "تمام"; ok.setAttribute("aria-pressed", String(st.ok));
+    ok.addEventListener("click", () => { st.ok = !st.ok; ok.textContent = st.ok ? "تمام ✓" : "تمام"; ok.setAttribute("aria-pressed", String(st.ok)); save(it); count(); });
+    card.append(top, ta, ok, old); list.append(card);
+  }
+  count();
+}
+const pending = {};
+function save(it){
+  try{ localStorage.setItem("tkvoice-textfix", JSON.stringify(state)); }catch(e){}
+  if (!db) return;
+  clearTimeout(pending[it.id]);
+  $("#save").textContent = "يحفظ…"; $("#save").className = "save";
+  pending[it.id] = setTimeout(() => db.doc("texts/" + it.id).set({ text: state[it.id].text, ok: state[it.id].ok, at: new Date().toISOString() })
+    .then(() => { $("#save").textContent = "محفوظ"; $("#save").className = "save ok"; })
+    .catch(() => { $("#save").textContent = "ما انحفظ"; }), 600);
+}
+try{ Object.assign(state, JSON.parse(localStorage.getItem("tkvoice-textfix") || "{}")); }catch(e){}
+render();
+(async () => {
+  db = window.claude?.use ? await window.claude.use("db") : null;
+  if (!db) return;
+  try{ const snap = await db.collection("texts").get();
+    snap.docs.forEach(d => { const v = d.data(); if (v) state[d.id] = { text: v.text, ok: !!v.ok }; });
+    if (![...document.querySelectorAll("audio")].some(a => !a.paused) && !document.activeElement?.matches("textarea")) render(); }catch(e){}
+})();
+</script>

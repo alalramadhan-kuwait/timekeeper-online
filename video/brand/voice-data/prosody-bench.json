@@ -1,0 +1,32 @@
+{
+ "_note": "Prosody benchmark. intents: same kind of everyday Kuwaiti watch talk, 8 intentions x 2 lines. punctuation: identical words, different final punctuation. context: a target sentence alone vs inside its paragraph (the paragraph render is cut back to the target with Whisper word timings).",
+ "intents": [
+  {"id": "st1", "intent": "statement", "text": "الساعة وصلت أمس، وحطيتها بالدرج."},
+  {"id": "st2", "intent": "statement", "text": "المعرض يفتح الساعة عشرة الصبح."},
+  {"id": "qu1", "intent": "question", "text": "شفت الساعة اللي وصلت أمس؟"},
+  {"id": "qu2", "intent": "question", "text": "منو اللي قال لك إن سعرها نزل؟"},
+  {"id": "ex1", "intent": "excitement", "text": "يا سلام! أخيراً وصلت، وطلعت أحلى من الصور!"},
+  {"id": "ex2", "intent": "excitement", "text": "تخيل! حصلتها بنص السعر!"},
+  {"id": "su1", "intent": "surprise", "text": "شنو؟ بيعوها بيوم واحد؟"},
+  {"id": "su2", "intent": "surprise", "text": "معقولة؟ نفس الساعة وبهالسعر؟"},
+  {"id": "do1", "intent": "doubt", "text": "ما أدري والله… يمكن أصلية، ويمكن لا."},
+  {"id": "do2", "intent": "doubt", "text": "أحس فيها شي غلط، بس مو متأكد."},
+  {"id": "xp1", "intent": "explanation", "text": "الفكرة بسيطة: الزنبرك يتعبى، والطاقة تمشي للعقارب شوي شوي."},
+  {"id": "xp2", "intent": "explanation", "text": "يعني لما تحرك يدك، الروتور يدور ويعبي الساعة بروحها."},
+  {"id": "sy1", "intent": "storytelling", "text": "قبل عشرين سنة، كنت واقف عند فاترينة صغيرة بالمباركية…"},
+  {"id": "sy2", "intent": "storytelling", "text": "وفجأة، دخل رجّال كبير بالسن، وطلع من جيبه ساعة ذهب."},
+  {"id": "em1", "intent": "emphasis", "text": "هذي مو أي ساعة. هذي الساعة اللي غيرت كل شي."},
+  {"id": "em2", "intent": "emphasis", "text": "انتبهوا زين: لا تشترون إلا من مصدر موثوق."}
+ ],
+ "punctuation": {
+  "id": "pn",
+  "base": "الساعة وصلت اليوم",
+  "variants": {"full_stop": "الساعة وصلت اليوم.", "question": "الساعة وصلت اليوم؟", "comma": "الساعة وصلت اليوم،", "ellipsis": "الساعة وصلت اليوم…", "exclaim": "الساعة وصلت اليوم!"}
+ },
+ "context": [
+  {"id": "cx1", "target": "وهذا اللي خلاها أغلى ساعة ستيل بوقتها.",
+   "paragraph": "بالسبعينات، الكل كان يشوف الستيل معدن رخيص. بس أوديمار بيغيه اشتغلت عليها مثل الذهب. وهذا اللي خلاها أغلى ساعة ستيل بوقتها. وللحين الناس تتكلم عنها."},
+  {"id": "cx2", "target": "شلون الواحد يعرف إنها أصلية؟",
+   "paragraph": "وايد ناس يرسلون لي صور ساعات مستعملة. والسؤال دايماً نفسه. شلون الواحد يعرف إنها أصلية؟ خلوني أقول لكم ثلاث أشياء بسيطة."}
+ ]
+}

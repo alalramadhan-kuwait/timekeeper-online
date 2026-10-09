@@ -1,0 +1,16 @@
+{
+  "_note": "Time Keeper paper theme. Verified from the logo (black script monogram on warm off-white #F0F0EC with a faint dial ring) and the brand template (black #111111 and white #FFFFFF headline boxes). No accent colour is invented: emphasis comes from black/white inversion and from the real photographs. Arabic headline face is Cairo ExtraBold as a stand-in for Bahij Helvetica Neue Bold, which is not available here.",
+  "style": {
+    "banner": { "paper": "#F3F0E8", "ink": "#111111", "upper": false, "ls": 0, "tape": "rgba(186,182,172,.88)", "torn": 0.5, "size": 34 },
+    "caption": { "font": "var(--f-banner)" },
+    "grain": 0.42,
+    "vignette": 0.8
+  },
+  "themes": {
+    "tk-bone":     { "bg": "#E4DFD3", "blot": ["#EFEBE1", "#D5CFC1"], "floor": "#C9C3B4", "floorTop": "#DDD7C9", "capBg": "#111111", "capInk": "#FFFFFF" },
+    "tk-linen":    { "bg": "#CFC7B5", "blot": ["#DDD6C6", "#BDB5A2"], "floor": "#B3AB98", "floorTop": "#C7BFAD", "capBg": "#111111", "capInk": "#FFFFFF" },
+    "tk-graphite": { "bg": "#34373E", "blot": ["#43474F", "#25272C"], "floor": "#222428", "floorTop": "#383B42", "capBg": "#F3F0E8", "capInk": "#111111" },
+    "tk-ink":      { "bg": "#16181C", "blot": ["#22252B", "#0D0E11"], "floor": "#0F1013", "floorTop": "#272A31", "capBg": "#F3F0E8", "capInk": "#111111" },
+    "tk-black":    { "bg": "#050505", "blot": ["#0B0B0B", "#000000"], "floor": "#050505", "floorTop": "#111111", "capBg": "#F3F0E8", "capInk": "#111111" }
+  }
+}
