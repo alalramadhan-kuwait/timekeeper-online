@@ -1,17 +1,135 @@
 # Kuwaiti voice and pronunciation library: proposal
 
-Status: **for approval**. Nothing has been built, downloaded, recorded or trained for it. 2026-10-09.
+Status: **revision 2, for approval**. 2026-10-09.
 
-- Production stays on Recorded Mode (the reader's recording → Ali through VC).
-- The long-term goal is unchanged: automatic Kuwaiti narration in Ali's voice, with no new human recording per video.
+Nothing has been trained, downloaded, recorded or cut. The only new work is a read-only scan of the audio we already have, which produced a list of candidate clips. That scan is `tk_pilot_select.py`, and its output is `voice-src/pilot/candidates.json` and `selection.json`. Production stays on Recorded Mode.
 
-**What the evidence says the library has to fix.** The V1–V5 errors came mostly from labels that did not match the audio:
-- Whisper's MSA-leaning text: g written as غ, and شلون as شون;
-- 48% of clips had suspect words, and 511 of 699 changed in V5;
-- clips cut mid-sentence;
-- the ق sound in Ali's speech varies by word.
+The goal is unchanged: automatic Kuwaiti narration in Ali's recognisable voice, with no human recording per script.
 
-Fahed (A1) showed that a non-Kuwaiti source cannot be rescued downstream. So the library's value is **correct Kuwaiti labels on Ali's own speech, in whole sentences**, not raw hours.
+## Staged plan (revision 2): prove the model can learn before building a large dataset
+
+### Stage 0: gates before any training
+
+1. **Backups on the Mac and on Google Drive, verified.**
+   - Drive: every part's checksum is compared against `PARTS.md5`.
+   - Mac: the user reports the output of RESTORE.txt steps 2 and 4, so the archive is shown to restore.
+   - **Still pending:** the user has to upload.
+2. **The user approves this document**: material, model, criteria and caps.
+3. **Kept unchanged:** Recorded Mode, V1–V5 checkpoints, the dictionary, the evaluations and all original audio. New work goes in new folders (`voice-src/pilot/`, `voice-src/ckpt/pilot-*`), so nothing is overwritten.
+
+### Stage 1: the pilot dataset (20–30 min of Ali, from the 2.8 h we already have)
+
+**What the scan found.** It covered 28 episodes; the 3 evaluation episodes were left out. It found 46 minutes of sentence-shaped Ali speech in 459 units.
+
+How units were cut:
+- Boundaries come from Ali's own pauses on the separated vocal track, never from Whisper's word times.
+- Ali pauses at least 0.3 s about every 5.5 s, but only 6% of his pauses reach 0.6 s. So the audio is split at 0.3 s pauses, and the pieces are joined until one ends on a sentence-final pitch fall (a statement) or rise (a question).
+- A unit that runs past 15 s without such an ending is dropped. Nothing is cut mid-word.
+
+| Pool | Clips | Minutes | Episodes | What still needs checking |
+|---|---|---|---|---|
+| **A**: speaker ≥ 0.80, Whisper confident, sentence-final pitch, low background | 84 | **10.8** | 11 | Kuwaiti spelling pass; a 20% random audit by ear |
+| **B-music**: as A, but the episode has music under the voice (taken from the separated vocal track) | 76 | **9.5** | 5 | Every clip listened to for leftover music or artefacts |
+| **B-other**: speaker 0.75–0.80, or weaker Whisper confidence | 111 | 10.8 | 7 | Reserve, used only if A and B-music fall short; every clip listened to |
+
+**Proposed pilot: pool A plus B-music, 160 clips, 20.3 min,** with B-other as the reserve to reach 20–30 min after rejections.
+
+What it covers and what it lacks:
+- 97 words from the problem list (ق/گ words and the known Whisper misspellings); 12 of them appear at least 3 times.
+- The best covered are حق, قاعد, قدموا, قبل, قلنا, تقريبا, فقط, نقدر and الطاقة.
+- **Weak coverage of the rest is a known limit of using existing audio**, and it is one reason the expansion in Stage 4 exists.
+
+**Known weakness of the automatic cut.** Pitch-based sentence ends are imperfect. Some tier-A units end on a pause plus pitch fall that is not a full sentence: one example ends on «…لكن». So "complete sentence" is one of the things every reviewed clip is checked for, and a text check flags units ending on a connective (و، لكن، إنه، اللي، عشان …).
+
+**Assisted verification: the user does not listen to every clip.**
+1. **Claude, automatically:**
+   - writes a Kuwaiti draft for every clip (Whisper, plus the VERIFIED dictionary entries, plus the fixes for known Whisper errors such as غ→ق and شون→شلون);
+   - marks every changed or low-confidence word;
+   - flags units that look incomplete.
+2. **The user listens only to:**
+   - every flagged clip;
+   - every B clip;
+   - a random 20% of the unflagged A clips.
+
+   Each clip takes three taps: the text is right (or fix it), the sentence is complete (yes/no), only Ali with a clean background (yes/no). Pages hold 3 clips, as before.
+3. **Audit rule:** if the random A sample shows less than 98% word agreement, or more than 1 in 10 clips rejected, then all A clips are reviewed.
+4. **Expected effort:** about 110–140 clips reviewed (about 13–17 min of audio), roughly **1.5–2 h of the user's time** in short sessions.
+
+**Pilot dataset acceptance (all must hold):**
+
+| Check | Pass |
+|---|---|
+| Size | 20–30 min after rejections |
+| Speaker | Ali only: no other voice in any reviewed clip, and every clip at speaker similarity ≥ 0.75 |
+| Labels | 100% of clips `verified` (reviewed, or covered by a passed audit); audit word agreement ≥ 98% |
+| Sentences | 100% of reviewed clips confirmed complete; no clip ending on a flagged connective |
+| Audio | No audible music or artefact in reviewed clips. Original pitch, rhythm and pauses untouched: no speed-up, no pause shortening |
+| Separation | No clip from the 3 evaluation episodes, and none of the test sentences in Stage 3 |
+
+### Stage 2: which model can learn from 20–30 minutes
+
+| Model | Licence | Arabic | Fine-tuning on a small single-speaker set | Hardware | Verdict for the pilot |
+|---|---|---|---|---|---|
+| **Qwen3-TTS 1.7B, starting from the public Saudi checkpoint** (`vadimbelsky/qwen3-TTS-KSA`) | Apache-2.0 (base and checkpoint card) | Not built in. Arabic was added by the checkpoint's author (language ID and input format), then trained on about 13k Saudi utterances. | **The official recipe is single-speaker fine-tuning** (`sft_12hz.py`), meant for small sets: lr 2e-6, 3–10 epochs | One GPU with ≥ 16–24 GB (rented) | **Recommended.** It is the only option that combines a **Gulf starting point**, a **recipe built for small single-speaker sets** and a **commercial licence** |
+| Chatterbox Multilingual + LoRA (what V1–V5 used) | MIT | Built in, but leans MSA | Works, and already runs here. Community adapters for new languages use 10–50 h. Our 2 h traded pronunciation for likeness. | CPU or Mac (slow), or a small GPU | Fallback. With fewer minutes than V5 it is unlikely to fix pronunciation, but clean labels make it a fair test of "labels were the cause" |
+| F5-TTS / Habibi | Non-commercial | Gulf (Saudi, Emirati) | Fine-tunes well on small sets | GPU | Research only, not production. Its Saudi/Emirati accent was already audible to the user. |
+| CosyVoice 3 | Apache-2.0 (unconfirmed) | **No Arabic** | – | – | Excluded |
+| OmniVoice / Lahgtna / VoiceTut, Fish/OpenAudio, XTTS-v2 | Non-commercial weights | Varies | – | – | Excluded for production |
+
+**Why Qwen3-TTS from the Saudi checkpoint is most likely to benefit from a small Kuwaiti set:**
+1. Its fine-tuning path is the one built for this case: one speaker, few clips, full-model training.
+2. It starts from Gulf Arabic, which is the nearest neighbour to Kuwaiti. With 20–30 minutes we can shift a dialect, not teach a language.
+3. Its licence allows Time Keeper to use it.
+
+**Risks, stated before we start:**
+- **Provenance.** The checkpoint card does not say whether its 13k utterances are real or synthetic. ScienceSoft's write-up says their Emirati data came from a commercial TTS provider. The source data's terms are confirmed before any production use; for the pilot it is research.
+- **A Saudi accent may stay.** Habibi's did.
+- **The Arabic support is community code,** not Qwen's own.
+- It needs a rented GPU.
+
+**Gate 2a, before any training, and only after approval (no fine-tuning, inference only).** Download the checkpoint (about 4 GB) and generate the 9 screening sentences zero-shot with Ali's reference clip. Pass if at least 7 of 9 are intelligible Gulf Arabic, neither MSA nor foreign-sounding, with no crashes or garbling. This takes about 1 GPU-hour (about $2) and 15 minutes of the user's listening.
+- **If it fails:** the pilot switches to the Chatterbox fallback, or stops, by the user's decision.
+
+### Stage 3: one controlled pilot (only after Stage 1 acceptance, Gate 2a and approval)
+
+- **What:** Qwen3-TTS fine-tuned once on the pilot dataset, starting from the Saudi checkpoint. Speaker reference: `ref.wav`. The settings are fixed in advance (lr 2e-6, at most 10 epochs, checkpoint chosen by ear on 3 validation sentences, not by loss).
+- **Compared against:** the current model V5 (step 1800). It is the only automatic Ali voice we have.
+- **Unseen test set, written and frozen before training:**
+  - 12 new film-narration sentences, none in any training data or earlier test. They cover ق/گ words (verified ones and pending ones), أدور, شلون, numbers and prices, three watch brands, two questions and one long sentence.
+  - Plus 3 `refcmp` sentences with Ali's real recording, as the identity reference.
+- **Listening:** blind, in pages of 3, with one fixed letter mapping per session. For each sentence and version:
+  - dialect (كويتية / قريبة / مو كويتية) plus the wrong words tapped;
+  - "this is Ali?";
+  - then one pairwise choice each for naturalness, clarity and expression.
+
+**Success criteria, fixed now. All must pass for "meaningful improvement":**
+
+| Dimension | Pass |
+|---|---|
+| Pronunciation | Pilot rated «كويتية» in ≥ 8 of 12 **and** at least 4 more than V5; none «مو كويتية» |
+| Identity | "This is Ali" in ≥ 9 of 12 |
+| Clarity | No sentence unusable; pilot equal or better than V5 in ≥ 8 of 12 |
+| Naturalness, expression | Pilot equal or better than V5 in ≥ 8 of 12 each |
+
+Automatic metrics (speaker similarity, ASR) are reported for diagnosis only. They are not evidence: A1 scored 0.90 similarity and was judged Ali in 2 of 8.
+
+**Caps:**
+- **Compute:** at most 8 rented GPU-hours, **at most $25** (Gate 2a included). The exact price is quoted before renting.
+- **Engineering:** 2 working days.
+- **User time:** about 2 h for Stage 1 review and about 30 min for listening.
+- If any cap is reached before a result, the pilot stops and the reason is reported.
+
+### Stage 4: expansion only on a pass
+
+- **On a pass:** propose growing to 2–5 h (more existing episodes on the Mac, same workflow), then Ali's studio session (sections 6 and 8 below). Each step needs its own approval.
+- **On a fail:**
+  - **no** automatic expansion, re-training or new experiment;
+  - a written explanation of which dimension failed and why, the stage where the problem starts (data, model or speaker), and the options;
+  - **then stop for a decision.**
+
+## Long-term reference (revision 1, applies from Stage 4 onwards)
+
+The sections below are the original long-term design: the spelling convention, the separation of identity and pronunciation data, the full-library acceptance criteria and the studio session. The staged plan above replaces their order and scale. The Phase 1 download of about 40 episodes in section 1 is **not** approved and is postponed until a pilot passes.
 
 ## 1. Which existing recordings are usable
 
