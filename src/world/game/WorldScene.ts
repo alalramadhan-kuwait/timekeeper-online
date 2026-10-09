@@ -114,6 +114,7 @@ export class WorldScene extends Phaser.Scene {
   private base = 1;               // camera zoom at which the 2x art shows at its natural size
   private targetRing!: Phaser.GameObjects.Image;
   private lastRoom: Room | null = null;
+  private deliveryPending: (() => void) | null = null;   // the van arrives when the dock is in view
   private insets = { top: 0, bottom: 0 };
   private chosen: Phaser.GameObjects.Image | null = null;   // what the open panel is about
   private revealTo: { x: number; y: number } | null = null;   // CSS px covered by the page's bars
@@ -383,6 +384,7 @@ export class WorldScene extends Phaser.Scene {
     this.walkers = [];
     this.wanderers = [];
     this.selectRing?.setVisible(false);
+    this.deliveryPending = null;
 
     const m = this.model;
     this.blocked = blockedCells(m);
@@ -570,11 +572,12 @@ export class WorldScene extends Phaser.Scene {
       driver.setInteractive({ type: 'delivery' });
       this.walkers.push(driver);
       if (!this.reduced) {
-        // the van pulls in, then the driver carries the delivery to the dock
+        // the van pulls in, then the driver carries the delivery to the dock;
+        // it waits until the dock is on screen, so it is seen arriving
         const start = iso(v.cell[0] + v.w, ROAD.y0 + 2);
-        van.setPosition(start.x, start.y);
+        van.setPosition(start.x, start.y).setVisible(false);
         driver.sprite.setVisible(false); driver.shadow.setVisible(false);
-        this.tweens.add({
+        const arrive = () => { van.setVisible(true); this.tweens.add({
           targets: van, x: parked.x, y: parked.y, duration: 3600, ease: 'Cubic.easeOut',
           onUpdate: () => van.setDepth(depthAt(...cellAt(van.x, van.y).map((n) => n + 1) as [number, number])),
           onComplete: () => {
@@ -589,7 +592,8 @@ export class WorldScene extends Phaser.Scene {
             };
             shuttle();
           },
-        });
+        }); };
+        if (this.lastRoom === 'dock') arrive(); else this.deliveryPending = arrive;
       }
       const c = iso(26.5, 5);
       this.dyn.push(this.label(c.x, c.y + 30, `Delivery: ${d.poNumber ?? 'logged'}`, 'info'));
@@ -726,6 +730,7 @@ export class WorldScene extends Phaser.Scene {
     const centres: [Room, number, number][] = [['floor', 6.5, 5.5], ['dock', 21, 5.5], ['office', 5.5, 17]];
     const room = centres.sort((a, b) => Math.hypot(a[1] - x, a[2] - y) - Math.hypot(b[1] - x, b[2] - y))[0][0];
     if (room !== this.lastRoom) { this.lastRoom = room; this.hooks.onRoom(room); }
+    if (room === 'dock' && this.deliveryPending) { const arrive = this.deliveryPending; this.deliveryPending = null; arrive(); }
   }
 
 }
