@@ -68,6 +68,9 @@ What it covers and what it lacks:
 
 ### Stage 2: which model can learn from 20–30 minutes
 
+> **Superseded on 2026-10-09 by MODEL-CHOICE.md.** After auditing Lahgtna-OmniVoice v2 and SILMA, the recommendation is **SILMA TTS v1**, with Qwen3-TTS (Saudi) as second choice. The table below is kept as the earlier analysis.
+
+
 | Model | Licence | Arabic | Fine-tuning on a small single-speaker set | Hardware | Verdict for the pilot |
 |---|---|---|---|---|---|
 | **Qwen3-TTS 1.7B, starting from the public Saudi checkpoint** (`vadimbelsky/qwen3-TTS-KSA`) | Apache-2.0 (base and checkpoint card) | Not built in. Arabic was added by the checkpoint's author (language ID and input format), then trained on about 13k Saudi utterances. | **The official recipe is single-speaker fine-tuning** (`sft_12hz.py`), meant for small sets: lr 2e-6, 3–10 epochs | One GPU with ≥ 16–24 GB (rented) | **Recommended.** It is the only option that combines a **Gulf starting point**, a **recipe built for small single-speaker sets** and a **commercial licence** |
