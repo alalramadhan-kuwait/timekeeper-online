@@ -757,7 +757,4 @@ export class WorldScene extends Phaser.Scene {
     this.selectRing.setVisible(false);
     this.chosen = null;
   }
-
-
-
 }
