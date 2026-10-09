@@ -23,7 +23,9 @@ def mp3(src, name):
     return f"audio/{name}"
 
 
-fahed_is_a = random.SystemRandom().random() < 0.5
+KEY = ROOT / "voice-src/screen/page-key.json"
+# keep the hidden mapping once the page is live: answers already given must keep meaning the same thing
+fahed_is_a = json.loads(KEY.read_text())["A"] == "fahed final" if KEY.exists() else random.SystemRandom().random() < 0.5
 items = []
 for n, it in enumerate(SPEC["items"], 1):
     k = it["id"]
@@ -38,7 +40,7 @@ for n, it in enumerate(SPEC["items"], 1):
         bench = mp3(ROOT / bf["final"], f"{n:02d}-x.mp3")
         a["a"], a["b"] = (a["final"], bench) if fahed_is_a else (bench, a["final"])
     items.append(row)
-(ROOT / "voice-src/screen/page-key.json").write_text(json.dumps(
+KEY.write_text(json.dumps(
     {"A": "fahed final" if fahed_is_a else "recorded mode final", "B": "recorded mode final" if fahed_is_a else "fahed final"}, indent=1))
 page = (Path(__file__).parent / "screen-template.html").read_text()
 (OUT / "index.html").write_text(page.replace("__ITEMS__", json.dumps(items, ensure_ascii=False)))

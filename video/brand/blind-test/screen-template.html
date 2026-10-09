@@ -72,7 +72,7 @@ const PARTS = [...new Set(ITEMS.map(i => i.part))];
 const state = {};
 let db = null, part = PARTS[0];
 const $ = s => document.querySelector(s);
-const st = id => state[id] ||= { ttsWrong: [], ali: "", finalWrong: [], post: "", ab: "", note: "" };
+const st = id => state[id] ||= { ttsWrong: [], ali: "", dialect: "", finalWrong: [], post: "", ab: "", note: "" };
 try { part = Number(localStorage.getItem("tk-screen-part")) || part; Object.assign(state, JSON.parse(localStorage.getItem("tk-screen") || "{}")); } catch (e) {}
 
 function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
@@ -101,7 +101,7 @@ function renderBar() {
   const bar = $("#bar"); bar.textContent = "";
   PARTS.forEach(p => { const b = el("button", "part", "صفحة " + p); b.type = "button"; b.setAttribute("aria-pressed", String(p === part));
     b.addEventListener("click", () => { part = p; try { localStorage.setItem("tk-screen-part", p); } catch (e) {} renderBar(); render(); }); bar.append(b); });
-  const done = ITEMS.filter(i => { const s = st(i.id); return s.ali && s.post && (!i.audio.a || s.ab); }).length;
+  const done = ITEMS.filter(i => { const s = st(i.id); return s.ali && s.dialect && s.post && (!i.audio.a || s.ab); }).length;
   bar.append(el("span", null, "خلصت " + done + " من " + ITEMS.length));
   const sv = el("span", "save"); sv.id = "save"; bar.append(sv);
 }
@@ -124,8 +124,9 @@ function render() {
     if (it.audio.ref) s2.append(player(it.refLabel, it.audio.ref, true));
     s2.append(player("الصوت", it.audio.final),
       choice("", [["yes", "إي"], ["no", "لا"]], () => s.ali, v => { s.ali = v; save(); }));
-    const s3 = step("", "في كلمة انقالت غلط؟", "اضغط عليها");
-    s3.append(words(it.text, s.finalWrong, save));
+    const s3 = step("", "اللهجة كويتية؟", "حتى لو الصوت صوت علي");
+    s3.append(choice("", [["kw", "كويتية"], ["near", "قريبة، فيها شي"], ["no", "مو كويتية"]], () => s.dialect, v => { s.dialect = v; save(); }),
+      el("p", "hint", "إذا في كلمة طلعت مو كويتية أو انقالت غلط، اضغط عليها:"), words(it.text, s.finalWrong, save));
     const s4 = step("", "أي نسخة أحسن؟");
     s4.append(player("نسخة ١", it.audio.vc), player("نسخة ٢", it.audio.final),
       choice("", [["before", "١"], ["after", "٢"], ["same", "نفس الشي"]], () => s.post, v => { s.post = v; save(); }));
@@ -151,12 +152,12 @@ function queue(id) {
 }
 function renderBarCount() {
   const span = $("#bar span:not(.save)"); if (!span) return;
-  const done = ITEMS.filter(i => { const s = st(i.id); return s.ali && s.post && (!i.audio.a || s.ab); }).length;
+  const done = ITEMS.filter(i => { const s = st(i.id); return s.ali && s.dialect && s.post && (!i.audio.a || s.ab); }).length;
   span.textContent = "خلصت " + done + " من " + ITEMS.length;
 }
 function dump() {   // compact, readable answers to paste back into the chat
   return "screen-9 fahed\n" + ITEMS.map(i => { const s = st(i.id), w = i.text.split(/\s+/), pick = a => a.map(x => w[x]).join(" / ") || "-";
-    return [i.n + " " + i.id, "AB=" + (s.ab || "-"), "fahedWrong=" + pick(s.ttsWrong), "ali=" + (s.ali || "-"), "afterVCwrong=" + pick(s.finalWrong),
+    return [i.n + " " + i.id, "AB=" + (s.ab || "-"), "fahedWrong=" + pick(s.ttsWrong), "ali=" + (s.ali || "-"), "dialect=" + (s.dialect || "-"), "afterVCwrong=" + pick(s.finalWrong),
       "post=" + (s.post || "-"), s.note ? "note=" + s.note.replace(/\s+/g, " ") : ""].filter(Boolean).join(" | "); }).join("\n");
 }
 $("#copy").addEventListener("click", () => {
@@ -171,7 +172,7 @@ renderBar(); render();
   if (!db) { $("#notice").hidden = false; $("#copybox").hidden = false; return; }
   try {
     const snap = await db.collection("answers").get();
-    snap.docs.forEach(d => { const v = d.data(); if (v) state[d.id] = { ttsWrong: v.ttsWrong || [], ali: v.ali || "", finalWrong: v.finalWrong || [], post: v.post || "", ab: v.ab || "", note: v.note || "" }; });
+    snap.docs.forEach(d => { const v = d.data(); if (v) state[d.id] = { ttsWrong: v.ttsWrong || [], ali: v.ali || "", dialect: v.dialect || "", finalWrong: v.finalWrong || [], post: v.post || "", ab: v.ab || "", note: v.note || "" }; });
     if (![...document.querySelectorAll("audio")].some(a => !a.paused) && !document.activeElement?.matches("textarea")) { renderBar(); render(); }
   } catch (e) {}
 })();

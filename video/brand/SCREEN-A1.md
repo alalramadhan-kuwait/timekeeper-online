@@ -133,7 +133,7 @@ The estimate comes from `channel-videos.txt` (221 videos, 162 h) and the 31 down
 
 The listening answers lead to exactly one outcome, with no open-ended follow-up.
 
-- **Pronunciation errors** are words marked on Fahed raw, plus words marked as broken after conversion.
+- **Pronunciation errors:** a sentence fails pronunciation if its dialect is rated «مو كويتية», or «قريبة، فيها شي» with a word marked. A question on the dialect of the whole sentence was added on the user's question, before any answers came in.
 - **"Raw VC is the version"** applies when the post step was judged «قبل» or «نفس الشي» in at least 5 of 9 sentences. Otherwise the processed version is judged.
 
 | Decision | When |
