@@ -170,7 +170,7 @@ export class WorldScene extends Phaser.Scene {
     const top = this.insets.top * px, bottom = this.insets.bottom * px;
     const vw = cam.width, vh = Math.max(cam.height - top - bottom, cam.height * 0.4);
     let z = Math.min(vw / (maxX - minX + 80), vh / (maxY - minY + 80));
-    if (vw / vh < 0.8) z *= 1.6;    // portrait phone: fill the height, pan sideways for the rest
+    if (vw / vh < 0.8) z *= 1.8;    // portrait phone: fill the height, pan sideways for the rest
     z = Phaser.Math.Clamp(z, this.minZoom(), this.base * 2.4);
     // centre the room in the part of the screen the bars leave free
     const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2 - (top - bottom) / 2 / z;
