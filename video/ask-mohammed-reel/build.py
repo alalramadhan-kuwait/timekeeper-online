@@ -1,5 +1,5 @@
 """Storyboard for the «اسأل محمد» reel (paper-story engine). Hook: cold open, the shop phone nobody answers
-(Ali's choice, option 1). Every scene is timed by its V5 voice clip (voice/sNN.wav); the Time Keeper end card closes.
+(Ali's choice, option 1). Every scene is timed by its narration clip (NARRATOR: his own recordings by default); the Time Keeper end card closes.
 Data rule (src/BRIEF.md): illustrative figures only, labelled «أرقام توضيحية»; the dashboard screenshot is shown with
 its figures masked (assets/screen-dashboard.png).
 Usage: python3 build.py  ->  story.json
@@ -34,8 +34,8 @@ def txt(t, x, y, size=44, color=INK, **kw):
     return dict({"type": "text", "text": t, "x": x, "y": y, "size": size, "color": color, "font": "banner"}, **kw)
 
 
-NARRATOR = os.environ.get("NARRATOR", "fahed-msa")   # fahed-msa (Ali's pick, 2026-10-08) | fahed | v5 | habibi
-VOICE_DIR = {"v5": "voice/proc", "fahed": "voice-fahed/proc", "fahed-msa": "voice-fahed-msa/proc", "habibi": "voice-habibi"}[NARRATOR]
+NARRATOR = os.environ.get("NARRATOR", "ali")   # ali: his own recordings (2026-10-09) | fahed-msa | fahed | v5 | habibi
+VOICE_DIR = {"ali": "voice-ali/proc", "v5": "voice/proc", "fahed": "voice-fahed/proc", "fahed-msa": "voice-fahed-msa/proc", "habibi": "voice-habibi"}[NARRATOR]
 MSA = NARRATOR.endswith("-msa")
 # on-screen text in فصحى for the MSA cut (the app's own screenshots stay as they are)
 MSA_TEXT = {"اتصلت بالمحل… محد رد": "اتصلتَ بالمحل… لم يرد أحد", "الحين؟ هذا محمد": "والآن؟ هذا محمد", "اسأله أي شي": "اسأله ما تشاء",
