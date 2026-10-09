@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { ASSETS, ASSET } from '../assets/manifest';
+import { ASSETS, ASSET, settleArt } from '../assets/manifest';
 import {
   BOUNDS, CORRIDORS, FIXTURES, ROAD, ROOMS, blockedCells, walkable,
   type BoxModel, type CaseModel, type Look, type Room, type WorldModel,
@@ -20,7 +20,6 @@ export type Selection =
 
 export interface SceneHooks {
   onSelect: (s: Selection | null) => void;
-  onRoom: (r: Room) => void;
   onReady: () => void;
 }
 
@@ -32,6 +31,9 @@ const PLINTH: Record<string, string> = {
 const LOOK: Record<Look, string> = {
   sales: 'char-staff-sales', manager: 'char-staff-manager', ops: 'char-staff-ops', office: 'char-staff-office',
 };
+/* How much of the surroundings each area's zone takes in, in world units. */
+const ZONE_MARGIN = { x: 128, y: 64 };
+
 const FOCUS: Record<Room, { x0: number; y0: number; x1: number; y1: number }> = {
   floor: ROOMS.floor,
   dock: { ...ROOMS.dock, x1: ROAD.x1 },
@@ -113,11 +115,12 @@ export class WorldScene extends Phaser.Scene {
   private pinch: { d: number; z: number } | null = null;
   private base = 1;               // camera zoom at which the 2x art shows at its natural size
   private targetRing!: Phaser.GameObjects.Image;
-  private lastRoom: Room | null = null;
+  private room: Room = 'floor';                          // the area chosen on the tabs; the camera stays in it
   private deliveryPending: (() => void) | null = null;   // the van arrives when the dock is in view
-  private insets = { top: 0, bottom: 0 };
+  private insets = { top: 0, bottom: 0 };                // CSS px covered by the page's bars
+  private cover = { right: 0, bottom: 0 };               // CSS px covered by an open details panel
   private chosen: Phaser.GameObjects.Image | null = null;   // what the open panel is about
-  private revealTo: { x: number; y: number } | null = null;   // CSS px covered by the page's bars
+  private revealTo: { x: number; y: number } | null = null;
 
   constructor() { super('world'); }
 
@@ -137,6 +140,13 @@ export class WorldScene extends Phaser.Scene {
   }
 
   create() {
+    // replacement pictures without hand-tuned placement follow the contract
+    settleArt((key) => {
+      const a = ASSET[key];
+      if (a.frame) return [a.frame.width, a.frame.height];
+      const img = this.textures.exists(key) ? (this.textures.get(key).getSourceImage() as HTMLImageElement) : null;
+      return img ? [img.width, img.height] : null;
+    });
     this.input.addPointer(1);
     this.makeSheetAnimations();
     this.cameras.main.setBackgroundColor('#dfca93');
@@ -150,9 +160,9 @@ export class WorldScene extends Phaser.Scene {
     this.hooks.onReady();
   }
 
-  update(time: number) {
+  update(time: number, delta: number) {
     for (const w of this.walkers) w.sync(time);
-    this.reportRoom();
+    this.keepInZone(delta);
   }
 
   /* ── public, called from the page ─────────────────────────────────── */
@@ -165,32 +175,31 @@ export class WorldScene extends Phaser.Scene {
   setInsets(top: number, bottom: number) { this.insets = { top, bottom }; }
 
   focus(room: Room, animate = true) {
-    const r = FOCUS[room];
+    this.room = room;
     const cam = this.cameras.main;
     this.revealTo = null;
-    const a = iso(r.x0, r.y0), b = iso(r.x1, r.y0), c = iso(r.x1, r.y1), d = iso(r.x0, r.y1);
-    const minX = d.x, maxX = b.x, minY = a.y - 150, maxY = c.y + 20;
+    const zn = this.zone(room);
     const px = this.base * 2;                       // canvas px per CSS px
     const top = this.insets.top * px, bottom = this.insets.bottom * px;
     const vw = cam.width, vh = Math.max(cam.height - top - bottom, cam.height * 0.4);
-    let z = Math.min(vw / (maxX - minX + 80), vh / (maxY - minY + 80));
+    // the room itself, without the zone's margin
+    let z = Math.min(vw / (zn.w - 2 * ZONE_MARGIN.x + 80), vh / (zn.h - 2 * ZONE_MARGIN.y + 80));
     if (vw / vh < 0.8) z *= 1.8;    // portrait phone: fill the height, pan sideways for the rest
-    z = Phaser.Math.Clamp(z, this.minZoom(), this.base * 2.4);
+    z = Phaser.Math.Clamp(z, this.minZoom(), this.maxZoom());
     // centre the room in the part of the screen the bars leave free
-    const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2 - (top - bottom) / 2 / z;
+    const cx = zn.x + zn.w / 2, cy = zn.y + zn.h / 2 - (top - bottom) / 2 / z;
     if (animate && !this.reduced) {
-      // back to the usual limits once there, so nothing jumps on the way
-      cam.pan(cx, cy, 650, 'Sine.easeInOut', true, (_c: Phaser.Cameras.Scene2D.Camera, t: number) => { if (t === 1) this.setCameraBounds(); });
+      cam.pan(cx, cy, 650, 'Sine.easeInOut', true);
       cam.zoomTo(z, 650, 'Sine.easeInOut', true);
     } else {
-      this.setCameraBounds();
       cam.setZoom(z); cam.centerOn(cx, cy);
     }
+    if (room === 'dock' && this.deliveryPending) { const arrive = this.deliveryPending; this.deliveryPending = null; arrive(); }
   }
 
   zoomBy(f: number) {
     const cam = this.cameras.main;
-    cam.setZoom(Phaser.Math.Clamp(cam.zoom * f, this.minZoom(), this.base * 2.4));
+    cam.setZoom(Phaser.Math.Clamp(cam.zoom * f, this.minZoom(), this.maxZoom()));
   }
 
   clearSelection() { this.selectRing.setVisible(false); this.chosen = null; }
@@ -199,6 +208,7 @@ export class WorldScene extends Phaser.Scene {
      and bottom edges): if what was tapped sits under it, bring it into the
      part still showing. */
   reveal(top: number, right: number, bottom: number) {
+    this.cover = { right, bottom };
     const o = this.chosen;
     if (!o || !o.active) return;
     const cam = this.cameras.main, px = this.base * 2, z = cam.zoom;
@@ -212,7 +222,6 @@ export class WorldScene extends Phaser.Scene {
     if (sx > free.x0 + m && sx < free.x1 - m && sy > free.y0 + m && sy < free.y1 - m) return;
     const cx = c.centerX - ((free.x0 + free.x1) / 2 - cam.width / 2) / z;
     const cy = c.centerY - ((free.y0 + free.y1) / 2 - cam.height / 2) / z;
-    this.setCameraBounds(right * px / z, bottom * px / z);
     this.revealTo = { x: cx, y: cy };
     if (this.reduced) cam.centerOn(cx, cy);
     else cam.pan(cx, cy, 450, 'Sine.easeInOut', true);
@@ -593,7 +602,7 @@ export class WorldScene extends Phaser.Scene {
             shuttle();
           },
         }); };
-        if (this.lastRoom === 'dock') arrive(); else this.deliveryPending = arrive;
+        if (this.room === 'dock') arrive(); else this.deliveryPending = arrive;
       }
       const c = iso(26.5, 5);
       this.dyn.push(this.label(c.x, c.y + 30, `Delivery: ${d.poNumber ?? 'logged'}`, 'info'));
@@ -638,26 +647,52 @@ export class WorldScene extends Phaser.Scene {
 
   /* ── camera and input ──────────────────────────────────────────────── */
 
-  private minZoom() {
-    const cam = this.cameras.main;
-    const w = iso(BOUNDS.x1, BOUNDS.y0).x - iso(BOUNDS.x0, BOUNDS.y1).x;
-    const h = iso(BOUNDS.x1, BOUNDS.y1).y - iso(BOUNDS.x0, BOUNDS.y0).y;
-    return Math.max(Math.min(cam.width / w, cam.height / h) * 1.6, this.base * 0.25);
+  /* The part of the World the camera may show for an area: the room with its
+     walls and signs, and a margin of the rooms and ground around it. */
+  private zone(room: Room) {
+    const r = FOCUS[room];
+    const minX = iso(r.x0, r.y1).x, maxX = iso(r.x1, r.y0).x;
+    const minY = iso(r.x0, r.y0).y - 150, maxY = iso(r.x1, r.y1).y + 20;
+    return { x: minX - ZONE_MARGIN.x, y: minY - ZONE_MARGIN.y, w: maxX - minX + 2 * ZONE_MARGIN.x, h: maxY - minY + 2 * ZONE_MARGIN.y };
   }
 
-  /* How far the camera may travel. While a panel covers the right or bottom of
-     the screen it may go that much further, so things at the edge of the World
-     can still be brought out from under it. */
-  private setCameraBounds(padRight = 0, padBottom = 0) {
-    const l = iso(BOUNDS.x0, BOUNDS.y1).x, r = iso(BOUNDS.x1, BOUNDS.y0).x;
-    const t = iso(BOUNDS.x0, BOUNDS.y0).y - 200, b = iso(BOUNDS.x1, BOUNDS.y1).y;
-    this.cameras.main.setBounds(l, t, r - l + padRight, b - t + padBottom);
+  /* Zoomed out as far as it goes, the whole zone fits in the free part of the screen. */
+  private minZoom() {
+    const cam = this.cameras.main, zn = this.zone(this.room), px = this.base * 2;
+    const vh = Math.max(cam.height - (this.insets.top + this.insets.bottom) * px, cam.height * 0.4);
+    return Math.min(cam.width / zn.w, vh / zn.h);
+  }
+
+  private maxZoom() { return this.base * 2.4; }
+
+  /* Keeps the view inside the chosen area's zone, every frame. The page's bars
+     and an open panel may cover the zone's edges, so it may go that much
+     further to bring them out from under them. Where the view is wider (or
+     taller) than the zone, the zone sits in the middle. A view that has
+     strayed (a panel just closed, a drag past the edge) eases back. */
+  private keepInZone(delta: number) {
+    const cam = this.cameras.main;
+    // a move between areas, or to reveal something, ends inside the zone by itself
+    if (cam.panEffect.isRunning || cam.zoomEffect.isRunning) return;
+    const z = Phaser.Math.Clamp(cam.zoom, this.minZoom(), this.maxZoom());
+    if (z !== cam.zoom) cam.setZoom(z);
+    const zn = this.zone(this.room), px = (this.base * 2) / cam.zoom;      // world units per CSS px
+    const x0 = zn.x, x1 = zn.x + zn.w + this.cover.right * px;
+    const y0 = zn.y - this.insets.top * px, y1 = zn.y + zn.h + (this.insets.bottom + this.cover.bottom) * px;
+    const vw = cam.width / cam.zoom, vh = cam.height / cam.zoom;
+    const mx = cam.scrollX + cam.width / 2, my = cam.scrollY + cam.height / 2;
+    const tx = vw >= x1 - x0 ? (x0 + x1) / 2 : Phaser.Math.Clamp(mx, x0 + vw / 2, x1 - vw / 2);
+    const ty = vh >= y1 - y0 ? (y0 + y1) / 2 : Phaser.Math.Clamp(my, y0 + vh / 2, y1 - vh / 2);
+    if (Math.abs(tx - mx) < 0.5 && Math.abs(ty - my) < 0.5) return;
+    if (this.input.activePointer.isDown) cam.centerOn(tx, ty);   // hold the edge firmly under a finger
+    else {
+      const k = 1 - Math.pow(0.75, delta / 16.7);    // about a quarter of the way each 60 Hz frame, whatever the frame rate
+      cam.centerOn(mx + (tx - mx) * k, my + (ty - my) * k);
+    }
   }
 
   private setupCamera() {
-    this.setCameraBounds();
     this.focus('floor', false);
-    this.scale.on('resize', () => this.setCameraBounds());
   }
 
   private setupInput() {
@@ -723,14 +758,6 @@ export class WorldScene extends Phaser.Scene {
     this.chosen = null;
   }
 
-  private reportRoom() {
-    const cam = this.cameras.main;
-    const c = cam.midPoint;
-    const [x, y] = cellAt(c.x, c.y);
-    const centres: [Room, number, number][] = [['floor', 6.5, 5.5], ['dock', 21, 5.5], ['office', 5.5, 17]];
-    const room = centres.sort((a, b) => Math.hypot(a[1] - x, a[2] - y) - Math.hypot(b[1] - x, b[2] - y))[0][0];
-    if (room !== this.lastRoom) { this.lastRoom = room; this.hooks.onRoom(room); }
-    if (room === 'dock' && this.deliveryPending) { const arrive = this.deliveryPending; this.deliveryPending = null; arrive(); }
-  }
+
 
 }

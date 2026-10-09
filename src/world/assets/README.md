@@ -1,42 +1,84 @@
 # Time Keeper World artwork
 
-Everything the World draws is listed in `manifest.ts`, by key. The pictures in
-`placeholder/` are temporary. To replace one, put the final file in `final/`
-with the **same key** as its name (`char-owner.png`, `van.webp`, `rug.svg`…).
-It is picked up at the next build; no code changes.
+Everything the World draws is listed in `manifest.ts`, by key. To replace a
+picture, put a PNG named by its key in `final/` (`wall-floor-l.png`). It is
+used at the next build, with no code change, and nothing about the business
+data, permissions or calculations is touched by it.
 
-## Rules for every file
+## Replacing a picture
 
-- **Drawn at 2x.** One floor tile is 128 × 64 px. Keep each file at the size
-  below (or an exact multiple, scaled down in the file itself) so it lines up.
-- **Isometric 2:1.** Floor diamonds are twice as wide as they are tall.
-- **Anchor.** The anchor is the point that touches the floor, as a fraction of
-  the picture's width and height. For furniture it is the front corner of the
-  footprint; for people, between the feet; for tiles, the top corner. Keep the
-  same anchor in the final art.
-- **Transparent background** (PNG, WebP or SVG).
-- **Characters can be animated.** Name the file `<key>@<frameWidth>x<frameHeight>.png`,
-  for example `char-owner@72x128.png`. Row 1 is standing still (any number of
-  frames), row 2 is walking (the same number of frames). Without a sheet, the
-  game bobs the single picture as the person walks.
+- **`contract.json`** is the agreement with the artist: for every key, the size
+  in pixels, the anchor (where it meets the floor, as a fraction of the
+  picture), and for things other things rest on, the height of that surface. A
+  PNG drawn to it needs nothing else. Any whole multiple of the size works the
+  same (512 × 256 for a 256 × 128 tile): the game scales by width.
+- **`final/art.json`** is placement tuned by hand for one particular file. Each
+  entry records that file's pixel size (`size`) and is used only while the file
+  in `final/` still has that size. A replacement of any other size is placed by
+  the contract, so it never inherits the old picture's tuning. When a
+  replacement lands, its old entry can be deleted.
+- **`npm run world:art`** (also part of `npm run build`) reads every file in
+  `final/` and fails on a key the World does not draw, a picture with no
+  transparency, or one whose shape is more than 2% off the contract. It notes
+  replaced pictures whose art.json entry is now unused.
+- **Characters can be animated.** Name the file `<key>@<frameWidth>x<frameHeight>.png`:
+  row 1 standing (any number of frames), row 2 walking (the same number). The
+  frame is checked against the contract. Without a sheet, the game bobs the single
+  picture as the person walks.
 
-## Placement settings: final/art.json
+Units: world units are the game's own (one floor tile is 128 × 64). Contract
+sizes are pixels at twice that (one floor tile is 256 × 128 px).
 
-Final art can be any resolution and any proportion. For each key it replaces,
-`final/art.json` can say:
+## Replacement specs for the pieces still to come
 
-- `width`: how wide it is drawn, in world units (one floor tile is 128). The
-  picture is scaled to this.
-- `origin`: where it touches the floor, as a fraction of the picture (x, y).
-  A y above 1 means the floor corner lies below the picture's bottom edge.
-- `surface`: for case bases and boxes, how high their top surface is above the
-  anchor, in world units: the glass stands on it, a box stacks on it.
-- `cards`: for the mission board, `false` if the art has its own printed notes.
-- `onFloor`: for `case-glass`, `true` when it is drawn as the whole cabinet
-  standing on the floor rather than a glass box resting on the case base. The
-  watches then stand on the base's `surface`.
+All pictures: one object per PNG, transparent background, no text labels, 2:1
+isometric (a floor edge drops 1 px for every 2 px across, about 26.6°).
 
-Keys it leaves out keep the placeholder's values.
+**Floor tiles** — `tile-marble-a`, `tile-marble-b`, `tile-concrete`,
+`tile-hazard`, `tile-parquet`, `tile-pavement`, `tile-sand`, `tile-road`:
+256 × 128 px. The diamond fills the canvas exactly: corners at top (128, 0),
+right (256, 64), bottom (128, 128), left (0, 64). No side thickness (it shows as
+a ledge between tiles). Anchor: the top corner. The road runs along the tile's
+upper-left and lower-right edges (down-left on screen), one lane per tile, two
+tiles wide, so markings that cross the lower-left and upper-right edges must
+meet the next tile.
+
+**Walls** — `wall-floor-l`, `wall-floor-r`, `wall-dock-l`, `wall-dock-r`,
+`wall-office-l`, `wall-office-r`: one panel per floor-tile edge, 128 × 268 px.
+- `-l` (the back-left wall): the floor line runs from (128, 204) down to (0, 268);
+  the top edge from (128, 0) to (0, 64). Anchor: (128, 204), the right end.
+- `-r` (the back-right wall): the floor line runs from (0, 204) down to (128, 268);
+  the top edge from (0, 0) to (128, 64). Anchor: (0, 204), the left end.
+- Connection points: each `-l` panel's left end (0, 268) is the next panel's
+  right end (128, 204), and the same for `-r` the other way, so the panels join
+  in a straight line. At the back corner of a room, an `-l` panel's anchor and an
+  `-r` panel's anchor are the same point. Keep anything that must line up
+  (skirting, top trim) on those lines and inside the canvas.
+
+**Display cases** — `case-plinth-owned`, `case-plinth-consignment`,
+`case-plinth-preowned`, `case-plinth-unknown` and `case-glass`: draw the whole
+case on one 256 × 320 px canvas, then export the base and the glass as separate
+layers at that same size. The case stands on one floor tile: footprint corners
+front (128, 320), left (0, 256), right (256, 256), back (128, 192). Anchor: the
+front corner (128, 320). The watches stand on the cushion inside, which is the
+footprint raised 96 px: corners front (128, 224), left (0, 160), right
+(256, 160), back (128, 96). Up to six watches stand between about 20% and 80% of
+the way across it, so the cushion should cover most of that diamond. The glass
+layer holds only the glass and its frame, see-through where the watches show.
+
+**Wall clock** — `wall-clock`: 160 × 160 px, the face centred at (80, 80),
+anchor in the centre. No hands: the game draws them in live Kuwait time,
+reaching about 51 px from the centre, so keep that circle clear.
+
+**Effects**
+- `ring`, where the owner is walking to: 192 × 96 px, a flat ring on the floor,
+  centred.
+- `select`, around the selected object: 280 × 144 px, a flat 2:1 ring that
+  frames one floor tile (256 × 128) with a little room, centred.
+- `shadow`, under each person: 128 × 48 px, a soft dark ellipse, centred,
+  partly transparent.
+- `mote`, a speck of dust drifting off dead stock: 20 × 20 px, centred.
+- `mission-card` (only with a plain mission board): 48 × 60 px, centred.
 
 ## Current artwork (V2 corrected sheets, 9 Oct 2026)
 
@@ -71,7 +113,7 @@ notes). `note` is in the sheets but nothing uses it yet.
 
 ## The list
 
-| Key | Size (px) | Anchor (x, y) | What it is |
+| Key | World size (contract px are twice this) | Anchor (x, y) | What it is |
 |---|---|---|---|
 | `tile-marble-a` | 128 × 64 | 0.5, 0 | Boutique floor, marble, light |
 | `tile-marble-b` | 128 × 64 | 0.5, 0 | Boutique floor, marble, dark with a gold inlay |

@@ -6,17 +6,26 @@
    `<key>@<frameWidth>x<frameHeight>.png`: row 1 is standing still, row 2 walking.
    Sizes and anchor points are listed in ./README.md.
 
-   Final art can be any resolution. ./final/art.json says, per key, how wide it
-   is drawn in world units, where it touches the floor (origin) and, for things
-   other things rest on, how high its top surface is. Keys it leaves out keep
-   the placeholder's values. */
+   How a final picture is placed:
+   - ./contract.json is the agreement with the artist, for every key: the
+     picture's size in pixels (at twice world units), its anchor, and for
+     things other things rest on, how high its top surface is. A PNG drawn to
+     it needs nothing else; any multiple of that size works the same.
+   - ./final/art.json holds placement tuned by hand for one particular file. Each
+     entry records that file's pixel size and applies only while the file has
+     that size, so a replacement picture never inherits the old one's tuning.
+   `npm run world:art` checks every final file against both. */
+
+import contract from './contract.json';
 
 const placeholder = import.meta.glob('./placeholder/*.svg', { eager: true, query: '?url', import: 'default' }) as Record<string, string>;
 const final = import.meta.glob('./final/*.{png,webp,svg}', { eager: true, query: '?url', import: 'default' }) as Record<string, string>;
 const artJson = import.meta.glob('./final/art.json', { eager: true, import: 'default' }) as Record<string, Record<string, ArtSettings>>;
 const ART: Record<string, ArtSettings> = Object.values(artJson)[0] ?? {};
 
-interface ArtSettings { width?: number; origin?: [number, number]; surface?: number; cards?: boolean; onFloor?: boolean }
+interface ArtSettings { size?: [number, number]; width?: number; origin?: [number, number]; surface?: number; cards?: boolean; onFloor?: boolean }
+interface Contract { px: [number, number]; origin: [number, number]; surface?: number; onFloor?: boolean }
+const CONTRACT = contract as unknown as Record<string, Contract>;
 
 export interface AssetDef {
   key: string;
@@ -101,6 +110,28 @@ export const ASSETS: AssetDef[] = SPECS.map(([key, width, height, ox, oy]) => {
 });
 
 export const ASSET = Object.fromEntries(ASSETS.map((a) => [a.key, a])) as Record<string, AssetDef>;
+
+/* Once the pictures are loaded and their pixel sizes known: a final picture
+   whose art.json entry was made for a different file (or that has none) is
+   placed by the contract instead. Returns the keys placed by the contract. */
+export function settleArt(sizeOf: (key: string) => [number, number] | null): string[] {
+  const byContract: string[] = [];
+  for (const a of ASSETS) {
+    if (!finals.has(a.key)) continue;
+    const tuned = ART[a.key];
+    const size = sizeOf(a.key);
+    if (tuned && (!tuned.size || !size || (tuned.size[0] === size[0] && tuned.size[1] === size[1]))) continue;
+    const c = CONTRACT[a.key];
+    if (!c) continue;
+    a.drawWidth = c.px[0] / 2;
+    a.origin = c.origin;
+    a.surface = c.surface ?? SURFACE[a.key] ?? 0;
+    a.onFloor = c.onFloor ?? false;
+    a.cards = true;
+    byContract.push(a.key);
+  }
+  return byContract;
+}
 
 /* Placeholders that have been replaced, for the credits line. */
 export const FINAL_ART = ASSETS.filter((a) => finals.has(a.key)).length;

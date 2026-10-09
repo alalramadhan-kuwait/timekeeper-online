@@ -37,6 +37,8 @@ export function createGame(parent: HTMLElement, model: WorldModel, hooks: SceneH
   });
   game.scene.add('world', WorldScene, true, { model, hooks, reducedMotion, dpr });
   game.events.once(Phaser.Core.Events.READY, () => { scene = game.scene.getScene('world') as WorldScene; });
+  // the browser checks of the World read the camera and objects from here (dev server only)
+  if (import.meta.env.DEV) (window as unknown as { __tkWorld?: Phaser.Game }).__tkWorld = game;
 
   const ro = new ResizeObserver(() => {
     const s = size();

@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npm run shared:check && npm run release:check && npm test && tsc && vite build && npm run sw:check",
+    "build": "npm run shared:check && npm run release:check && npm run world:art && npm test && tsc && vite build && npm run sw:check",
     "shared:check": "node scripts/shared-check.mjs",
     "shared:hash": "node scripts/shared-check.mjs --write",
     "preview": "vite preview",
@@ -15,7 +15,8 @@
     "deploy": "echo 'Deploys are automatic: push to main and GitHub Actions builds and publishes it. Deploying from a laptop once overwrote the live site with an older build, so this is disabled on purpose.' && exit 1",
     "test": "tsx src/shared/__tests__/run.ts",
     "sw:check": "node scripts/sw-check.mjs",
-    "release:check": "node scripts/release-check.mjs"
+    "release:check": "node scripts/release-check.mjs",
+    "world:art": "node scripts/world-art-check.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.106.0",

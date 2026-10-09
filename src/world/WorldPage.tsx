@@ -72,7 +72,6 @@ export default function WorldPage({ onClose }: { onClose?: () => void }) {
     if (!model || game.current || !host.current) return;
     game.current = createGame(host.current, model, {
       onSelect: (s: Selection | null) => setStack(s ? [s] : []),
-      onRoom: setRoom,
       onReady: () => setReady(true),
     });
   }, [model]);
@@ -99,7 +98,12 @@ export default function WorldPage({ onClose }: { onClose?: () => void }) {
   // keep what was tapped in sight beside the side panel, or above the phone sheet
   const first = stack[0];
   useEffect(() => {
-    if (!first) return;
+    if (!first) {
+      // the panel closed (button, Escape or a tap on the floor): the view may settle back
+      game.current?.clearSelection();
+      game.current?.reveal(0, 0, 0);
+      return;
+    }
     const a = panelRef.current;
     if (!a) return;
     // measured again as the panel grows, since details arrive after it opens
