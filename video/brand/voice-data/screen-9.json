@@ -1,0 +1,97 @@
+{
+ "_note": "Screening set for automatic-narration engines (VOICE-STRATEGY.md section 5, approved with changes 2026-10-09). Fixed before any engine was run. Screening only: a pass here earns a larger unseen test, not production.",
+ "criteria": {
+  "pronunciation": "user marks dialect errors word by word; pass: >= 8 of 9 sentences with no dialect error, and kp02, kp14, kp17 all right",
+  "identity": "blind 'is this Ali?': >= 7 of 9 yes (speaker similarity >= 0.85 is a sanity check only)",
+  "quality": "clarity, naturalness and expression vs the benchmark: equal or better in >= half the pairs, none unusable",
+  "not_evidence": "ASR transcripts and validation loss are diagnostics, never proof of pronunciation"
+ },
+ "stages": [
+  "tts: raw engine output",
+  "vc: raw Chatterbox VC of the TTS (no other processing)",
+  "final: the production chain (tighten, VC, pitch range, clarity EQ, pace)"
+ ],
+ "items": [
+  {
+   "id": "am-s01",
+   "text": "تبي تعرف شكثر عندك بضاعة؟ لا تتصل بالمحل… محد بيرد.",
+   "source": "ask-mohammed narration.json",
+   "bench": "recorded mode (reader → VC → post), latest version sent to the user",
+   "bench_files": {
+    "reader": "video/ask-mohammed-reel/voice-ali/proc/s01.wav",
+    "raw_vc": "video/ask-mohammed-reel/voice-vc/work/s01-2vc.wav",
+    "final": "video/ask-mohammed-reel/voice-vc/bright/s01.wav"
+   }
+  },
+  {
+   "id": "am-s05",
+   "text": "يقولك: خلصت من كل الفروع، تبيع خمسة بالشهر، اطلب خمسطعش. وليش.",
+   "source": "ask-mohammed narration.json",
+   "bench": "recorded mode (reader → VC → post), latest version sent to the user",
+   "bench_files": {
+    "reader": "video/ask-mohammed-reel/voice-ali/proc/s05.wav",
+    "raw_vc": "video/ask-mohammed-reel/voice-vc/work/s05-2vc.wav",
+    "final": "video/ask-mohammed-reel/voice-vc/bright/s05.wav"
+   }
+  },
+  {
+   "id": "am-s08",
+   "text": "والبضاعة الأمانة؟ يقولك: لا تشتري، كلّم المورد.",
+   "source": "ask-mohammed narration.json",
+   "bench": "recorded mode (reader → VC → post), latest version sent to the user",
+   "bench_files": {
+    "reader": "video/ask-mohammed-reel/voice-ali/proc/s08.wav",
+    "raw_vc": "video/ask-mohammed-reel/voice-vc/work/s08-2vc.wav",
+    "final": "video/ask-mohammed-reel/voice-vc/bright/s08.wav"
+   }
+  },
+  {
+   "id": "kp02",
+   "text": "الوكيل قال لي إن الطلب يتأخر شوي.",
+   "source": "kw-pron-test.json (sealed); a V5 regression",
+   "bench": null,
+   "bench_files": {}
+  },
+  {
+   "id": "kp14",
+   "text": "يتذكر أول ساعة لبسها؟ كانت من أبوه.",
+   "source": "kw-pron-test.json (sealed); a V5 regression",
+   "bench": null,
+   "bench_files": {}
+  },
+  {
+   "id": "kp17",
+   "text": "شفيك؟ ليش ما رديت علي امبارح؟",
+   "source": "kw-pron-test.json (sealed); a V5 regression",
+   "bench": null,
+   "bench_files": {}
+  },
+  {
+   "id": "SI6mbpgUIME-009",
+   "text": "وكانت وايد دقيقة، ما تحتاج إنك تعدل الوقت. وبالإضافة، نلاحظ إن شلون كان يطلق على الساعة اسم، كان مسميها رولكس تودور برنس. يعني نشوف رولكس قبل تودور.",
+   "source": "refcmp/lines.json, by-ear text (شون→شلون per Ali)",
+   "bench": "Ali's real recording",
+   "bench_files": {
+    "ali": "voice-src/refcmp/ali/SI6mbpgUIME-009.wav"
+   }
+  },
+  {
+   "id": "vTah72jkpNo-005",
+   "text": "طلع أول ساعة باتيك. هني بلشوا الأكاونتات دايماً اللي للسيليبريتيز وغيرها. يحطون والله مارك زوكربيرغ لابس الباتيك الفلانية وشذي وشذي وشذي. عقبها يطلع في إيفنت ثاني. طلع من باتيك والشركات الكبيرة.",
+   "source": "refcmp/lines.json, by-ear text (شون→شلون per Ali)",
+   "bench": "Ali's real recording",
+   "bench_files": {
+    "ali": "voice-src/refcmp/ali/vTah72jkpNo-005.wav"
+   }
+  },
+  {
+   "id": "aaVA-8RN_fc-007",
+   "text": "الموجود بالسوق. كانت فكرتها وايد بسيطة، إنه ساعة بسيطة بتصنيعها. عدد مكوناتها وايد قليل، فيقدرون ينتجونها بشكل وايد كبير. كان سعرها مناسب للكل، والأهم كان إنه ينتجون ساعة أو إدارة.",
+   "source": "refcmp/lines.json, by-ear text (شون→شلون per Ali)",
+   "bench": "Ali's real recording",
+   "bench_files": {
+    "ali": "voice-src/refcmp/ali/aaVA-8RN_fc-007.wav"
+   }
+  }
+ ]
+}
