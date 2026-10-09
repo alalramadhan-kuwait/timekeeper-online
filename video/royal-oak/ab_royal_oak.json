@@ -1,0 +1,6 @@
+{
+ "name": "ab_royal_oak",
+ "template": "بازل، ألف وتسعمية واثنين وسبعين. {name}، بقطر تسعة وثلاثين ملم.",
+ "variants": ["رُويَلْ أَوْك", "رُويَل أَوْك", "رُويَلْ أُوك", "رُويَل أُوك", "رُوْيَل أَوْك", "رُويَلْ اوك"],
+ "target": "Royal Oak /ˌrɔɪəl ˈoʊk/ (reference for the listener only, never sent to the model)"
+}

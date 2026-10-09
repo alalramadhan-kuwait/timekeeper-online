@@ -1,0 +1,368 @@
+{
+  "width": 720,
+  "height": 1280,
+  "fps": 30,
+  "scenes": [
+    {
+      "dur": 4.5,
+      "theme": "teal",
+      "banner": "Clock in with one tap",
+      "captions": "Every shift | starts with one tap",
+      "elements": [
+        {
+          "type": "dial",
+          "x": 360,
+          "y": 470,
+          "size": 300,
+          "labels": [
+            "IN",
+            "BREAK",
+            "OUT"
+          ],
+          "segments": [
+            "#2BB5B0",
+            "#F2B632",
+            "#D63C3C"
+          ],
+          "value": [
+            [
+              0.6,
+              0
+            ],
+            [
+              1.4,
+              0,
+              "linear"
+            ],
+            [
+              1.7,
+              1,
+              "outBack"
+            ],
+            [
+              3.0,
+              1,
+              "linear"
+            ],
+            [
+              3.3,
+              2,
+              "outBack"
+            ]
+          ],
+          "in": {
+            "type": "pop",
+            "at": 0.3
+          }
+        },
+        {
+          "type": "mascot",
+          "x": 360,
+          "y": 960,
+          "gear": "headband",
+          "look": [
+            [
+              0,
+              "neutral"
+            ],
+            [
+              1.7,
+              "happy"
+            ]
+          ],
+          "idle": "bob",
+          "in": {
+            "type": "rise",
+            "at": 0.1
+          },
+          "size": 250
+        },
+        {
+          "type": "sparkles",
+          "x": 360,
+          "y": 450,
+          "at": 1.7,
+          "count": 14,
+          "radius": 170,
+          "color": "#F6D04D"
+        }
+      ]
+    },
+    {
+      "dur": 5,
+      "theme": "night",
+      "banner": "The whole team, one screen",
+      "captions": "Everyone you manage | in one view",
+      "elements": [
+        {
+          "type": "moon",
+          "x": 560,
+          "y": 330,
+          "size": 110,
+          "behind": true
+        },
+        {
+          "type": "cloud",
+          "x": 190,
+          "y": 300,
+          "w": 220,
+          "color": "#3A4A86",
+          "idle": "float",
+          "behind": true
+        },
+        {
+          "type": "skyline",
+          "x": 360,
+          "y": 960,
+          "h": 420,
+          "color": "#1B2352",
+          "behind": true
+        },
+        {
+          "type": "mascot",
+          "x": 220,
+          "y": 960,
+          "size": 170,
+          "gear": "hardhat",
+          "idle": "bob",
+          "in": {
+            "type": "slideL",
+            "at": 0.2
+          }
+        },
+        {
+          "type": "mascot",
+          "x": 500,
+          "y": 960,
+          "size": 170,
+          "gear": "helmet",
+          "look": "wide",
+          "idle": {
+            "type": "bob",
+            "phase": 0.4
+          },
+          "in": {
+            "type": "slideR",
+            "at": 0.4
+          }
+        },
+        {
+          "type": "chip",
+          "x": 360,
+          "y": 470,
+          "text": "/team today",
+          "in": {
+            "type": "pop",
+            "at": 1.0
+          },
+          "typeAt": 1.1
+        }
+      ]
+    },
+    {
+      "dur": 5,
+      "theme": "rust",
+      "banner": "Late? It is already flagged",
+      "captions": "Late arrivals | get flagged | on their own",
+      "elements": [
+        {
+          "type": "stopwatch",
+          "x": 250,
+          "y": 640,
+          "size": 190,
+          "sweep": [
+            [
+              0.4,
+              0
+            ],
+            [
+              3.2,
+              0.62,
+              "inOutCubic"
+            ]
+          ],
+          "in": {
+            "type": "pop",
+            "at": 0.2
+          }
+        },
+        {
+          "type": "card",
+          "x": 480,
+          "y": 620,
+          "w": 240,
+          "h": 150,
+          "header": "08:07",
+          "headerColor": "#15171C",
+          "body": "Grace: 5 min",
+          "in": {
+            "type": "drop",
+            "at": 0.8
+          },
+          "rot": 3
+        },
+        {
+          "type": "stamp",
+          "x": 470,
+          "y": 760,
+          "text": "LATE",
+          "color": "#C5392B",
+          "rot": -8,
+          "in": {
+            "type": "slam",
+            "at": 3.3
+          }
+        },
+        {
+          "type": "mascot",
+          "x": 360,
+          "y": 960,
+          "gear": "racer",
+          "look": "worried",
+          "idle": "bob",
+          "in": {
+            "type": "rise",
+            "at": 0.1
+          },
+          "size": 240
+        }
+      ]
+    },
+    {
+      "dur": 5,
+      "theme": "cream",
+      "banner": "Reports that write themselves",
+      "captions": "Weekly reports | ready before | Monday",
+      "elements": [
+        {
+          "type": "list",
+          "x": 360,
+          "y": 520,
+          "w": 380,
+          "title": "Weekly report",
+          "rows": [
+            {
+              "label": "Hours worked",
+              "color": "#2AA6A6"
+            },
+            {
+              "label": "Late arrivals",
+              "color": "#F2B632"
+            },
+            {
+              "label": "Overtime",
+              "color": "#3B7DDB"
+            },
+            {
+              "label": "Absences",
+              "color": "#D63C3C"
+            }
+          ],
+          "at": 0.6,
+          "stagger": 0.45,
+          "in": {
+            "type": "pop",
+            "at": 0.2
+          }
+        },
+        {
+          "type": "meter",
+          "x": 360,
+          "y": 790,
+          "w": 400,
+          "label": "Payroll ready",
+          "value": [
+            [
+              1,
+              0
+            ],
+            [
+              4,
+              0.88,
+              "outCubic"
+            ]
+          ],
+          "in": {
+            "type": "rise",
+            "at": 0.9
+          }
+        },
+        {
+          "type": "mascot",
+          "x": 360,
+          "y": 960,
+          "size": 210,
+          "gear": "robot",
+          "look": "happy",
+          "idle": "hop",
+          "in": {
+            "type": "rise",
+            "at": 0.1
+          }
+        }
+      ]
+    },
+    {
+      "dur": 4,
+      "theme": "dusk",
+      "banner": "Less admin. More work.",
+      "captions": "Try it | on your next shift",
+      "elements": [
+        {
+          "type": "cloud",
+          "x": 150,
+          "y": 330,
+          "w": 200,
+          "color": "#6A4FA3",
+          "idle": "float",
+          "behind": true
+        },
+        {
+          "type": "skyline",
+          "x": 360,
+          "y": 960,
+          "h": 300,
+          "color": "#241A4A",
+          "behind": true
+        },
+        {
+          "type": "mascot",
+          "x": 360,
+          "y": 960,
+          "gear": "wings",
+          "look": "happy",
+          "idle": "hop",
+          "in": {
+            "type": "drop",
+            "at": 0.2
+          },
+          "size": 250
+        },
+        {
+          "type": "stamp",
+          "x": 360,
+          "y": 520,
+          "text": "DONE",
+          "size": 70,
+          "in": {
+            "type": "slam",
+            "at": 1.2
+          }
+        },
+        {
+          "type": "sparkles",
+          "x": 360,
+          "y": 520,
+          "at": 1.3,
+          "count": 18,
+          "radius": 220,
+          "colors": [
+            "#F6D04D",
+            "#E5835A",
+            "#7B5CF0"
+          ]
+        }
+      ]
+    }
+  ]
+}

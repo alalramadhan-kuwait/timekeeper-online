@@ -1,0 +1,5455 @@
+{
+ "width": 720,
+ "height": 1280,
+ "fps": 30,
+ "dir": "rtl",
+ "style": {
+  "banner": {
+   "paper": "#EFE8D6",
+   "ink": "#16181D",
+   "upper": true,
+   "tape": "rgba(190,178,150,.85)",
+   "torn": 0.5,
+   "size": 32
+  },
+  "caption": {
+   "font": "var(--f-banner)"
+  },
+  "grain": 0.45,
+  "vignette": 0.85
+ },
+ "themes": {
+  "ro-night": {
+   "bg": "#18202E",
+   "blot": [
+    "#222C3D",
+    "#10151F"
+   ],
+   "floor": "#0F141C",
+   "floorTop": "#253045",
+   "capBg": "#EFE8D6",
+   "capInk": "#16181D"
+  },
+  "ro-alpine": {
+   "bg": "#D9D2C2",
+   "blot": [
+    "#E6E0D2",
+    "#C9C1AE"
+   ],
+   "floor": "#B8AE98",
+   "floorTop": "#CFC6B1",
+   "capBg": "#16181D",
+   "capInk": "#EFE8D6"
+  },
+  "ro-paper": {
+   "bg": "#ECE5D3",
+   "blot": [
+    "#F4EEDF",
+    "#DDD4BF"
+   ],
+   "floor": "#D8CFB9",
+   "floorTop": "#E6DEC9",
+   "capBg": "#16181D",
+   "capInk": "#EFE8D6"
+  },
+  "ro-blue": {
+   "bg": "#1D3B5E",
+   "blot": [
+    "#264A73",
+    "#14304E"
+   ],
+   "floor": "#132A45",
+   "floorTop": "#2B5280",
+   "capBg": "#EFE8D6",
+   "capInk": "#16181D"
+  },
+  "ro-steel": {
+   "bg": "#3B4048",
+   "blot": [
+    "#474D56",
+    "#2D3138"
+   ],
+   "floor": "#25282E",
+   "floorTop": "#4A5059",
+   "capBg": "#EFE8D6",
+   "capInk": "#16181D"
+  },
+  "ro-hall": {
+   "bg": "#221D19",
+   "blot": [
+    "#2E2722",
+    "#17130F"
+   ],
+   "floor": "#14110E",
+   "floorTop": "#352D26",
+   "capBg": "#EFE8D6",
+   "capInk": "#16181D"
+  },
+  "ro-black": {
+   "bg": "#08090B",
+   "blot": [
+    "#101216",
+    "#030304"
+   ],
+   "floor": "#08090B",
+   "floorTop": "#15171B",
+   "capBg": "#EFE8D6",
+   "capInk": "#16181D"
+  }
+ },
+ "audio": {
+  "musicGain": -90
+ },
+ "scenes": [
+  {
+   "theme": "ro-paper",
+   "floor": false,
+   "elements": [
+    {
+     "type": "svg",
+     "w": 760,
+     "h": 520,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"760\" height=\"520\" viewBox=\"0 0 760 520\" style=\"overflow:visible;\"><rect width=\"760\" height=\"520\" fill=\"#8A7458\"/><rect width=\"760\" height=\"3\" fill=\"#A48D6E\"/></svg>",
+     "x": 360,
+     "y": 1030,
+     "anchor": "c",
+     "z": 1,
+     "depth": 0.9
+    },
+    {
+     "type": "svg",
+     "w": 760,
+     "h": 1320,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"760\" height=\"1320\" viewBox=\"0 0 760 1320\" style=\"overflow:visible;\"><defs><linearGradient id=\"lb1\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#FFE3A0\" stop-opacity=\"0.1\"/><stop offset=\"1\" stop-color=\"#FFE3A0\" stop-opacity=\"0.034999999999999996\"/></linearGradient></defs><polygon points=\"760.0,0.0 520.0,0.0 60.0,1320.0 520.0,1320.0\" fill=\"url(#lb1)\"/></svg>",
+     "x": 360,
+     "y": 640,
+     "anchor": "c",
+     "z": 2,
+     "depth": 0.9,
+     "still": true
+    },
+    {
+     "type": "svg",
+     "w": 484,
+     "h": 76,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"484\" height=\"76\" viewBox=\"0 0 484 76\" style=\"overflow:visible;\"><defs><filter id=\"se2\" x=\"-50%\" y=\"-50%\" width=\"200%\" height=\"200%\"><feGaussianBlur stdDeviation=\"6\"/></filter></defs><ellipse cx=\"242\" cy=\"38\" rx=\"218\" ry=\"14\" fill=\"#000\" opacity=\"0.32\" filter=\"url(#se2)\"/></svg>",
+     "x": 330,
+     "y": 1174,
+     "anchor": "c",
+     "z": 19,
+     "still": true
+    },
+    {
+     "type": "cutout",
+     "x": 330,
+     "y": 1180,
+     "h": 700,
+     "aspect": 0.6977,
+     "edge": 0,
+     "z": 20,
+     "in": {
+      "type": "none",
+      "at": 0,
+      "dur": 0.3
+     },
+     "src": "assets/gen/genta23_desk_cut.png",
+     "person": true,
+     "headBand": 0.2,
+     "idle": {
+      "type": "pulse",
+      "amp": 0.005,
+      "speed": 0.22,
+      "from": 0.3
+     }
+    },
+    {
+     "type": "text",
+     "text": "كيف صار ورا أشهر ساعات العالم؟",
+     "x": 360,
+     "y": 150,
+     "font": "banner",
+     "size": 32,
+     "color": "#16181D",
+     "paper": "#EFE8D6",
+     "upper": false,
+     "z": 40,
+     "rot": -1.5,
+     "in": {
+      "type": "none",
+      "at": 0
+     },
+     "depth": 0
+    },
+    {
+     "type": "image",
+     "src": "assets/ap/ro5402_hero.jpg",
+     "polaroid": true,
+     "aspect": 0.8676789587852495,
+     "label": "Royal Oak",
+     "w": 220,
+     "x": 180,
+     "y": 340,
+     "z": 30,
+     "rot": [
+      [
+       2.94,
+       -6
+      ],
+      [
+       4.06,
+       -7.2
+      ]
+     ],
+     "in": {
+      "type": "pop",
+      "at": 2.4899999999999998,
+      "dur": 0.45
+     },
+     "labelSize": 22,
+     "scale": [
+      [
+       2.94,
+       1
+      ],
+      [
+       4.06,
+       1.006
+      ]
+     ]
+    },
+    {
+     "type": "svg",
+     "w": 130,
+     "h": 208.0032,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"130\" height=\"208\" viewBox=\"0 0 130 208\" style=\"overflow:visible;\"><defs><linearGradient id=\"gl3\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/><stop offset=\".5\" stop-color=\"#FFFAEB\" stop-opacity=\"0.42\"/><stop offset=\"1\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/></linearGradient></defs><polygon points=\"40.0,0.0 130.0,0.0 90.0,208.0 0.0,208.0\" fill=\"url(#gl3)\"/></svg>",
+     "x": [
+      [
+       2.9899999999999998,
+       149.0
+      ],
+      [
+       3.6899999999999995,
+       211.0,
+       "inOutCubic"
+      ]
+     ],
+     "y": 318,
+     "anchor": "c",
+     "z": 31,
+     "in": {
+      "type": "none",
+      "at": 2.9899999999999998,
+      "dur": 0.5
+     },
+     "rot": -6,
+     "still": true,
+     "opacity": [
+      [
+       2.9899999999999998,
+       0
+      ],
+      [
+       3.11,
+       1
+      ],
+      [
+       3.5699999999999994,
+       1
+      ],
+      [
+       3.6899999999999995,
+       0
+      ]
+     ],
+     "out": {
+      "type": "fade",
+      "at": 3.6899999999999995,
+      "dur": 0.01
+     }
+    }
+   ],
+   "dur": 4.06,
+   "silent": true,
+   "captions": "كيف شاب | عمره ثلاثة وعشرين… | صار ورا | أشهر ساعات العالم؟",
+   "captionStart": 0.16999999999999998,
+   "captionEnd": 3.8600000000000003,
+   "voice": "voice-habibi/clips/p1-h.wav",
+   "voiceAt": 0.12,
+   "transition": "cut",
+   "camera": {
+    "zoom": [
+     [
+      0,
+      1.18
+     ],
+     [
+      2.3899999999999997,
+      1.0,
+      "inOutCubic"
+     ],
+     [
+      4.06,
+      1.03,
+      "inOutCubic"
+     ]
+    ],
+    "x": [
+     [
+      0,
+      340
+     ],
+     [
+      2.3899999999999997,
+      360,
+      "inOutCubic"
+     ],
+     [
+      4.06,
+      330,
+      "inOutCubic"
+     ]
+    ],
+    "y": [
+     [
+      0,
+      820
+     ],
+     [
+      2.3899999999999997,
+      640,
+      "inOutCubic"
+     ],
+     [
+      4.06,
+      620,
+      "inOutCubic"
+     ]
+    ]
+   },
+   "sfx": [
+    {
+     "at": 0.1,
+     "name": "pencil",
+     "gain": -12
+    },
+    {
+     "at": 2.49,
+     "name": "click",
+     "gain": -10
+    },
+    {
+     "at": 2.99,
+     "name": "tick",
+     "gain": -16
+    }
+   ]
+  },
+  {
+   "theme": "ro-black",
+   "floor": false,
+   "elements": [
+    {
+     "type": "svg",
+     "w": 760,
+     "h": 1320,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"760\" height=\"1320\" viewBox=\"0 0 760 1320\" style=\"overflow:visible;\"><rect width=\"760\" height=\"1320\" fill=\"#14100C\"/><path d=\"M 6.0 0 L 78.4 0 L 68.4 1320 L 16.0 1320 Z\" fill=\"#14100C\"/><path d=\"M 6.0 0 L 16.0 1320\" stroke=\"#2A221B\" stroke-width=\"2\"/><path d=\"M 90.4 0 L 162.9 0 L 152.9 1320 L 100.4 1320 Z\" fill=\"#1D1712\"/><path d=\"M 90.4 0 L 100.4 1320\" stroke=\"#2A221B\" stroke-width=\"2\"/><path d=\"M 174.9 0 L 247.3 0 L 237.3 1320 L 184.9 1320 Z\" fill=\"#14100C\"/><path d=\"M 174.9 0 L 184.9 1320\" stroke=\"#2A221B\" stroke-width=\"2\"/><path d=\"M 259.3 0 L 331.8 0 L 321.8 1320 L 269.3 1320 Z\" fill=\"#1D1712\"/><path d=\"M 259.3 0 L 269.3 1320\" stroke=\"#2A221B\" stroke-width=\"2\"/><path d=\"M 343.8 0 L 416.2 0 L 406.2 1320 L 353.8 1320 Z\" fill=\"#14100C\"/><path d=\"M 343.8 0 L 353.8 1320\" stroke=\"#2A221B\" stroke-width=\"2\"/><path d=\"M 428.2 0 L 500.7 0 L 490.7 1320 L 438.2 1320 Z\" fill=\"#1D1712\"/><path d=\"M 428.2 0 L 438.2 1320\" stroke=\"#2A221B\" stroke-width=\"2\"/><path d=\"M 512.7 0 L 585.1 0 L 575.1 1320 L 522.7 1320 Z\" fill=\"#14100C\"/><path d=\"M 512.7 0 L 522.7 1320\" stroke=\"#2A221B\" stroke-width=\"2\"/><path d=\"M 597.1 0 L 669.6 0 L 659.6 1320 L 607.1 1320 Z\" fill=\"#1D1712\"/><path d=\"M 597.1 0 L 607.1 1320\" stroke=\"#2A221B\" stroke-width=\"2\"/><path d=\"M 681.6 0 L 754.0 0 L 744.0 1320 L 691.6 1320 Z\" fill=\"#14100C\"/><path d=\"M 681.6 0 L 691.6 1320\" stroke=\"#2A221B\" stroke-width=\"2\"/></svg>",
+     "x": [
+      [
+       0,
+       360
+      ],
+      [
+       5.5,
+       360
+      ],
+      [
+       6.75,
+       320,
+       "inOutCubic"
+      ]
+     ],
+     "y": 640,
+     "anchor": "c",
+     "z": 0,
+     "depth": 0.6,
+     "still": true
+    },
+    {
+     "type": "svg",
+     "w": 520,
+     "h": 1000,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"520\" height=\"1000\" viewBox=\"0 0 520 1000\" style=\"overflow:visible;\"><defs><linearGradient id=\"sc\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#FFF1CF\" stop-opacity=\".55\"/><stop offset=\"1\" stop-color=\"#FFF1CF\" stop-opacity=\".05\"/></linearGradient></defs><polygon points=\"228.8,0.0 291.2,0.0 520.0,900.0 0.0,900.0\" fill=\"url(#sc)\"/></svg>",
+     "x": 360,
+     "y": 0,
+     "anchor": "t",
+     "z": 2,
+     "opacity": [
+      [
+       0,
+       1
+      ],
+      [
+       3.5,
+       0.88
+      ],
+      [
+       5.5,
+       1
+      ],
+      [
+       5.5,
+       1
+      ],
+      [
+       5.75,
+       0.5
+      ],
+      [
+       6.66,
+       1
+      ]
+     ]
+    },
+    {
+     "type": "svg",
+     "w": 600,
+     "h": 160,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"600\" height=\"160\" viewBox=\"0 0 600 160\" style=\"overflow:visible;\"><defs><filter id=\"se5\" x=\"-50%\" y=\"-50%\" width=\"200%\" height=\"200%\"><feGaussianBlur stdDeviation=\"10\"/></filter></defs><ellipse cx=\"300\" cy=\"80\" rx=\"260\" ry=\"40\" fill=\"#FFF1CF\" opacity=\"0.2\" filter=\"url(#se5)\"/></svg>",
+     "x": 360,
+     "y": 1160,
+     "anchor": "c",
+     "z": 3,
+     "depth": 0.95
+    },
+    {
+     "type": "image",
+     "src": "assets/src/genta.jpg",
+     "polaroid": true,
+     "aspect": 0.6699232379623168,
+     "label": "Gérald Genta",
+     "w": 500,
+     "x": 360,
+     "y": 600,
+     "z": 18,
+     "rot": 0,
+     "in": {
+      "type": "none",
+      "at": 0,
+      "dur": 0.45
+     },
+     "labelSize": 22,
+     "out": {
+      "type": "fade",
+      "at": 1.45,
+      "dur": 0.25
+     }
+    },
+    {
+     "type": "text",
+     "text": "الرجل اللي رسم الرويال أوك",
+     "x": 360,
+     "y": 150,
+     "font": "banner",
+     "size": 34,
+     "color": "#16181D",
+     "paper": "#EFE8D6",
+     "upper": false,
+     "z": 40,
+     "rot": -2,
+     "in": {
+      "type": "pop",
+      "at": 0.1,
+      "dur": 0.35
+     },
+     "out": {
+      "type": "fade",
+      "at": 1.5,
+      "dur": 0.2
+     },
+     "depth": 0
+    },
+    {
+     "type": "cutout",
+     "x": 360,
+     "y": 1160,
+     "h": 760,
+     "aspect": 0.328,
+     "edge": 0,
+     "z": 21,
+     "in": {
+      "type": "flip",
+      "at": 1.37,
+      "dur": 0.4
+     },
+     "src": "assets/gen/genta_think_cut.png",
+     "person": true,
+     "headBand": 0.2,
+     "scale": [
+      [
+       5.5,
+       1
+      ],
+      [
+       6.1,
+       0.96
+      ]
+     ],
+     "out": {
+      "type": "fade",
+      "at": 5.85,
+      "dur": 0.35
+     },
+     "idle": {
+      "type": "pulse",
+      "amp": 0.005,
+      "speed": 0.22,
+      "from": 1.77
+     }
+    },
+    {
+     "type": "svg",
+     "w": 300,
+     "h": 76,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"300\" height=\"76\" viewBox=\"0 0 300 76\" style=\"overflow:visible;\"><defs><filter id=\"se6\" x=\"-50%\" y=\"-50%\" width=\"200%\" height=\"200%\"><feGaussianBlur stdDeviation=\"6\"/></filter></defs><ellipse cx=\"150\" cy=\"38\" rx=\"126\" ry=\"14\" fill=\"#000\" opacity=\"0.32\" filter=\"url(#se6)\"/></svg>",
+     "x": 360,
+     "y": 1154,
+     "anchor": "c",
+     "z": 20,
+     "in": {
+      "type": "fade",
+      "at": 1.37,
+      "dur": 0.5
+     },
+     "still": true,
+     "out": {
+      "type": "fade",
+      "at": 5.85,
+      "dur": 0.35
+     }
+    },
+    {
+     "type": "cutout",
+     "x": 360,
+     "y": 1160,
+     "h": 760,
+     "aspect": 0.2848,
+     "edge": 0,
+     "z": 22,
+     "in": {
+      "type": "fade",
+      "at": 6.0,
+      "dur": 0.35
+     },
+     "src": "assets/gen/young_think_cut.png",
+     "person": true,
+     "headBand": 0.2,
+     "out": {
+      "type": "fade",
+      "at": 6.79,
+      "dur": 0.25
+     },
+     "scale": [
+      [
+       6.0,
+       1.04
+      ],
+      [
+       6.55,
+       1
+      ]
+     ],
+     "idle": {
+      "type": "pulse",
+      "amp": 0.005,
+      "speed": 0.22,
+      "from": 6.35
+     }
+    },
+    {
+     "type": "image",
+     "src": "assets/ap/ro5402_hero.jpg",
+     "polaroid": true,
+     "aspect": 0.8676789587852495,
+     "label": "Royal Oak",
+     "w": 190,
+     "x": 628,
+     "y": 650,
+     "z": 30,
+     "rot": 6,
+     "in": {
+      "type": "pop",
+      "at": 4.97,
+      "dur": 0.45
+     },
+     "labelSize": 22,
+     "out": {
+      "type": "slideR",
+      "at": 5.55,
+      "dur": 0.3
+     }
+    },
+    {
+     "type": "svg",
+     "w": 8,
+     "h": 8,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"8\" height=\"8\" viewBox=\"0 0 8 8\" style=\"overflow:visible;\"><circle cx=\"1.7\" cy=\"1.7\" r=\"1.7\" fill=\"#FFF1CF\"/></svg>",
+     "x": 369,
+     "y": 325,
+     "anchor": "c",
+     "z": 5,
+     "in": {
+      "type": "fade",
+      "at": 0.3,
+      "dur": 0.8
+     },
+     "depth": 1.25,
+     "still": true,
+     "opacity": 0.51,
+     "idle": {
+      "type": "float",
+      "amp": 14,
+      "speed": 0.146,
+      "phase": 1.53
+     }
+    },
+    {
+     "type": "svg",
+     "w": 8,
+     "h": 8,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"8\" height=\"8\" viewBox=\"0 0 8 8\" style=\"overflow:visible;\"><circle cx=\"2.2\" cy=\"2.2\" r=\"2.2\" fill=\"#FFF1CF\"/></svg>",
+     "x": 386,
+     "y": 438,
+     "anchor": "c",
+     "z": 5,
+     "in": {
+      "type": "fade",
+      "at": 0.3,
+      "dur": 0.8
+     },
+     "depth": 1.25,
+     "still": true,
+     "opacity": 0.41,
+     "idle": {
+      "type": "float",
+      "amp": 14,
+      "speed": 0.139,
+      "phase": 4.73
+     }
+    },
+    {
+     "type": "svg",
+     "w": 8,
+     "h": 8,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"8\" height=\"8\" viewBox=\"0 0 8 8\" style=\"overflow:visible;\"><circle cx=\"1.6\" cy=\"1.6\" r=\"1.6\" fill=\"#FFF1CF\"/></svg>",
+     "x": 210,
+     "y": 658,
+     "anchor": "c",
+     "z": 5,
+     "in": {
+      "type": "fade",
+      "at": 0.3,
+      "dur": 0.8
+     },
+     "depth": 1.25,
+     "still": true,
+     "opacity": 0.31,
+     "idle": {
+      "type": "float",
+      "amp": 14,
+      "speed": 0.15,
+      "phase": 2.6
+     }
+    },
+    {
+     "type": "svg",
+     "w": 8,
+     "h": 8,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"8\" height=\"8\" viewBox=\"0 0 8 8\" style=\"overflow:visible;\"><circle cx=\"2.6\" cy=\"2.6\" r=\"2.6\" fill=\"#FFF1CF\"/></svg>",
+     "x": 399,
+     "y": 131,
+     "anchor": "c",
+     "z": 5,
+     "in": {
+      "type": "fade",
+      "at": 0.3,
+      "dur": 0.8
+     },
+     "depth": 1.25,
+     "still": true,
+     "opacity": 0.3,
+     "idle": {
+      "type": "float",
+      "amp": 14,
+      "speed": 0.127,
+      "phase": 4.33
+     }
+    },
+    {
+     "type": "svg",
+     "w": 8,
+     "h": 8,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"8\" height=\"8\" viewBox=\"0 0 8 8\" style=\"overflow:visible;\"><circle cx=\"1.8\" cy=\"1.8\" r=\"1.8\" fill=\"#FFF1CF\"/></svg>",
+     "x": 305,
+     "y": 343,
+     "anchor": "c",
+     "z": 5,
+     "in": {
+      "type": "fade",
+      "at": 0.3,
+      "dur": 0.8
+     },
+     "depth": 1.25,
+     "still": true,
+     "opacity": 0.54,
+     "idle": {
+      "type": "float",
+      "amp": 14,
+      "speed": 0.154,
+      "phase": 0.18
+     }
+    },
+    {
+     "type": "svg",
+     "w": 8,
+     "h": 8,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"8\" height=\"8\" viewBox=\"0 0 8 8\" style=\"overflow:visible;\"><circle cx=\"1.5\" cy=\"1.5\" r=\"1.5\" fill=\"#FFF1CF\"/></svg>",
+     "x": 346,
+     "y": 976,
+     "anchor": "c",
+     "z": 5,
+     "in": {
+      "type": "fade",
+      "at": 0.3,
+      "dur": 0.8
+     },
+     "depth": 1.25,
+     "still": true,
+     "opacity": 0.44,
+     "idle": {
+      "type": "float",
+      "amp": 14,
+      "speed": 0.156,
+      "phase": 2.29
+     }
+    },
+    {
+     "type": "svg",
+     "w": 8,
+     "h": 8,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"8\" height=\"8\" viewBox=\"0 0 8 8\" style=\"overflow:visible;\"><circle cx=\"1.8\" cy=\"1.8\" r=\"1.8\" fill=\"#FFF1CF\"/></svg>",
+     "x": 350,
+     "y": 839,
+     "anchor": "c",
+     "z": 5,
+     "in": {
+      "type": "fade",
+      "at": 0.3,
+      "dur": 0.8
+     },
+     "depth": 1.25,
+     "still": true,
+     "opacity": 0.41,
+     "idle": {
+      "type": "float",
+      "amp": 14,
+      "speed": 0.102,
+      "phase": 1.33
+     }
+    },
+    {
+     "type": "svg",
+     "w": 8,
+     "h": 8,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"8\" height=\"8\" viewBox=\"0 0 8 8\" style=\"overflow:visible;\"><circle cx=\"2.2\" cy=\"2.2\" r=\"2.2\" fill=\"#FFF1CF\"/></svg>",
+     "x": 238,
+     "y": 670,
+     "anchor": "c",
+     "z": 5,
+     "in": {
+      "type": "fade",
+      "at": 0.3,
+      "dur": 0.8
+     },
+     "depth": 1.25,
+     "still": true,
+     "opacity": 0.42,
+     "idle": {
+      "type": "float",
+      "amp": 14,
+      "speed": 0.114,
+      "phase": 1.39
+     }
+    },
+    {
+     "type": "svg",
+     "w": 8,
+     "h": 8,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"8\" height=\"8\" viewBox=\"0 0 8 8\" style=\"overflow:visible;\"><circle cx=\"1.8\" cy=\"1.8\" r=\"1.8\" fill=\"#FFF1CF\"/></svg>",
+     "x": 488,
+     "y": 666,
+     "anchor": "c",
+     "z": 5,
+     "in": {
+      "type": "fade",
+      "at": 0.3,
+      "dur": 0.8
+     },
+     "depth": 1.25,
+     "still": true,
+     "opacity": 0.41,
+     "idle": {
+      "type": "float",
+      "amp": 14,
+      "speed": 0.117,
+      "phase": 0.13
+     }
+    },
+    {
+     "type": "svg",
+     "w": 8,
+     "h": 8,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"8\" height=\"8\" viewBox=\"0 0 8 8\" style=\"overflow:visible;\"><circle cx=\"2.8\" cy=\"2.8\" r=\"2.8\" fill=\"#FFF1CF\"/></svg>",
+     "x": 434,
+     "y": 570,
+     "anchor": "c",
+     "z": 5,
+     "in": {
+      "type": "fade",
+      "at": 0.3,
+      "dur": 0.8
+     },
+     "depth": 1.25,
+     "still": true,
+     "opacity": 0.44,
+     "idle": {
+      "type": "float",
+      "amp": 14,
+      "speed": 0.139,
+      "phase": 1.12
+     }
+    },
+    {
+     "type": "svg",
+     "w": 150,
+     "h": 150,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"150\" height=\"150\" viewBox=\"0 0 150 150\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><circle cx=\"75\" cy=\"75\" r=\"71\" fill=\"#F3EEE1\" stroke=\"#2A2C31\" stroke-width=\"8\"/><rect x=\"73.0\" y=\"10\" width=\"4\" height=\"14\" fill=\"#2A2C31\" transform=\"rotate(0 75 75)\"/><rect x=\"73.0\" y=\"10\" width=\"4\" height=\"8\" fill=\"#2A2C31\" transform=\"rotate(30 75 75)\"/><rect x=\"73.0\" y=\"10\" width=\"4\" height=\"8\" fill=\"#2A2C31\" transform=\"rotate(60 75 75)\"/><rect x=\"73.0\" y=\"10\" width=\"4\" height=\"14\" fill=\"#2A2C31\" transform=\"rotate(90 75 75)\"/><rect x=\"73.0\" y=\"10\" width=\"4\" height=\"8\" fill=\"#2A2C31\" transform=\"rotate(120 75 75)\"/><rect x=\"73.0\" y=\"10\" width=\"4\" height=\"8\" fill=\"#2A2C31\" transform=\"rotate(150 75 75)\"/><rect x=\"73.0\" y=\"10\" width=\"4\" height=\"14\" fill=\"#2A2C31\" transform=\"rotate(180 75 75)\"/><rect x=\"73.0\" y=\"10\" width=\"4\" height=\"8\" fill=\"#2A2C31\" transform=\"rotate(210 75 75)\"/><rect x=\"73.0\" y=\"10\" width=\"4\" height=\"8\" fill=\"#2A2C31\" transform=\"rotate(240 75 75)\"/><rect x=\"73.0\" y=\"10\" width=\"4\" height=\"14\" fill=\"#2A2C31\" transform=\"rotate(270 75 75)\"/><rect x=\"73.0\" y=\"10\" width=\"4\" height=\"8\" fill=\"#2A2C31\" transform=\"rotate(300 75 75)\"/><rect x=\"73.0\" y=\"10\" width=\"4\" height=\"8\" fill=\"#2A2C31\" transform=\"rotate(330 75 75)\"/></svg>",
+     "x": 570,
+     "y": 300,
+     "anchor": "c",
+     "z": 6,
+     "in": {
+      "type": "pop",
+      "at": 5.3,
+      "dur": 0.4
+     }
+    },
+    {
+     "type": "svg",
+     "w": 150,
+     "h": 150,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"150\" height=\"150\" viewBox=\"0 0 150 150\" style=\"overflow:visible;\"><rect x=\"72.0\" y=\"36.0\" width=\"6\" height=\"45.0\" rx=\"2\" fill=\"#16181D\"/></svg>",
+     "x": 570,
+     "y": 300,
+     "anchor": "c",
+     "z": 7,
+     "in": {
+      "type": "pop",
+      "at": 5.3,
+      "dur": 0.4
+     },
+     "rot": [
+      [
+       5.5,
+       120.0
+      ],
+      [
+       6.83,
+       -120.0,
+       "inOutCubic"
+      ]
+     ]
+    },
+    {
+     "type": "svg",
+     "w": 150,
+     "h": 150,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"150\" height=\"150\" viewBox=\"0 0 150 150\" style=\"overflow:visible;\"><rect x=\"73.0\" y=\"18.0\" width=\"4\" height=\"63.0\" rx=\"2\" fill=\"#16181D\"/></svg>",
+     "x": 570,
+     "y": 300,
+     "anchor": "c",
+     "z": 7,
+     "in": {
+      "type": "pop",
+      "at": 5.3,
+      "dur": 0.4
+     },
+     "rot": [
+      [
+       5.5,
+       0
+      ],
+      [
+       6.83,
+       -2880.0,
+       "inOutCubic"
+      ]
+     ]
+    },
+    {
+     "type": "svg",
+     "w": 300,
+     "h": 330,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"300\" height=\"330\" viewBox=\"0 0 300 330\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><rect x=\"0\" y=\"18\" width=\"300\" height=\"312\" rx=\"6\" fill=\"#F3EEE1\"/><rect x=\"0\" y=\"18\" width=\"300\" height=\"74\" rx=\"6\" fill=\"#B23A2E\"/><rect x=\"0\" y=\"70\" width=\"300\" height=\"22\" fill=\"#B23A2E\"/><rect x=\"70\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><rect x=\"214\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><text x=\"150\" y=\"262\" font-family=\"var(--f-title)\" font-size=\"150\" fill=\"#16181D\" text-anchor=\"middle\">2000</text><line x1=\"24\" y1=\"292\" x2=\"276\" y2=\"292\" stroke=\"#CFC6B1\" stroke-width=\"2\"/></svg>",
+     "x": 160,
+     "y": 330,
+     "anchor": "c",
+     "z": 10,
+     "in": {
+      "type": "flip",
+      "at": 5.55,
+      "dur": 0.12
+     },
+     "scale": 0.62,
+     "out": {
+      "type": "fade",
+      "at": 5.77,
+      "dur": 0.05
+     }
+    },
+    {
+     "type": "svg",
+     "w": 300,
+     "h": 330,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"300\" height=\"330\" viewBox=\"0 0 300 330\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><rect x=\"0\" y=\"18\" width=\"300\" height=\"312\" rx=\"6\" fill=\"#F3EEE1\"/><rect x=\"0\" y=\"18\" width=\"300\" height=\"74\" rx=\"6\" fill=\"#B23A2E\"/><rect x=\"0\" y=\"70\" width=\"300\" height=\"22\" fill=\"#B23A2E\"/><rect x=\"70\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><rect x=\"214\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><text x=\"150\" y=\"262\" font-family=\"var(--f-title)\" font-size=\"150\" fill=\"#16181D\" text-anchor=\"middle\">1990</text><line x1=\"24\" y1=\"292\" x2=\"276\" y2=\"292\" stroke=\"#CFC6B1\" stroke-width=\"2\"/></svg>",
+     "x": 160,
+     "y": 330,
+     "anchor": "c",
+     "z": 11,
+     "in": {
+      "type": "flip",
+      "at": 5.75,
+      "dur": 0.12
+     },
+     "scale": 0.62,
+     "out": {
+      "type": "fade",
+      "at": 5.97,
+      "dur": 0.05
+     }
+    },
+    {
+     "type": "svg",
+     "w": 300,
+     "h": 330,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"300\" height=\"330\" viewBox=\"0 0 300 330\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><rect x=\"0\" y=\"18\" width=\"300\" height=\"312\" rx=\"6\" fill=\"#F3EEE1\"/><rect x=\"0\" y=\"18\" width=\"300\" height=\"74\" rx=\"6\" fill=\"#B23A2E\"/><rect x=\"0\" y=\"70\" width=\"300\" height=\"22\" fill=\"#B23A2E\"/><rect x=\"70\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><rect x=\"214\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><text x=\"150\" y=\"262\" font-family=\"var(--f-title)\" font-size=\"150\" fill=\"#16181D\" text-anchor=\"middle\">1980</text><line x1=\"24\" y1=\"292\" x2=\"276\" y2=\"292\" stroke=\"#CFC6B1\" stroke-width=\"2\"/></svg>",
+     "x": 160,
+     "y": 330,
+     "anchor": "c",
+     "z": 12,
+     "in": {
+      "type": "flip",
+      "at": 5.95,
+      "dur": 0.12
+     },
+     "scale": 0.62,
+     "out": {
+      "type": "fade",
+      "at": 6.17,
+      "dur": 0.05
+     }
+    },
+    {
+     "type": "svg",
+     "w": 300,
+     "h": 330,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"300\" height=\"330\" viewBox=\"0 0 300 330\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><rect x=\"0\" y=\"18\" width=\"300\" height=\"312\" rx=\"6\" fill=\"#F3EEE1\"/><rect x=\"0\" y=\"18\" width=\"300\" height=\"74\" rx=\"6\" fill=\"#B23A2E\"/><rect x=\"0\" y=\"70\" width=\"300\" height=\"22\" fill=\"#B23A2E\"/><rect x=\"70\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><rect x=\"214\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><text x=\"150\" y=\"262\" font-family=\"var(--f-title)\" font-size=\"150\" fill=\"#16181D\" text-anchor=\"middle\">1970</text><line x1=\"24\" y1=\"292\" x2=\"276\" y2=\"292\" stroke=\"#CFC6B1\" stroke-width=\"2\"/></svg>",
+     "x": 160,
+     "y": 330,
+     "anchor": "c",
+     "z": 13,
+     "in": {
+      "type": "flip",
+      "at": 6.15,
+      "dur": 0.12
+     },
+     "scale": 0.62,
+     "out": {
+      "type": "fade",
+      "at": 6.37,
+      "dur": 0.05
+     }
+    },
+    {
+     "type": "svg",
+     "w": 300,
+     "h": 330,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"300\" height=\"330\" viewBox=\"0 0 300 330\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><rect x=\"0\" y=\"18\" width=\"300\" height=\"312\" rx=\"6\" fill=\"#F3EEE1\"/><rect x=\"0\" y=\"18\" width=\"300\" height=\"74\" rx=\"6\" fill=\"#B23A2E\"/><rect x=\"0\" y=\"70\" width=\"300\" height=\"22\" fill=\"#B23A2E\"/><rect x=\"70\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><rect x=\"214\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><text x=\"150\" y=\"262\" font-family=\"var(--f-title)\" font-size=\"150\" fill=\"#16181D\" text-anchor=\"middle\">1960</text><line x1=\"24\" y1=\"292\" x2=\"276\" y2=\"292\" stroke=\"#CFC6B1\" stroke-width=\"2\"/></svg>",
+     "x": 160,
+     "y": 330,
+     "anchor": "c",
+     "z": 14,
+     "in": {
+      "type": "flip",
+      "at": 6.35,
+      "dur": 0.12
+     },
+     "scale": 0.62,
+     "out": {
+      "type": "fade",
+      "at": 6.569999999999999,
+      "dur": 0.05
+     }
+    },
+    {
+     "type": "svg",
+     "w": 300,
+     "h": 330,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"300\" height=\"330\" viewBox=\"0 0 300 330\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><rect x=\"0\" y=\"18\" width=\"300\" height=\"312\" rx=\"6\" fill=\"#F3EEE1\"/><rect x=\"0\" y=\"18\" width=\"300\" height=\"74\" rx=\"6\" fill=\"#B23A2E\"/><rect x=\"0\" y=\"70\" width=\"300\" height=\"22\" fill=\"#B23A2E\"/><rect x=\"70\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><rect x=\"214\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><text x=\"150\" y=\"262\" font-family=\"var(--f-title)\" font-size=\"150\" fill=\"#16181D\" text-anchor=\"middle\">1954</text><line x1=\"24\" y1=\"292\" x2=\"276\" y2=\"292\" stroke=\"#CFC6B1\" stroke-width=\"2\"/></svg>",
+     "x": 160,
+     "y": 330,
+     "anchor": "c",
+     "z": 15,
+     "in": {
+      "type": "flip",
+      "at": 6.55,
+      "dur": 0.12
+     },
+     "scale": 0.62
+    },
+    {
+     "type": "svg",
+     "w": 760,
+     "h": 1320,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"760\" height=\"1320\" viewBox=\"0 0 760 1320\" style=\"overflow:visible;\"><rect width=\"760\" height=\"1320\" fill=\"#8A6A3A\"/><defs><radialGradient id=\"vg7\" cx=\"50%\" cy=\"48%\" r=\"75%\"><stop offset=\"0.55\" stop-color=\"#3A2A14\" stop-opacity=\"0\"/><stop offset=\"1\" stop-color=\"#3A2A14\" stop-opacity=\"0.6\"/></radialGradient></defs><rect width=\"760\" height=\"1320\" fill=\"url(#vg7)\"/></svg>",
+     "x": 360,
+     "y": 640,
+     "anchor": "c",
+     "z": 30,
+     "depth": 0,
+     "still": true,
+     "opacity": [
+      [
+       5.5,
+       0
+      ],
+      [
+       6.55,
+       0.26
+      ],
+      [
+       6.92,
+       0.16
+      ]
+     ]
+    }
+   ],
+   "dur": 7.05,
+   "silent": true,
+   "captions": "هذا جيرالد جنتا… | من أشهر | مصممي الساعات | بالتاريخ. | بس قبل لا | يصير اسمه | أسطورة… | خلونا نرجع للبداية.",
+   "captionStart": 0.16999999999999998,
+   "captionEnd": 6.8500000000000005,
+   "voice": "voice-habibi/clips/p1-0.wav",
+   "voiceAt": 0.12,
+   "camera": {
+    "zoom": [
+     [
+      0,
+      1.7
+     ],
+     [
+      1.15,
+      1.0,
+      "inOutCubic"
+     ],
+     [
+      3.56,
+      1.06,
+      "inOutCubic"
+     ],
+     [
+      5.5,
+      1.12,
+      "inOutCubic"
+     ],
+     [
+      6.92,
+      1.0,
+      "inOutCubic"
+     ]
+    ],
+    "x": [
+     [
+      0,
+      299
+     ],
+     [
+      1.15,
+      360,
+      "inOutCubic"
+     ],
+     [
+      3.56,
+      385,
+      "inOutCubic"
+     ],
+     [
+      5.5,
+      360,
+      "inOutCubic"
+     ],
+     [
+      6.92,
+      360,
+      "inOutCubic"
+     ]
+    ],
+    "y": [
+     [
+      0,
+      768
+     ],
+     [
+      1.15,
+      700,
+      "inOutCubic"
+     ],
+     [
+      3.56,
+      680,
+      "inOutCubic"
+     ],
+     [
+      5.5,
+      660,
+      "inOutCubic"
+     ],
+     [
+      6.92,
+      640,
+      "inOutCubic"
+     ]
+    ]
+   },
+   "sfx": [
+    {
+     "at": 0.15,
+     "name": "shutter",
+     "gain": -14
+    },
+    {
+     "at": 1.37,
+     "name": "paper_slide",
+     "gain": -13
+    },
+    {
+     "at": 4.97,
+     "name": "click",
+     "gain": -14
+    },
+    {
+     "at": 5.5,
+     "name": "whoosh",
+     "gain": -12
+    },
+    {
+     "at": 5.6,
+     "name": "crown_wind",
+     "gain": -10
+    },
+    {
+     "at": 5.55,
+     "name": "paper_tear",
+     "gain": -17
+    },
+    {
+     "at": 5.75,
+     "name": "paper_tear",
+     "gain": -17
+    },
+    {
+     "at": 5.95,
+     "name": "paper_tear",
+     "gain": -17
+    },
+    {
+     "at": 6.15,
+     "name": "paper_tear",
+     "gain": -17
+    },
+    {
+     "at": 6.35,
+     "name": "paper_tear",
+     "gain": -17
+    },
+    {
+     "at": 6.55,
+     "name": "paper_tear",
+     "gain": -17
+    }
+   ],
+   "beds": [
+    {
+     "name": "watch_run",
+     "from": 0,
+     "to": 8,
+     "gain": -28
+    }
+   ]
+  },
+  {
+   "theme": "ro-alpine",
+   "floor": false,
+   "elements": [
+    {
+     "type": "svg",
+     "w": 720,
+     "h": 760,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"720\" height=\"760\" viewBox=\"0 0 720 760\" style=\"overflow:visible;\"><defs><linearGradient id=\"gs8\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#B9C9D6\"/><stop offset=\"1\" stop-color=\"#DCE4EA\"/></linearGradient></defs><rect width=\"720\" height=\"760\" fill=\"url(#gs8)\"/></svg>",
+     "x": 360,
+     "y": 380,
+     "anchor": "c",
+     "z": 1,
+     "depth": 0.4
+    },
+    {
+     "type": "svg",
+     "w": 200,
+     "h": 70,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"200\" height=\"70\" viewBox=\"0 0 200 70\" style=\"overflow:visible;\"><path d=\"M 10 60 Q 0 30 40 32 Q 50 4 90 14 Q 120 0 140 24 Q 190 20 190 60 Z\" fill=\"#F2F5F7\" opacity=\".9\"/></svg>",
+     "x": [
+      [
+       0,
+       160
+      ],
+      [
+       14.4,
+       230
+      ]
+     ],
+     "y": 150,
+     "anchor": "c",
+     "z": 1,
+     "depth": 0.45
+    },
+    {
+     "type": "svg",
+     "w": 200,
+     "h": 70,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"200\" height=\"70\" viewBox=\"0 0 200 70\" style=\"overflow:visible;\"><path d=\"M 10 60 Q 0 30 40 32 Q 50 4 90 14 Q 120 0 140 24 Q 190 20 190 60 Z\" fill=\"#F2F5F7\" opacity=\".9\"/></svg>",
+     "x": [
+      [
+       0,
+       560
+      ],
+      [
+       14.4,
+       500
+      ]
+     ],
+     "y": 90,
+     "anchor": "c",
+     "z": 1,
+     "depth": 0.45,
+     "scale": 0.7
+    },
+    {
+     "type": "svg",
+     "w": 720,
+     "h": 200,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"720\" height=\"200\" viewBox=\"0 0 720 200\" style=\"overflow:visible;\"><polygon points=\"0.0,110.0 129.6,70.0 216.0,90.0 374.4,10.0 446.4,50.0 504.0,36.0 612.0,80.0 720.0,60.0 720.0,200.0 0.0,200.0\" fill=\"#F2F5F7\"/><polygon points=\"374.4,10.0 403.2,100.0 446.4,50.0 475.2,120.0 374.4,140.0 324.0,80.0\" fill=\"#C9D4DE\"/><polygon points=\"-1.0,160.2 107.5,124.4 288.5,108.3 466.1,133.3 611.0,118.9 722.0,139.9 721.3,199.9 0.6,198.6\" fill=\"#7F93A0\"/></svg>",
+     "x": 360,
+     "y": 340,
+     "anchor": "c",
+     "z": 2,
+     "depth": 0.5
+    },
+    {
+     "type": "svg",
+     "w": 720,
+     "h": 120,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"720\" height=\"120\" viewBox=\"0 0 720 120\" style=\"overflow:visible;\"><rect x=\"-10.0\" y=\"32.9\" width=\"91.1\" height=\"87.1\" fill=\"#BFB59E\"/><rect x=\"-2.0\" y=\"44.9\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"-2.0\" y=\"66.9\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"-2.0\" y=\"88.9\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"14.0\" y=\"44.9\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"14.0\" y=\"66.9\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"14.0\" y=\"88.9\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"30.0\" y=\"44.9\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"30.0\" y=\"66.9\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"30.0\" y=\"88.9\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"46.0\" y=\"44.9\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"46.0\" y=\"66.9\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"46.0\" y=\"88.9\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"62.0\" y=\"44.9\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"62.0\" y=\"66.9\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"62.0\" y=\"88.9\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"88.8\" y=\"23.9\" width=\"97.0\" height=\"96.1\" fill=\"#B8AE98\"/><rect x=\"96.8\" y=\"35.9\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"96.8\" y=\"57.9\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"96.8\" y=\"79.9\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"112.8\" y=\"35.9\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"112.8\" y=\"57.9\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"112.8\" y=\"79.9\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"128.8\" y=\"35.9\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"128.8\" y=\"57.9\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"128.8\" y=\"79.9\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"144.8\" y=\"35.9\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"144.8\" y=\"57.9\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"144.8\" y=\"79.9\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"160.8\" y=\"35.9\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"160.8\" y=\"57.9\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"160.8\" y=\"79.9\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"192.8\" y=\"57.5\" width=\"98.8\" height=\"62.5\" fill=\"#B8AE98\"/><rect x=\"200.8\" y=\"69.5\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"216.8\" y=\"69.5\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"232.8\" y=\"69.5\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"248.8\" y=\"69.5\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"264.8\" y=\"69.5\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"299.0\" y=\"46.5\" width=\"65.7\" height=\"73.5\" fill=\"#B8AE98\"/><rect x=\"307.0\" y=\"58.5\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"307.0\" y=\"80.5\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"323.0\" y=\"58.5\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"323.0\" y=\"80.5\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"339.0\" y=\"58.5\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"339.0\" y=\"80.5\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"369.0\" y=\"57.5\" width=\"65.1\" height=\"62.5\" fill=\"#BFB59E\"/><rect x=\"377.0\" y=\"69.5\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"393.0\" y=\"69.5\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"409.0\" y=\"69.5\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"437.4\" y=\"24.2\" width=\"74.0\" height=\"95.8\" fill=\"#A39880\"/><rect x=\"445.4\" y=\"36.2\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"445.4\" y=\"58.2\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"445.4\" y=\"80.2\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"461.4\" y=\"36.2\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"461.4\" y=\"58.2\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"461.4\" y=\"80.2\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"477.4\" y=\"36.2\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"477.4\" y=\"58.2\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"477.4\" y=\"80.2\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"514.3\" y=\"63.1\" width=\"99.9\" height=\"56.9\" fill=\"#BFB59E\"/><rect x=\"522.3\" y=\"75.1\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"538.3\" y=\"75.1\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"554.3\" y=\"75.1\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"570.3\" y=\"75.1\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"586.3\" y=\"75.1\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"618.8\" y=\"21.4\" width=\"66.6\" height=\"98.6\" fill=\"#B8AE98\"/><rect x=\"626.8\" y=\"33.4\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"626.8\" y=\"55.4\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"626.8\" y=\"77.4\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"642.8\" y=\"33.4\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"642.8\" y=\"55.4\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"642.8\" y=\"77.4\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"658.8\" y=\"33.4\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"658.8\" y=\"55.4\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"658.8\" y=\"77.4\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"688.7\" y=\"20.9\" width=\"70.8\" height=\"99.1\" fill=\"#B8AE98\"/><rect x=\"696.7\" y=\"32.9\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"696.7\" y=\"54.9\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"696.7\" y=\"76.9\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"712.7\" y=\"32.9\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"712.7\" y=\"54.9\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"712.7\" y=\"76.9\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"728.7\" y=\"32.9\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"728.7\" y=\"54.9\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><rect x=\"728.7\" y=\"76.9\" width=\"7\" height=\"10\" fill=\"#8C826E\"/><path d=\"M 300 50 q 30 -48 60 0 Z\" fill=\"#9C9078\"/></svg>",
+     "x": 360,
+     "y": 410,
+     "anchor": "c",
+     "z": 3,
+     "depth": 0.6
+    },
+    {
+     "type": "svg",
+     "w": 720,
+     "h": 300,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"720\" height=\"300\" viewBox=\"0 0 720 300\" style=\"overflow:visible;\"><polygon points=\"-0.1,0.2 61.3,2.9 120.0,-1.7 179.1,3.0 240.4,-1.1 298.8,2.4 358.8,-1.1 420.6,1.6 481.4,-0.6 540.5,3.3 599.0,-3.5 660.1,1.7 719.1,-0.8 718.6,299.9 -0.2,301.0\" fill=\"#6F8FA8\"/><polygon points=\"-0.1,75.5 60.5,76.9 118.5,72.6 179.3,78.9 240.6,73.3 300.2,78.5 358.9,72.8 419.0,79.2 478.7,74.0 538.7,78.6 599.5,72.7 661.0,76.6 718.7,76.2 720.0,298.8 1.5,301.3\" fill=\"#5E7F98\"/><polygon points=\"-0.7,150.6 60.6,154.0 119.1,147.2 178.9,152.2 240.7,146.9 300.1,152.1 359.4,147.8 421.0,153.3 478.5,147.3 538.9,154.1 600.9,148.9 661.0,153.7 721.3,150.9 719.3,301.0 -0.0,300.8\" fill=\"#557590\"/><polygon points=\"-1.2,225.6 60.5,229.3 119.3,222.3 180.7,228.5 239.4,223.6 299.7,228.8 358.9,222.2 421.2,227.6 479.3,223.9 540.4,226.9 600.2,223.5 659.0,228.5 718.9,224.5 718.7,299.1 1.4,299.7\" fill=\"#4C6A84\"/></svg>",
+     "x": 360,
+     "y": 620,
+     "anchor": "c",
+     "z": 4,
+     "depth": 0.7
+    },
+    {
+     "type": "svg",
+     "w": 60,
+     "h": 300,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"60\" height=\"300\" viewBox=\"0 0 60 300\" style=\"overflow:visible;\"><path d=\"M 28 300 L 22 40 Q 30 10 38 40 L 32 300 Z\" fill=\"#F4F7FA\"/><circle cx=\"30\" cy=\"34\" r=\"22\" fill=\"#F4F7FA\" opacity=\".35\"/><circle cx=\"44\" cy=\"48\" r=\"16\" fill=\"#F4F7FA\" opacity=\".35\"/><circle cx=\"16\" cy=\"52\" r=\"14\" fill=\"#F4F7FA\" opacity=\".35\"/></svg>",
+     "x": 600,
+     "y": 480,
+     "anchor": "b",
+     "z": 5,
+     "in": {
+      "type": "grow",
+      "at": 0.2,
+      "dur": 1.0
+     },
+     "depth": 0.7,
+     "idle": {
+      "type": "sway",
+      "amp": 1.2,
+      "speed": 0.3
+     }
+    },
+    {
+     "type": "svg",
+     "w": 160,
+     "h": 60,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"160\" height=\"60\" viewBox=\"0 0 160 60\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><path d=\"M 0 36 L 160 36 L 146 58 L 12 58 Z\" fill=\"#EFE8D6\"/><rect x=\"24\" y=\"22\" width=\"112\" height=\"14\" fill=\"#EFE8D6\"/><rect x=\"30\" y=\"26\" width=\"100\" height=\"4\" fill=\"#8C826E\"/><rect x=\"56\" y=\"2\" width=\"12\" height=\"22\" fill=\"#B23A2E\"/><rect x=\"90\" y=\"2\" width=\"12\" height=\"22\" fill=\"#16181D\"/><circle cx=\"80\" cy=\"44\" r=\"12\" fill=\"#C9C1AE\"/></svg>",
+     "x": [
+      [
+       0,
+       820
+      ],
+      [
+       7.2,
+       -120
+      ]
+     ],
+     "y": 560,
+     "anchor": "c",
+     "z": 5,
+     "depth": 0.75,
+     "idle": {
+      "type": "bob",
+      "amp": 1.5,
+      "speed": 0.6
+     }
+    },
+    {
+     "type": "svg",
+     "w": 760,
+     "h": 520,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"760\" height=\"520\" viewBox=\"0 0 760 520\" style=\"overflow:visible;\"><rect width=\"760\" height=\"520\" fill=\"#8A7458\"/><rect width=\"760\" height=\"3\" fill=\"#A48D6E\"/></svg>",
+     "x": 360,
+     "y": 1030,
+     "anchor": "c",
+     "z": 6,
+     "depth": 0.9
+    },
+    {
+     "type": "svg",
+     "w": 300,
+     "h": 330,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"300\" height=\"330\" viewBox=\"0 0 300 330\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><rect x=\"0\" y=\"18\" width=\"300\" height=\"312\" rx=\"6\" fill=\"#F3EEE1\"/><rect x=\"0\" y=\"18\" width=\"300\" height=\"74\" rx=\"6\" fill=\"#B23A2E\"/><rect x=\"0\" y=\"70\" width=\"300\" height=\"22\" fill=\"#B23A2E\"/><rect x=\"70\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><rect x=\"214\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><text x=\"150\" y=\"262\" font-family=\"var(--f-title)\" font-size=\"150\" fill=\"#16181D\" text-anchor=\"middle\">1954</text><line x1=\"24\" y1=\"292\" x2=\"276\" y2=\"292\" stroke=\"#CFC6B1\" stroke-width=\"2\"/></svg>",
+     "x": [
+      [
+       0,
+       160
+      ],
+      [
+       0.6,
+       560,
+       "inOutCubic"
+      ]
+     ],
+     "y": [
+      [
+       0,
+       330
+      ],
+      [
+       0.6,
+       250,
+       "inOutCubic"
+      ]
+     ],
+     "anchor": "c",
+     "z": 10,
+     "in": {
+      "type": "none",
+      "at": 0
+     },
+     "scale": [
+      [
+       0,
+       0.62
+      ],
+      [
+       0.6,
+       0.6
+      ]
+     ],
+     "depth": 0.9
+    },
+    {
+     "type": "svg",
+     "w": 484,
+     "h": 76,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"484\" height=\"76\" viewBox=\"0 0 484 76\" style=\"overflow:visible;\"><defs><filter id=\"se9\" x=\"-50%\" y=\"-50%\" width=\"200%\" height=\"200%\"><feGaussianBlur stdDeviation=\"6\"/></filter></defs><ellipse cx=\"242\" cy=\"38\" rx=\"218\" ry=\"14\" fill=\"#000\" opacity=\"0.32\" filter=\"url(#se9)\"/></svg>",
+     "x": 330,
+     "y": 1174,
+     "anchor": "c",
+     "z": 19,
+     "in": {
+      "type": "fade",
+      "at": 0.2,
+      "dur": 0.5
+     },
+     "still": true
+    },
+    {
+     "type": "cutout",
+     "x": 330,
+     "y": 1180,
+     "h": 700,
+     "aspect": 0.6977,
+     "edge": 0,
+     "z": 20,
+     "in": {
+      "type": "rise",
+      "at": 0.2,
+      "dur": 0.5
+     },
+     "src": "assets/gen/genta23_desk_cut.png",
+     "person": true,
+     "headBand": 0.2,
+     "out": {
+      "type": "fade",
+      "at": 5.31,
+      "dur": 0.25
+     },
+     "idle": {
+      "type": "pulse",
+      "amp": 0.005,
+      "speed": 0.22,
+      "from": 0.7
+     }
+    },
+    {
+     "type": "map",
+     "x": 360,
+     "y": 600,
+     "w": 720,
+     "h": 1180,
+     "z": 40,
+     "view": [
+      [
+       5.11,
+       {
+        "lon": 10,
+        "lat": 58,
+        "span": 120
+       }
+      ],
+      [
+       6.13,
+       {
+        "lon": 0,
+        "lat": 62,
+        "span": 120
+       }
+      ],
+      [
+       7.64,
+       {
+        "lon": -95,
+        "lat": 58,
+        "span": 130
+       },
+       "inOutCubic"
+      ],
+      [
+       9.62,
+       {
+        "lon": -40,
+        "lat": 64,
+        "span": 190
+       },
+       "inOutCubic"
+      ]
+     ],
+     "sea": "#CCC6B7",
+     "land": "#F4F1E8",
+     "pins": [
+      {
+       "id": "cph",
+       "lon": 12.57,
+       "lat": 55.68,
+       "label": "كوبنهاغن",
+       "at": 5.59
+      },
+      {
+       "id": "lax",
+       "lon": -118.24,
+       "lat": 34.05,
+       "label": "لوس أنجلوس",
+       "at": 7.57
+      },
+      {
+       "id": "pole",
+       "lon": -40,
+       "lat": 84,
+       "label": "القطب الشمالي",
+       "at": 8.48
+      }
+     ],
+     "routes": [
+      {
+       "from": "cph",
+       "to": "lax",
+       "at": 6.13,
+       "dur": 2.4,
+       "curve": 0.45,
+       "plane": true,
+       "keep": true
+      }
+     ],
+     "unfold": {
+      "at": 5.11,
+      "dur": 0.8
+     },
+     "in": {
+      "type": "none",
+      "at": 5.11
+     },
+     "depth": 0
+    },
+    {
+     "type": "sparkles",
+     "x": 360,
+     "y": 600,
+     "count": 8,
+     "radius": 30,
+     "life": 0.8,
+     "color": "#B23A2E",
+     "at": 8.48,
+     "z": 41,
+     "depth": 0
+    },
+    {
+     "type": "image",
+     "src": "assets/early/sas1954.jpg",
+     "polaroid": true,
+     "aspect": 0.69,
+     "label": "SAS · 1954",
+     "w": 190,
+     "x": 360,
+     "y": 800,
+     "z": 45,
+     "rot": [
+      [
+       8.36,
+       -4
+      ],
+      [
+       9.96,
+       -5.2
+      ]
+     ],
+     "in": {
+      "type": "drop",
+      "at": 7.91,
+      "dur": 0.45
+     },
+     "labelSize": 22,
+     "depth": 0,
+     "scale": [
+      [
+       8.36,
+       1
+      ],
+      [
+       9.96,
+       1.006
+      ]
+     ]
+    }
+   ],
+   "dur": 9.96,
+   "silent": true,
+   "captions": "جنيف، | سنة ألف وتسعمية | وأربعة وخمسين. | شاب | عمره ثلاثة وعشرين | سنة بس، | يصمم لشركة | يونيفرسال جنيف | ساعة لرحلات طيران | إس إيه إس | فوق القطب الشمالي.",
+   "captionStart": 0.16999999999999998,
+   "captionEnd": 9.76,
+   "voice": "voice-habibi/clips/p1-1.wav",
+   "voiceAt": 0.12,
+   "transition": "cut",
+   "camera": {
+    "zoom": [
+     [
+      0,
+      1.0
+     ],
+     [
+      2.67,
+      1.0,
+      "inOutCubic"
+     ],
+     [
+      3.67,
+      1.15,
+      "inOutCubic"
+     ],
+     [
+      5.04,
+      1.6,
+      "inOutCubic"
+     ]
+    ],
+    "x": [
+     [
+      0,
+      360
+     ],
+     [
+      2.67,
+      360,
+      "inOutCubic"
+     ],
+     [
+      3.67,
+      340,
+      "inOutCubic"
+     ],
+     [
+      5.04,
+      250,
+      "inOutCubic"
+     ]
+    ],
+    "y": [
+     [
+      0,
+      640
+     ],
+     [
+      2.67,
+      620,
+      "inOutCubic"
+     ],
+     [
+      3.67,
+      880,
+      "inOutCubic"
+     ],
+     [
+      5.04,
+      750,
+      "inOutCubic"
+     ]
+    ]
+   },
+   "sfx": [
+    {
+     "at": 3.13,
+     "name": "pencil",
+     "gain": -10
+    },
+    {
+     "at": 5.11,
+     "name": "paper_slide",
+     "gain": -12
+    },
+    {
+     "at": 6.13,
+     "name": "plane",
+     "gain": -14
+    },
+    {
+     "at": 8.48,
+     "name": "pin",
+     "gain": -14
+    },
+    {
+     "at": 7.91,
+     "name": "paper_place",
+     "gain": -10
+    }
+   ]
+  },
+  {
+   "theme": "ro-night",
+   "floor": false,
+   "elements": [
+    {
+     "type": "svg",
+     "w": 760,
+     "h": 360,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"760\" height=\"360\" viewBox=\"0 0 760 360\" style=\"overflow:visible;\"><path d=\"M -20 60 C 180 10 320 120 520 60 S 740 20 780 70 L 780 130 C 600 100 420 180 240 120 S 40 160 -20 140 Z\" fill=\"#2F6F6A\" opacity=\"0.35\"/><path d=\"M -20 130 C 180 80 320 190 520 130 S 740 90 780 140 L 780 200 C 600 170 420 250 240 190 S 40 230 -20 210 Z\" fill=\"#3E8A78\" opacity=\"0.25\"/><path d=\"M -20 200 C 180 150 320 260 520 200 S 740 160 780 210 L 780 270 C 600 240 420 320 240 260 S 40 300 -20 280 Z\" fill=\"#5E9E8A\" opacity=\"0.18\"/></svg>",
+     "x": [
+      [
+       0,
+       340
+      ],
+      [
+       5.3,
+       380
+      ]
+     ],
+     "y": 230,
+     "anchor": "c",
+     "z": 1,
+     "in": {
+      "type": "fade",
+      "at": 0,
+      "dur": 0.6
+     },
+     "depth": 0.5,
+     "idle": {
+      "type": "sway",
+      "amp": 1,
+      "speed": 0.2
+     }
+    },
+    {
+     "type": "svg",
+     "w": 720,
+     "h": 520,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"720\" height=\"520\" viewBox=\"0 0 720 520\" style=\"overflow:visible;\"><circle cx=\"233.2\" cy=\"78.4\" r=\"1.8\" fill=\"#EFE8D6\" opacity=\"0.38\"/><circle cx=\"385.8\" cy=\"190.2\" r=\"1.1\" fill=\"#EFE8D6\" opacity=\"0.58\"/><circle cx=\"27.0\" cy=\"225.5\" r=\"1.1\" fill=\"#EFE8D6\" opacity=\"0.39\"/><circle cx=\"305.7\" cy=\"430.0\" r=\"1.1\" fill=\"#EFE8D6\" opacity=\"0.45\"/><circle cx=\"451.8\" cy=\"492.8\" r=\"1.7\" fill=\"#EFE8D6\" opacity=\"0.53\"/><circle cx=\"702.9\" cy=\"24.2\" r=\"2.0\" fill=\"#EFE8D6\" opacity=\"0.48\"/><circle cx=\"103.9\" cy=\"61.3\" r=\"1.4\" fill=\"#EFE8D6\" opacity=\"0.72\"/><circle cx=\"130.1\" cy=\"302.4\" r=\"1.8\" fill=\"#EFE8D6\" opacity=\"0.52\"/><circle cx=\"394.4\" cy=\"32.7\" r=\"1.1\" fill=\"#EFE8D6\" opacity=\"0.44\"/><circle cx=\"489.9\" cy=\"222.3\" r=\"1.4\" fill=\"#EFE8D6\" opacity=\"0.61\"/><circle cx=\"326.3\" cy=\"155.9\" r=\"2.0\" fill=\"#EFE8D6\" opacity=\"0.66\"/><circle cx=\"175.7\" cy=\"298.7\" r=\"1.6\" fill=\"#EFE8D6\" opacity=\"0.74\"/><circle cx=\"525.2\" cy=\"149.7\" r=\"2.2\" fill=\"#EFE8D6\" opacity=\"0.40\"/><circle cx=\"301.0\" cy=\"393.7\" r=\"1.2\" fill=\"#EFE8D6\" opacity=\"0.57\"/><circle cx=\"28.2\" cy=\"347.5\" r=\"1.9\" fill=\"#EFE8D6\" opacity=\"0.61\"/><circle cx=\"630.3\" cy=\"163.1\" r=\"1.8\" fill=\"#EFE8D6\" opacity=\"0.62\"/><circle cx=\"417.5\" cy=\"237.2\" r=\"2.0\" fill=\"#EFE8D6\" opacity=\"0.78\"/><circle cx=\"341.4\" cy=\"345.4\" r=\"1.1\" fill=\"#EFE8D6\" opacity=\"0.67\"/><circle cx=\"465.9\" cy=\"516.4\" r=\"2.0\" fill=\"#EFE8D6\" opacity=\"0.48\"/><circle cx=\"277.8\" cy=\"347.7\" r=\"1.0\" fill=\"#EFE8D6\" opacity=\"0.56\"/><circle cx=\"121.0\" cy=\"60.9\" r=\"1.1\" fill=\"#EFE8D6\" opacity=\"0.70\"/><circle cx=\"93.1\" cy=\"128.8\" r=\"1.5\" fill=\"#EFE8D6\" opacity=\"0.74\"/><circle cx=\"58.0\" cy=\"233.6\" r=\"1.7\" fill=\"#EFE8D6\" opacity=\"0.75\"/><circle cx=\"589.9\" cy=\"449.3\" r=\"1.3\" fill=\"#EFE8D6\" opacity=\"0.54\"/><circle cx=\"258.3\" cy=\"459.8\" r=\"2.1\" fill=\"#EFE8D6\" opacity=\"0.42\"/><circle cx=\"126.9\" cy=\"120.6\" r=\"1.3\" fill=\"#EFE8D6\" opacity=\"0.57\"/><circle cx=\"424.2\" cy=\"136.6\" r=\"1.0\" fill=\"#EFE8D6\" opacity=\"0.54\"/><circle cx=\"265.9\" cy=\"294.5\" r=\"2.1\" fill=\"#EFE8D6\" opacity=\"0.66\"/><circle cx=\"371.2\" cy=\"321.1\" r=\"1.8\" fill=\"#EFE8D6\" opacity=\"0.37\"/><circle cx=\"647.7\" cy=\"405.6\" r=\"2.0\" fill=\"#EFE8D6\" opacity=\"0.71\"/></svg>",
+     "x": 360,
+     "y": 300,
+     "anchor": "c",
+     "z": 1,
+     "depth": 0.4,
+     "idle": {
+      "type": "pulse",
+      "amp": 0.02,
+      "speed": 0.5
+     }
+    },
+    {
+     "type": "svg",
+     "w": 520,
+     "h": 1000,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"520\" height=\"1000\" viewBox=\"0 0 520 1000\" style=\"overflow:visible;\"><defs><linearGradient id=\"sc\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#FFF1CF\" stop-opacity=\".55\"/><stop offset=\"1\" stop-color=\"#FFF1CF\" stop-opacity=\".05\"/></linearGradient></defs><polygon points=\"228.8,0.0 291.2,0.0 520.0,900.0 0.0,900.0\" fill=\"url(#sc)\"/></svg>",
+     "x": 360,
+     "y": 0,
+     "anchor": "t",
+     "z": 2,
+     "in": {
+      "type": "fade",
+      "at": 0,
+      "dur": 0.5
+     }
+    },
+    {
+     "type": "image",
+     "src": "assets/early/polerouter.jpg",
+     "polaroid": true,
+     "aspect": 0.9626274065685164,
+     "label": "Universal Genève Polerouter",
+     "w": 520,
+     "x": 360,
+     "y": 600,
+     "z": 20,
+     "rot": [
+      [
+       0.45,
+       0
+      ],
+      [
+       4.48,
+       1.2
+      ]
+     ],
+     "in": {
+      "type": "rise",
+      "at": 0.0,
+      "dur": 0.45
+     },
+     "labelSize": 22,
+     "scale": [
+      [
+       0.45,
+       1
+      ],
+      [
+       4.48,
+       1.006
+      ]
+     ]
+    },
+    {
+     "type": "svg",
+     "w": 130,
+     "h": 480.43510588235296,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"130\" height=\"480\" viewBox=\"0 0 130 480\" style=\"overflow:visible;\"><defs><linearGradient id=\"gl10\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/><stop offset=\".5\" stop-color=\"#FFFAEB\" stop-opacity=\"0.42\"/><stop offset=\"1\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/></linearGradient></defs><polygon points=\"40.0,0.0 130.0,0.0 90.0,480.4 0.0,480.4\" fill=\"url(#gl10)\"/></svg>",
+     "x": [
+      [
+       1.61,
+       179.0
+      ],
+      [
+       2.31,
+       541.0,
+       "inOutCubic"
+      ]
+     ],
+     "y": 578,
+     "anchor": "c",
+     "z": 21,
+     "in": {
+      "type": "none",
+      "at": 1.61,
+      "dur": 0.5
+     },
+     "rot": 0,
+     "still": true,
+     "opacity": [
+      [
+       1.61,
+       0
+      ],
+      [
+       1.73,
+       1
+      ],
+      [
+       2.19,
+       1
+      ],
+      [
+       2.31,
+       0
+      ]
+     ],
+     "out": {
+      "type": "fade",
+      "at": 2.31,
+      "dur": 0.01
+     }
+    },
+    {
+     "type": "text",
+     "text": "أول اسم لها: Polarouter",
+     "x": 360,
+     "y": 1130,
+     "font": "banner",
+     "size": 24,
+     "color": "#16181D",
+     "paper": "#EFE8D6",
+     "upper": false,
+     "z": 30,
+     "rot": 1.5,
+     "in": {
+      "type": "pop",
+      "at": 1.94,
+      "dur": 0.35
+     },
+     "out": {
+      "type": "fade",
+      "at": 4.18,
+      "dur": 0.2
+     },
+     "depth": 0
+    },
+    {
+     "type": "svg",
+     "w": 8,
+     "h": 8,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"8\" height=\"8\" viewBox=\"0 0 8 8\" style=\"overflow:visible;\"><circle cx=\"1.7\" cy=\"1.7\" r=\"1.7\" fill=\"#FFF1CF\"/></svg>",
+     "x": 443,
+     "y": 656,
+     "anchor": "c",
+     "z": 3,
+     "in": {
+      "type": "fade",
+      "at": 0.2,
+      "dur": 0.8
+     },
+     "depth": 1.25,
+     "still": true,
+     "opacity": 0.51,
+     "idle": {
+      "type": "float",
+      "amp": 14,
+      "speed": 0.146,
+      "phase": 1.53
+     }
+    },
+    {
+     "type": "svg",
+     "w": 8,
+     "h": 8,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"8\" height=\"8\" viewBox=\"0 0 8 8\" style=\"overflow:visible;\"><circle cx=\"2.2\" cy=\"2.2\" r=\"2.2\" fill=\"#FFF1CF\"/></svg>",
+     "x": 540,
+     "y": 804,
+     "anchor": "c",
+     "z": 3,
+     "in": {
+      "type": "fade",
+      "at": 0.2,
+      "dur": 0.8
+     },
+     "depth": 1.25,
+     "still": true,
+     "opacity": 0.41,
+     "idle": {
+      "type": "float",
+      "amp": 14,
+      "speed": 0.139,
+      "phase": 4.73
+     }
+    },
+    {
+     "type": "svg",
+     "w": 8,
+     "h": 8,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"8\" height=\"8\" viewBox=\"0 0 8 8\" style=\"overflow:visible;\"><circle cx=\"1.6\" cy=\"1.6\" r=\"1.6\" fill=\"#FFF1CF\"/></svg>",
+     "x": 523,
+     "y": 756,
+     "anchor": "c",
+     "z": 3,
+     "in": {
+      "type": "fade",
+      "at": 0.2,
+      "dur": 0.8
+     },
+     "depth": 1.25,
+     "still": true,
+     "opacity": 0.31,
+     "idle": {
+      "type": "float",
+      "amp": 14,
+      "speed": 0.15,
+      "phase": 2.6
+     }
+    },
+    {
+     "type": "svg",
+     "w": 8,
+     "h": 8,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"8\" height=\"8\" viewBox=\"0 0 8 8\" style=\"overflow:visible;\"><circle cx=\"2.6\" cy=\"2.6\" r=\"2.6\" fill=\"#FFF1CF\"/></svg>",
+     "x": 356,
+     "y": 145,
+     "anchor": "c",
+     "z": 3,
+     "in": {
+      "type": "fade",
+      "at": 0.2,
+      "dur": 0.8
+     },
+     "depth": 1.25,
+     "still": true,
+     "opacity": 0.3,
+     "idle": {
+      "type": "float",
+      "amp": 14,
+      "speed": 0.127,
+      "phase": 4.33
+     }
+    },
+    {
+     "type": "svg",
+     "w": 8,
+     "h": 8,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"8\" height=\"8\" viewBox=\"0 0 8 8\" style=\"overflow:visible;\"><circle cx=\"1.8\" cy=\"1.8\" r=\"1.8\" fill=\"#FFF1CF\"/></svg>",
+     "x": 429,
+     "y": 931,
+     "anchor": "c",
+     "z": 3,
+     "in": {
+      "type": "fade",
+      "at": 0.2,
+      "dur": 0.8
+     },
+     "depth": 1.25,
+     "still": true,
+     "opacity": 0.54,
+     "idle": {
+      "type": "float",
+      "amp": 14,
+      "speed": 0.154,
+      "phase": 0.18
+     }
+    },
+    {
+     "type": "svg",
+     "w": 8,
+     "h": 8,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"8\" height=\"8\" viewBox=\"0 0 8 8\" style=\"overflow:visible;\"><circle cx=\"1.5\" cy=\"1.5\" r=\"1.5\" fill=\"#FFF1CF\"/></svg>",
+     "x": 187,
+     "y": 895,
+     "anchor": "c",
+     "z": 3,
+     "in": {
+      "type": "fade",
+      "at": 0.2,
+      "dur": 0.8
+     },
+     "depth": 1.25,
+     "still": true,
+     "opacity": 0.44,
+     "idle": {
+      "type": "float",
+      "amp": 14,
+      "speed": 0.156,
+      "phase": 2.29
+     }
+    },
+    {
+     "type": "svg",
+     "w": 8,
+     "h": 8,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"8\" height=\"8\" viewBox=\"0 0 8 8\" style=\"overflow:visible;\"><circle cx=\"1.8\" cy=\"1.8\" r=\"1.8\" fill=\"#FFF1CF\"/></svg>",
+     "x": 287,
+     "y": 523,
+     "anchor": "c",
+     "z": 3,
+     "in": {
+      "type": "fade",
+      "at": 0.2,
+      "dur": 0.8
+     },
+     "depth": 1.25,
+     "still": true,
+     "opacity": 0.41,
+     "idle": {
+      "type": "float",
+      "amp": 14,
+      "speed": 0.102,
+      "phase": 1.33
+     }
+    },
+    {
+     "type": "svg",
+     "w": 8,
+     "h": 8,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"8\" height=\"8\" viewBox=\"0 0 8 8\" style=\"overflow:visible;\"><circle cx=\"2.2\" cy=\"2.2\" r=\"2.2\" fill=\"#FFF1CF\"/></svg>",
+     "x": 383,
+     "y": 588,
+     "anchor": "c",
+     "z": 3,
+     "in": {
+      "type": "fade",
+      "at": 0.2,
+      "dur": 0.8
+     },
+     "depth": 1.25,
+     "still": true,
+     "opacity": 0.42,
+     "idle": {
+      "type": "float",
+      "amp": 14,
+      "speed": 0.114,
+      "phase": 1.39
+     }
+    },
+    {
+     "type": "svg",
+     "w": 150,
+     "h": 96,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"150\" height=\"96\" viewBox=\"0 0 150 96\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><rect width=\"150\" height=\"96\" rx=\"4\" fill=\"#EFE8D6\"/><path d=\"M 0 0 L 75 52 L 150 0\" fill=\"#E2D9C3\" stroke=\"#CFC6B1\" stroke-width=\"1.5\"/><circle cx=\"75\" cy=\"52\" r=\"10\" fill=\"#9E2B22\"/></svg>",
+     "x": [
+      [
+       2.23,
+       -200
+      ],
+      [
+       2.73,
+       140,
+       "outCubic"
+      ]
+     ],
+     "y": [
+      [
+       2.23,
+       880
+      ],
+      [
+       2.73,
+       880,
+       "outCubic"
+      ]
+     ],
+     "anchor": "c",
+     "z": 15,
+     "in": {
+      "type": "none",
+      "at": 2.23,
+      "dur": 0.5
+     },
+     "rot": -10
+    },
+    {
+     "type": "svg",
+     "w": 150,
+     "h": 96,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"150\" height=\"96\" viewBox=\"0 0 150 96\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><rect width=\"150\" height=\"96\" rx=\"4\" fill=\"#EFE8D6\"/><path d=\"M 0 0 L 75 52 L 150 0\" fill=\"#E2D9C3\" stroke=\"#CFC6B1\" stroke-width=\"1.5\"/><circle cx=\"75\" cy=\"52\" r=\"10\" fill=\"#9E2B22\"/></svg>",
+     "x": [
+      [
+       2.53,
+       900
+      ],
+      [
+       3.03,
+       590,
+       "outCubic"
+      ]
+     ],
+     "y": [
+      [
+       2.53,
+       900
+      ],
+      [
+       3.03,
+       880,
+       "outCubic"
+      ]
+     ],
+     "anchor": "c",
+     "z": 15,
+     "in": {
+      "type": "none",
+      "at": 2.53,
+      "dur": 0.5
+     },
+     "rot": 8
+    },
+    {
+     "type": "svg",
+     "w": 150,
+     "h": 96,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"150\" height=\"96\" viewBox=\"0 0 150 96\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><rect width=\"150\" height=\"96\" rx=\"4\" fill=\"#EFE8D6\"/><path d=\"M 0 0 L 75 52 L 150 0\" fill=\"#E2D9C3\" stroke=\"#CFC6B1\" stroke-width=\"1.5\"/><circle cx=\"75\" cy=\"52\" r=\"10\" fill=\"#9E2B22\"/></svg>",
+     "x": [
+      [
+       2.83,
+       900
+      ],
+      [
+       3.33,
+       585,
+       "outCubic"
+      ]
+     ],
+     "y": [
+      [
+       2.83,
+       250
+      ],
+      [
+       3.33,
+       330,
+       "outCubic"
+      ]
+     ],
+     "anchor": "c",
+     "z": 15,
+     "in": {
+      "type": "none",
+      "at": 2.83,
+      "dur": 0.5
+     },
+     "rot": 12
+    }
+   ],
+   "dur": 4.48,
+   "silent": true,
+   "captions": "اسمها البولروتر… | وهي اللي خلت | اسمه ينعرف | عند شركات الساعات.",
+   "captionStart": 0.16999999999999998,
+   "captionEnd": 4.28,
+   "voice": "voice-habibi/clips/p1-2.wav",
+   "voiceAt": 0.12,
+   "transition": "fade",
+   "camera": {
+    "zoom": [
+     [
+      0,
+      1.9
+     ],
+     [
+      1.45,
+      1.0,
+      "inOutCubic"
+     ],
+     [
+      5.3,
+      1.08,
+      "inOutCubic"
+     ]
+    ],
+    "x": [
+     [
+      0,
+      360
+     ],
+     [
+      1.45,
+      360,
+      "inOutCubic"
+     ],
+     [
+      5.3,
+      360,
+      "inOutCubic"
+     ]
+    ],
+    "y": [
+     [
+      0,
+      560
+     ],
+     [
+      1.45,
+      620,
+      "inOutCubic"
+     ],
+     [
+      5.3,
+      600,
+      "inOutCubic"
+     ]
+    ]
+   },
+   "sfx": [
+    {
+     "at": 0.2,
+     "name": "shutter",
+     "gain": -12
+    },
+    {
+     "at": 1.61,
+     "name": "tick",
+     "gain": -16
+    },
+    {
+     "at": 2.23,
+     "name": "paper_slide",
+     "gain": -16
+    },
+    {
+     "at": 2.53,
+     "name": "paper_slide",
+     "gain": -16
+    },
+    {
+     "at": 2.83,
+     "name": "paper_slide",
+     "gain": -16
+    }
+   ]
+  },
+  {
+   "theme": "ro-night",
+   "floor": false,
+   "elements": [
+    {
+     "type": "svg",
+     "w": 760,
+     "h": 360,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"760\" height=\"360\" viewBox=\"0 0 760 360\" style=\"overflow:visible;\"><path d=\"M -20 60 C 180 10 320 120 520 60 S 740 20 780 70 L 780 130 C 600 100 420 180 240 120 S 40 160 -20 140 Z\" fill=\"#2F6F6A\" opacity=\"0.35\"/><path d=\"M -20 130 C 180 80 320 190 520 130 S 740 90 780 140 L 780 200 C 600 170 420 250 240 190 S 40 230 -20 210 Z\" fill=\"#3E8A78\" opacity=\"0.25\"/><path d=\"M -20 200 C 180 150 320 260 520 200 S 740 160 780 210 L 780 270 C 600 240 420 320 240 260 S 40 300 -20 280 Z\" fill=\"#5E9E8A\" opacity=\"0.18\"/></svg>",
+     "x": 360,
+     "y": 230,
+     "anchor": "c",
+     "z": 1,
+     "depth": 0.5,
+     "opacity": 0.35
+    },
+    {
+     "type": "svg",
+     "w": 720,
+     "h": 520,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"720\" height=\"520\" viewBox=\"0 0 720 520\" style=\"overflow:visible;\"><circle cx=\"333.4\" cy=\"194.1\" r=\"1.2\" fill=\"#EFE8D6\" opacity=\"0.74\"/><circle cx=\"4.6\" cy=\"261.4\" r=\"2.1\" fill=\"#EFE8D6\" opacity=\"0.39\"/><circle cx=\"399.1\" cy=\"320.7\" r=\"1.0\" fill=\"#EFE8D6\" opacity=\"0.52\"/><circle cx=\"506.5\" cy=\"235.1\" r=\"1.9\" fill=\"#EFE8D6\" opacity=\"0.42\"/><circle cx=\"171.4\" cy=\"57.7\" r=\"1.6\" fill=\"#EFE8D6\" opacity=\"0.77\"/><circle cx=\"425.1\" cy=\"402.6\" r=\"1.5\" fill=\"#EFE8D6\" opacity=\"0.69\"/><circle cx=\"73.2\" cy=\"151.4\" r=\"1.8\" fill=\"#EFE8D6\" opacity=\"0.68\"/><circle cx=\"303.7\" cy=\"45.6\" r=\"1.3\" fill=\"#EFE8D6\" opacity=\"0.44\"/><circle cx=\"202.5\" cy=\"420.9\" r=\"1.2\" fill=\"#EFE8D6\" opacity=\"0.75\"/><circle cx=\"633.1\" cy=\"28.5\" r=\"1.5\" fill=\"#EFE8D6\" opacity=\"0.57\"/><circle cx=\"16.9\" cy=\"220.9\" r=\"2.1\" fill=\"#EFE8D6\" opacity=\"0.40\"/><circle cx=\"429.7\" cy=\"63.0\" r=\"1.7\" fill=\"#EFE8D6\" opacity=\"0.75\"/><circle cx=\"146.2\" cy=\"4.3\" r=\"1.1\" fill=\"#EFE8D6\" opacity=\"0.59\"/><circle cx=\"12.6\" cy=\"44.1\" r=\"1.6\" fill=\"#EFE8D6\" opacity=\"0.76\"/><circle cx=\"302.5\" cy=\"207.0\" r=\"1.8\" fill=\"#EFE8D6\" opacity=\"0.39\"/><circle cx=\"417.5\" cy=\"89.7\" r=\"1.7\" fill=\"#EFE8D6\" opacity=\"0.78\"/><circle cx=\"39.0\" cy=\"288.6\" r=\"1.7\" fill=\"#EFE8D6\" opacity=\"0.42\"/><circle cx=\"193.2\" cy=\"517.3\" r=\"2.2\" fill=\"#EFE8D6\" opacity=\"0.40\"/><circle cx=\"507.9\" cy=\"494.5\" r=\"1.3\" fill=\"#EFE8D6\" opacity=\"0.63\"/><circle cx=\"31.0\" cy=\"190.3\" r=\"1.8\" fill=\"#EFE8D6\" opacity=\"0.62\"/><circle cx=\"557.7\" cy=\"45.1\" r=\"1.4\" fill=\"#EFE8D6\" opacity=\"0.74\"/><circle cx=\"420.6\" cy=\"234.7\" r=\"1.5\" fill=\"#EFE8D6\" opacity=\"0.79\"/><circle cx=\"413.6\" cy=\"9.6\" r=\"2.0\" fill=\"#EFE8D6\" opacity=\"0.50\"/><circle cx=\"312.2\" cy=\"111.0\" r=\"1.5\" fill=\"#EFE8D6\" opacity=\"0.50\"/><circle cx=\"63.9\" cy=\"327.3\" r=\"1.1\" fill=\"#EFE8D6\" opacity=\"0.70\"/><circle cx=\"18.3\" cy=\"406.0\" r=\"2.0\" fill=\"#EFE8D6\" opacity=\"0.57\"/><circle cx=\"510.8\" cy=\"129.1\" r=\"1.9\" fill=\"#EFE8D6\" opacity=\"0.54\"/><circle cx=\"166.3\" cy=\"501.3\" r=\"1.5\" fill=\"#EFE8D6\" opacity=\"0.52\"/><circle cx=\"619.1\" cy=\"192.1\" r=\"1.8\" fill=\"#EFE8D6\" opacity=\"0.43\"/><circle cx=\"607.2\" cy=\"134.6\" r=\"1.1\" fill=\"#EFE8D6\" opacity=\"0.79\"/></svg>",
+     "x": 360,
+     "y": 300,
+     "anchor": "c",
+     "z": 1,
+     "depth": 0.4
+    },
+    {
+     "type": "svg",
+     "w": 260,
+     "h": 162,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"260\" height=\"162\" viewBox=\"0 0 260 162\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><path d=\"M 20 150 L 46 60 Q 50 46 66 46 L 194 46 Q 210 46 214 60 L 240 150 Q 242 162 228 162 L 32 162 Q 18 162 20 150 Z\" fill=\"#2A2C31\"/><circle cx=\"130\" cy=\"104\" r=\"44\" fill=\"#EDE6D3\"/><circle cx=\"145.0\" cy=\"78.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"156.0\" cy=\"89.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"160.0\" cy=\"104.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"156.0\" cy=\"119.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"145.0\" cy=\"130.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"130.0\" cy=\"134.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"115.0\" cy=\"130.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"104.0\" cy=\"119.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"100.0\" cy=\"104.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"104.0\" cy=\"89.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"115.0\" cy=\"78.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"130\" cy=\"104\" r=\"14\" fill=\"#2A2C31\"/><rect x=\"56\" y=\"30\" width=\"22\" height=\"22\" rx=\"4\" fill=\"#EDE6D3\"/><rect x=\"182\" y=\"30\" width=\"22\" height=\"22\" rx=\"4\" fill=\"#EDE6D3\"/></svg>",
+     "x": 560,
+     "y": 330,
+     "anchor": "c",
+     "z": 10,
+     "in": {
+      "type": "pop",
+      "at": -0.1,
+      "dur": 0.3
+     },
+     "scale": 0.6,
+     "idle": {
+      "type": "shake",
+      "amp": 3,
+      "speed": 9,
+      "from": 0.2,
+      "until": 1.21
+     }
+    },
+    {
+     "type": "svg",
+     "w": 260,
+     "h": 50,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"260\" height=\"50\" viewBox=\"0 0 260 50\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><path d=\"M 10 30 Q 0 0 30 4 L 50 10 Q 62 14 70 14 L 190 14 Q 198 14 210 10 L 230 4 Q 260 0 250 30 L 236 44 Q 226 50 214 40 L 200 30 L 60 30 L 46 40 Q 34 50 24 44 Z\" fill=\"#2A2C31\"/></svg>",
+     "x": 560,
+     "y": [
+      [
+       1.21,
+       290
+      ],
+      [
+       1.51,
+       240,
+       "outBack"
+      ]
+     ],
+     "anchor": "c",
+     "z": 11,
+     "in": {
+      "type": "pop",
+      "at": -0.1,
+      "dur": 0.3
+     },
+     "scale": 0.6,
+     "rot": [
+      [
+       1.21,
+       0
+      ],
+      [
+       1.51,
+       -18
+      ]
+     ],
+     "idle": {
+      "type": "shake",
+      "amp": 3,
+      "speed": 9,
+      "from": 0.2,
+      "until": 1.21
+     }
+    },
+    {
+     "type": "svg",
+     "w": 260,
+     "h": 80,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"260\" height=\"80\" viewBox=\"0 0 260 80\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><path d=\"M 10 40 q -14 24 0 48\" stroke=\"#EFE8D6\" stroke-width=\"5\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M -6 26 q -20 38 0 76\" stroke=\"#EFE8D6\" stroke-width=\"5\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M 250 40 q 14 24 0 48\" stroke=\"#EFE8D6\" stroke-width=\"5\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M 266 26 q 20 38 0 76\" stroke=\"#EFE8D6\" stroke-width=\"5\" fill=\"none\" stroke-linecap=\"round\"/></svg>",
+     "x": 560,
+     "y": 270,
+     "anchor": "c",
+     "z": 12,
+     "in": {
+      "type": "pop",
+      "at": 0.2,
+      "dur": 0.2
+     },
+     "scale": 0.6,
+     "idle": {
+      "type": "pulse",
+      "amp": 0.08,
+      "speed": 6
+     },
+     "out": {
+      "type": "fade",
+      "at": 1.21,
+      "dur": 0.1
+     }
+    },
+    {
+     "type": "text",
+     "text": "أوميغا",
+     "x": 560,
+     "y": 160,
+     "font": "banner",
+     "size": 34,
+     "color": "#16181D",
+     "paper": "#EFE8D6",
+     "upper": false,
+     "z": 35,
+     "rot": -2,
+     "in": {
+      "type": "pop",
+      "at": 0.37,
+      "dur": 0.35
+     }
+    },
+    {
+     "type": "image",
+     "src": "assets/early/constellation.jpg",
+     "polaroid": true,
+     "aspect": 0.6666666666666666,
+     "label": "Omega Constellation 1958",
+     "w": 380,
+     "x": 290,
+     "y": 600,
+     "z": 20,
+     "rot": [
+      [
+       1.74,
+       -2
+      ],
+      [
+       3.98,
+       -3.2
+      ]
+     ],
+     "in": {
+      "type": "rise",
+      "at": 1.29,
+      "dur": 0.45
+     },
+     "labelSize": 22,
+     "scale": [
+      [
+       1.74,
+       1
+      ],
+      [
+       3.98,
+       1.006
+      ]
+     ]
+    },
+    {
+     "type": "svg",
+     "w": 130,
+     "h": 496.32,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"130\" height=\"496\" viewBox=\"0 0 130 496\" style=\"overflow:visible;\"><defs><linearGradient id=\"gl11\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/><stop offset=\".5\" stop-color=\"#FFFAEB\" stop-opacity=\"0.42\"/><stop offset=\"1\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/></linearGradient></defs><polygon points=\"40.0,0.0 130.0,0.0 90.0,496.3 0.0,496.3\" fill=\"url(#gl11)\"/></svg>",
+     "x": [
+      [
+       2.68,
+       179.0
+      ],
+      [
+       3.38,
+       401.0,
+       "inOutCubic"
+      ]
+     ],
+     "y": 578,
+     "anchor": "c",
+     "z": 21,
+     "in": {
+      "type": "none",
+      "at": 2.68,
+      "dur": 0.5
+     },
+     "rot": -2,
+     "still": true,
+     "opacity": [
+      [
+       2.68,
+       0
+      ],
+      [
+       2.8000000000000003,
+       1
+      ],
+      [
+       3.26,
+       1
+      ],
+      [
+       3.38,
+       0
+      ]
+     ],
+     "out": {
+      "type": "fade",
+      "at": 3.38,
+      "dur": 0.01
+     }
+    },
+    {
+     "type": "text",
+     "text": "قبل ما يجددها",
+     "x": 290,
+     "y": 262,
+     "font": "banner",
+     "size": 24,
+     "color": "#16181D",
+     "paper": "#EFE8D6",
+     "upper": false,
+     "z": 25,
+     "rot": -3,
+     "in": {
+      "type": "pop",
+      "at": 2.48,
+      "dur": 0.35
+     }
+    },
+    {
+     "type": "svg",
+     "w": 36,
+     "h": 36,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"36\" height=\"36\" viewBox=\"0 0 36 36\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><polygon points=\"18.0,0.0 20.9,11.0 30.7,5.3 25.0,15.1 36.0,18.0 25.0,20.9 30.7,30.7 20.9,25.0 18.0,36.0 15.1,25.0 5.3,30.7 11.0,20.9 0.0,18.0 11.0,15.1 5.3,5.3 15.1,11.0\" fill=\"#9C7B3F\" transform=\"translate(1.5 2)\"/><polygon points=\"18.0,0.0 20.9,11.0 30.7,5.3 25.0,15.1 36.0,18.0 25.0,20.9 30.7,30.7 20.9,25.0 18.0,36.0 15.1,25.0 5.3,30.7 11.0,20.9 0.0,18.0 11.0,15.1 5.3,5.3 15.1,11.0\" fill=\"#C9A35F\"/></svg>",
+     "x": 450,
+     "y": 314,
+     "anchor": "c",
+     "z": 8,
+     "in": {
+      "type": "pop",
+      "at": 2.13,
+      "dur": 0.3
+     },
+     "idle": {
+      "type": "pulse",
+      "amp": 0.08,
+      "speed": 0.7
+     }
+    },
+    {
+     "type": "svg",
+     "w": 36,
+     "h": 36,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"36\" height=\"36\" viewBox=\"0 0 36 36\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><polygon points=\"18.0,0.0 20.9,11.0 30.7,5.3 25.0,15.1 36.0,18.0 25.0,20.9 30.7,30.7 20.9,25.0 18.0,36.0 15.1,25.0 5.3,30.7 11.0,20.9 0.0,18.0 11.0,15.1 5.3,5.3 15.1,11.0\" fill=\"#9C7B3F\" transform=\"translate(1.5 2)\"/><polygon points=\"18.0,0.0 20.9,11.0 30.7,5.3 25.0,15.1 36.0,18.0 25.0,20.9 30.7,30.7 20.9,25.0 18.0,36.0 15.1,25.0 5.3,30.7 11.0,20.9 0.0,18.0 11.0,15.1 5.3,5.3 15.1,11.0\" fill=\"#C9A35F\"/></svg>",
+     "x": 560,
+     "y": 435,
+     "anchor": "c",
+     "z": 8,
+     "in": {
+      "type": "pop",
+      "at": 2.28,
+      "dur": 0.3
+     },
+     "idle": {
+      "type": "pulse",
+      "amp": 0.08,
+      "speed": 0.7
+     }
+    },
+    {
+     "type": "svg",
+     "w": 36,
+     "h": 36,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"36\" height=\"36\" viewBox=\"0 0 36 36\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><polygon points=\"18.0,0.0 20.9,11.0 30.7,5.3 25.0,15.1 36.0,18.0 25.0,20.9 30.7,30.7 20.9,25.0 18.0,36.0 15.1,25.0 5.3,30.7 11.0,20.9 0.0,18.0 11.0,15.1 5.3,5.3 15.1,11.0\" fill=\"#9C7B3F\" transform=\"translate(1.5 2)\"/><polygon points=\"18.0,0.0 20.9,11.0 30.7,5.3 25.0,15.1 36.0,18.0 25.0,20.9 30.7,30.7 20.9,25.0 18.0,36.0 15.1,25.0 5.3,30.7 11.0,20.9 0.0,18.0 11.0,15.1 5.3,5.3 15.1,11.0\" fill=\"#C9A35F\"/></svg>",
+     "x": 600,
+     "y": 600,
+     "anchor": "c",
+     "z": 8,
+     "in": {
+      "type": "pop",
+      "at": 2.4299999999999997,
+      "dur": 0.3
+     },
+     "idle": {
+      "type": "pulse",
+      "amp": 0.08,
+      "speed": 0.7
+     }
+    },
+    {
+     "type": "svg",
+     "w": 36,
+     "h": 36,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"36\" height=\"36\" viewBox=\"0 0 36 36\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><polygon points=\"18.0,0.0 20.9,11.0 30.7,5.3 25.0,15.1 36.0,18.0 25.0,20.9 30.7,30.7 20.9,25.0 18.0,36.0 15.1,25.0 5.3,30.7 11.0,20.9 0.0,18.0 11.0,15.1 5.3,5.3 15.1,11.0\" fill=\"#9C7B3F\" transform=\"translate(1.5 2)\"/><polygon points=\"18.0,0.0 20.9,11.0 30.7,5.3 25.0,15.1 36.0,18.0 25.0,20.9 30.7,30.7 20.9,25.0 18.0,36.0 15.1,25.0 5.3,30.7 11.0,20.9 0.0,18.0 11.0,15.1 5.3,5.3 15.1,11.0\" fill=\"#C9A35F\"/></svg>",
+     "x": 560,
+     "y": 765,
+     "anchor": "c",
+     "z": 8,
+     "in": {
+      "type": "pop",
+      "at": 2.58,
+      "dur": 0.3
+     },
+     "idle": {
+      "type": "pulse",
+      "amp": 0.08,
+      "speed": 0.7
+     }
+    },
+    {
+     "type": "svg",
+     "w": 36,
+     "h": 36,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"36\" height=\"36\" viewBox=\"0 0 36 36\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><polygon points=\"18.0,0.0 20.9,11.0 30.7,5.3 25.0,15.1 36.0,18.0 25.0,20.9 30.7,30.7 20.9,25.0 18.0,36.0 15.1,25.0 5.3,30.7 11.0,20.9 0.0,18.0 11.0,15.1 5.3,5.3 15.1,11.0\" fill=\"#9C7B3F\" transform=\"translate(1.5 2)\"/><polygon points=\"18.0,0.0 20.9,11.0 30.7,5.3 25.0,15.1 36.0,18.0 25.0,20.9 30.7,30.7 20.9,25.0 18.0,36.0 15.1,25.0 5.3,30.7 11.0,20.9 0.0,18.0 11.0,15.1 5.3,5.3 15.1,11.0\" fill=\"#C9A35F\"/></svg>",
+     "x": 450,
+     "y": 886,
+     "anchor": "c",
+     "z": 8,
+     "in": {
+      "type": "pop",
+      "at": 2.73,
+      "dur": 0.3
+     },
+     "idle": {
+      "type": "pulse",
+      "amp": 0.08,
+      "speed": 0.7
+     }
+    },
+    {
+     "type": "svg",
+     "w": 36,
+     "h": 36,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"36\" height=\"36\" viewBox=\"0 0 36 36\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><polygon points=\"18.0,0.0 20.9,11.0 30.7,5.3 25.0,15.1 36.0,18.0 25.0,20.9 30.7,30.7 20.9,25.0 18.0,36.0 15.1,25.0 5.3,30.7 11.0,20.9 0.0,18.0 11.0,15.1 5.3,5.3 15.1,11.0\" fill=\"#9C7B3F\" transform=\"translate(1.5 2)\"/><polygon points=\"18.0,0.0 20.9,11.0 30.7,5.3 25.0,15.1 36.0,18.0 25.0,20.9 30.7,30.7 20.9,25.0 18.0,36.0 15.1,25.0 5.3,30.7 11.0,20.9 0.0,18.0 11.0,15.1 5.3,5.3 15.1,11.0\" fill=\"#C9A35F\"/></svg>",
+     "x": 300,
+     "y": 930,
+     "anchor": "c",
+     "z": 8,
+     "in": {
+      "type": "pop",
+      "at": 2.88,
+      "dur": 0.3
+     },
+     "idle": {
+      "type": "pulse",
+      "amp": 0.08,
+      "speed": 0.7
+     }
+    },
+    {
+     "type": "svg",
+     "w": 36,
+     "h": 36,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"36\" height=\"36\" viewBox=\"0 0 36 36\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><polygon points=\"18.0,0.0 20.9,11.0 30.7,5.3 25.0,15.1 36.0,18.0 25.0,20.9 30.7,30.7 20.9,25.0 18.0,36.0 15.1,25.0 5.3,30.7 11.0,20.9 0.0,18.0 11.0,15.1 5.3,5.3 15.1,11.0\" fill=\"#9C7B3F\" transform=\"translate(1.5 2)\"/><polygon points=\"18.0,0.0 20.9,11.0 30.7,5.3 25.0,15.1 36.0,18.0 25.0,20.9 30.7,30.7 20.9,25.0 18.0,36.0 15.1,25.0 5.3,30.7 11.0,20.9 0.0,18.0 11.0,15.1 5.3,5.3 15.1,11.0\" fill=\"#C9A35F\"/></svg>",
+     "x": 150,
+     "y": 886,
+     "anchor": "c",
+     "z": 8,
+     "in": {
+      "type": "pop",
+      "at": 3.03,
+      "dur": 0.3
+     },
+     "idle": {
+      "type": "pulse",
+      "amp": 0.08,
+      "speed": 0.7
+     }
+    },
+    {
+     "type": "svg",
+     "w": 36,
+     "h": 36,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"36\" height=\"36\" viewBox=\"0 0 36 36\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><polygon points=\"18.0,0.0 20.9,11.0 30.7,5.3 25.0,15.1 36.0,18.0 25.0,20.9 30.7,30.7 20.9,25.0 18.0,36.0 15.1,25.0 5.3,30.7 11.0,20.9 0.0,18.0 11.0,15.1 5.3,5.3 15.1,11.0\" fill=\"#9C7B3F\" transform=\"translate(1.5 2)\"/><polygon points=\"18.0,0.0 20.9,11.0 30.7,5.3 25.0,15.1 36.0,18.0 25.0,20.9 30.7,30.7 20.9,25.0 18.0,36.0 15.1,25.0 5.3,30.7 11.0,20.9 0.0,18.0 11.0,15.1 5.3,5.3 15.1,11.0\" fill=\"#C9A35F\"/></svg>",
+     "x": 40,
+     "y": 765,
+     "anchor": "c",
+     "z": 8,
+     "in": {
+      "type": "pop",
+      "at": 3.1799999999999997,
+      "dur": 0.3
+     },
+     "idle": {
+      "type": "pulse",
+      "amp": 0.08,
+      "speed": 0.7
+     }
+    }
+   ],
+   "dur": 3.98,
+   "silent": true,
+   "captions": "بعدها جات أوميغا، | وطلبت منه يجدد | مجموعة الكونستليشن.",
+   "captionStart": 0.16999999999999998,
+   "captionEnd": 3.7800000000000002,
+   "voice": "voice-habibi/clips/p1-3.wav",
+   "voiceAt": 0.12,
+   "transition": "slide",
+   "camera": {
+    "zoom": [
+     [
+      0,
+      1.05
+     ],
+     [
+      1.21,
+      1.0,
+      "inOutCubic"
+     ],
+     [
+      4.7,
+      1.15,
+      "inOutCubic"
+     ]
+    ],
+    "x": [
+     [
+      0,
+      470
+     ],
+     [
+      1.21,
+      360,
+      "inOutCubic"
+     ],
+     [
+      4.7,
+      300,
+      "inOutCubic"
+     ]
+    ],
+    "y": [
+     [
+      0,
+      470
+     ],
+     [
+      1.21,
+      640,
+      "inOutCubic"
+     ],
+     [
+      4.7,
+      600,
+      "inOutCubic"
+     ]
+    ]
+   },
+   "sfx": [
+    {
+     "at": 0.2,
+     "name": "ring",
+     "gain": -12
+    },
+    {
+     "at": 1.21,
+     "name": "click",
+     "gain": -9
+    },
+    {
+     "at": 1.29,
+     "name": "paper_place",
+     "gain": -10
+    },
+    {
+     "at": 2.68,
+     "name": "tick",
+     "gain": -16
+    }
+   ]
+  },
+  {
+   "theme": "ro-paper",
+   "floor": false,
+   "elements": [
+    {
+     "type": "svg",
+     "w": 300,
+     "h": 330,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"300\" height=\"330\" viewBox=\"0 0 300 330\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><rect x=\"0\" y=\"18\" width=\"300\" height=\"312\" rx=\"6\" fill=\"#F3EEE1\"/><rect x=\"0\" y=\"18\" width=\"300\" height=\"74\" rx=\"6\" fill=\"#B23A2E\"/><rect x=\"0\" y=\"70\" width=\"300\" height=\"22\" fill=\"#B23A2E\"/><rect x=\"70\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><rect x=\"214\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><text x=\"150\" y=\"262\" font-family=\"var(--f-title)\" font-size=\"150\" fill=\"#16181D\" text-anchor=\"middle\">1955</text><line x1=\"24\" y1=\"292\" x2=\"276\" y2=\"292\" stroke=\"#CFC6B1\" stroke-width=\"2\"/></svg>",
+     "x": 170,
+     "y": 260,
+     "anchor": "c",
+     "z": 10,
+     "in": {
+      "type": "flip",
+      "at": 0.05,
+      "dur": 0.132
+     },
+     "scale": 0.55,
+     "depth": 0.85,
+     "out": {
+      "type": "fade",
+      "at": 0.29000000000000004,
+      "dur": 0.05
+     }
+    },
+    {
+     "type": "svg",
+     "w": 300,
+     "h": 330,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"300\" height=\"330\" viewBox=\"0 0 300 330\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><rect x=\"0\" y=\"18\" width=\"300\" height=\"312\" rx=\"6\" fill=\"#F3EEE1\"/><rect x=\"0\" y=\"18\" width=\"300\" height=\"74\" rx=\"6\" fill=\"#B23A2E\"/><rect x=\"0\" y=\"70\" width=\"300\" height=\"22\" fill=\"#B23A2E\"/><rect x=\"70\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><rect x=\"214\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><text x=\"150\" y=\"262\" font-family=\"var(--f-title)\" font-size=\"150\" fill=\"#16181D\" text-anchor=\"middle\">1958</text><line x1=\"24\" y1=\"292\" x2=\"276\" y2=\"292\" stroke=\"#CFC6B1\" stroke-width=\"2\"/></svg>",
+     "x": 170,
+     "y": 260,
+     "anchor": "c",
+     "z": 11,
+     "in": {
+      "type": "flip",
+      "at": 0.27,
+      "dur": 0.132
+     },
+     "scale": 0.55,
+     "depth": 0.85,
+     "out": {
+      "type": "fade",
+      "at": 0.51,
+      "dur": 0.05
+     }
+    },
+    {
+     "type": "svg",
+     "w": 300,
+     "h": 330,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"300\" height=\"330\" viewBox=\"0 0 300 330\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><rect x=\"0\" y=\"18\" width=\"300\" height=\"312\" rx=\"6\" fill=\"#F3EEE1\"/><rect x=\"0\" y=\"18\" width=\"300\" height=\"74\" rx=\"6\" fill=\"#B23A2E\"/><rect x=\"0\" y=\"70\" width=\"300\" height=\"22\" fill=\"#B23A2E\"/><rect x=\"70\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><rect x=\"214\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><text x=\"150\" y=\"262\" font-family=\"var(--f-title)\" font-size=\"150\" fill=\"#16181D\" text-anchor=\"middle\">1960</text><line x1=\"24\" y1=\"292\" x2=\"276\" y2=\"292\" stroke=\"#CFC6B1\" stroke-width=\"2\"/></svg>",
+     "x": 170,
+     "y": 260,
+     "anchor": "c",
+     "z": 12,
+     "in": {
+      "type": "flip",
+      "at": 0.49,
+      "dur": 0.132
+     },
+     "scale": 0.55,
+     "depth": 0.85
+    },
+    {
+     "type": "svg",
+     "w": 760,
+     "h": 240,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"760\" height=\"240\" viewBox=\"0 0 760 240\" style=\"overflow:visible;\"><rect y=\"132\" width=\"760\" height=\"108\" fill=\"#8EA07A\"/><rect y=\"187\" width=\"760\" height=\"52\" fill=\"#7E97A6\"/><polygon points=\"161.4,44.7 137.1,138.0 185.6,138.0\" fill=\"#2F4038\"/><polygon points=\"48.1,90.9 32.3,152.0 64.0,152.0\" fill=\"#2F4038\"/><polygon points=\"300.6,92.4 287.2,143.8 313.9,143.8\" fill=\"#3B5046\"/><polygon points=\"376.0,90.6 360.7,149.3 391.2,149.3\" fill=\"#2F4038\"/><polygon points=\"368.1,63.1 346.2,147.2 390.0,147.2\" fill=\"#3B5046\"/><polygon points=\"359.5,56.6 335.8,147.6 383.1,147.6\" fill=\"#3B5046\"/><polygon points=\"57.7,55.5 35.2,142.2 80.3,142.2\" fill=\"#3B5046\"/><polygon points=\"66.2,87.1 52.5,139.8 79.9,139.8\" fill=\"#2F4038\"/><polygon points=\"378.1,71.2 357.5,150.4 398.7,150.4\" fill=\"#2F4038\"/><polygon points=\"465.4,62.3 446.1,136.6 484.7,136.6\" fill=\"#2F4038\"/><polygon points=\"98.6,54.6 75.5,143.3 121.6,143.3\" fill=\"#3B5046\"/><polygon points=\"208.5,84.0 191.3,150.0 225.7,150.0\" fill=\"#2F4038\"/><polygon points=\"106.6,67.4 86.6,144.5 126.7,144.5\" fill=\"#3B5046\"/><polygon points=\"541.7,56.7 517.6,149.5 565.8,149.5\" fill=\"#2F4038\"/><polygon points=\"227.0,74.5 209.9,140.5 244.2,140.5\" fill=\"#2F4038\"/><polygon points=\"626.5,62.1 603.5,150.6 649.5,150.6\" fill=\"#2F4038\"/><polygon points=\"255.4,49.9 231.7,140.7 279.0,140.7\" fill=\"#2F4038\"/><polygon points=\"193.5,73.0 175.5,142.0 211.4,142.0\" fill=\"#3B5046\"/><polygon points=\"120.2,70.8 102.6,138.7 137.8,138.7\" fill=\"#2F4038\"/><polygon points=\"141.4,56.3 119.5,140.8 163.4,140.8\" fill=\"#2F4038\"/><polygon points=\"617.1,82.3 599.7,149.4 634.6,149.4\" fill=\"#3B5046\"/><polygon points=\"704.1,88.8 689.5,145.0 718.7,145.0\" fill=\"#3B5046\"/><polygon points=\"314.4,64.1 294.5,140.6 334.3,140.6\" fill=\"#2F4038\"/><polygon points=\"7.2,68.4 -13.5,148.2 28.0,148.2\" fill=\"#3B5046\"/><polygon points=\"102.9,51.7 79.0,143.8 126.9,143.8\" fill=\"#2F4038\"/><polygon points=\"764.1,83.4 750.3,136.3 777.8,136.3\" fill=\"#2F4038\"/><polygon points=\"252.6,58.3 231.9,137.9 273.3,137.9\" fill=\"#3B5046\"/><polygon points=\"261.2,42.6 236.9,136.0 285.4,136.0\" fill=\"#3B5046\"/><polygon points=\"148.1,47.1 124.8,136.5 171.3,136.5\" fill=\"#2F4038\"/><polygon points=\"122.2,49.4 97.9,143.1 146.6,143.1\" fill=\"#2F4038\"/><polygon points=\"140.4,88.9 124.7,149.0 156.0,149.0\" fill=\"#2F4038\"/><polygon points=\"284.9,92.7 270.6,147.5 299.1,147.5\" fill=\"#2F4038\"/><polygon points=\"555.5,64.3 536.5,137.4 574.5,137.4\" fill=\"#3B5046\"/><polygon points=\"431.1,56.5 408.5,143.3 453.6,143.3\" fill=\"#2F4038\"/><polygon points=\"138.0,67.7 119.8,137.7 156.2,137.7\" fill=\"#2F4038\"/><polygon points=\"546.7,58.8 526.5,136.4 566.8,136.4\" fill=\"#3B5046\"/><polygon points=\"643.4,77.9 624.2,151.7 662.6,151.7\" fill=\"#2F4038\"/><polygon points=\"381.2,77.6 364.4,142.1 398.0,142.1\" fill=\"#2F4038\"/><polygon points=\"-14.7,72.9 -34.8,150.5 5.5,150.5\" fill=\"#3B5046\"/><polygon points=\"722.1,45.4 697.6,139.6 746.6,139.6\" fill=\"#3B5046\"/><polygon points=\"43.7,79.0 25.8,147.9 61.6,147.9\" fill=\"#3B5046\"/><polygon points=\"393.0,73.2 372.7,151.3 413.3,151.3\" fill=\"#3B5046\"/><polygon points=\"501.1,88.8 486.8,143.8 515.4,143.8\" fill=\"#3B5046\"/><polygon points=\"746.9,52.9 724.0,141.0 769.8,141.0\" fill=\"#3B5046\"/></svg>",
+     "x": 360,
+     "y": 1280,
+     "anchor": "b",
+     "z": 2,
+     "depth": 0.85
+    },
+    {
+     "type": "svg",
+     "w": 300,
+     "h": 180,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"300\" height=\"180\" viewBox=\"0 0 300 180\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><rect width=\"300\" height=\"180\" rx=\"3\" fill=\"#F6F1E3\"/><rect x=\"0\" y=\"34\" width=\"300\" height=\"3\" fill=\"#B23A2E\"/><rect x=\"18\" y=\"66\" width=\"264\" height=\"1.5\" fill=\"#B9B2A2\"/><rect x=\"18\" y=\"92\" width=\"264\" height=\"1.5\" fill=\"#B9B2A2\"/><rect x=\"18\" y=\"118\" width=\"264\" height=\"1.5\" fill=\"#B9B2A2\"/><rect x=\"18\" y=\"144\" width=\"264\" height=\"1.5\" fill=\"#B9B2A2\"/><text x=\"18\" y=\"26\" font-family=\"var(--f-mono)\" font-size=\"15\" fill=\"#8A8478\">AUDEMARS PIGUET · ARCHIVES</text><text x=\"18\" y=\"62\" font-family=\"var(--f-mono)\" font-size=\"22\" font-weight=\"700\" fill=\"#16181D\">GENTA, G.</text><text x=\"18\" y=\"88\" font-family=\"var(--f-mono)\" font-size=\"16\" fill=\"#3A3B3E\">1960 · dessins</text></svg>",
+     "x": 300,
+     "y": 560,
+     "anchor": "c",
+     "z": 15,
+     "in": {
+      "type": "slideU",
+      "at": 1.55,
+      "dur": 0.5
+     },
+     "rot": -3,
+     "out": {
+      "type": "fade",
+      "at": 3.7399999999999998,
+      "dur": 0.3
+     }
+    },
+    {
+     "type": "svg",
+     "w": 56,
+     "h": 52,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"56\" height=\"52\" viewBox=\"0 0 56 52\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><path d=\"M 4 30 L 18 46 L 52 6\" stroke=\"#B23A2E\" stroke-width=\"7\" fill=\"none\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg>",
+     "x": 410,
+     "y": 600,
+     "anchor": "c",
+     "z": 16,
+     "in": {
+      "type": "slam",
+      "at": 2.25,
+      "dur": 0.25
+     },
+     "out": {
+      "type": "fade",
+      "at": 3.7399999999999998,
+      "dur": 0.3
+     }
+    },
+    {
+     "type": "image",
+     "src": "assets/ap/m5179.jpg",
+     "polaroid": true,
+     "aspect": 0.8676789587852495,
+     "label": "Ref. 5179 · 1961",
+     "w": 330,
+     "x": 200,
+     "y": 700,
+     "z": 20,
+     "rot": [
+      [
+       4.19,
+       -3
+      ],
+      [
+       7.32,
+       -4.2
+      ]
+     ],
+     "in": {
+      "type": "rise",
+      "at": 3.7399999999999998,
+      "dur": 0.45
+     },
+     "labelSize": 24,
+     "scale": [
+      [
+       4.19,
+       1
+      ],
+      [
+       7.32,
+       1.006
+      ]
+     ]
+    },
+    {
+     "type": "image",
+     "src": "assets/ap/m5182.jpg",
+     "polaroid": true,
+     "aspect": 0.8676789587852495,
+     "label": "Ref. 5182 · 1962",
+     "w": 330,
+     "x": 515,
+     "y": 700,
+     "z": 21,
+     "rot": [
+      [
+       6.05,
+       3
+      ],
+      [
+       7.32,
+       4.2
+      ]
+     ],
+     "in": {
+      "type": "rise",
+      "at": 5.6,
+      "dur": 0.45
+     },
+     "labelSize": 24,
+     "scale": [
+      [
+       6.05,
+       1
+      ],
+      [
+       7.32,
+       1.006
+      ]
+     ]
+    },
+    {
+     "type": "sketch",
+     "x": 360,
+     "y": 640,
+     "w": 720,
+     "h": 1280,
+     "z": 24,
+     "pencil": false,
+     "paths": [
+      {
+       "d": "M 144.0 668.0 a 56.0 56.0 0 1 0 112.0 0 a 56.0 56.0 0 1 0 -112.0 0",
+       "at": 4.66,
+       "dur": 0.4,
+       "stroke": "#B23A2E",
+       "width": 3,
+       "opacity": 0.85
+      },
+      {
+       "d": "M 136 604 L 264 604 L 264 732 L 136 732 Z",
+       "at": 5.0600000000000005,
+       "dur": 0.4,
+       "stroke": "#B23A2E",
+       "width": 3,
+       "opacity": 0.85
+      }
+     ],
+     "texts": []
+    },
+    {
+     "type": "sketch",
+     "x": 360,
+     "y": 640,
+     "w": 720,
+     "h": 1280,
+     "z": 24,
+     "pencil": false,
+     "paths": [
+      {
+       "d": "M 476.0 590.0 L 476.0 602.2 M 476.0 612.2 L 476.0 624.4 M 476.0 634.4 L 476.0 646.7 M 476.0 656.7 L 476.0 668.9 M 476.0 678.9 L 476.0 691.1 M 476.0 701.1 L 476.0 713.3 M 476.0 723.3 L 476.0 735.6 M 476.0 745.6 L 476.0 757.8 M 476.0 767.8 L 476.0 780.0",
+       "at": 6.22,
+       "dur": 0.35,
+       "stroke": "#B23A2E",
+       "width": 3,
+       "opacity": 0.85
+      },
+      {
+       "d": "M 508.0 590.0 L 506.3 602.2 M 504.9 612.2 L 503.2 624.4 M 501.8 634.4 L 500.1 646.7 M 498.7 656.7 L 497.0 668.9 M 495.6 678.9 L 493.8 691.1 M 492.4 701.1 L 490.7 713.3 M 489.3 723.3 L 487.6 735.6 M 486.2 745.6 L 484.5 757.8 M 483.1 767.8 L 481.4 780.0",
+       "at": 6.67,
+       "dur": 0.35,
+       "stroke": "#B23A2E",
+       "width": 3,
+       "opacity": 0.6
+      }
+     ],
+     "texts": []
+    }
+   ],
+   "dur": 7.32,
+   "silent": true,
+   "captions": "ومع بداية الستينات، | يظهر اسمه | في أرشيف | أوديمار بيغيه: | ساعة تجمع | الدائرة والمربع، | وساعة غير متناظرة…",
+   "captionStart": 0.16999999999999998,
+   "captionEnd": 7.12,
+   "voice": "voice-habibi/clips/p1-4.wav",
+   "voiceAt": 0.12,
+   "transition": "slide",
+   "camera": {
+    "zoom": [
+     [
+      0,
+      1.0
+     ],
+     [
+      3.7399999999999998,
+      1.02,
+      "inOutCubic"
+     ],
+     [
+      4.46,
+      1.18,
+      "inOutCubic"
+     ],
+     [
+      5.6,
+      1.18
+     ],
+     [
+      6.22,
+      1.18,
+      "inOutCubic"
+     ],
+     [
+      9.4,
+      1.06,
+      "inOutCubic"
+     ]
+    ],
+    "x": [
+     [
+      0,
+      360
+     ],
+     [
+      3.7399999999999998,
+      340,
+      "inOutCubic"
+     ],
+     [
+      4.46,
+      210,
+      "inOutCubic"
+     ],
+     [
+      5.6,
+      230
+     ],
+     [
+      6.22,
+      500,
+      "inOutCubic"
+     ],
+     [
+      9.4,
+      360,
+      "inOutCubic"
+     ]
+    ],
+    "y": [
+     [
+      0,
+      620
+     ],
+     [
+      3.7399999999999998,
+      600,
+      "inOutCubic"
+     ],
+     [
+      4.46,
+      700,
+      "inOutCubic"
+     ],
+     [
+      5.6,
+      700
+     ],
+     [
+      6.22,
+      700,
+      "inOutCubic"
+     ],
+     [
+      9.4,
+      700,
+      "inOutCubic"
+     ]
+    ]
+   },
+   "sfx": [
+    {
+     "at": 0.05,
+     "name": "paper_tear",
+     "gain": -15
+    },
+    {
+     "at": 0.27,
+     "name": "paper_tear",
+     "gain": -16
+    },
+    {
+     "at": 0.49,
+     "name": "paper_tear",
+     "gain": -15
+    },
+    {
+     "at": 1.55,
+     "name": "paper_slide",
+     "gain": -12
+    },
+    {
+     "at": 2.25,
+     "name": "stamp",
+     "gain": -10
+    },
+    {
+     "at": 3.74,
+     "name": "shutter",
+     "gain": -14
+    },
+    {
+     "at": 5.6,
+     "name": "shutter",
+     "gain": -14
+    },
+    {
+     "at": 4.66,
+     "name": "pencil",
+     "gain": -10
+    },
+    {
+     "at": 6.22,
+     "name": "pencil",
+     "gain": -10
+    }
+   ]
+  },
+  {
+   "theme": "ro-paper",
+   "floor": false,
+   "elements": [
+    {
+     "type": "svg",
+     "w": 300,
+     "h": 330,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"300\" height=\"330\" viewBox=\"0 0 300 330\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><rect x=\"0\" y=\"18\" width=\"300\" height=\"312\" rx=\"6\" fill=\"#F3EEE1\"/><rect x=\"0\" y=\"18\" width=\"300\" height=\"74\" rx=\"6\" fill=\"#B23A2E\"/><rect x=\"0\" y=\"70\" width=\"300\" height=\"22\" fill=\"#B23A2E\"/><rect x=\"70\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><rect x=\"214\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><text x=\"150\" y=\"262\" font-family=\"var(--f-title)\" font-size=\"150\" fill=\"#16181D\" text-anchor=\"middle\">1962</text><line x1=\"24\" y1=\"292\" x2=\"276\" y2=\"292\" stroke=\"#CFC6B1\" stroke-width=\"2\"/></svg>",
+     "x": 170,
+     "y": 260,
+     "anchor": "c",
+     "z": 10,
+     "in": {
+      "type": "flip",
+      "at": 0.0,
+      "dur": 0.096
+     },
+     "scale": 0.55,
+     "depth": 0.85,
+     "out": {
+      "type": "fade",
+      "at": 0.18,
+      "dur": 0.05
+     }
+    },
+    {
+     "type": "svg",
+     "w": 300,
+     "h": 330,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"300\" height=\"330\" viewBox=\"0 0 300 330\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><rect x=\"0\" y=\"18\" width=\"300\" height=\"312\" rx=\"6\" fill=\"#F3EEE1\"/><rect x=\"0\" y=\"18\" width=\"300\" height=\"74\" rx=\"6\" fill=\"#B23A2E\"/><rect x=\"0\" y=\"70\" width=\"300\" height=\"22\" fill=\"#B23A2E\"/><rect x=\"70\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><rect x=\"214\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><text x=\"150\" y=\"262\" font-family=\"var(--f-title)\" font-size=\"150\" fill=\"#16181D\" text-anchor=\"middle\">1964</text><line x1=\"24\" y1=\"292\" x2=\"276\" y2=\"292\" stroke=\"#CFC6B1\" stroke-width=\"2\"/></svg>",
+     "x": 170,
+     "y": 260,
+     "anchor": "c",
+     "z": 11,
+     "in": {
+      "type": "flip",
+      "at": 0.16,
+      "dur": 0.096
+     },
+     "scale": 0.55,
+     "depth": 0.85,
+     "out": {
+      "type": "fade",
+      "at": 0.34,
+      "dur": 0.05
+     }
+    },
+    {
+     "type": "svg",
+     "w": 300,
+     "h": 330,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"300\" height=\"330\" viewBox=\"0 0 300 330\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><rect x=\"0\" y=\"18\" width=\"300\" height=\"312\" rx=\"6\" fill=\"#F3EEE1\"/><rect x=\"0\" y=\"18\" width=\"300\" height=\"74\" rx=\"6\" fill=\"#B23A2E\"/><rect x=\"0\" y=\"70\" width=\"300\" height=\"22\" fill=\"#B23A2E\"/><rect x=\"70\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><rect x=\"214\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><text x=\"150\" y=\"262\" font-family=\"var(--f-title)\" font-size=\"150\" fill=\"#16181D\" text-anchor=\"middle\">1966</text><line x1=\"24\" y1=\"292\" x2=\"276\" y2=\"292\" stroke=\"#CFC6B1\" stroke-width=\"2\"/></svg>",
+     "x": 170,
+     "y": 260,
+     "anchor": "c",
+     "z": 12,
+     "in": {
+      "type": "flip",
+      "at": 0.32,
+      "dur": 0.096
+     },
+     "scale": 0.55,
+     "depth": 0.85,
+     "out": {
+      "type": "fade",
+      "at": 0.5,
+      "dur": 0.05
+     }
+    },
+    {
+     "type": "svg",
+     "w": 300,
+     "h": 330,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"300\" height=\"330\" viewBox=\"0 0 300 330\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><rect x=\"0\" y=\"18\" width=\"300\" height=\"312\" rx=\"6\" fill=\"#F3EEE1\"/><rect x=\"0\" y=\"18\" width=\"300\" height=\"74\" rx=\"6\" fill=\"#B23A2E\"/><rect x=\"0\" y=\"70\" width=\"300\" height=\"22\" fill=\"#B23A2E\"/><rect x=\"70\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><rect x=\"214\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><text x=\"150\" y=\"262\" font-family=\"var(--f-title)\" font-size=\"150\" fill=\"#16181D\" text-anchor=\"middle\">1967</text><line x1=\"24\" y1=\"292\" x2=\"276\" y2=\"292\" stroke=\"#CFC6B1\" stroke-width=\"2\"/></svg>",
+     "x": 170,
+     "y": 260,
+     "anchor": "c",
+     "z": 13,
+     "in": {
+      "type": "flip",
+      "at": 0.48,
+      "dur": 0.096
+     },
+     "scale": 0.55,
+     "depth": 0.85
+    },
+    {
+     "type": "svg",
+     "w": 760,
+     "h": 240,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"760\" height=\"240\" viewBox=\"0 0 760 240\" style=\"overflow:visible;\"><rect y=\"132\" width=\"760\" height=\"108\" fill=\"#8EA07A\"/><rect y=\"187\" width=\"760\" height=\"52\" fill=\"#7E97A6\"/><polygon points=\"161.4,44.7 137.1,138.0 185.6,138.0\" fill=\"#2F4038\"/><polygon points=\"48.1,90.9 32.3,152.0 64.0,152.0\" fill=\"#2F4038\"/><polygon points=\"300.6,92.4 287.2,143.8 313.9,143.8\" fill=\"#3B5046\"/><polygon points=\"376.0,90.6 360.7,149.3 391.2,149.3\" fill=\"#2F4038\"/><polygon points=\"368.1,63.1 346.2,147.2 390.0,147.2\" fill=\"#3B5046\"/><polygon points=\"359.5,56.6 335.8,147.6 383.1,147.6\" fill=\"#3B5046\"/><polygon points=\"57.7,55.5 35.2,142.2 80.3,142.2\" fill=\"#3B5046\"/><polygon points=\"66.2,87.1 52.5,139.8 79.9,139.8\" fill=\"#2F4038\"/><polygon points=\"378.1,71.2 357.5,150.4 398.7,150.4\" fill=\"#2F4038\"/><polygon points=\"465.4,62.3 446.1,136.6 484.7,136.6\" fill=\"#2F4038\"/><polygon points=\"98.6,54.6 75.5,143.3 121.6,143.3\" fill=\"#3B5046\"/><polygon points=\"208.5,84.0 191.3,150.0 225.7,150.0\" fill=\"#2F4038\"/><polygon points=\"106.6,67.4 86.6,144.5 126.7,144.5\" fill=\"#3B5046\"/><polygon points=\"541.7,56.7 517.6,149.5 565.8,149.5\" fill=\"#2F4038\"/><polygon points=\"227.0,74.5 209.9,140.5 244.2,140.5\" fill=\"#2F4038\"/><polygon points=\"626.5,62.1 603.5,150.6 649.5,150.6\" fill=\"#2F4038\"/><polygon points=\"255.4,49.9 231.7,140.7 279.0,140.7\" fill=\"#2F4038\"/><polygon points=\"193.5,73.0 175.5,142.0 211.4,142.0\" fill=\"#3B5046\"/><polygon points=\"120.2,70.8 102.6,138.7 137.8,138.7\" fill=\"#2F4038\"/><polygon points=\"141.4,56.3 119.5,140.8 163.4,140.8\" fill=\"#2F4038\"/><polygon points=\"617.1,82.3 599.7,149.4 634.6,149.4\" fill=\"#3B5046\"/><polygon points=\"704.1,88.8 689.5,145.0 718.7,145.0\" fill=\"#3B5046\"/><polygon points=\"314.4,64.1 294.5,140.6 334.3,140.6\" fill=\"#2F4038\"/><polygon points=\"7.2,68.4 -13.5,148.2 28.0,148.2\" fill=\"#3B5046\"/><polygon points=\"102.9,51.7 79.0,143.8 126.9,143.8\" fill=\"#2F4038\"/><polygon points=\"764.1,83.4 750.3,136.3 777.8,136.3\" fill=\"#2F4038\"/><polygon points=\"252.6,58.3 231.9,137.9 273.3,137.9\" fill=\"#3B5046\"/><polygon points=\"261.2,42.6 236.9,136.0 285.4,136.0\" fill=\"#3B5046\"/><polygon points=\"148.1,47.1 124.8,136.5 171.3,136.5\" fill=\"#2F4038\"/><polygon points=\"122.2,49.4 97.9,143.1 146.6,143.1\" fill=\"#2F4038\"/><polygon points=\"140.4,88.9 124.7,149.0 156.0,149.0\" fill=\"#2F4038\"/><polygon points=\"284.9,92.7 270.6,147.5 299.1,147.5\" fill=\"#2F4038\"/><polygon points=\"555.5,64.3 536.5,137.4 574.5,137.4\" fill=\"#3B5046\"/><polygon points=\"431.1,56.5 408.5,143.3 453.6,143.3\" fill=\"#2F4038\"/><polygon points=\"138.0,67.7 119.8,137.7 156.2,137.7\" fill=\"#2F4038\"/><polygon points=\"546.7,58.8 526.5,136.4 566.8,136.4\" fill=\"#3B5046\"/><polygon points=\"643.4,77.9 624.2,151.7 662.6,151.7\" fill=\"#2F4038\"/><polygon points=\"381.2,77.6 364.4,142.1 398.0,142.1\" fill=\"#2F4038\"/><polygon points=\"-14.7,72.9 -34.8,150.5 5.5,150.5\" fill=\"#3B5046\"/><polygon points=\"722.1,45.4 697.6,139.6 746.6,139.6\" fill=\"#3B5046\"/><polygon points=\"43.7,79.0 25.8,147.9 61.6,147.9\" fill=\"#3B5046\"/><polygon points=\"393.0,73.2 372.7,151.3 413.3,151.3\" fill=\"#3B5046\"/><polygon points=\"501.1,88.8 486.8,143.8 515.4,143.8\" fill=\"#3B5046\"/><polygon points=\"746.9,52.9 724.0,141.0 769.8,141.0\" fill=\"#3B5046\"/></svg>",
+     "x": 360,
+     "y": 1280,
+     "anchor": "b",
+     "z": 2,
+     "depth": 0.85
+    },
+    {
+     "type": "image",
+     "src": "assets/crop/m8311_catalogue.jpg",
+     "polaroid": true,
+     "aspect": 0.45185185185185184,
+     "label": "Ref. 8311 · Handbag watch",
+     "w": 300,
+     "x": 480,
+     "y": 560,
+     "z": 14,
+     "rot": [
+      [
+       1.87,
+       3
+      ],
+      [
+       5.21,
+       4.2
+      ]
+     ],
+     "in": {
+      "type": "drop",
+      "at": 1.42,
+      "dur": 0.45
+     },
+     "labelSize": 20,
+     "scale": [
+      [
+       1.87,
+       1
+      ],
+      [
+       5.21,
+       1.006
+      ]
+     ]
+    },
+    {
+     "type": "svg",
+     "w": 130,
+     "h": 565.8491803278689,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"130\" height=\"565\" viewBox=\"0 0 130 565\" style=\"overflow:visible;\"><defs><linearGradient id=\"gl12\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/><stop offset=\".5\" stop-color=\"#FFFAEB\" stop-opacity=\"0.42\"/><stop offset=\"1\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/></linearGradient></defs><polygon points=\"40.0,0.0 130.0,0.0 90.0,565.8 0.0,565.8\" fill=\"url(#gl12)\"/></svg>",
+     "x": [
+      [
+       2.2199999999999998,
+       409.0
+      ],
+      [
+       2.92,
+       551.0,
+       "inOutCubic"
+      ]
+     ],
+     "y": 538,
+     "anchor": "c",
+     "z": 15,
+     "in": {
+      "type": "none",
+      "at": 2.2199999999999998,
+      "dur": 0.5
+     },
+     "rot": 3,
+     "still": true,
+     "opacity": [
+      [
+       2.2199999999999998,
+       0
+      ],
+      [
+       2.34,
+       1
+      ],
+      [
+       2.8,
+       1
+      ],
+      [
+       2.92,
+       0
+      ]
+     ],
+     "out": {
+      "type": "fade",
+      "at": 2.92,
+      "dur": 0.01
+     }
+    },
+    {
+     "type": "image",
+     "src": "assets/ap/m8311.jpg",
+     "polaroid": true,
+     "aspect": 0.8676789587852495,
+     "label": "رسم التصميم",
+     "w": 240,
+     "x": 200,
+     "y": 560,
+     "z": 12,
+     "rot": [
+      [
+       2.65,
+       -5
+      ],
+      [
+       5.21,
+       -6.2
+      ]
+     ],
+     "in": {
+      "type": "drop",
+      "at": 2.2,
+      "dur": 0.45
+     },
+     "labelSize": 22,
+     "scale": [
+      [
+       2.65,
+       1
+      ],
+      [
+       5.21,
+       1.006
+      ]
+     ]
+    },
+    {
+     "type": "svg",
+     "w": 220,
+     "h": 300,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"220\" height=\"300\" viewBox=\"0 0 220 300\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><polygon points=\"210.0,110.0 209.1,123.1 206.6,135.9 110.0,110.0\" fill=\"#C7473A\"/><polygon points=\"206.6,135.9 202.4,148.3 196.6,160.0 110.0,110.0\" fill=\"#B23A2E\"/><polygon points=\"196.6,160.0 189.3,170.9 180.7,180.7 110.0,110.0\" fill=\"#C7473A\"/><polygon points=\"180.7,180.7 170.9,189.3 160.0,196.6 110.0,110.0\" fill=\"#B23A2E\"/><polygon points=\"160.0,196.6 148.3,202.4 135.9,206.6 110.0,110.0\" fill=\"#C7473A\"/><polygon points=\"135.9,206.6 123.1,209.1 110.0,210.0 110.0,110.0\" fill=\"#B23A2E\"/><polygon points=\"110.0,210.0 96.9,209.1 84.1,206.6 110.0,110.0\" fill=\"#C7473A\"/><polygon points=\"84.1,206.6 71.7,202.4 60.0,196.6 110.0,110.0\" fill=\"#B23A2E\"/><polygon points=\"60.0,196.6 49.1,189.3 39.3,180.7 110.0,110.0\" fill=\"#C7473A\"/><polygon points=\"39.3,180.7 30.7,170.9 23.4,160.0 110.0,110.0\" fill=\"#B23A2E\"/><polygon points=\"23.4,160.0 17.6,148.3 13.4,135.9 110.0,110.0\" fill=\"#C7473A\"/><polygon points=\"13.4,135.9 10.9,123.1 10.0,110.0 110.0,110.0\" fill=\"#B23A2E\"/><polygon points=\"10.0,110.0 10.9,96.9 13.4,84.1 110.0,110.0\" fill=\"#C7473A\"/><polygon points=\"13.4,84.1 17.6,71.7 23.4,60.0 110.0,110.0\" fill=\"#B23A2E\"/><polygon points=\"23.4,60.0 30.7,49.1 39.3,39.3 110.0,110.0\" fill=\"#C7473A\"/><polygon points=\"39.3,39.3 49.1,30.7 60.0,23.4 110.0,110.0\" fill=\"#B23A2E\"/><polygon points=\"60.0,23.4 71.7,17.6 84.1,13.4 110.0,110.0\" fill=\"#C7473A\"/><polygon points=\"84.1,13.4 96.9,10.9 110.0,10.0 110.0,110.0\" fill=\"#B23A2E\"/><polygon points=\"110.0,10.0 123.1,10.9 135.9,13.4 110.0,110.0\" fill=\"#C7473A\"/><polygon points=\"135.9,13.4 148.3,17.6 160.0,23.4 110.0,110.0\" fill=\"#B23A2E\"/><polygon points=\"160.0,23.4 170.9,30.7 180.7,39.3 110.0,110.0\" fill=\"#C7473A\"/><polygon points=\"180.7,39.3 189.3,49.1 196.6,60.0 110.0,110.0\" fill=\"#B23A2E\"/><polygon points=\"196.6,60.0 202.4,71.7 206.6,84.1 110.0,110.0\" fill=\"#C7473A\"/><polygon points=\"206.6,84.1 209.1,96.9 210.0,110.0 110.0,110.0\" fill=\"#B23A2E\"/><path d=\"M 70 190 L 50 290 L 85 270 L 105 300 L 110 200 Z\" fill=\"#B23A2E\"/><path d=\"M 150 190 L 170 290 L 135 270 L 115 300 L 110 200 Z\" fill=\"#B23A2E\"/><circle cx=\"110\" cy=\"110\" r=\"70\" fill=\"#EFE8D6\"/><text x=\"110\" y=\"76\" font-family=\"var(--f-banner)\" font-weight=\"800\" font-size=\"30\" fill=\"#16181D\" text-anchor=\"middle\">تنويه</text><text x=\"110\" y=\"106\" font-family=\"var(--f-banner)\" font-weight=\"800\" font-size=\"22\" fill=\"#16181D\" text-anchor=\"middle\">جائزة جنيف</text><text x=\"110\" y=\"136\" font-family=\"var(--f-banner)\" font-weight=\"800\" font-size=\"22\" fill=\"#16181D\" text-anchor=\"middle\">1967</text></svg>",
+     "x": 190,
+     "y": 800,
+     "anchor": "t",
+     "z": 20,
+     "in": {
+      "type": "drop",
+      "at": 2.87,
+      "dur": 0.45
+     },
+     "rot": -6,
+     "idle": {
+      "type": "sway",
+      "amp": 2,
+      "speed": 0.45,
+      "from": 3.3200000000000003
+     }
+    },
+    {
+     "type": "sparkles",
+     "x": 190,
+     "y": 900,
+     "count": 6,
+     "radius": 40,
+     "life": 0.7,
+     "color": "#EFE8D6",
+     "at": 3.27,
+     "z": 21
+    }
+   ],
+   "dur": 5.21,
+   "silent": true,
+   "captions": "وفي سنة | سبعة وستين، | ساعة شنطة | من تصميمه | تاخذ تنويه | في جائزة | مدينة جنيف.",
+   "captionStart": 0.16999999999999998,
+   "captionEnd": 5.01,
+   "voice": "voice-habibi/clips/p1-5.wav",
+   "voiceAt": 0.12,
+   "transition": "cut",
+   "camera": {
+    "zoom": [
+     [
+      0,
+      1.06
+     ],
+     [
+      1.52,
+      1.0,
+      "inOutCubic"
+     ],
+     [
+      2.8000000000000003,
+      1.3,
+      "inOutCubic"
+     ],
+     [
+      2.77,
+      1.25
+     ],
+     [
+      7.37,
+      1.05,
+      "inOutCubic"
+     ]
+    ],
+    "x": [
+     [
+      0,
+      360
+     ],
+     [
+      1.52,
+      380,
+      "inOutCubic"
+     ],
+     [
+      2.8000000000000003,
+      480,
+      "inOutCubic"
+     ],
+     [
+      2.77,
+      460
+     ],
+     [
+      7.37,
+      330,
+      "inOutCubic"
+     ]
+    ],
+    "y": [
+     [
+      0,
+      700
+     ],
+     [
+      1.52,
+      640,
+      "inOutCubic"
+     ],
+     [
+      2.8000000000000003,
+      690,
+      "inOutCubic"
+     ],
+     [
+      2.77,
+      680
+     ],
+     [
+      7.37,
+      680,
+      "inOutCubic"
+     ]
+    ]
+   },
+   "sfx": [
+    {
+     "at": 0,
+     "name": "paper_tear",
+     "gain": -15
+    },
+    {
+     "at": 0.16,
+     "name": "paper_tear",
+     "gain": -16
+    },
+    {
+     "at": 0.32,
+     "name": "paper_tear",
+     "gain": -15
+    },
+    {
+     "at": 0.48,
+     "name": "paper_tear",
+     "gain": -16
+    },
+    {
+     "at": 1.42,
+     "name": "paper_place",
+     "gain": -10
+    },
+    {
+     "at": 2.2,
+     "name": "paper_place",
+     "gain": -10
+    },
+    {
+     "at": 2.87,
+     "name": "stamp",
+     "gain": -10
+    }
+   ]
+  },
+  {
+   "theme": "ro-alpine",
+   "floor": false,
+   "elements": [
+    {
+     "type": "image",
+     "src": "assets/ap/lebrassus1969.jpg",
+     "polaroid": true,
+     "aspect": 0.8686210640608035,
+     "label": "Audemars Piguet · Le Brassus · 1969",
+     "w": 460,
+     "x": 360,
+     "y": 340,
+     "z": 5,
+     "rot": [
+      [
+       0.55,
+       -1
+      ],
+      [
+       6.78,
+       -2.2
+      ]
+     ],
+     "in": {
+      "type": "fade",
+      "at": 0.1,
+      "dur": 0.45
+     },
+     "labelSize": 22,
+     "opacity": [
+      [
+       2.94,
+       1
+      ],
+      [
+       3.54,
+       0.3
+      ]
+     ],
+     "scale": [
+      [
+       0.55,
+       1
+      ],
+      [
+       6.78,
+       1.006
+      ]
+     ]
+    },
+    {
+     "type": "image",
+     "src": "assets/ap/golay1966.jpg",
+     "polaroid": true,
+     "aspect": 1.3179571663920921,
+     "label": "جورج غولاي، 1966",
+     "w": 320,
+     "x": 220,
+     "y": 770,
+     "z": 20,
+     "rot": [
+      [
+       1.89,
+       -3
+      ],
+      [
+       6.78,
+       -4.2
+      ]
+     ],
+     "in": {
+      "type": "drop",
+      "at": 1.44,
+      "dur": 0.45
+     },
+     "labelSize": 24,
+     "scale": [
+      [
+       1.89,
+       1
+      ],
+      [
+       6.78,
+       1.006
+      ]
+     ]
+    },
+    {
+     "type": "svg",
+     "w": 760,
+     "h": 150,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"760\" height=\"150\" viewBox=\"0 0 760 150\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><rect width=\"760\" height=\"150\" fill=\"#4A3828\"/><rect width=\"760\" height=\"26\" fill=\"#5A4632\"/><rect width=\"760\" height=\"3\" fill=\"#7A6046\"/></svg>",
+     "x": 360,
+     "y": 1205,
+     "anchor": "c",
+     "z": 16,
+     "depth": 0.95
+    },
+    {
+     "type": "svg",
+     "w": 120,
+     "h": 150,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"120\" height=\"150\" viewBox=\"0 0 120 150\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><rect x=\"56\" y=\"70\" width=\"8\" height=\"70\" fill=\"#C9A35F\"/><ellipse cx=\"60\" cy=\"142\" rx=\"40\" ry=\"8\" fill=\"#9C7B3F\"/><path d=\"M 4 70 Q 60 30 116 70 Z\" fill=\"#2E5D3A\"/><rect x=\"4\" y=\"66\" width=\"112\" height=\"6\" fill=\"#244A2E\"/></svg>",
+     "x": 100,
+     "y": 1070,
+     "anchor": "c",
+     "z": 17,
+     "depth": 0.95
+    },
+    {
+     "type": "svg",
+     "w": 324,
+     "h": 76,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"324\" height=\"76\" viewBox=\"0 0 324 76\" style=\"overflow:visible;\"><defs><filter id=\"se13\" x=\"-50%\" y=\"-50%\" width=\"200%\" height=\"200%\"><feGaussianBlur stdDeviation=\"6\"/></filter></defs><ellipse cx=\"162\" cy=\"38\" rx=\"138\" ry=\"14\" fill=\"#000\" opacity=\"0.32\" filter=\"url(#se13)\"/></svg>",
+     "x": 540,
+     "y": 1224,
+     "anchor": "c",
+     "z": 17,
+     "in": {
+      "type": "fade",
+      "at": 2.38,
+      "dur": 0.5
+     },
+     "still": true
+    },
+    {
+     "type": "cutout",
+     "x": 540,
+     "y": 1250,
+     "h": 500,
+     "aspect": 0.6933,
+     "edge": 0,
+     "z": 18,
+     "in": {
+      "type": "rise",
+      "at": 2.38,
+      "dur": 0.5
+     },
+     "src": "assets/gen/golay_phone_cut.png",
+     "rot": [
+      [
+       2.75,
+       0
+      ],
+      [
+       8.9,
+       0.6
+      ]
+     ]
+    },
+    {
+     "type": "text",
+     "text": "أوديمار",
+     "x": 210,
+     "y": 210,
+     "font": "banner",
+     "size": 30,
+     "color": "#16181D",
+     "paper": "#EFE8D6",
+     "upper": false,
+     "z": 30,
+     "rot": -2,
+     "in": {
+      "type": "pop",
+      "at": 3.24,
+      "dur": 0.35
+     }
+    },
+    {
+     "type": "text",
+     "text": "بيغيه",
+     "x": 510,
+     "y": 210,
+     "font": "banner",
+     "size": 30,
+     "color": "#16181D",
+     "paper": "#EFE8D6",
+     "upper": false,
+     "z": 30,
+     "rot": 2,
+     "in": {
+      "type": "pop",
+      "at": 3.44,
+      "dur": 0.35
+     }
+    },
+    {
+     "type": "sketch",
+     "x": 360,
+     "y": 640,
+     "w": 720,
+     "h": 1280,
+     "z": 29,
+     "pencil": false,
+     "paths": [
+      {
+       "d": "M 210 240 L 210 300 L 510 300 L 510 240 M 360 300 L 360 380",
+       "at": 3.54,
+       "dur": 0.6,
+       "stroke": "#EFE8D6",
+       "width": 4,
+       "opacity": 0.95
+      }
+     ],
+     "texts": []
+    },
+    {
+     "type": "text",
+     "text": "غولاي",
+     "x": 600,
+     "y": 470,
+     "font": "banner",
+     "size": 30,
+     "color": "#B23A2E",
+     "paper": "#F6F1E3",
+     "upper": false,
+     "z": 31,
+     "rot": 3,
+     "in": {
+      "type": "pop",
+      "at": 4.68,
+      "dur": 0.35
+     }
+    },
+    {
+     "type": "sketch",
+     "x": 360,
+     "y": 640,
+     "w": 720,
+     "h": 1280,
+     "z": 29,
+     "pencil": false,
+     "paths": [
+      {
+       "d": "M 560.0 500.0 L 542.1 509.6 M 527.5 517.5 L 509.6 527.1 M 495.0 535.0 L 477.1 544.6 M 462.5 552.5 L 444.6 562.1 M 430.0 570.0 L 412.1 579.6 M 397.5 587.5 L 379.6 597.1 M 365.0 605.0 L 347.1 614.6 M 332.5 622.5 L 314.6 632.1",
+       "at": 4.9799999999999995,
+       "dur": 0.6,
+       "stroke": "#B23A2E",
+       "width": 4,
+       "opacity": 0.95
+      }
+     ],
+     "texts": []
+    }
+   ],
+   "dur": 6.78,
+   "silent": true,
+   "captions": "وهناك لقى شريكه: | جورج غولاي، | المدير العام… | وأول واحد | يدير الشركة | من برا | العائلتين المؤسستين.",
+   "captionStart": 0.16999999999999998,
+   "captionEnd": 6.58,
+   "voice": "voice-habibi/clips/p1-6.wav",
+   "voiceAt": 0.12,
+   "transition": "slide",
+   "camera": {
+    "zoom": [
+     [
+      0,
+      1.0
+     ],
+     [
+      1.32,
+      1.0,
+      "inOutCubic"
+     ],
+     [
+      3.14,
+      1.02
+     ],
+     [
+      3.54,
+      1.04,
+      "inOutCubic"
+     ],
+     [
+      4.88,
+      1.04,
+      "inOutCubic"
+     ],
+     [
+      8.91,
+      1.1,
+      "inOutCubic"
+     ]
+    ],
+    "x": [
+     [
+      0,
+      360
+     ],
+     [
+      1.32,
+      360,
+      "inOutCubic"
+     ],
+     [
+      3.14,
+      360
+     ],
+     [
+      3.54,
+      360,
+      "inOutCubic"
+     ],
+     [
+      4.88,
+      400,
+      "inOutCubic"
+     ],
+     [
+      8.91,
+      420,
+      "inOutCubic"
+     ]
+    ],
+    "y": [
+     [
+      0,
+      520
+     ],
+     [
+      1.32,
+      620,
+      "inOutCubic"
+     ],
+     [
+      3.14,
+      600
+     ],
+     [
+      3.54,
+      480,
+      "inOutCubic"
+     ],
+     [
+      4.88,
+      540,
+      "inOutCubic"
+     ],
+     [
+      8.91,
+      820,
+      "inOutCubic"
+     ]
+    ]
+   },
+   "sfx": [
+    {
+     "at": 1.44,
+     "name": "paper_place",
+     "gain": -10
+    },
+    {
+     "at": 2.38,
+     "name": "pin",
+     "gain": -14
+    },
+    {
+     "at": 3.24,
+     "name": "pin",
+     "gain": -14
+    },
+    {
+     "at": 3.44,
+     "name": "pin",
+     "gain": -14
+    },
+    {
+     "at": 3.54,
+     "name": "pencil",
+     "gain": -12
+    },
+    {
+     "at": 4.68,
+     "name": "stamp",
+     "gain": -12
+    }
+   ]
+  },
+  {
+   "theme": "ro-paper",
+   "floor": false,
+   "elements": [
+    {
+     "type": "svg",
+     "w": 760,
+     "h": 260,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"760\" height=\"260\" viewBox=\"0 0 760 260\" style=\"overflow:visible;\"><rect width=\"760\" height=\"260\" fill=\"#C9BBA0\"/><rect width=\"760\" height=\"3\" fill=\"#DCD0B8\"/></svg>",
+     "x": 360,
+     "y": 1250,
+     "anchor": "c",
+     "z": 2,
+     "depth": 0.95
+    },
+    {
+     "type": "svg",
+     "w": 760,
+     "h": 140,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"760\" height=\"140\" viewBox=\"0 0 760 140\" style=\"overflow:visible;\"><polygon points=\"0.0,60.0 120.0,30.0 260.0,52.0 420.0,20.0 560.0,46.0 760.0,28.0 760.0,110.0 0.0,110.0\" fill=\"#9FAF8E\"/><polygon points=\"0.0,84.0 200.0,64.0 380.0,80.0 600.0,62.0 760.0,76.0 760.0,112.0 0.0,112.0\" fill=\"#8EA07A\"/><rect y=\"110\" width=\"760\" height=\"26\" fill=\"#B8AE98\"/><rect x=\"10\" y=\"121\" width=\"22\" height=\"3\" fill=\"#EFE8D6\"/><rect x=\"56\" y=\"121\" width=\"22\" height=\"3\" fill=\"#EFE8D6\"/><rect x=\"102\" y=\"121\" width=\"22\" height=\"3\" fill=\"#EFE8D6\"/><rect x=\"148\" y=\"121\" width=\"22\" height=\"3\" fill=\"#EFE8D6\"/><rect x=\"194\" y=\"121\" width=\"22\" height=\"3\" fill=\"#EFE8D6\"/><rect x=\"240\" y=\"121\" width=\"22\" height=\"3\" fill=\"#EFE8D6\"/><rect x=\"286\" y=\"121\" width=\"22\" height=\"3\" fill=\"#EFE8D6\"/><rect x=\"332\" y=\"121\" width=\"22\" height=\"3\" fill=\"#EFE8D6\"/><rect x=\"378\" y=\"121\" width=\"22\" height=\"3\" fill=\"#EFE8D6\"/><rect x=\"424\" y=\"121\" width=\"22\" height=\"3\" fill=\"#EFE8D6\"/><rect x=\"470\" y=\"121\" width=\"22\" height=\"3\" fill=\"#EFE8D6\"/><rect x=\"516\" y=\"121\" width=\"22\" height=\"3\" fill=\"#EFE8D6\"/><rect x=\"562\" y=\"121\" width=\"22\" height=\"3\" fill=\"#EFE8D6\"/><rect x=\"608\" y=\"121\" width=\"22\" height=\"3\" fill=\"#EFE8D6\"/><rect x=\"654\" y=\"121\" width=\"22\" height=\"3\" fill=\"#EFE8D6\"/><rect x=\"700\" y=\"121\" width=\"22\" height=\"3\" fill=\"#EFE8D6\"/><rect x=\"746\" y=\"121\" width=\"22\" height=\"3\" fill=\"#EFE8D6\"/></svg>",
+     "x": 360,
+     "y": 420,
+     "anchor": "c",
+     "z": 4,
+     "in": {
+      "type": "fade",
+      "at": 0.2,
+      "dur": 0.4
+     },
+     "depth": 0.8,
+     "out": {
+      "type": "fade",
+      "at": 6.06,
+      "dur": 0.35
+     }
+    },
+    {
+     "type": "svg",
+     "w": 520,
+     "h": 230,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"520\" height=\"230\" viewBox=\"0 0 520 230\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><path d=\"M 80 160 L 170 70 L 330 70 L 440 160 M 170 70 L 250 160 L 330 70 M 250 160 L 80 160 M 440 160 L 400 40\" stroke=\"#B23A2E\" stroke-width=\"11\" fill=\"none\" stroke-linejoin=\"round\"/><rect x=\"150\" y=\"52\" width=\"46\" height=\"12\" rx=\"6\" fill=\"#2A2C31\"/><rect x=\"306\" y=\"52\" width=\"46\" height=\"12\" rx=\"6\" fill=\"#2A2C31\"/><path d=\"M 384 36 L 430 30\" stroke=\"#2A2C31\" stroke-width=\"9\" stroke-linecap=\"round\"/><path d=\"M 172 50 L 150 30 L 176 40 Z\" fill=\"#B23A2E\"/></svg>",
+     "x": [
+      [
+       1.01,
+       -300
+      ],
+      [
+       4.9,
+       420,
+       "outCubic"
+      ]
+     ],
+     "y": 363,
+     "anchor": "c",
+     "z": 10,
+     "in": {
+      "type": "none",
+      "at": 1.01,
+      "dur": 0.5
+     },
+     "out": {
+      "type": "fade",
+      "at": 6.06,
+      "dur": 0.35
+     },
+     "rot": [
+      [
+       4.9,
+       0
+      ],
+      [
+       5.050000000000001,
+       3
+      ],
+      [
+       5.3500000000000005,
+       0,
+       "outBack"
+      ]
+     ],
+     "idle": {
+      "type": "bob",
+      "amp": 1.5,
+      "speed": 1.2,
+      "until": 4.9
+     }
+    },
+    {
+     "type": "svg",
+     "w": 134,
+     "h": 134,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"134\" height=\"134\" viewBox=\"0 0 134 134\" style=\"overflow:visible;\"><circle cx=\"67\" cy=\"67\" r=\"62\" fill=\"none\" stroke=\"#2A2C31\" stroke-width=\"9\"/><line x1=\"67\" y1=\"67\" x2=\"125.0\" y2=\"67.0\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"67\" y1=\"67\" x2=\"117.2\" y2=\"96.0\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"67\" y1=\"67\" x2=\"96.0\" y2=\"117.2\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"67\" y1=\"67\" x2=\"67.0\" y2=\"125.0\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"67\" y1=\"67\" x2=\"38.0\" y2=\"117.2\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"67\" y1=\"67\" x2=\"16.8\" y2=\"96.0\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"67\" y1=\"67\" x2=\"9.0\" y2=\"67.0\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"67\" y1=\"67\" x2=\"16.8\" y2=\"38.0\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"67\" y1=\"67\" x2=\"38.0\" y2=\"16.8\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"67\" y1=\"67\" x2=\"67.0\" y2=\"9.0\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"67\" y1=\"67\" x2=\"96.0\" y2=\"16.8\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"67\" y1=\"67\" x2=\"117.2\" y2=\"38.0\" stroke=\"#8A8F96\" stroke-width=\"2\"/><circle cx=\"67\" cy=\"67\" r=\"6\" fill=\"#2A2C31\"/></svg>",
+     "x": [
+      [
+       1.01,
+       -480
+      ],
+      [
+       4.9,
+       240,
+       "outCubic"
+      ]
+     ],
+     "y": 408,
+     "anchor": "c",
+     "z": 9,
+     "in": {
+      "type": "none",
+      "at": 1.01,
+      "dur": 0.5
+     },
+     "out": {
+      "type": "fade",
+      "at": 6.06,
+      "dur": 0.35
+     },
+     "rot": [
+      [
+       1.01,
+       0
+      ],
+      [
+       4.9,
+       650,
+       "outCubic"
+      ]
+     ]
+    },
+    {
+     "type": "svg",
+     "w": 134,
+     "h": 134,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"134\" height=\"134\" viewBox=\"0 0 134 134\" style=\"overflow:visible;\"><circle cx=\"67\" cy=\"67\" r=\"62\" fill=\"none\" stroke=\"#2A2C31\" stroke-width=\"9\"/><line x1=\"67\" y1=\"67\" x2=\"125.0\" y2=\"67.0\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"67\" y1=\"67\" x2=\"117.2\" y2=\"96.0\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"67\" y1=\"67\" x2=\"96.0\" y2=\"117.2\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"67\" y1=\"67\" x2=\"67.0\" y2=\"125.0\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"67\" y1=\"67\" x2=\"38.0\" y2=\"117.2\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"67\" y1=\"67\" x2=\"16.8\" y2=\"96.0\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"67\" y1=\"67\" x2=\"9.0\" y2=\"67.0\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"67\" y1=\"67\" x2=\"16.8\" y2=\"38.0\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"67\" y1=\"67\" x2=\"38.0\" y2=\"16.8\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"67\" y1=\"67\" x2=\"67.0\" y2=\"9.0\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"67\" y1=\"67\" x2=\"96.0\" y2=\"16.8\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"67\" y1=\"67\" x2=\"117.2\" y2=\"38.0\" stroke=\"#8A8F96\" stroke-width=\"2\"/><circle cx=\"67\" cy=\"67\" r=\"6\" fill=\"#2A2C31\"/></svg>",
+     "x": [
+      [
+       1.01,
+       -120
+      ],
+      [
+       4.9,
+       600,
+       "outCubic"
+      ]
+     ],
+     "y": 408,
+     "anchor": "c",
+     "z": 9,
+     "in": {
+      "type": "none",
+      "at": 1.01,
+      "dur": 0.5
+     },
+     "out": {
+      "type": "fade",
+      "at": 6.06,
+      "dur": 0.35
+     },
+     "rot": [
+      [
+       1.01,
+       0
+      ],
+      [
+       4.9,
+       650,
+       "outCubic"
+      ]
+     ]
+    },
+    {
+     "type": "text",
+     "text": "«دراجة لاثنين»",
+     "x": 360,
+     "y": 200,
+     "font": "banner",
+     "size": 34,
+     "color": "#16181D",
+     "paper": "#F6F1E3",
+     "upper": false,
+     "z": 35,
+     "rot": -2,
+     "in": {
+      "type": "pop",
+      "at": 1.28,
+      "dur": 0.35
+     },
+     "out": {
+      "type": "fade",
+      "at": 5.96,
+      "dur": 0.2
+     },
+     "depth": 0
+    },
+    {
+     "type": "svg",
+     "w": 266,
+     "h": 76,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"266\" height=\"76\" viewBox=\"0 0 266 76\" style=\"overflow:visible;\"><defs><filter id=\"se14\" x=\"-50%\" y=\"-50%\" width=\"200%\" height=\"200%\"><feGaussianBlur stdDeviation=\"6\"/></filter></defs><ellipse cx=\"133\" cy=\"38\" rx=\"109\" ry=\"14\" fill=\"#000\" opacity=\"0.32\" filter=\"url(#se14)\"/></svg>",
+     "x": 190,
+     "y": 1194,
+     "anchor": "c",
+     "z": 19,
+     "in": {
+      "type": "fade",
+      "at": 0.1,
+      "dur": 0.5
+     },
+     "still": true
+    },
+    {
+     "type": "cutout",
+     "x": 190,
+     "y": 1200,
+     "h": 680,
+     "aspect": 0.2848,
+     "edge": 0,
+     "z": 20,
+     "in": {
+      "type": "rise",
+      "at": 0.1,
+      "dur": 0.5
+     },
+     "src": "assets/gen/young_think_cut.png",
+     "person": true,
+     "headBand": 0.2,
+     "idle": {
+      "type": "pulse",
+      "amp": 0.005,
+      "speed": 0.22,
+      "from": 0.6
+     }
+    },
+    {
+     "type": "cutout",
+     "x": 540,
+     "y": 1250,
+     "h": 500,
+     "aspect": 0.6933,
+     "edge": 0,
+     "z": 18,
+     "in": {
+      "type": "none",
+      "at": 0,
+      "dur": 0.3
+     },
+     "src": "assets/gen/golay_phone_cut.png"
+    },
+    {
+     "type": "image",
+     "src": "assets/ap/m5233.jpg",
+     "polaroid": true,
+     "aspect": 0.8676789587852495,
+     "label": "جنتا",
+     "w": 200,
+     "x": 255,
+     "y": 330,
+     "z": 40,
+     "rot": [
+      [
+       7.62,
+       -4
+      ],
+      [
+       8.28,
+       -5.2
+      ]
+     ],
+     "in": {
+      "type": "pop",
+      "at": 7.17,
+      "dur": 0.45
+     },
+     "labelSize": 22,
+     "scale": [
+      [
+       7.62,
+       1
+      ],
+      [
+       8.28,
+       1.006
+      ]
+     ]
+    },
+    {
+     "type": "image",
+     "src": "assets/ap/m5233.jpg",
+     "polaroid": true,
+     "aspect": 0.8676789587852495,
+     "label": "غولاي",
+     "w": 200,
+     "x": 475,
+     "y": 330,
+     "z": 40,
+     "rot": 4,
+     "in": {
+      "type": "pop",
+      "at": 7.42,
+      "dur": 0.45
+     },
+     "labelSize": 22
+    },
+    {
+     "type": "sketch",
+     "x": 360,
+     "y": 640,
+     "w": 720,
+     "h": 1280,
+     "z": 41,
+     "pencil": false,
+     "paths": [
+      {
+       "d": "M 352 316 L 378 316 M 352 336 L 378 336",
+       "at": 7.72,
+       "dur": 0.3,
+       "stroke": "#B23A2E",
+       "width": 4,
+       "opacity": 1
+      }
+     ],
+     "texts": []
+    },
+    {
+     "type": "text",
+     "text": "Ref. 5233",
+     "x": 365,
+     "y": 520,
+     "font": "banner",
+     "size": 24,
+     "color": "#16181D",
+     "paper": "#EFE8D6",
+     "upper": false,
+     "z": 42,
+     "rot": 1,
+     "in": {
+      "type": "pop",
+      "at": 7.819999999999999,
+      "dur": 0.35
+     }
+    }
+   ],
+   "dur": 8.28,
+   "silent": true,
+   "captions": "جنتا يقول: | كنا مثل الدراجة | اللي يسوقها اثنين… | إذا واحد منا | مو مقتنع، | ما نسوي الموديل. | وحتى كانوا يلبسون | نفس الساعة.",
+   "captionStart": 0.16999999999999998,
+   "captionEnd": 8.08,
+   "voice": "voice-habibi/clips/p1-7.wav",
+   "voiceAt": 0.12,
+   "transition": "fade",
+   "camera": {
+    "zoom": [
+     [
+      0,
+      1.1
+     ],
+     [
+      1.01,
+      1.0,
+      "inOutCubic"
+     ],
+     [
+      4.9,
+      1.06,
+      "inOutCubic"
+     ],
+     [
+      6.06,
+      1.0,
+      "inOutCubic"
+     ],
+     [
+      9.23,
+      1.04,
+      "inOutCubic"
+     ]
+    ],
+    "x": [
+     [
+      0,
+      420
+     ],
+     [
+      1.01,
+      300,
+      "inOutCubic"
+     ],
+     [
+      4.9,
+      420,
+      "inOutCubic"
+     ],
+     [
+      6.06,
+      360,
+      "inOutCubic"
+     ],
+     [
+      9.23,
+      365,
+      "inOutCubic"
+     ]
+    ],
+    "y": [
+     [
+      0,
+      820
+     ],
+     [
+      1.01,
+      600,
+      "inOutCubic"
+     ],
+     [
+      4.9,
+      600,
+      "inOutCubic"
+     ],
+     [
+      6.06,
+      560,
+      "inOutCubic"
+     ],
+     [
+      9.23,
+      520,
+      "inOutCubic"
+     ]
+    ]
+   },
+   "sfx": [
+    {
+     "at": 1.01,
+     "name": "whoosh",
+     "gain": -14
+    },
+    {
+     "at": 4.9,
+     "name": "clasp",
+     "gain": -12
+    },
+    {
+     "at": 7.17,
+     "name": "click",
+     "gain": -10
+    },
+    {
+     "at": 7.42,
+     "name": "click",
+     "gain": -10
+    }
+   ]
+  },
+  {
+   "theme": "ro-night",
+   "floor": false,
+   "elements": [
+    {
+     "type": "svg",
+     "w": 300,
+     "h": 330,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"300\" height=\"330\" viewBox=\"0 0 300 330\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><rect x=\"0\" y=\"18\" width=\"300\" height=\"312\" rx=\"6\" fill=\"#F3EEE1\"/><rect x=\"0\" y=\"18\" width=\"300\" height=\"74\" rx=\"6\" fill=\"#B23A2E\"/><rect x=\"0\" y=\"70\" width=\"300\" height=\"22\" fill=\"#B23A2E\"/><rect x=\"70\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><rect x=\"214\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><text x=\"150\" y=\"262\" font-family=\"var(--f-title)\" font-size=\"150\" fill=\"#16181D\" text-anchor=\"middle\">1968</text><line x1=\"24\" y1=\"292\" x2=\"276\" y2=\"292\" stroke=\"#CFC6B1\" stroke-width=\"2\"/></svg>",
+     "x": 170,
+     "y": 250,
+     "anchor": "c",
+     "z": 10,
+     "in": {
+      "type": "flip",
+      "at": 0.05,
+      "dur": 0.12
+     },
+     "scale": 0.55,
+     "out": {
+      "type": "fade",
+      "at": 0.27,
+      "dur": 0.05
+     }
+    },
+    {
+     "type": "svg",
+     "w": 300,
+     "h": 330,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"300\" height=\"330\" viewBox=\"0 0 300 330\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><rect x=\"0\" y=\"18\" width=\"300\" height=\"312\" rx=\"6\" fill=\"#F3EEE1\"/><rect x=\"0\" y=\"18\" width=\"300\" height=\"74\" rx=\"6\" fill=\"#B23A2E\"/><rect x=\"0\" y=\"70\" width=\"300\" height=\"22\" fill=\"#B23A2E\"/><rect x=\"70\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><rect x=\"214\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><text x=\"150\" y=\"262\" font-family=\"var(--f-title)\" font-size=\"150\" fill=\"#16181D\" text-anchor=\"middle\">1969</text><line x1=\"24\" y1=\"292\" x2=\"276\" y2=\"292\" stroke=\"#CFC6B1\" stroke-width=\"2\"/></svg>",
+     "x": 170,
+     "y": 250,
+     "anchor": "c",
+     "z": 11,
+     "in": {
+      "type": "flip",
+      "at": 0.25,
+      "dur": 0.12
+     },
+     "scale": 0.55,
+     "out": {
+      "type": "fade",
+      "at": 0.47000000000000003,
+      "dur": 0.05
+     }
+    },
+    {
+     "type": "svg",
+     "w": 300,
+     "h": 330,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"300\" height=\"330\" viewBox=\"0 0 300 330\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><rect x=\"0\" y=\"18\" width=\"300\" height=\"312\" rx=\"6\" fill=\"#F3EEE1\"/><rect x=\"0\" y=\"18\" width=\"300\" height=\"74\" rx=\"6\" fill=\"#B23A2E\"/><rect x=\"0\" y=\"70\" width=\"300\" height=\"22\" fill=\"#B23A2E\"/><rect x=\"70\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><rect x=\"214\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><text x=\"150\" y=\"262\" font-family=\"var(--f-title)\" font-size=\"150\" fill=\"#16181D\" text-anchor=\"middle\">1970</text><line x1=\"24\" y1=\"292\" x2=\"276\" y2=\"292\" stroke=\"#CFC6B1\" stroke-width=\"2\"/></svg>",
+     "x": 170,
+     "y": 250,
+     "anchor": "c",
+     "z": 12,
+     "in": {
+      "type": "flip",
+      "at": 0.45,
+      "dur": 0.12
+     },
+     "scale": 0.55,
+     "out": {
+      "type": "fade",
+      "at": 3.52,
+      "dur": 0.2
+     }
+    },
+    {
+     "type": "svg",
+     "w": 760,
+     "h": 1320,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"760\" height=\"1320\" viewBox=\"0 0 760 1320\" style=\"overflow:visible;\"><defs><linearGradient id=\"lb15\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#FFE3A0\" stop-opacity=\"0.1\"/><stop offset=\"1\" stop-color=\"#FFE3A0\" stop-opacity=\"0.034999999999999996\"/></linearGradient></defs><polygon points=\"760.0,0.0 560.0,0.0 40.0,1320.0 560.0,1320.0\" fill=\"url(#lb15)\"/></svg>",
+     "x": 360,
+     "y": 640,
+     "anchor": "c",
+     "z": 3,
+     "in": {
+      "type": "fade",
+      "at": 0,
+      "dur": 0.8
+     },
+     "depth": 0.9,
+     "still": true
+    },
+    {
+     "type": "svg",
+     "w": 760,
+     "h": 260,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"760\" height=\"260\" viewBox=\"0 0 760 260\" style=\"overflow:visible;\"><rect width=\"760\" height=\"260\" fill=\"#141B28\"/><rect width=\"760\" height=\"3\" fill=\"#22304A\"/></svg>",
+     "x": 360,
+     "y": 1250,
+     "anchor": "c",
+     "z": 2,
+     "depth": 0.95
+    },
+    {
+     "type": "svg",
+     "w": 560,
+     "h": 300,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"560\" height=\"300\" viewBox=\"0 0 560 300\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><rect width=\"560\" height=\"300\" rx=\"6\" fill=\"#5A4632\"/><rect x=\"12\" y=\"12\" width=\"536\" height=\"276\" fill=\"#B08A5A\"/><circle cx=\"266.5\" cy=\"192.8\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"368.5\" cy=\"52.8\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"19.8\" cy=\"115.9\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"159.8\" cy=\"234.4\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"381.4\" cy=\"177.6\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"311.0\" cy=\"193.9\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"91.3\" cy=\"133.7\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"100.3\" cy=\"260.4\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"45.3\" cy=\"236.7\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"53.7\" cy=\"200.8\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"193.3\" cy=\"124.1\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"462.2\" cy=\"19.1\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"46.3\" cy=\"262.9\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"284.7\" cy=\"38.7\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"539.2\" cy=\"271.5\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"73.9\" cy=\"129.1\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"85.9\" cy=\"99.0\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"344.6\" cy=\"58.5\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"384.7\" cy=\"28.0\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"105.1\" cy=\"235.9\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"227.1\" cy=\"127.9\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"331.1\" cy=\"143.7\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"218.6\" cy=\"22.3\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"400.4\" cy=\"277.1\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"533.4\" cy=\"194.5\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"203.6\" cy=\"112.8\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"381.1\" cy=\"197.3\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"74.6\" cy=\"77.9\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"207.3\" cy=\"153.1\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"445.0\" cy=\"150.0\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"29.0\" cy=\"237.7\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"242.8\" cy=\"155.2\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"132.2\" cy=\"130.2\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"220.5\" cy=\"224.0\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"68.6\" cy=\"163.6\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"108.7\" cy=\"203.3\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"33.6\" cy=\"89.2\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"197.1\" cy=\"187.2\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"41.7\" cy=\"138.9\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"125.1\" cy=\"90.7\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"267.4\" cy=\"274.8\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"269.9\" cy=\"274.0\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"103.1\" cy=\"265.4\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"207.8\" cy=\"65.5\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"412.2\" cy=\"262.1\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"17.6\" cy=\"87.0\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"424.0\" cy=\"107.0\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"142.5\" cy=\"16.3\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"35.3\" cy=\"182.4\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"537.4\" cy=\"285.6\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"281.9\" cy=\"20.5\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"185.5\" cy=\"228.2\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"456.6\" cy=\"187.9\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"136.1\" cy=\"157.4\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"268.0\" cy=\"184.5\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"153.7\" cy=\"271.5\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"489.8\" cy=\"58.1\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"169.0\" cy=\"251.5\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"162.1\" cy=\"270.7\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"288.1\" cy=\"203.3\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"388.9\" cy=\"72.2\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"165.6\" cy=\"83.3\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"377.5\" cy=\"202.8\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"84.1\" cy=\"255.1\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"237.6\" cy=\"79.6\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"245.6\" cy=\"280.4\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"311.9\" cy=\"183.9\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"503.4\" cy=\"275.7\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"418.6\" cy=\"127.6\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"327.0\" cy=\"259.1\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"433.9\" cy=\"171.8\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"198.9\" cy=\"114.2\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"405.5\" cy=\"167.2\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"23.1\" cy=\"207.2\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"494.8\" cy=\"231.0\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"491.5\" cy=\"261.7\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"298.6\" cy=\"228.6\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"215.9\" cy=\"40.7\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"201.9\" cy=\"98.9\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"510.9\" cy=\"201.4\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"302.1\" cy=\"183.2\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"80.4\" cy=\"159.3\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"386.7\" cy=\"121.2\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"144.7\" cy=\"124.7\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"186.2\" cy=\"200.4\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"89.4\" cy=\"38.6\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"180.2\" cy=\"203.2\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"418.1\" cy=\"193.4\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"511.3\" cy=\"113.4\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"29.8\" cy=\"146.7\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"250.0\" cy=\"62.8\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"369.1\" cy=\"106.8\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"140.8\" cy=\"103.1\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"516.1\" cy=\"16.1\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"205.7\" cy=\"90.1\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"121.1\" cy=\"131.6\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"131.2\" cy=\"263.9\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"280.6\" cy=\"203.9\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"100.4\" cy=\"140.4\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"336.7\" cy=\"243.3\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"146.9\" cy=\"139.0\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"468.8\" cy=\"240.2\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"135.0\" cy=\"160.3\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"419.0\" cy=\"121.5\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"372.2\" cy=\"194.4\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"531.3\" cy=\"164.7\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"376.2\" cy=\"109.3\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"403.6\" cy=\"101.7\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"279.9\" cy=\"112.1\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"177.4\" cy=\"51.0\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"134.1\" cy=\"162.0\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"148.0\" cy=\"26.5\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"441.5\" cy=\"91.7\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"512.0\" cy=\"176.9\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"221.0\" cy=\"251.5\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"491.3\" cy=\"101.3\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"80.9\" cy=\"188.3\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"462.3\" cy=\"179.5\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"431.3\" cy=\"126.2\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"342.7\" cy=\"85.6\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"230.5\" cy=\"117.3\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"218.6\" cy=\"122.7\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"443.4\" cy=\"60.2\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"123.1\" cy=\"83.3\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"530.6\" cy=\"156.2\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"42.2\" cy=\"241.2\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"478.7\" cy=\"237.4\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"204.9\" cy=\"213.8\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"176.5\" cy=\"51.3\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"474.3\" cy=\"240.6\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"126.4\" cy=\"253.3\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"27.1\" cy=\"97.9\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"20.9\" cy=\"60.5\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"100.9\" cy=\"208.7\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"171.8\" cy=\"65.7\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"111.9\" cy=\"98.9\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"472.7\" cy=\"179.1\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"68.4\" cy=\"200.3\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"299.3\" cy=\"136.0\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"294.7\" cy=\"191.2\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"440.0\" cy=\"151.4\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"352.1\" cy=\"141.1\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"351.3\" cy=\"119.7\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"234.7\" cy=\"154.5\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"394.4\" cy=\"89.8\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"506.0\" cy=\"147.7\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"469.1\" cy=\"201.8\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"522.8\" cy=\"199.6\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"241.1\" cy=\"124.4\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"337.3\" cy=\"219.1\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"460.4\" cy=\"49.2\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"47.2\" cy=\"43.4\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"58.8\" cy=\"29.3\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"18.5\" cy=\"81.9\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"74.2\" cy=\"200.4\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"341.6\" cy=\"276.7\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"525.0\" cy=\"217.1\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"519.2\" cy=\"21.6\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"135.3\" cy=\"265.9\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"266.9\" cy=\"70.2\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"416.6\" cy=\"129.2\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"302.9\" cy=\"99.9\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"142.6\" cy=\"37.7\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"336.8\" cy=\"273.1\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"538.9\" cy=\"222.1\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"510.6\" cy=\"112.5\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"172.6\" cy=\"265.2\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"333.3\" cy=\"196.0\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"20.7\" cy=\"76.2\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"270.6\" cy=\"212.8\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"453.3\" cy=\"220.0\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"194.7\" cy=\"117.8\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"472.8\" cy=\"283.2\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"272.0\" cy=\"67.0\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"346.2\" cy=\"159.8\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"206.4\" cy=\"76.7\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"219.0\" cy=\"180.6\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"81.5\" cy=\"161.1\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"520.6\" cy=\"216.6\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"148.1\" cy=\"127.8\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"68.4\" cy=\"214.5\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"350.2\" cy=\"61.0\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"305.6\" cy=\"176.1\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"321.1\" cy=\"116.9\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"178.8\" cy=\"110.5\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"544.7\" cy=\"103.9\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"281.3\" cy=\"139.1\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"106.0\" cy=\"122.7\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"123.0\" cy=\"101.7\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"209.3\" cy=\"109.2\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"513.0\" cy=\"94.7\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"190.8\" cy=\"192.9\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"225.3\" cy=\"154.3\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"358.5\" cy=\"34.0\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"371.3\" cy=\"41.5\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"147.1\" cy=\"234.3\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"540.4\" cy=\"197.3\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"105.3\" cy=\"133.2\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"164.4\" cy=\"242.8\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"138.1\" cy=\"67.4\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"353.5\" cy=\"187.3\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"327.7\" cy=\"144.2\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"524.2\" cy=\"138.7\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"512.5\" cy=\"120.6\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"261.6\" cy=\"111.8\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"394.4\" cy=\"218.4\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"141.2\" cy=\"157.1\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"400.5\" cy=\"150.4\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"366.4\" cy=\"181.6\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"394.0\" cy=\"110.6\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"177.1\" cy=\"20.7\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"487.7\" cy=\"228.8\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"221.6\" cy=\"277.1\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"494.1\" cy=\"55.2\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"459.1\" cy=\"128.5\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"181.2\" cy=\"84.5\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"234.2\" cy=\"28.1\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"40.8\" cy=\"45.8\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"177.5\" cy=\"57.1\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"78.8\" cy=\"240.3\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"216.0\" cy=\"147.4\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"333.9\" cy=\"267.8\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"91.7\" cy=\"76.0\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"471.7\" cy=\"261.4\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"509.7\" cy=\"157.7\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"209.3\" cy=\"65.3\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"498.5\" cy=\"222.2\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"307.5\" cy=\"229.3\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"152.7\" cy=\"159.2\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"496.3\" cy=\"43.5\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"342.4\" cy=\"64.4\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"459.7\" cy=\"242.3\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"356.6\" cy=\"132.6\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"25.4\" cy=\"148.4\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"205.1\" cy=\"122.8\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"55.3\" cy=\"264.3\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"291.7\" cy=\"166.8\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"462.1\" cy=\"257.8\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"306.4\" cy=\"162.0\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"464.6\" cy=\"115.3\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"493.0\" cy=\"20.6\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"437.5\" cy=\"157.5\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"345.1\" cy=\"283.4\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"131.0\" cy=\"124.8\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"439.4\" cy=\"217.1\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"292.9\" cy=\"225.4\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"374.3\" cy=\"250.4\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"359.9\" cy=\"112.8\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"166.6\" cy=\"36.3\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"79.6\" cy=\"25.6\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"533.0\" cy=\"52.3\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"334.7\" cy=\"50.5\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"528.0\" cy=\"158.9\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"108.2\" cy=\"238.8\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"471.6\" cy=\"280.0\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"132.8\" cy=\"123.5\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"365.5\" cy=\"90.8\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"316.9\" cy=\"204.7\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"413.8\" cy=\"238.1\" r=\"1.6\" fill=\"#9C7A4C\"/><circle cx=\"413.5\" cy=\"91.6\" r=\"1.6\" fill=\"#9C7A4C\"/></svg>",
+     "x": 360,
+     "y": 315,
+     "anchor": "c",
+     "z": 6,
+     "in": {
+      "type": "drop",
+      "at": 3.72,
+      "dur": 0.5
+     },
+     "depth": 0.85,
+     "out": {
+      "type": "fade",
+      "at": 5.73,
+      "dur": 0.4
+     }
+    },
+    {
+     "type": "image",
+     "src": "assets/early/polerouter.jpg",
+     "polaroid": true,
+     "aspect": 0.9626274065685164,
+     "label": "",
+     "w": 130,
+     "x": 200,
+     "y": 245,
+     "z": 7,
+     "rot": [
+      [
+       4.62,
+       -5
+      ],
+      [
+       5.73,
+       -6.2
+      ]
+     ],
+     "in": {
+      "type": "pop",
+      "at": 4.17,
+      "dur": 0.45
+     },
+     "labelSize": 22,
+     "out": {
+      "type": "fade",
+      "at": 5.73,
+      "dur": 0.25
+     },
+     "bottom": 12,
+     "depth": 0.85,
+     "scale": [
+      [
+       4.62,
+       1
+      ],
+      [
+       5.73,
+       1.006
+      ]
+     ]
+    },
+    {
+     "type": "svg",
+     "w": 16,
+     "h": 16,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" style=\"overflow:visible;\"><circle cx=\"8\" cy=\"8\" r=\"7\" fill=\"#B23A2E\"/><circle cx=\"6\" cy=\"6\" r=\"2\" fill=\"#FFFFFF\" opacity=\".6\"/></svg>",
+     "x": 200,
+     "y": 175,
+     "anchor": "c",
+     "z": 13,
+     "in": {
+      "type": "pop",
+      "at": 4.27,
+      "dur": 0.2
+     },
+     "depth": 0.85,
+     "out": {
+      "type": "fade",
+      "at": 5.73,
+      "dur": 0.4
+     }
+    },
+    {
+     "type": "image",
+     "src": "assets/ap/m5179.jpg",
+     "polaroid": true,
+     "aspect": 0.8676789587852495,
+     "label": "",
+     "w": 130,
+     "x": 360,
+     "y": 245,
+     "z": 8,
+     "rot": [
+      [
+       4.77,
+       3
+      ],
+      [
+       5.73,
+       4.2
+      ]
+     ],
+     "in": {
+      "type": "pop",
+      "at": 4.32,
+      "dur": 0.45
+     },
+     "labelSize": 22,
+     "out": {
+      "type": "fade",
+      "at": 5.73,
+      "dur": 0.25
+     },
+     "bottom": 12,
+     "depth": 0.85,
+     "scale": [
+      [
+       4.77,
+       1
+      ],
+      [
+       5.73,
+       1.006
+      ]
+     ]
+    },
+    {
+     "type": "svg",
+     "w": 16,
+     "h": 16,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" style=\"overflow:visible;\"><circle cx=\"8\" cy=\"8\" r=\"7\" fill=\"#B23A2E\"/><circle cx=\"6\" cy=\"6\" r=\"2\" fill=\"#FFFFFF\" opacity=\".6\"/></svg>",
+     "x": 360,
+     "y": 175,
+     "anchor": "c",
+     "z": 13,
+     "in": {
+      "type": "pop",
+      "at": 4.42,
+      "dur": 0.2
+     },
+     "depth": 0.85,
+     "out": {
+      "type": "fade",
+      "at": 5.73,
+      "dur": 0.4
+     }
+    },
+    {
+     "type": "image",
+     "src": "assets/ap/m5182.jpg",
+     "polaroid": true,
+     "aspect": 0.8676789587852495,
+     "label": "",
+     "w": 130,
+     "x": 520,
+     "y": 245,
+     "z": 9,
+     "rot": [
+      [
+       4.92,
+       -2
+      ],
+      [
+       5.73,
+       -3.2
+      ]
+     ],
+     "in": {
+      "type": "pop",
+      "at": 4.47,
+      "dur": 0.45
+     },
+     "labelSize": 22,
+     "out": {
+      "type": "fade",
+      "at": 5.73,
+      "dur": 0.25
+     },
+     "bottom": 12,
+     "depth": 0.85,
+     "scale": [
+      [
+       4.92,
+       1
+      ],
+      [
+       5.73,
+       1.006
+      ]
+     ]
+    },
+    {
+     "type": "svg",
+     "w": 16,
+     "h": 16,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" style=\"overflow:visible;\"><circle cx=\"8\" cy=\"8\" r=\"7\" fill=\"#B23A2E\"/><circle cx=\"6\" cy=\"6\" r=\"2\" fill=\"#FFFFFF\" opacity=\".6\"/></svg>",
+     "x": 520,
+     "y": 175,
+     "anchor": "c",
+     "z": 13,
+     "in": {
+      "type": "pop",
+      "at": 4.569999999999999,
+      "dur": 0.2
+     },
+     "depth": 0.85,
+     "out": {
+      "type": "fade",
+      "at": 5.73,
+      "dur": 0.4
+     }
+    },
+    {
+     "type": "image",
+     "src": "assets/crop/m8311_open.jpg",
+     "polaroid": true,
+     "aspect": 0.7301587301587301,
+     "label": "",
+     "w": 130,
+     "x": 280,
+     "y": 385,
+     "z": 10,
+     "rot": [
+      [
+       5.07,
+       5
+      ],
+      [
+       5.73,
+       6.2
+      ]
+     ],
+     "in": {
+      "type": "pop",
+      "at": 4.62,
+      "dur": 0.45
+     },
+     "labelSize": 22,
+     "out": {
+      "type": "fade",
+      "at": 5.73,
+      "dur": 0.25
+     },
+     "bottom": 12,
+     "depth": 0.85,
+     "scale": [
+      [
+       5.07,
+       1
+      ],
+      [
+       5.73,
+       1.006
+      ]
+     ]
+    },
+    {
+     "type": "svg",
+     "w": 16,
+     "h": 16,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" style=\"overflow:visible;\"><circle cx=\"8\" cy=\"8\" r=\"7\" fill=\"#B23A2E\"/><circle cx=\"6\" cy=\"6\" r=\"2\" fill=\"#FFFFFF\" opacity=\".6\"/></svg>",
+     "x": 280,
+     "y": 315,
+     "anchor": "c",
+     "z": 13,
+     "in": {
+      "type": "pop",
+      "at": 4.72,
+      "dur": 0.2
+     },
+     "depth": 0.85,
+     "out": {
+      "type": "fade",
+      "at": 5.73,
+      "dur": 0.4
+     }
+    },
+    {
+     "type": "image",
+     "src": "assets/ap/m5233.jpg",
+     "polaroid": true,
+     "aspect": 0.8676789587852495,
+     "label": "",
+     "w": 130,
+     "x": 440,
+     "y": 385,
+     "z": 11,
+     "rot": -3,
+     "in": {
+      "type": "pop",
+      "at": 4.77,
+      "dur": 0.45
+     },
+     "labelSize": 22,
+     "out": {
+      "type": "fade",
+      "at": 5.73,
+      "dur": 0.25
+     },
+     "bottom": 12,
+     "depth": 0.85
+    },
+    {
+     "type": "svg",
+     "w": 16,
+     "h": 16,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" style=\"overflow:visible;\"><circle cx=\"8\" cy=\"8\" r=\"7\" fill=\"#B23A2E\"/><circle cx=\"6\" cy=\"6\" r=\"2\" fill=\"#FFFFFF\" opacity=\".6\"/></svg>",
+     "x": 440,
+     "y": 315,
+     "anchor": "c",
+     "z": 13,
+     "in": {
+      "type": "pop",
+      "at": 4.869999999999999,
+      "dur": 0.2
+     },
+     "depth": 0.85,
+     "out": {
+      "type": "fade",
+      "at": 5.73,
+      "dur": 0.4
+     }
+    },
+    {
+     "type": "sketch",
+     "x": 360,
+     "y": 640,
+     "w": 720,
+     "h": 1280,
+     "z": 14,
+     "pencil": false,
+     "paths": [
+      {
+       "d": "M 200 175 L 360 175 L 520 175 L 280 315 L 440 315",
+       "at": 5.0200000000000005,
+       "dur": 1.0,
+       "stroke": "#B23A2E",
+       "width": 2,
+       "opacity": 0.9
+      }
+     ],
+     "texts": [],
+     "depth": 0.85,
+     "out": {
+      "type": "fade",
+      "at": 5.73,
+      "dur": 0.4
+     }
+    },
+    {
+     "type": "svg",
+     "w": 266,
+     "h": 76,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"266\" height=\"76\" viewBox=\"0 0 266 76\" style=\"overflow:visible;\"><defs><filter id=\"se16\" x=\"-50%\" y=\"-50%\" width=\"200%\" height=\"200%\"><feGaussianBlur stdDeviation=\"6\"/></filter></defs><ellipse cx=\"133\" cy=\"38\" rx=\"109\" ry=\"14\" fill=\"#000\" opacity=\"0.32\" filter=\"url(#se16)\"/></svg>",
+     "x": 360,
+     "y": 1174,
+     "anchor": "c",
+     "z": 19,
+     "in": {
+      "type": "fade",
+      "at": 1.94,
+      "dur": 0.5
+     },
+     "still": true
+    },
+    {
+     "type": "cutout",
+     "x": 360,
+     "y": [
+      [
+       0,
+       1180
+      ],
+      [
+       8.100000000000001,
+       1180
+      ],
+      [
+       8.25,
+       1172
+      ],
+      [
+       8.450000000000001,
+       1180
+      ]
+     ],
+     "h": 700,
+     "aspect": 0.2848,
+     "edge": 0,
+     "z": 20,
+     "in": {
+      "type": "rise",
+      "at": 1.94,
+      "dur": 0.5
+     },
+     "src": "assets/gen/young_think_cut.png",
+     "person": true,
+     "headBand": 0.2,
+     "idle": {
+      "type": "pulse",
+      "amp": 0.005,
+      "speed": 0.22,
+      "from": 2.44
+     }
+    },
+    {
+     "type": "text",
+     "text": "10 أبريل",
+     "x": 170,
+     "y": 250,
+     "font": "banner",
+     "size": 34,
+     "color": "#16181D",
+     "paper": "#EFE8D6",
+     "upper": false,
+     "z": 35,
+     "rot": -2,
+     "in": {
+      "type": "pop",
+      "at": 5.73,
+      "dur": 0.35
+     },
+     "out": {
+      "type": "fade",
+      "at": 8.65,
+      "dur": 0.2
+     }
+    },
+    {
+     "type": "svg",
+     "w": 150,
+     "h": 150,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"150\" height=\"150\" viewBox=\"0 0 150 150\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><circle cx=\"75\" cy=\"75\" r=\"71\" fill=\"#F3EEE1\" stroke=\"#2A2C31\" stroke-width=\"8\"/><rect x=\"73.0\" y=\"10\" width=\"4\" height=\"14\" fill=\"#2A2C31\" transform=\"rotate(0 75 75)\"/><rect x=\"73.0\" y=\"10\" width=\"4\" height=\"8\" fill=\"#2A2C31\" transform=\"rotate(30 75 75)\"/><rect x=\"73.0\" y=\"10\" width=\"4\" height=\"8\" fill=\"#2A2C31\" transform=\"rotate(60 75 75)\"/><rect x=\"73.0\" y=\"10\" width=\"4\" height=\"14\" fill=\"#2A2C31\" transform=\"rotate(90 75 75)\"/><rect x=\"73.0\" y=\"10\" width=\"4\" height=\"8\" fill=\"#2A2C31\" transform=\"rotate(120 75 75)\"/><rect x=\"73.0\" y=\"10\" width=\"4\" height=\"8\" fill=\"#2A2C31\" transform=\"rotate(150 75 75)\"/><rect x=\"73.0\" y=\"10\" width=\"4\" height=\"14\" fill=\"#2A2C31\" transform=\"rotate(180 75 75)\"/><rect x=\"73.0\" y=\"10\" width=\"4\" height=\"8\" fill=\"#2A2C31\" transform=\"rotate(210 75 75)\"/><rect x=\"73.0\" y=\"10\" width=\"4\" height=\"8\" fill=\"#2A2C31\" transform=\"rotate(240 75 75)\"/><rect x=\"73.0\" y=\"10\" width=\"4\" height=\"14\" fill=\"#2A2C31\" transform=\"rotate(270 75 75)\"/><rect x=\"73.0\" y=\"10\" width=\"4\" height=\"8\" fill=\"#2A2C31\" transform=\"rotate(300 75 75)\"/><rect x=\"73.0\" y=\"10\" width=\"4\" height=\"8\" fill=\"#2A2C31\" transform=\"rotate(330 75 75)\"/></svg>",
+     "x": 590,
+     "y": 520,
+     "anchor": "c",
+     "z": 11,
+     "in": {
+      "type": "pop",
+      "at": 6.430000000000001,
+      "dur": 0.4
+     }
+    },
+    {
+     "type": "svg",
+     "w": 150,
+     "h": 150,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"150\" height=\"150\" viewBox=\"0 0 150 150\" style=\"overflow:visible;\"><rect x=\"72.0\" y=\"36.0\" width=\"6\" height=\"45.0\" rx=\"2\" fill=\"#16181D\"/></svg>",
+     "x": 590,
+     "y": 520,
+     "anchor": "c",
+     "z": 12,
+     "in": {
+      "type": "pop",
+      "at": 6.430000000000001,
+      "dur": 0.4
+     },
+     "rot": [
+      [
+       6.73,
+       115.0
+      ],
+      [
+       7.9,
+       120.0,
+       "inOutCubic"
+      ]
+     ]
+    },
+    {
+     "type": "svg",
+     "w": 150,
+     "h": 150,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"150\" height=\"150\" viewBox=\"0 0 150 150\" style=\"overflow:visible;\"><rect x=\"73.0\" y=\"18.0\" width=\"4\" height=\"63.0\" rx=\"2\" fill=\"#16181D\"/></svg>",
+     "x": 590,
+     "y": 520,
+     "anchor": "c",
+     "z": 12,
+     "in": {
+      "type": "pop",
+      "at": 6.430000000000001,
+      "dur": 0.4
+     },
+     "rot": [
+      [
+       6.73,
+       300
+      ],
+      [
+       7.9,
+       360.0,
+       "inOutCubic"
+      ]
+     ]
+    },
+    {
+     "type": "svg",
+     "w": 260,
+     "h": 162,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"260\" height=\"162\" viewBox=\"0 0 260 162\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><path d=\"M 20 150 L 46 60 Q 50 46 66 46 L 194 46 Q 210 46 214 60 L 240 150 Q 242 162 228 162 L 32 162 Q 18 162 20 150 Z\" fill=\"#2A2C31\"/><circle cx=\"130\" cy=\"104\" r=\"44\" fill=\"#EDE6D3\"/><circle cx=\"145.0\" cy=\"78.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"156.0\" cy=\"89.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"160.0\" cy=\"104.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"156.0\" cy=\"119.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"145.0\" cy=\"130.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"130.0\" cy=\"134.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"115.0\" cy=\"130.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"104.0\" cy=\"119.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"100.0\" cy=\"104.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"104.0\" cy=\"89.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"115.0\" cy=\"78.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"130\" cy=\"104\" r=\"14\" fill=\"#2A2C31\"/><rect x=\"56\" y=\"30\" width=\"22\" height=\"22\" rx=\"4\" fill=\"#EDE6D3\"/><rect x=\"182\" y=\"30\" width=\"22\" height=\"22\" rx=\"4\" fill=\"#EDE6D3\"/><g transform=\"translate(0 -14)\"><path d=\"M 10 30 Q 0 0 30 4 L 50 10 Q 62 14 70 14 L 190 14 Q 198 14 210 10 L 230 4 Q 260 0 250 30 L 236 44 Q 226 50 214 40 L 200 30 L 60 30 L 46 40 Q 34 50 24 44 Z\" fill=\"#2A2C31\"/></g></svg>",
+     "x": 580,
+     "y": 980,
+     "anchor": "c",
+     "z": 59,
+     "in": {
+      "type": "pop",
+      "at": 7.83,
+      "dur": 0.3
+     },
+     "scale": 0.75,
+     "idle": {
+      "type": "shake",
+      "amp": 3,
+      "speed": 9,
+      "from": 8.05,
+      "until": 8.8
+     },
+     "out": {
+      "type": "fade",
+      "at": 9.32,
+      "dur": 0.01
+     }
+    },
+    {
+     "type": "svg",
+     "w": 260,
+     "h": 80,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"260\" height=\"80\" viewBox=\"0 0 260 80\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><path d=\"M 10 40 q -14 24 0 48\" stroke=\"#EFE8D6\" stroke-width=\"5\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M -6 26 q -20 38 0 76\" stroke=\"#EFE8D6\" stroke-width=\"5\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M 250 40 q 14 24 0 48\" stroke=\"#EFE8D6\" stroke-width=\"5\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M 266 26 q 20 38 0 76\" stroke=\"#EFE8D6\" stroke-width=\"5\" fill=\"none\" stroke-linecap=\"round\"/></svg>",
+     "x": 580,
+     "y": 905.0,
+     "anchor": "c",
+     "z": 60,
+     "in": {
+      "type": "pop",
+      "at": 8.05,
+      "dur": 0.2
+     },
+     "scale": 0.75,
+     "idle": {
+      "type": "pulse",
+      "amp": 0.08,
+      "speed": 6
+     },
+     "out": {
+      "type": "fade",
+      "at": 8.8,
+      "dur": 0.15
+     }
+    },
+    {
+     "type": "svg",
+     "w": 260,
+     "h": 162,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"260\" height=\"162\" viewBox=\"0 0 260 162\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><path d=\"M 20 150 L 46 60 Q 50 46 66 46 L 194 46 Q 210 46 214 60 L 240 150 Q 242 162 228 162 L 32 162 Q 18 162 20 150 Z\" fill=\"#2A2C31\"/><circle cx=\"130\" cy=\"104\" r=\"44\" fill=\"#EDE6D3\"/><circle cx=\"145.0\" cy=\"78.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"156.0\" cy=\"89.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"160.0\" cy=\"104.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"156.0\" cy=\"119.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"145.0\" cy=\"130.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"130.0\" cy=\"134.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"115.0\" cy=\"130.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"104.0\" cy=\"119.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"100.0\" cy=\"104.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"104.0\" cy=\"89.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"115.0\" cy=\"78.0\" r=\"7\" fill=\"#2A2C31\"/><circle cx=\"130\" cy=\"104\" r=\"14\" fill=\"#2A2C31\"/><rect x=\"56\" y=\"30\" width=\"22\" height=\"22\" rx=\"4\" fill=\"#EDE6D3\"/><rect x=\"182\" y=\"30\" width=\"22\" height=\"22\" rx=\"4\" fill=\"#EDE6D3\"/><g transform=\"translate(0 -14)\"><path d=\"M 10 30 Q 0 0 30 4 L 50 10 Q 62 14 70 14 L 190 14 Q 198 14 210 10 L 230 4 Q 260 0 250 30 L 236 44 Q 226 50 214 40 L 200 30 L 60 30 L 46 40 Q 34 50 24 44 Z\" fill=\"#2A2C31\"/></g></svg>",
+     "x": 580,
+     "y": 980,
+     "anchor": "c",
+     "z": 59,
+     "in": {
+      "type": "none",
+      "at": 9.32,
+      "dur": 0.3
+     },
+     "scale": 0.75,
+     "idle": {
+      "type": "shake",
+      "amp": 3,
+      "speed": 9,
+      "from": 9.32
+     }
+    },
+    {
+     "type": "svg",
+     "w": 260,
+     "h": 80,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"260\" height=\"80\" viewBox=\"0 0 260 80\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><path d=\"M 10 40 q -14 24 0 48\" stroke=\"#EFE8D6\" stroke-width=\"5\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M -6 26 q -20 38 0 76\" stroke=\"#EFE8D6\" stroke-width=\"5\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M 250 40 q 14 24 0 48\" stroke=\"#EFE8D6\" stroke-width=\"5\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M 266 26 q 20 38 0 76\" stroke=\"#EFE8D6\" stroke-width=\"5\" fill=\"none\" stroke-linecap=\"round\"/></svg>",
+     "x": 580,
+     "y": 905.0,
+     "anchor": "c",
+     "z": 60,
+     "in": {
+      "type": "pop",
+      "at": 9.32,
+      "dur": 0.2
+     },
+     "scale": 0.75,
+     "idle": {
+      "type": "pulse",
+      "amp": 0.08,
+      "speed": 6
+     }
+    },
+    {
+     "type": "svg",
+     "w": 760,
+     "h": 1320,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"760\" height=\"1320\" viewBox=\"0 0 760 1320\" style=\"overflow:visible;\"><rect width=\"760\" height=\"1320\" fill=\"#000\"/></svg>",
+     "x": 360,
+     "y": 640,
+     "anchor": "c",
+     "z": 58,
+     "depth": 0,
+     "still": true,
+     "opacity": [
+      [
+       8.88,
+       0
+      ],
+      [
+       9.4,
+       0.55
+      ]
+     ]
+    },
+    {
+     "type": "text",
+     "text": "يتبع…",
+     "x": 360,
+     "y": 1010,
+     "font": "banner",
+     "size": 46,
+     "color": "#16181D",
+     "paper": "#EFE8D6",
+     "upper": false,
+     "z": 61,
+     "rot": -2,
+     "in": {
+      "type": "pop",
+      "at": 9.1,
+      "dur": 0.35
+     },
+     "depth": 0
+    },
+    {
+     "type": "text",
+     "text": "الجزء الثاني: الرويال أوك",
+     "x": 360,
+     "y": 1080,
+     "font": "banner",
+     "size": 30,
+     "color": "#16181D",
+     "paper": "#EFE8D6",
+     "upper": false,
+     "z": 61,
+     "rot": 1,
+     "in": {
+      "type": "pop",
+      "at": 9.25,
+      "dur": 0.35
+     },
+     "depth": 0
+    },
+    {
+     "type": "text",
+     "text": "Archive images: © Audemars Piguet (AP Chronicles). Georges Golay, 1966: © Épreuves internationales de ski Le Brassus (J. Piguet, 2017). Polerouter (Watch15, CC BY-SA 4.0), Omega Constellation (Noop1958, CC BY-SA 3.0), SAS advertisement 1954: Wikimedia Commons. Portrait of Gérald Genta: Studio Luxury Griffes (CC BY-SA 3.0). Paper characters are AI illustrations (Higgsfield).",
+     "x": 360,
+     "y": 110,
+     "font": "ui",
+     "size": 17,
+     "color": "#CFC8B8",
+     "upper": false,
+     "w": 640,
+     "z": 70,
+     "depth": 0,
+     "in": {
+      "type": "fade",
+      "at": 9.55,
+      "dur": 0.4
+     }
+    }
+   ],
+   "dur": 11.52,
+   "silent": true,
+   "captions": "أبريل | ألف وتسعمية وسبعين. | جنتا عمره | ثمانية وثلاثين، | ووراه ستطعش سنة | من التصاميم. | وفي يوم عشرة، | الساعة أربعة العصر… | تلفونه يرن.",
+   "captionStart": 0.16999999999999998,
+   "captionEnd": 8.92,
+   "voice": "voice-habibi/clips/p1-8.wav",
+   "voiceAt": 0.12,
+   "transition": "fade",
+   "captionClear": 9.02,
+   "camera": {
+    "zoom": [
+     [
+      0,
+      1.0
+     ],
+     [
+      3.72,
+      1.0,
+      "inOutCubic"
+     ],
+     [
+      5.53,
+      1.06,
+      "inOutCubic"
+     ],
+     [
+      6.73,
+      1.0,
+      "inOutCubic"
+     ],
+     [
+      7.9,
+      1.0
+     ],
+     [
+      8.95,
+      1.12,
+      "inOutCubic"
+     ],
+     [
+      14.48,
+      1.16,
+      "inOutCubic"
+     ]
+    ],
+    "x": [
+     [
+      0,
+      360
+     ],
+     [
+      3.72,
+      360,
+      "inOutCubic"
+     ],
+     [
+      5.53,
+      360,
+      "inOutCubic"
+     ],
+     [
+      6.73,
+      400,
+      "inOutCubic"
+     ],
+     [
+      7.9,
+      420
+     ],
+     [
+      8.95,
+      440,
+      "inOutCubic"
+     ],
+     [
+      14.48,
+      450,
+      "inOutCubic"
+     ]
+    ],
+    "y": [
+     [
+      0,
+      640
+     ],
+     [
+      3.72,
+      560,
+      "inOutCubic"
+     ],
+     [
+      5.53,
+      500,
+      "inOutCubic"
+     ],
+     [
+      6.73,
+      620,
+      "inOutCubic"
+     ],
+     [
+      7.9,
+      640
+     ],
+     [
+      8.95,
+      720,
+      "inOutCubic"
+     ],
+     [
+      14.48,
+      740,
+      "inOutCubic"
+     ]
+    ]
+   },
+   "sfx": [
+    {
+     "at": 0.05,
+     "name": "paper_tear",
+     "gain": -15
+    },
+    {
+     "at": 0.25,
+     "name": "paper_tear",
+     "gain": -16
+    },
+    {
+     "at": 0.45,
+     "name": "paper_tear",
+     "gain": -15
+    },
+    {
+     "at": 3.72,
+     "name": "paper_place",
+     "gain": -11
+    },
+    {
+     "at": 4.17,
+     "name": "click",
+     "gain": -16
+    },
+    {
+     "at": 4.32,
+     "name": "click",
+     "gain": -16
+    },
+    {
+     "at": 4.47,
+     "name": "click",
+     "gain": -16
+    },
+    {
+     "at": 4.62,
+     "name": "click",
+     "gain": -16
+    },
+    {
+     "at": 4.77,
+     "name": "click",
+     "gain": -16
+    },
+    {
+     "at": 6.73,
+     "name": "tick",
+     "gain": -14
+    },
+    {
+     "at": 7.13,
+     "name": "tick",
+     "gain": -14
+    },
+    {
+     "at": 7.53,
+     "name": "tick",
+     "gain": -14
+    },
+    {
+     "at": 7.93,
+     "name": "tick",
+     "gain": -14
+    },
+    {
+     "at": 8.05,
+     "name": "ring",
+     "gain": -8
+    },
+    {
+     "at": 9.32,
+     "name": "ring",
+     "gain": -9
+    }
+   ]
+  },
+  {
+   "theme": "ro-black",
+   "floor": false,
+   "elements": [
+    {
+     "type": "svg",
+     "w": 760,
+     "h": 1320,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"760\" height=\"1320\" viewBox=\"0 0 760 1320\"><rect width=\"760\" height=\"1320\" fill=\"#111111\"/></svg>",
+     "x": 360,
+     "y": 640,
+     "anchor": "c",
+     "z": 1,
+     "depth": 0,
+     "still": true
+    },
+    {
+     "type": "reveal",
+     "src": "../../public/icon-512.png",
+     "x": 360,
+     "y": 560,
+     "w": 380,
+     "h": 380,
+     "z": 20,
+     "reveal": [
+      [
+       0.3,
+       0
+      ],
+      [
+       2.3,
+       1,
+       "inOutSine"
+      ]
+     ]
+    },
+    {
+     "type": "svg",
+     "w": 40,
+     "h": 300,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"40\" height=\"300\" viewBox=\"0 0 40 300\"><rect x=\"16\" y=\"0\" width=\"8\" height=\"300\" rx=\"4\" fill=\"#C9A35F\"/><circle cx=\"20\" cy=\"290\" r=\"14\" fill=\"#C9A35F\"/></svg>",
+     "x": 360,
+     "y": 560,
+     "anchor": "b",
+     "z": 30,
+     "still": true,
+     "rot": [
+      [
+       0.3,
+       0
+      ],
+      [
+       2.3,
+       360,
+       "inOutSine"
+      ]
+     ],
+     "opacity": [
+      [
+       0.3,
+       0
+      ],
+      [
+       0.4,
+       1
+      ],
+      [
+       2.3,
+       1
+      ],
+      [
+       2.6,
+       0
+      ]
+     ]
+    },
+    {
+     "type": "svg",
+     "w": 760,
+     "h": 1320,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"760\" height=\"1320\" viewBox=\"0 0 760 1320\"><rect width=\"760\" height=\"1320\" fill=\"#000000\"/></svg>",
+     "x": 360,
+     "y": 640,
+     "anchor": "c",
+     "z": 90,
+     "depth": 0,
+     "still": true,
+     "opacity": [
+      [
+       3.6,
+       0
+      ],
+      [
+       4.5,
+       1
+      ]
+     ]
+    }
+   ],
+   "dur": 4.5,
+   "silent": true,
+   "transition": "fade",
+   "endcard": "timekeeper",
+   "sfx": [
+    {
+     "at": 0.3,
+     "name": "tick",
+     "gain": -12
+    },
+    {
+     "at": 3.6,
+     "name": "tick_pair",
+     "gain": -8
+    }
+   ],
+   "camera": {
+    "zoom": [
+     [
+      0,
+      1.0
+     ],
+     [
+      4.5,
+      1.08
+     ]
+    ],
+    "x": [
+     [
+      0,
+      360
+     ]
+    ],
+    "y": [
+     [
+      0,
+      600
+     ]
+    ]
+   }
+  },
+  {
+   "theme": "ro-black",
+   "floor": false,
+   "elements": [
+    {
+     "type": "svg",
+     "w": 760,
+     "h": 1320,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"760\" height=\"1320\" viewBox=\"0 0 760 1320\"><rect width=\"760\" height=\"1320\" fill=\"#000000\"/></svg>",
+     "x": 360,
+     "y": 640,
+     "anchor": "c",
+     "z": 1,
+     "depth": 0,
+     "still": true
+    }
+   ],
+   "dur": 1.3,
+   "silent": true,
+   "transition": "cut",
+   "endcard": "timekeeper"
+  }
+ ]
+}

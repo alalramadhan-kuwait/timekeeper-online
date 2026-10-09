@@ -1,0 +1,10 @@
+# Real photographs, character art, narration and renders stay out of git. Share them through the team's own storage.
+assets/*
+!assets/README.md
+renders/
+*.mp4
+*.wav
+*.mp3
+!sfx/.gitkeep
+__pycache__/
+opening-preview.json

@@ -1,0 +1,7 @@
+Fonts bundled so renders work offline. All are licensed under the SIL Open Font License 1.1
+(https://openfontlicense.org). Source: Fontsource packages.
+  Inter Tight (800, 900)  - banner headlines, Latin
+  Cairo (700, 800)        - banner and captions, Arabic + Latin
+  Fraunces (700)          - word-tag captions, Latin
+  Anton (400)             - big title splashes
+  JetBrains Mono (500)    - terminal chips

@@ -1,0 +1,6 @@
+{
+ "_note": "Train / validation / final-test split by recording session (videos uploaded within 7 days of each other = one session). No session appears in two sets. 'val' picks checkpoints; 'final' is only scored once, at the end.",
+ "val":   ["qCkq2veIlsI", "mak4c9sGh38", "TlGXbHWi-vU"],
+ "final": ["vTah72jkpNo", "SI6mbpgUIME", "aaVA-8RN_fc"],
+ "minutes": {"train": 108.9, "val": 7.2, "final": 7.7}
+}

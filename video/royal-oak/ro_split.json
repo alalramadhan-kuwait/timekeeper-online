@@ -1,0 +1,8 @@
+{"name": "ro_split",
+ "note": "Syllable-split test chosen by the owner. Each form is tested as Royal alone, then Oak alone, then the full name. Forms 6 and 7 join the two words, so their Royal/Oak parts are the nearest cut of the written form.",
+ "target": "Royal = ROY + əl, Oak = OHK (for the listener only, never sent to the model)",
+ "forms": ["رُويْ يَلْ أُوك", "رُويْ يَلْ أَوْك", "رُويْـل أُوك", "رُويْ. يَلْ. أُوك", "رُويْ، يَلْ أُوك", "رُويْ يَلُوك", "رُويْلُوك", "رُويْ يَلْ أُوْك"],
+ "groups": {
+   "royal": ["رُويْ يَلْ", "رُويْ يَلْ", "رُويْـل", "رُويْ. يَلْ.", "رُويْ، يَلْ", "رُويْ يَل", "رُويْل", "رُويْ يَلْ"],
+   "oak":   ["أُوك", "أَوْك", "أُوك", "أُوك", "أُوك", "لُوك", "لُوك", "أُوْك"],
+   "full":  ["رُويْ يَلْ أُوك", "رُويْ يَلْ أَوْك", "رُويْـل أُوك", "رُويْ. يَلْ. أُوك", "رُويْ، يَلْ أُوك", "رُويْ يَلُوك", "رُويْلُوك", "رُويْ يَلْ أُوْك"]}}

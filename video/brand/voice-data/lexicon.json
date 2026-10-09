@@ -1,0 +1,16 @@
+{
+ "_note": "Pronunciation lexicon for the TK voice, picked by Ali by ear (spelling test, 2026-10-07). Applied to any text before the model reads it (whole-word replace). The model reads گ as the Kuwaiti g and تش as ch; it never heard چ in training.",
+ "words": {
+  "چذي": "تشذي",
+  "بالطريق": "بالطريج",
+  "الطريق": "الطريج",
+  "رقم": "رگم",
+  "بقطر": "بگطر",
+  "قرر": "قرّر"
+ },
+ "unresolved": [
+  "باچر",
+  "قبل (final ل clipped: testing no-trim)",
+  "قرر (ر not trilled)"
+ ]
+}
