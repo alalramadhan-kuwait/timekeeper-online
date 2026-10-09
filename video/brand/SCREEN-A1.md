@@ -118,3 +118,26 @@ The estimate comes from `channel-videos.txt` (221 videos, 162 h) and the 31 down
 - More hours do not fix labels: Whisper's MSA-leaning transcripts were the main cause of V1–V5's pronunciation errors.
 
 **How to firm up the estimate later:** download a stratified sample on the Mac (10 guest and 10 unseen solo videos) and run the same screening. No training is involved.
+
+## 5. Standing instructions (user, 2026-10-09)
+
+- **Primary candidate:** Fahed → Chatterbox VC, raw (`voice-src/screen/fahed/vc/`).
+- **Processed versions:** both are kept for comparison. Pitch, tempo and EQ are not applied by default:
+  - `final/`: the calibrated run;
+  - `fahed-run1/final/`: the run with the reader's settings.
+- **What does not change:** the voice pipeline (until the listening feedback is in) and the recorded-mode workflow.
+- **Not started:** no training, no Qwen fine-tuning, no new recordings.
+- **Backups:** once the Mac and Drive copies are uploaded, check that every part is present (Drive md5 against PARTS.md5) and that the archive restores.
+
+## 6. Decision rule, fixed before the listening answers
+
+The listening answers lead to exactly one outcome, with no open-ended follow-up.
+
+- **Pronunciation errors** are words marked on Fahed raw, plus words marked as broken after conversion.
+- **"Raw VC is the version"** applies when the post step was judged «قبل» or «نفس الشي» in at least 5 of 9 sentences. Otherwise the processed version is judged.
+
+| Decision | When |
+|---|---|
+| **ACCEPT** as the automatic engine, moving on to the larger unseen test | Pronunciation: ≥ 8/9 with no dialect error, and kp02, kp14 and kp17 all right. Identity: ≥ 7/9 "Ali". Blind A/B against the recorded mode: Fahed not judged worse in all 3. |
+| **ONE TARGETED CORRECTION**, then one re-check of only the affected sentences | The failures share a single cause that can be fixed without training. Examples: the same word or sound wrong on Fahed raw, fixable by respelling or SSML; or errors that appear only after conversion. Identity must already pass. |
+| **REJECT** Fahed → VC (recorded mode stays the production path) | Identity < 6/9, or pronunciation errors in ≥ 3 sentences with different causes, or Fahed judged worse in all 3 blind pairs and unusable in any. |
