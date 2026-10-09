@@ -8,6 +8,7 @@ export interface WorldGame {
   setInsets: (top: number, bottom: number) => void;
   zoomBy: (f: number) => void;
   clearSelection: () => void;
+  reveal: (top: number, right: number, bottom: number) => void;
   destroy: () => void;
 }
 
@@ -54,6 +55,7 @@ export function createGame(parent: HTMLElement, model: WorldModel, hooks: SceneH
     setInsets: (t, b) => withScene((s) => s.setInsets(t, b)),
     zoomBy: (f) => withScene((s) => s.zoomBy(f)),
     clearSelection: () => withScene((s) => s.clearSelection()),
+    reveal: (t, r, b) => withScene((s) => s.reveal(t, r, b)),
     destroy: () => { ro.disconnect(); game.destroy(true); },
   };
 }

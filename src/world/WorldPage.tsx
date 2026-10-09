@@ -32,6 +32,7 @@ export default function WorldPage({ onClose }: { onClose?: () => void }) {
   const close = onClose ?? (() => navigate('/'));
   const host = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLElement>(null);
+  const panelRef = useRef<HTMLElement>(null);
   const game = useRef<WorldGame | null>(null);
   const [snap, setSnap] = useState<Snapshot | null>(null);
   const [err, setErr] = useState<string | null>(null);
@@ -95,6 +96,22 @@ export default function WorldPage({ onClose }: { onClose?: () => void }) {
   }, []);
 
   const view = stack[stack.length - 1] ?? null;
+  // keep what was tapped in sight beside the side panel, or above the phone sheet
+  const first = stack[0];
+  useEffect(() => {
+    if (!first) return;
+    const a = panelRef.current;
+    if (!a) return;
+    // measured again as the panel grows, since details arrive after it opens
+    const ro = new ResizeObserver(() => {
+      const h = headerRef.current;
+      if (!h) return;
+      const wide = window.innerWidth >= 640;
+      game.current?.reveal(h.offsetTop + h.offsetHeight, wide ? a.offsetWidth + 12 : 0, wide ? 0 : a.offsetHeight);
+    });
+    ro.observe(a);
+    return () => ro.disconnect();
+  }, [first]);
   const open = useCallback((v: View) => setStack((s) => [...s, v]), []);
   const closePanel = () => { setStack([]); game.current?.clearSelection(); };
   const cabinets = useMemo(() => model?.cabinets.reduce<Snapshot['floor']['shelves'][]>((a, c) => { a[c.index] = c.shelves; return a; }, []) ?? [], [model]);
@@ -165,7 +182,7 @@ export default function WorldPage({ onClose }: { onClose?: () => void }) {
           ))}
         </nav>
         {snap && (
-          <div className="pointer-events-auto -mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1 [scrollbar-width:none]">
+          <div className={`pointer-events-auto -mx-1 ${view ? 'hidden sm:flex' : 'flex'} gap-1.5 overflow-x-auto px-1 pb-1 [scrollbar-width:none]`}>
             <Kpi label="Recorded unpaid" value={kd(snap.payments.total)} sub={`${num(snap.payments.pos)} POs`} onClick={() => { game.current?.focus('office'); setRoom('office'); }} />
             <Kpi label="Open POs" value={kd0(snap.commitments.open_po_value)} sub={`${num(snap.commitments.open_pos)} POs`} onClick={() => { game.current?.focus('dock'); setRoom('dock'); }} />
             <Kpi label="Stock at cost" value={kd0(Object.values(snap.floor.totals).reduce((n, t) => n + (t?.cost_value ?? 0), 0))} sub="owned, consignment, pre-owned" onClick={() => { game.current?.focus('floor'); setRoom('floor'); }} />
@@ -195,7 +212,7 @@ export default function WorldPage({ onClose }: { onClose?: () => void }) {
 
       {/* details: a side panel on wide screens, a sheet from the bottom on phones */}
       {view && snap && (
-        <aside className="tk-sheet-enter absolute inset-x-0 bottom-0 z-40 flex max-h-[72%] flex-col rounded-t-3xl bg-white shadow-2xl sm:inset-x-auto sm:bottom-3 sm:right-3 sm:top-3 sm:max-h-none sm:w-[400px] sm:rounded-3xl"
+        <aside ref={panelRef} className="tk-sheet-enter absolute inset-x-0 bottom-0 z-40 flex max-h-[60%] flex-col rounded-t-3xl bg-white shadow-2xl sm:inset-x-auto sm:bottom-3 sm:right-3 sm:top-3 sm:max-h-none sm:w-[400px] sm:rounded-3xl"
           style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
           <div className="flex items-center gap-1 px-3 pt-2.5 sm:pt-3">
             <div className="absolute left-1/2 top-1.5 h-1 w-10 -translate-x-1/2 rounded-full bg-slate-200 sm:hidden" />

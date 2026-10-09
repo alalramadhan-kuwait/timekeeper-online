@@ -114,7 +114,9 @@ export class WorldScene extends Phaser.Scene {
   private base = 1;               // camera zoom at which the 2x art shows at its natural size
   private targetRing!: Phaser.GameObjects.Image;
   private lastRoom: Room | null = null;
-  private insets = { top: 0, bottom: 0 };   // CSS px covered by the page's bars
+  private insets = { top: 0, bottom: 0 };
+  private chosen: Phaser.GameObjects.Image | null = null;   // what the open panel is about
+  private revealTo: { x: number; y: number } | null = null;   // CSS px covered by the page's bars
 
   constructor() { super('world'); }
 
@@ -164,6 +166,7 @@ export class WorldScene extends Phaser.Scene {
   focus(room: Room, animate = true) {
     const r = FOCUS[room];
     const cam = this.cameras.main;
+    this.revealTo = null;
     const a = iso(r.x0, r.y0), b = iso(r.x1, r.y0), c = iso(r.x1, r.y1), d = iso(r.x0, r.y1);
     const minX = d.x, maxX = b.x, minY = a.y - 150, maxY = c.y + 20;
     const px = this.base * 2;                       // canvas px per CSS px
@@ -175,9 +178,11 @@ export class WorldScene extends Phaser.Scene {
     // centre the room in the part of the screen the bars leave free
     const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2 - (top - bottom) / 2 / z;
     if (animate && !this.reduced) {
-      cam.pan(cx, cy, 650, 'Sine.easeInOut', true);
+      // back to the usual limits once there, so nothing jumps on the way
+      cam.pan(cx, cy, 650, 'Sine.easeInOut', true, (_c: Phaser.Cameras.Scene2D.Camera, t: number) => { if (t === 1) this.setCameraBounds(); });
       cam.zoomTo(z, 650, 'Sine.easeInOut', true);
     } else {
+      this.setCameraBounds();
       cam.setZoom(z); cam.centerOn(cx, cy);
     }
   }
@@ -187,7 +192,30 @@ export class WorldScene extends Phaser.Scene {
     cam.setZoom(Phaser.Math.Clamp(cam.zoom * f, this.minZoom(), this.base * 2.4));
   }
 
-  clearSelection() { this.selectRing.setVisible(false); }
+  clearSelection() { this.selectRing.setVisible(false); this.chosen = null; }
+
+  /* A details panel now covers part of the screen (CSS px from the top, right
+     and bottom edges): if what was tapped sits under it, bring it into the
+     part still showing. */
+  reveal(top: number, right: number, bottom: number) {
+    const o = this.chosen;
+    if (!o || !o.active) return;
+    const cam = this.cameras.main, px = this.base * 2, z = cam.zoom;
+    const free = { x0: 0, y0: top * px, x1: cam.width - right * px, y1: cam.height - bottom * px };
+    if (free.x1 - free.x0 < 80 || free.y1 - free.y0 < 80) return;
+    const c = o.getBounds();
+    // judged from where the camera is heading, if it is still moving there
+    const mid = cam.panEffect.isRunning && this.revealTo ? this.revealTo : { x: cam.midPoint.x, y: cam.midPoint.y };
+    const sx = (c.centerX - mid.x) * z + cam.width / 2, sy = (c.centerY - mid.y) * z + cam.height / 2;
+    const m = 40 * px;
+    if (sx > free.x0 + m && sx < free.x1 - m && sy > free.y0 + m && sy < free.y1 - m) return;
+    const cx = c.centerX - ((free.x0 + free.x1) / 2 - cam.width / 2) / z;
+    const cy = c.centerY - ((free.y0 + free.y1) / 2 - cam.height / 2) / z;
+    this.setCameraBounds(right * px / z, bottom * px / z);
+    this.revealTo = { x: cx, y: cy };
+    if (this.reduced) cam.centerOn(cx, cy);
+    else cam.pan(cx, cy, 450, 'Sine.easeInOut', true);
+  }
 
   /* ── building the World ────────────────────────────────────────────── */
 
@@ -379,15 +407,17 @@ export class WorldScene extends Phaser.Scene {
     const base = depthAt(x + 1, y + 1);
     const plinthKey = PLINTH[c.shelf.ownership] ?? PLINTH.unknown;
     const plinth = this.stand(plinthKey, x, y);
-    // the glass stands on the base; the watches stand on the glass case's own floor
+    // the glass stands on the base (or, drawn as a whole cabinet, on the floor);
+    // the watches stand on the glass case's own floor
     const onPlinth = ASSET[plinthKey].surface;
-    const inside = onPlinth + ASSET['case-glass'].surface;
+    const glassOnFloor = ASSET['case-glass'].onFloor;
+    const inside = glassOnFloor ? onPlinth : onPlinth + ASSET['case-glass'].surface;
     const spots: [number, number][] = [[0.3, 0.3], [0.7, 0.3], [0.3, 0.7], [0.7, 0.7], [0.5, 0.5], [0.5, 0.18]];
     for (let i = 0; i < c.watches; i++) {
       const p = iso(x + spots[i][0], y + spots[i][1]);
       this.img('watch', p.x, p.y - inside, base + 0.1 + i * 0.001);
     }
-    const glass = this.stand('case-glass', x, y, 1, 1, onPlinth, 0.3);
+    const glass = this.stand('case-glass', x, y, 1, 1, glassOnFloor ? 0 : onPlinth, 0.3);
     if (c.dusty) this.stand('case-dust', x, y, 1, 1, onPlinth, 0.35);
     const top = iso(x + 0.5, y + 0.5);
     const gb = glass.getBounds();
@@ -462,8 +492,9 @@ export class WorldScene extends Phaser.Scene {
       const card = this.img('mission-card', cx, cy, depthAt(b.x, b.y, -0.5));
       if (i >= m.board.open) card.setTint(0xffc46b);
     }
-    const lp = iso(b.x + 1.5, b.y);
-    this.dyn.push(this.label(lp.x, lp.y - 168, `${m.board.open + m.board.changed} missions open`, 'info'));
+    // above the board, clear of its own lettering
+    const bb = board.getBounds();
+    this.dyn.push(this.label(bb.centerX, bb.top - 14, `${m.board.open + m.board.changed} missions open`, 'info'));
 
     // filing cabinet: the records to check
     const [fx, fy] = FIXTURES.files;
@@ -610,13 +641,19 @@ export class WorldScene extends Phaser.Scene {
     return Math.max(Math.min(cam.width / w, cam.height / h) * 1.6, this.base * 0.25);
   }
 
-  private setupCamera() {
-    const cam = this.cameras.main;
+  /* How far the camera may travel. While a panel covers the right or bottom of
+     the screen it may go that much further, so things at the edge of the World
+     can still be brought out from under it. */
+  private setCameraBounds(padRight = 0, padBottom = 0) {
     const l = iso(BOUNDS.x0, BOUNDS.y1).x, r = iso(BOUNDS.x1, BOUNDS.y0).x;
     const t = iso(BOUNDS.x0, BOUNDS.y0).y - 200, b = iso(BOUNDS.x1, BOUNDS.y1).y;
-    cam.setBounds(l, t, r - l, b - t);
+    this.cameras.main.setBounds(l, t, r - l + padRight, b - t + padBottom);
+  }
+
+  private setupCamera() {
+    this.setCameraBounds();
     this.focus('floor', false);
-    this.scale.on('resize', () => cam.setBounds(l, t, r - l, b - t));
+    this.scale.on('resize', () => this.setCameraBounds());
   }
 
   private setupInput() {
@@ -657,6 +694,7 @@ export class WorldScene extends Phaser.Scene {
   private choose(o: Phaser.GameObjects.GameObject) {
     const sel = o.getData('sel') as Selection;
     const img = o as Phaser.GameObjects.Image;
+    this.chosen = img;
     const dy = (o.getData('ringDy') as number) ?? -32;
     this.selectRing.setVisible(true).setPosition(img.x, img.y + dy).setScale(dy === 0 ? 0.6 : 1);
     this.selectRing.setAlpha(1);
@@ -678,6 +716,7 @@ export class WorldScene extends Phaser.Scene {
     this.owner.walk(path);
     this.hooks.onSelect(null);
     this.selectRing.setVisible(false);
+    this.chosen = null;
   }
 
   private reportRoom() {

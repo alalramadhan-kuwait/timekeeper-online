@@ -1,178 +1,221 @@
 {
  "char-owner": {
-  "width": 69.6,
+  "width": 60.0,
   "origin": [
-   0.5,
+   0.444,
    1.0
   ]
  },
  "char-mohammed": {
-  "width": 45.0,
+  "width": 53.1,
   "origin": [
-   0.5,
+   0.445,
    1.0
   ]
  },
  "char-rep": {
-  "width": 59.0,
+  "width": 58.5,
   "origin": [
-   0.5,
+   0.495,
    1.0
   ]
  },
  "char-staff-manager": {
-  "width": 51.1,
+  "width": 51.6,
   "origin": [
-   0.5,
-   1.0
-  ]
- },
- "char-staff-sales": {
-  "width": 51.3,
-  "origin": [
-   0.5,
+   0.438,
    1.0
   ]
  },
  "char-staff-office": {
-  "width": 47.4,
+  "width": 53.3,
   "origin": [
-   0.5,
+   0.437,
    1.0
   ]
  },
  "char-staff-ops": {
-  "width": 47.4,
+  "width": 53.5,
   "origin": [
-   0.5,
+   0.436,
+   1.0
+  ]
+ },
+ "char-staff-sales": {
+  "width": 53.8,
+  "origin": [
+   0.437,
    1.0
   ]
  },
  "char-driver": {
-  "width": 61.6,
+  "width": 55.4,
   "origin": [
-   0.5,
+   0.4,
    1.0
   ]
  },
- "case-plinth-owned": {
-  "width": 128,
+ "bench": {
+  "width": 192,
   "origin": [
-   0.461,
-   1.225
-  ],
-  "surface": 38.3
- },
- "case-plinth-consignment": {
-  "width": 128,
-  "origin": [
-   0.503,
-   1.176
-  ],
-  "surface": 49.4
- },
- "case-plinth-preowned": {
-  "width": 128,
-  "origin": [
-   0.482,
-   1.339
-  ],
-  "surface": 50.0
- },
- "case-plinth-unknown": {
-  "width": 128,
-  "origin": [
-   0.626,
-   1.217
-  ],
-  "surface": 77.4
- },
- "case-glass": {
-  "width": 118,
-  "origin": [
-   0.49,
+   0.717,
    1.0
-  ],
-  "surface": 10.9
- },
- "box-open": {
-  "width": 100,
-  "origin": [
-   0.519,
-   1.0
-  ],
-  "surface": 42.4
- },
- "box-sealed": {
-  "width": 100,
-  "origin": [
-   0.523,
-   1.0
-  ],
-  "surface": 45.8
- },
- "box-wrapped": {
-  "width": 100,
-  "origin": [
-   0.511,
-   1.0
-  ],
-  "surface": 40.8
+  ]
  },
  "counter": {
   "width": 192,
   "origin": [
-   0.657,
+   0.656,
+   1.0
+  ]
+ },
+ "desk-small": {
+  "width": 128,
+  "origin": [
+   0.634,
    1.0
   ]
  },
  "desk": {
   "width": 192,
   "origin": [
-   0.931,
+   0.673,
    1.0
   ]
  },
  "file-cabinet": {
-  "width": 112,
+  "width": 100,
   "origin": [
-   0.566,
+   0.5,
+   1.0
+  ]
+ },
+ "pallet": {
+  "width": 124,
+  "origin": [
+   0.473,
+   1.0
+  ],
+  "surface": 16.8
+ },
+ "plant": {
+  "width": 84,
+  "origin": [
+   0.497,
+   1.0
+  ]
+ },
+ "palm": {
+  "width": 150,
+  "origin": [
+   0.484,
+   1.0
+  ]
+ },
+ "flag": {
+  "width": 40,
+  "origin": [
+   0.326,
+   1.0
+  ]
+ },
+ "box-open": {
+  "width": 104,
+  "origin": [
+   0.505,
+   1.0
+  ],
+  "surface": 41.5
+ },
+ "box-sealed": {
+  "width": 104,
+  "origin": [
+   0.506,
+   1.0
+  ],
+  "surface": 46.2
+ },
+ "box-wrapped": {
+  "width": 104,
+  "origin": [
+   0.466,
+   1.0
+  ],
+  "surface": 45.2
+ },
+ "case-plinth-consignment": {
+  "width": 124,
+  "origin": [
+   0.498,
+   1.0
+  ],
+  "surface": 47.2
+ },
+ "case-plinth-owned": {
+  "width": 124,
+  "origin": [
+   0.498,
+   1.0
+  ],
+  "surface": 48.4
+ },
+ "case-plinth-preowned": {
+  "width": 124,
+  "origin": [
+   0.496,
+   1.0
+  ],
+  "surface": 47.9
+ },
+ "case-plinth-unknown": {
+  "width": 124,
+  "origin": [
+   0.496,
+   1.0
+  ],
+  "surface": 47.5
+ },
+ "van": {
+  "width": 200,
+  "origin": [
+   0.356,
    1.0
   ]
  },
  "wall-cabinet": {
   "width": 118,
   "origin": [
-   0.557,
+   0.637,
    1.0
   ]
  },
- "van": {
-  "width": 200,
+ "case-glass": {
+  "width": 124,
   "origin": [
-   0.42,
+   0.498,
+   1.0
+  ],
+  "onFloor": true
+ },
+ "alert": {
+  "width": 34,
+  "origin": [
+   0.5,
    1.0
   ]
  },
- "plant": {
+ "watch": {
+  "width": 30,
+  "origin": [
+   0.5,
+   0.8
+  ]
+ },
+ "case-dust": {
   "width": 84,
   "origin": [
    0.5,
-   1.0
-  ]
- },
- "palm": {
-  "width": 170,
-  "origin": [
-   0.5,
-   1.0
-  ]
- },
- "rug": {
-  "width": 384,
-  "origin": [
-   0.5,
-   0.0
+   0.82
   ]
  },
  "sign-boutique": {
@@ -183,7 +226,7 @@
   ]
  },
  "sign-dock": {
-  "width": 230,
+  "width": 240,
   "origin": [
    0.5,
    0.5
@@ -203,11 +246,124 @@
    0.5
   ]
  },
- "watch": {
-  "width": 34,
+ "tag-new": {
+  "width": 60,
   "origin": [
    0.5,
    0.5
+  ]
+ },
+ "rug": {
+  "width": 384,
+  "origin": [
+   0.5,
+   0.0
+  ]
+ },
+ "mission-board": {
+  "width": 200,
+  "origin": [
+   0.0,
+   0.56
+  ],
+  "cards": false
+ },
+ "wall-clock": {
+  "width": 80,
+  "origin": [
+   0.483,
+   0.527
+  ]
+ },
+ "tile-concrete": {
+  "width": 129,
+  "origin": [
+   0.509,
+   0.0
+  ]
+ },
+ "tile-hazard": {
+  "width": 129,
+  "origin": [
+   0.502,
+   0.0
+  ]
+ },
+ "tile-marble-a": {
+  "width": 130,
+  "origin": [
+   0.506,
+   0.0
+  ]
+ },
+ "tile-marble-b": {
+  "width": 129,
+  "origin": [
+   0.504,
+   0.0
+  ]
+ },
+ "tile-parquet": {
+  "width": 129,
+  "origin": [
+   0.5,
+   0.0
+  ]
+ },
+ "tile-pavement": {
+  "width": 129,
+  "origin": [
+   0.504,
+   0.0
+  ]
+ },
+ "tile-sand": {
+  "width": 129,
+  "origin": [
+   0.505,
+   0.0
+  ]
+ },
+ "wall-dock-r": {
+  "width": 67.6,
+  "origin": [
+   0.023,
+   0.725
+  ]
+ },
+ "wall-dock-l": {
+  "width": 67.5,
+  "origin": [
+   0.97,
+   0.728
+  ]
+ },
+ "wall-floor-l": {
+  "width": 67.6,
+  "origin": [
+   0.969,
+   0.72
+  ]
+ },
+ "wall-floor-r": {
+  "width": 67.3,
+  "origin": [
+   0.016,
+   0.721
+  ]
+ },
+ "wall-office-l": {
+  "width": 67.7,
+  "origin": [
+   0.969,
+   0.735
+  ]
+ },
+ "wall-office-r": {
+  "width": 67.3,
+  "origin": [
+   0.024,
+   0.735
   ]
  }
 }

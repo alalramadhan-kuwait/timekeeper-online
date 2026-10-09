@@ -32,27 +32,42 @@ Final art can be any resolution and any proportion. For each key it replaces,
 - `surface`: for case bases and boxes, how high their top surface is above the
   anchor, in world units: the glass stands on it, a box stacks on it.
 - `cards`: for the mission board, `false` if the art has its own printed notes.
+- `onFloor`: for `case-glass`, `true` when it is drawn as the whole cabinet
+  standing on the floor rather than a glass box resting on the case base. The
+  watches then stand on the base's `surface`.
 
 Keys it leaves out keep the placeholder's values.
 
-## Current artwork (V1 concept pack, 9 Oct 2026)
+## Current artwork (V2 corrected sheets, 9 Oct 2026)
 
-From the owners' V1 pack, cleaned up: `box-open`, `box-sealed`, `box-wrapped`, `case-glass`, `case-plinth-consignment`, `case-plinth-owned`, `case-plinth-preowned`, `case-plinth-unknown`, `char-driver`, `char-mohammed`, `char-owner`, `char-rep`, `char-staff-manager`, `char-staff-office`, `char-staff-ops`, `char-staff-sales`, `counter`, `desk`, `file-cabinet`, `palm`, `plant`, `rug`, `sign-boutique`, `sign-dock`, `sign-office`, `sparkle`, `van`, `wall-cabinet`, `watch`.
+From the owners' four corrected sheets: every character, piece of furniture,
+case, box, sign, tile and wall, plus `alert`, `tag-new`, `sparkle`, `case-dust`,
+`watch`, `wall-clock`, `flag`, `pallet`, `bench`, `desk-small` and
+`mission-board`. 51 files in `final/`; `art.json` places each one. All objects
+came whole, with clean transparency.
 
-Still placeholders, because the V1 version could not be used: the floor tiles
-and walls (cut off and drawn at a 30° angle that does not fit the 2:1 floor
-grid), `alert`, `tag-new`, `pallet`, `ring`, `shadow`, `case-dust` (cut or
-mostly empty), `flag` (cut), `wall-clock` (cut, and its painted hands would show
-the wrong time), `desk-small` (cut), `select` (caption baked in, off-palette),
-`mission-board` (misspelt "MISSSIONS"), `bench` (cut at one end), `mission-card`
-(a framed watch card, too detailed for the small cards pinned on the board),
-`mote` (not in the pack). `note` is in the pack but nothing uses it yet. `char-staff-ops` uses the office figure until a whole one exists.
+Changed beyond scaling, by `build_v2.py` (kept outside the repo):
 
-Repairs made to V1 pieces, all to be replaced by proper art: every character was
-cut off at the thigh, so plain legs and shoes were added; box corners and the
-cabinet and desk bases were cut flat, so the two lower faces were continued to
-a point; the signs lost their bottom frame line, rebuilt from the side frame.
-The case bases were left cut and anchored from their outline.
+- **Floor tiles** were drawn at 30°; the floor grid is 2:1 (about 26.6°). Each
+  is squashed to about 86% of its height to fit 128 × 64 exactly. Redrawn 2:1
+  tiles would look crisper.
+- **Walls**: each panel is assigned to the left or right side by the way its
+  bottom edge runs, and scaled so one panel spans one tile edge.
+- **Case glass**: the vitrines include their glass, so the watches would sit
+  behind it. The glass panes and gold posts of the walnut vitrine are redrawn as
+  a see-through overlay (`case-glass`, `onFloor`) over the watches, which stand
+  on the cream cushion.
+- **Wall clock**: the painted hands are removed (the TK monogram stays); the
+  World draws the hands in live Kuwait time.
+- **Bench, counter, desk**: mirrored where needed so the long side runs along
+  the 2 × 1 footprint.
+- Pictures larger than twice their drawn size are scaled down to that, to keep
+  the download small (2.3 MB in all).
+
+Still placeholders: `tile-road` (no road tile in the sheets), `ring` (the ring
+in sheet 1 is a jewellery ring, not a floor marker), `select` and `shadow` (not
+in the sheets), `mote`, and `mission-card` (unused while the board has printed
+notes). `note` is in the sheets but nothing uses it yet.
 
 ## The list
 

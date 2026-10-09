@@ -16,7 +16,7 @@ const final = import.meta.glob('./final/*.{png,webp,svg}', { eager: true, query:
 const artJson = import.meta.glob('./final/art.json', { eager: true, import: 'default' }) as Record<string, Record<string, ArtSettings>>;
 const ART: Record<string, ArtSettings> = Object.values(artJson)[0] ?? {};
 
-interface ArtSettings { width?: number; origin?: [number, number]; surface?: number; cards?: boolean }
+interface ArtSettings { width?: number; origin?: [number, number]; surface?: number; cards?: boolean; onFloor?: boolean }
 
 export interface AssetDef {
   key: string;
@@ -34,6 +34,9 @@ export interface AssetDef {
   surface: number;
   /* The mission board: whether the game pins a card per open mission on it. */
   cards: boolean;
+  /* The case glass: drawn as a whole cabinet standing on the floor, rather than
+     a glass box resting on the case base. */
+  onFloor: boolean;
 }
 
 /* Surfaces of the placeholders, which were drawn to a common grid. */
@@ -93,6 +96,7 @@ export const ASSETS: AssetDef[] = SPECS.map(([key, width, height, ox, oy]) => {
     drawWidth: a.width ?? width,
     surface: a.surface ?? SURFACE[key] ?? 0,
     cards: a.cards ?? true,
+    onFloor: a.onFloor ?? false,
   };
 });
 
