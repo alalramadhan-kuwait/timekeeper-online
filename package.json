@@ -16,7 +16,8 @@
     "test": "tsx src/shared/__tests__/run.ts",
     "sw:check": "node scripts/sw-check.mjs",
     "release:check": "node scripts/release-check.mjs",
-    "world:art": "node scripts/world-art-check.mjs"
+    "world:art": "node scripts/world-art-check.mjs",
+    "world:beta": "vite build --config vite.world-beta.config.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.106.0",

@@ -218,12 +218,13 @@ export default function WorldPage({ onClose }: { onClose?: () => void }) {
       {view && snap && (
         <aside ref={panelRef} className="tk-sheet-enter absolute inset-x-0 bottom-0 z-40 flex max-h-[60%] flex-col rounded-t-3xl bg-white shadow-2xl sm:inset-x-auto sm:bottom-3 sm:right-3 sm:top-3 sm:max-h-none sm:w-[400px] sm:rounded-3xl"
           style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
-          <div className="flex items-center gap-1 px-3 pt-2.5 sm:pt-3">
+          {/* above the body, which is pulled up under it, so the buttons stay tappable */}
+          <div className="pointer-events-none relative z-10 flex items-center gap-1 px-3 pt-2.5 sm:pt-3">
             <div className="absolute left-1/2 top-1.5 h-1 w-10 -translate-x-1/2 rounded-full bg-slate-200 sm:hidden" />
             {stack.length > 1 && (
-              <button onClick={() => setStack((s) => s.slice(0, -1))} aria-label="Back" className="grid h-8 w-8 place-items-center rounded-full text-slate-500 hover:bg-slate-100"><ChevronLeft size={18} /></button>
+              <button onClick={() => setStack((s) => s.slice(0, -1))} aria-label="Back" className="pointer-events-auto grid h-8 w-8 place-items-center rounded-full text-slate-500 hover:bg-slate-100"><ChevronLeft size={18} /></button>
             )}
-            <button onClick={closePanel} aria-label="Close" className="ml-auto grid h-8 w-8 place-items-center rounded-full text-slate-500 hover:bg-slate-100"><X size={18} /></button>
+            <button onClick={closePanel} aria-label="Close" className="pointer-events-auto ml-auto grid h-8 w-8 place-items-center rounded-full text-slate-500 hover:bg-slate-100"><X size={18} /></button>
           </div>
           <div className={`${stack.length > 1 ? '' : '-mt-6 '}overflow-y-auto overscroll-contain px-5 pb-6 pt-1 select-text`}>
             {busy && !snap ? <Loading /> : <PanelBody view={view} ctx={{ s: snap, open, refresh }} cabinets={cabinets} />}
