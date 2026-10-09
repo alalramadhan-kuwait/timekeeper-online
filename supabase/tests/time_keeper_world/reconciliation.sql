@@ -18,7 +18,11 @@ begin
   select md5(string_agg(t::text, '|' order by t::text)) || md5((select string_agg(i::text, '|' order by i::text) from purchase_order_items i))
     into src_before from purchase_orders t;
 
+  t0 := clock_timestamp();
   s := world_snapshot();
+  ms := (extract(epoch from clock_timestamp() - t0) * 1000)::int;
+  insert into rc (check_name, expected, actual, pass)
+  values ('R14 first snapshot call (cold), all outlets', '< 3000 ms', ms || ' ms', ms < 3000);
   ps := po_summary();
 
   -- R1-R2. Stock floor = Ask Mohammed's stock summary, for every outlet.
@@ -42,8 +46,11 @@ begin
     where (v ->> 'products')::int > 0;
     insert into rc (check_name, expected, actual, pass)
     select 'R2 shelves add up to the floor total: ' || coalesce(nullif(o, ''), 'all'),
-           round(sum((v ->> 'cost_value')::numeric), 3)::text,
-           (select round(sum((x ->> 'cost_value')::numeric), 3) from jsonb_array_elements(s2 -> 'floor' -> 'shelves') x)::text,
+           round(sum((v ->> 'cost_value')::numeric), 3)::text || ' KD, within half a fils per shelf',
+           (select round(sum((x ->> 'cost_value')::numeric), 3) from jsonb_array_elements(s2 -> 'floor' -> 'shelves') x)::text
+             || ' KD, difference ' || round(1000 * abs(coalesce(sum((v ->> 'cost_value')::numeric), 0)
+               - coalesce((select sum((x ->> 'cost_value')::numeric) from jsonb_array_elements(s2 -> 'floor' -> 'shelves') x), 0)))
+             || ' fils over ' || (select count(*) from jsonb_array_elements(s2 -> 'floor' -> 'shelves')) || ' shelves',
            -- each shelf and each total is rounded to the fils, so allow half a fils per shelf
            abs(coalesce(sum((v ->> 'cost_value')::numeric), 0)
                - coalesce((select sum((x ->> 'cost_value')::numeric) from jsonb_array_elements(s2 -> 'floor' -> 'shelves') x), 0))
@@ -172,6 +179,30 @@ begin
 
   insert into rc (check_name, expected, actual, pass)
   values ('R14 snapshot size', '< 150 KB', round(octet_length(s::text) / 1024.0) || ' KB', octet_length(s::text) < 150 * 1024);
+
+  -- R16. Every mission is one of the seven known kinds, and none is lost or doubled.
+  insert into rc (check_name, expected, actual, pass)
+  select 'R16 missions: known kinds, unique keys',
+         count(*) || ' missions, ' || count(*) || ' unique keys, 0 unknown kinds',
+         count(*) || ' missions, ' || count(distinct x ->> 'key') || ' unique keys, '
+           || count(*) filter (where x ->> 'kind' not in ('reorder', 'clear_dead', 'supplier_talk', 'chase_partial',
+                                                         'approval_waiting', 'review_unpaid', 'data_issue')) || ' unknown kinds'
+           || ' (' || (select string_agg(k || ' ' || n, ', ' order by k) from (select y ->> 'kind' k, count(*) n
+                        from jsonb_array_elements(s -> 'missions') y group by 1) z) || ')',
+         count(*) = count(distinct x ->> 'key')
+           and count(*) filter (where x ->> 'kind' not in ('reorder', 'clear_dead', 'supplier_talk', 'chase_partial',
+                                                          'approval_waiting', 'review_unpaid', 'data_issue')) = 0
+  from jsonb_array_elements(s -> 'missions') x;
+
+  -- R17. The estimated part of the unpaid split is exactly the POs marked estimate.
+  insert into rc (check_name, expected, actual, pass)
+  select 'R17 estimated portion = POs whose split is an estimate',
+         coalesce(round(sum((x ->> 'recorded_unpaid')::numeric) filter (where x ->> 'split_basis' = 'estimate'), 3), 0)::text,
+         (s -> 'payments' ->> 'estimated_portion') || ' (' || (s -> 'payments' ->> 'goods_received') || ' received / '
+           || (s -> 'payments' ->> 'goods_not_received') || ' not yet received)',
+         abs(coalesce(sum((x ->> 'recorded_unpaid')::numeric) filter (where x ->> 'split_basis' = 'estimate'), 0)
+             - (s -> 'payments' ->> 'estimated_portion')::numeric) < 0.001
+  from jsonb_array_elements(s -> 'payments' -> 'list') x;
 end $$;
 
 select jsonb_build_object(
