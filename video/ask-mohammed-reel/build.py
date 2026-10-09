@@ -34,8 +34,8 @@ def txt(t, x, y, size=44, color=INK, **kw):
     return dict({"type": "text", "text": t, "x": x, "y": y, "size": size, "color": color, "font": "banner"}, **kw)
 
 
-NARRATOR = os.environ.get("NARRATOR", "ali")   # ali: his own recordings (2026-10-09) | fahed-msa | fahed | v5 | habibi
-VOICE_DIR = {"ali": "voice-ali/proc", "v5": "voice/proc", "fahed": "voice-fahed/proc", "fahed-msa": "voice-fahed-msa/proc", "habibi": "voice-habibi"}[NARRATOR]
+NARRATOR = os.environ.get("NARRATOR", "ali-vc")   # ali-vc: the Kuwaiti read in Ali's voice (vc_ali.py) | ali: the read as recorded | fahed-msa | fahed | v5 | habibi
+VOICE_DIR = {"ali-vc": "voice-vc/proc", "ali": "voice-ali/proc", "v5": "voice/proc", "fahed": "voice-fahed/proc", "fahed-msa": "voice-fahed-msa/proc", "habibi": "voice-habibi"}[NARRATOR]
 MSA = NARRATOR.endswith("-msa")
 # on-screen text in فصحى for the MSA cut (the app's own screenshots stay as they are)
 MSA_TEXT = {"اتصلت بالمحل… محد رد": "اتصلتَ بالمحل… لم يرد أحد", "الحين؟ هذا محمد": "والآن؟ هذا محمد", "اسأله أي شي": "اسأله ما تشاء",
@@ -172,7 +172,7 @@ scenes += endcard(HERE, theme='tk-ink')
 scenes[-1]["dur"] = 0.7
 scenes[-2]["banner"] = scenes[-1]["banner"] = ""
 # the consent credit (src/BRIEF.md, VOICE-CONSENT.md) sits under the logo on the end card, clear of platform UI
-for i, line in enumerate(CREDIT.split("، ") if NARRATOR == "v5" else []):   # the consent credit only when it is Ali's voice   # two lines so it never runs off a phone screen
+for i, line in enumerate(CREDIT.split("، ") if NARRATOR in ("v5", "ali-vc") else []):   # the consent credit only when it is Ali's AI voice   # two lines so it never runs off a phone screen
     scenes[-2]["elements"].append(txt(line, 360, 830 + i * 36, 24, "#D8D3C8", z=40, **{"in": {"type": "fade", "at": 0.6}}))
 
 story = {"width": 720, "height": 1280, "fps": 30, "dir": "rtl", "style": STYLE["style"], "themes": STYLE["themes"],
