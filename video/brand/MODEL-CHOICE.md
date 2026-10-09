@@ -224,3 +224,12 @@ The model was run for research only, with no fine-tuning or integration, using t
 - **Comparison with the stock Chatterbox, same voice:** not run. The installed Chatterbox code loads `t3_mtl23ls_v2.safetensors`, which is not in the local base cache (only v3 is), and 2.1 GB more would not fit on disk.
 
 **Standing:** a research curiosity, not a candidate to replace SILMA. It is unreliable at the end of sentences (3 of 6 never stop, 1 of 6 crashes) and has no documentation of what it learned. The enquiry to its developers covers provenance and licence.
+
+## The user's listening verdict on the SILMA baseline (2026-10-09)
+
+The user listened to the six untrained SILMA sentences, cloned from Ali's 7.5 s reference:
+
+- **"It resembles Ali, but the dialect is wrong."**
+- **"It's clear, but it needs training on the voice and the tone."**
+
+**Gate 3 (the baseline is a viable starting point): passed.** The voice identity and clarity are there, and the dialect, voice detail and tone are exactly what the fine-tune is meant to teach. This is the listening justification for training that was asked for. Training is still not started: the backups, the pilot dataset and the user's approval of the run are still open.
