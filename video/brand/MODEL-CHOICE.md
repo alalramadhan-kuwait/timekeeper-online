@@ -98,3 +98,58 @@ Speaker similarity and ASR are reported but are not evidence. A1 scored 0.90 sim
 1. Backups on the Mac and Drive, uploaded and verified.
 2. The Stage 1 review done, with the pilot set accepted.
 3. Approval of this model choice, the criteria and the caps.
+
+## Stage 1 technical checks: results (2026-10-09)
+
+These checks were run, not just read from the docs. There was inference only, no training on Ali.
+
+**Downloaded:**
+- `silma-ai/silma-tts`: `model.pt` (2.6 GB), vocab, config and the patched fine-tuning script, into `/root/silma-check/`;
+- the SILMA repository;
+- the `f5-tts==1.1.7` wheel (code only).
+
+Two small packages were installed (jieba and pypinyin, which F5's text preparation needs). The originals are untouched; `ref.wav` still has sha256 a1d60699…
+
+| Question | Result | How it was checked |
+|---|---|---|
+| 1. Can MSA diacritisation (CATT) and normalisation (NeMo) be switched off reliably? | **Yes.** The API has switches (`force_tashkeel=False`, `normalize_numbers=False`, `enable_normalizer=False`). In our runs **both modules were replaced with stubs that raise an error if called, and nothing called them**. The text reaching the model was logged: it equals the verified reference text plus our sentence, **unchanged, character for character** (6 of 6). | `tk_silma_baseline.py` |
+| 2. Does the tokenizer keep گ / چ / ڤ? | **Yes.** It is a character vocabulary (9,260 entries, index 0 = space). گ=529, چ=524, ڤ=527. Our 1,645 texts (127,162 characters: V5 transcripts, the pilot candidates, the screening sentences, every dictionary form) have **0 out-of-vocabulary characters**. **Caution:** an unknown character would silently become a space, so the dataset export will refuse any OOV character. | Vocab check against all texts |
+| 3. Does our spelling survive fine-tuning and inference? | **Yes.** F5 1.1.7's training text preparation (`convert_char_to_pinyin`) leaves Arabic unchanged, گ/چ/ڤ included. The only changes: a space inserted before «...» (we will not use it), and Chinese characters romanised. One Whisper candidate contains «大的», a hallucination, and is flagged. | Ran the 1.1.7 function on all 1,645 texts |
+| 4. Can it run with Ali's reference without touching his recordings? | **Yes, with one fix.** SILMA cuts any reference longer than 8.05 s **and then silently throws away the supplied text and re-transcribes with Whisper**, which writes MSA. `ref.wav` is 17.6 s. **Fix:** `voice-src/ref8.wav`, a copy cut at a clean pause (7.49 s, a dip of −61 dB), with the matching part of Ali's verified text in `ref8.txt`. An assertion confirms our text is used. | `tk_silma_baseline.py` |
+| 5. GPU memory and cost | **162.7M parameters.** One training step (random weights, 4 clips × 10 s, fp32 AdamW): peak about 8.5 GB of memory on top of the 2.6 GB checkpoint, so **a 16 GB GPU is enough and 24 GB is comfortable**. On this CPU a step takes 29.5 s, so **CPU training is not practical**. On a 24 GB GPU (L4 / A10 / RTX 4090, about $0.4–0.8 per hour), 20 min of data is about 30 steps per epoch. 100 epochs, about 3,000 steps, should take well under 1 hour, plus generation for checkpoint choice and testing: **about 2 GPU-hours, about $2–5. Cap: 6 GPU-hours, $10.** The M2 Mac (MPS) is a $0 alternative, probably overnight. | Measured |
+
+## Stage 3 baseline (pretrained SILMA, Ali's reference, raw output)
+
+Six representative sentences: three «اسأل محمد» lines and the V5 regressions kp02, kp14 and kp17, with kp02 in our گ spelling. The output is raw: no pitch, tempo or EQ processing. CPU inference took about 60–80 s per sentence.
+
+| | am-s01 | am-s05 | am-s08 | kp02 | kp14 | kp17 |
+|---|---|---|---|---|---|---|
+| Similarity to Ali | 0.94 | 0.89 | 0.91 | 0.88 | 0.90 | 0.89 |
+| ASR match to the text | 0.96 | 0.97 | 0.99 | 0.96 | 1.00 | 0.98 |
+
+The pitch median is 109–134 Hz (Ali's is 127).
+
+**For reference:**
+- Fahed → VC final: 0.86 similarity and 0.89 ASR.
+- Recorded mode final: 0.88 and 0.80.
+
+These numbers are diagnostics, not proof (the A1 lesson).
+
+**Technical reading:**
+- The untrained model already produces clear, intelligible speech close to Ali's voice from 7.5 s of reference.
+- **گ is not known yet:** «گال» was heard as «ذال». The base model never learned the letter, so the fine-tune has to teach it.
+- **Kuwaiti pronunciation is unknown** until the user listens.
+
+## GO / NO-GO
+
+**Technical: GO.**
+- The diacritiser and normaliser can be bypassed and the bypass is verifiable.
+- The tokenizer keeps our spelling end to end.
+- Inference works with Ali's reference without modifying any original.
+- Compute is small: about $2–5, capped at $10.
+
+**Training: NO-GO for now.** These gates are still open:
+1. **Original-audio backup not yet verified** on the Mac or Drive.
+2. **Stage 2 pilot dataset not yet built and verified**: the Kuwaiti transcripts and the "Ali only / complete sentence" check.
+3. **A short ear check of the 6 baseline sentences** (`silma-baseline-6.m4a`), to confirm the base is a viable starting point: voice, clarity, no artefacts. Its dialect is expected to be MSA-leaning and is not judged here.
+4. The user's approval of the Stage 4 run.
