@@ -191,3 +191,36 @@ Checked by reading pages and making public HTTP requests only. Nothing was downl
    **If** they document that Chatterbox_Kuwaiti's data is real and licensed, and give it a commercial licence, it becomes a candidate for a later, separate comparison. That does not happen automatically.
 3. **Do not build on Kuwaiti_XTTS for production.** Its licence rules it out whatever its quality.
 4. **Optional, later:** request Hazawi+ to support the Kuwaiti text side (spelling convention, test and recording sentences).
+
+## Genarabia-ai/Chatterbox_Kuwaiti: inference probe (2026-10-09)
+
+The model was run for research only, with no fine-tuning or integration, using the checkpoint's own built-in voice (`conds.pt`); no private audio was involved. The input was the same six sentences as the SILMA baseline. Code: `tk_ckkw_probe.py`.
+
+**Restrictions to record for any future publication:**
+- no model card and no licence, so all rights are reserved by default;
+- training data undocumented.
+
+**Downloads:** about 3.3 GB to `/root/ck-kw/`. To make room, the public wav2vec2-xlsr-espeak cache was deleted. It was used only by the old `tk_kw_audit.py` phoneme check and can be downloaded again.
+
+**Compatibility:**
+- It loads with our Chatterbox code (`from_local`).
+- The text vocabulary is the same size as the base (2,454 entries); one slot differs (base ₹ → `[PLACEHOLDER45]`).
+- گ, چ and ڤ are present. There is no Kuwaiti language tag, and `ar` is correct.
+
+| Sentence | Default sampling | Conservative retry (exaggeration 0.4, cfg 0.3, temperature 0.6) | Whisper heard (diagnostic only) |
+|---|---|---|---|
+| am-s01 | Sentence in 4.1 s, **then silence until the 40 s cap** | Same | «هبي تعرفش أكثر عندك بضاعة لا تتصل بالمحل محد بيرد» |
+| am-s05 | Fine, 5.8 s | – | «يقولك خلفت من كل الفروع تبيع 5 بالشهر أطلب 15 وليش» |
+| am-s08 | Sentence in 3.3 s, then silence until the cap | Same | «والبضع الأمانة يقولك لا تشتري كلم المورت» |
+| kp02 «الوكيل گال لي…» | 2.2 s, then silence until the cap | Same | «الوكيلي ان الطلب يتأخذ شوي»: **«گال» lost** |
+| kp14 | Fine, 3.1 s | – | «بتذكر أول ساعة لبسها كانت من أبوه» |
+| kp17 «شفيك؟ ليش ما رديت علي امبارح؟» | **Crash** (IndexError) | **Crash** | – |
+
+**Reading:**
+- **It runs, but it does not reliably stop.** In 3 of 6 sentences the speech is complete and then followed by silence to the 40 s limit. Whisper's «اشتركوا في القناة» over that silence is Whisper inventing text, not the model speaking. Trimming the silence makes those usable.
+- **It crashes on 1 of 6.** Conservative sampling does not change this, so it is the checkpoint, not the settings.
+- **The گ in «گال» is dropped.** Spelling alone did not carry the sound, the same weakness SILMA showed.
+- **Whether its dialect is Kuwaiti needs the user's ear.** The five usable sentences, silence-trimmed, were sent as `ckkw-1…5.m4a`.
+- **Comparison with the stock Chatterbox, same voice:** not run. The installed Chatterbox code loads `t3_mtl23ls_v2.safetensors`, which is not in the local base cache (only v3 is), and 2.1 GB more would not fit on disk.
+
+**Standing:** a research curiosity, not a candidate to replace SILMA. It is unreliable at the end of sentences (3 of 6 never stop, 1 of 6 crashes) and has no documentation of what it learned. The enquiry to its developers covers provenance and licence.
