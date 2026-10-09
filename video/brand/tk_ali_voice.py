@@ -10,7 +10,10 @@ sentences); this tool turns the recordings into one clip per sentence in Ali's v
   4. voice   Chatterbox VC (S3Gen, MIT) to Ali's timbre; target voice-src/ref.wav (the clip Ali picked)
   5. tone    pitch contour widened around its median by --range (Praat PSOLA). After VC on purpose: S3Gen makes
              its own pitch and flattens anything widened before it
-  6. pace    x --tempo (rubberband, pitch kept), loudness -18 LUFS
+  6. clarity S3Gen works at 24 kHz and comes out muffled: nothing above 12 kHz, 6-11 kHz 10-17 dB under a phone
+             recording, heavy below 300 Hz. BRIGHT (EQ + exciter) brings it back to the reader's own balance (within
+             about 2 dB from 1 to 8 kHz, measured on the «اسأل محمد» read)
+  7. pace    x --tempo (rubberband, pitch kept), loudness -18 LUFS
 Defaults come from 20 of Ali's own clips against the «اسأل محمد» read (2026-10-09): same pitch level, Ali about
 13% faster with shorter pauses, his pitch range about 1.45x wider.
 
@@ -43,6 +46,9 @@ REF = ROOT / "voice-src/ref.wav"
 WHISPER = "mobiuslabsgmbh/faster-whisper-large-v3-turbo"
 AUDIO = {".m4a", ".mp3", ".wav", ".aac", ".flac", ".ogg", ".opus", ".caf", ".mp4", ".mov"}
 SR = 24000
+BRIGHT = ",".join(["aresample=48000", "highpass=f=90", "lowshelf=f=220:g=-4", "equalizer=f=1000:t=q:w=1:g=2",
+                   "equalizer=f=3000:t=q:w=1.2:g=2", "equalizer=f=5000:t=q:w=1:g=-3", "highshelf=f=7500:g=6",
+                   "aexciter=level_in=1:level_out=1:amount=2.5:drive=6:blend=0:freq=7500:ceil=16000"])
 
 
 def arg(name, default):
@@ -184,7 +190,7 @@ def split(film, parts, text, model, out):
     return report
 
 
-# ---------- 3-6. tighten, voice, tone, pace ----------
+# ---------- 3-7. tighten, voice, tone, clarity, pace ----------
 def tighten(y, pause):
     iv = librosa.effects.split(y, top_db=35, frame_length=1024, hop_length=160)
     fade = int(0.01 * SR)
@@ -244,7 +250,7 @@ def main():
     if "--split-only" in sys.argv:
         return
 
-    # 3-6
+    # 3-7
     import torchaudio
     from chatterbox.vc import ChatterboxVC
     vc = ChatterboxVC.from_pretrained("cpu")
@@ -254,7 +260,7 @@ def main():
         torchaudio.save(str(work / f"{k}-2vc.wav"), vc.generate(str(work / f"{k}-1tight.wav")), vc.sr)
         widen(work / f"{k}-2vc.wav", work / f"{k}-3wide.wav", rng)
         run("ffmpeg", "-v", "error", "-y", "-i", work / f"{k}-3wide.wav", "-af",
-            f"rubberband=tempo={tempo}:pitchq=quality,loudnorm=I=-18:TP=-2:LRA=11",
+            f"{BRIGHT},rubberband=tempo={tempo}:pitchq=quality,loudnorm=I=-18:TP=-2:LRA=11",
             "-ar", "48000", "-ac", "1", "-c:a", "pcm_s16le", out / f"{k}.wav")
         print(k, f"{librosa.get_duration(path=str(out / f'{k}.wav')):.2f}s", flush=True)
 
