@@ -153,3 +153,41 @@ These numbers are diagnostics, not proof (the A1 lesson).
 2. **Stage 2 pilot dataset not yet built and verified**: the Kuwaiti transcripts and the "Ali only / complete sentence" check.
 3. **A short ear check of the 6 baseline sentences** (`silma-baseline-6.m4a`), to confirm the base is a viable starting point: voice, clarity, no artefacts. Its dialect is expected to be MSA-leaning and is not judged here.
 4. The user's approval of the Stage 4 run.
+
+## Audit of existing Kuwaiti projects (2026-10-09)
+
+Checked by reading pages and making public HTTP requests only. Nothing was downloaded, and no audio of Ali or of anyone else was sent anywhere.
+
+| Item | What actually exists | Access, demo and licence | Data provenance |
+|---|---|---|---|
+| **Genarabia-ai/Kuwaiti_XTTS_Latest** (the priority) | Named as a fine-tuned XTTS v2, "fine-tuned for Kuwaiti pronunciation", about 5.6 GB | **Private.** The Hugging Face API returns 401 and the org's public model list doesn't include it. Access is possible only if the owners grant it; there is no public request page. **Licence:** XTTS v2 is under the **Coqui Public Model License (non-commercial)**. Coqui has shut down, so no commercial licence can be bought, and fine-tunes inherit those terms. | Not documented anywhere |
+| **XTTS-Modal-Server** (MIT code) | Serves that checkpoint on Modal; the README advertises an open public API | **The endpoint is down:** the base URL answers "modal-http: invalid function call" and `/docs` gives 404. **No demo could be run**, so no generic-voice test was possible. | – |
+| **xtts-vastai-deployment** | A Docker boilerplate for hosting the same private checkpoint on Vast.ai | Needs a Hugging Face token with access to the private repository, plus Vast.ai and Docker accounts. No licence stated. | "Fine-tuned for Kuwaiti pronunciation"; no data, method or base checkpoint described |
+| **kuwaiti-speech-pipeline** (MIT per the README; the file itself is not in the listing) | A pipeline that **generates synthetic Kuwaiti dialogues** with "AI models", then diarises and transcribes them | It uses a Google GenAI API key. **Inference, not confirmed:** the training audio is likely synthetic speech from a Google model. | Generation models not named |
+| **Genarabia-ai/Chatterbox_Kuwaiti** (found during the audit) | **Public**: a full Chatterbox Multilingual checkpoint (T3 2.1 GB, S3Gen 1.1 GB, ve, conds, expanded grapheme vocab), last modified 2026-01-12 | **No model card, no licence** (so all rights reserved by default), 0 downloads. The same architecture as our V5. | Not documented |
+| **Hazawi+** (ACM, DOI 10.1145/3800688) | A **text** corpus: about 7.2M tokens of Kuwaiti stories and novels, annotated with CAMeL tools, with 105k tokens reviewed by hand. **Not speech.** | Availability and licence not confirmed. The affiliation (Kuwait University) is not confirmed from the sources found. | Online forums and surveys |
+| **CAMeL Gumar** (NYU Abu Dhabi) | A **text** corpus: about 110M words of Gulf forum novels (Kuwait included in "Gulf"). The **hand-annotated subset (200k words) is Emirati**, not Kuwaiti. **Not speech.** | Download page with a licence acceptance; the terms could not be fully read | Online novels |
+
+**What this means:**
+
+- **No usable Kuwaiti voice model exists for us to build on today.**
+  - The one built for Kuwaiti (Kuwaiti XTTS) is private, its demo is down, its training data is undocumented and probably synthetic, and **its XTTS licence blocks commercial use permanently**.
+  - The public Chatterbox_Kuwaiti has no licence, no data provenance and no documentation. It is also the architecture that already traded pronunciation for likeness in V1–V5.
+- **The text resources (Hazawi+, Gumar) are useful for text, not voice.** They can help to:
+  - check our Kuwaiti spelling convention against real written Kuwaiti;
+  - draw natural sentences for the frozen test set and the recording scripts;
+  - build a Kuwaiti text normaliser.
+
+  Each needs its licence confirmed before use.
+
+## Recommendation: continue with the SILMA pilot, and contact the developers in parallel
+
+1. **Continue SILMA (no change to the plan or gates).** It is the only option with **verified** weights, a **verified** commercial licence, a fine-tuning path we have already tested, and Ali's corrected data as the Kuwaiti source.
+2. **Collaborate: one written enquiry to the developers (Ahmed Ezzat / Genarabia AI), sending no data.** Ask for:
+   - the training-data provenance and licence of Chatterbox_Kuwaiti;
+   - whether Kuwaiti_XTTS can be evaluated (research only, given its licence);
+   - whether their Kuwaiti transcription and spelling conventions or their test sentences can be shared.
+
+   **If** they document that Chatterbox_Kuwaiti's data is real and licensed, and give it a commercial licence, it becomes a candidate for a later, separate comparison. That does not happen automatically.
+3. **Do not build on Kuwaiti_XTTS for production.** Its licence rules it out whatever its quality.
+4. **Optional, later:** request Hazawi+ to support the Kuwaiti text side (spelling convention, test and recording sentences).
