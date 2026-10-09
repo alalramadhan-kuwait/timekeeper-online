@@ -1,0 +1,213 @@
+{
+ "char-owner": {
+  "width": 69.6,
+  "origin": [
+   0.5,
+   1.0
+  ]
+ },
+ "char-mohammed": {
+  "width": 45.0,
+  "origin": [
+   0.5,
+   1.0
+  ]
+ },
+ "char-rep": {
+  "width": 59.0,
+  "origin": [
+   0.5,
+   1.0
+  ]
+ },
+ "char-staff-manager": {
+  "width": 51.1,
+  "origin": [
+   0.5,
+   1.0
+  ]
+ },
+ "char-staff-sales": {
+  "width": 51.3,
+  "origin": [
+   0.5,
+   1.0
+  ]
+ },
+ "char-staff-office": {
+  "width": 47.4,
+  "origin": [
+   0.5,
+   1.0
+  ]
+ },
+ "char-staff-ops": {
+  "width": 47.4,
+  "origin": [
+   0.5,
+   1.0
+  ]
+ },
+ "char-driver": {
+  "width": 61.6,
+  "origin": [
+   0.5,
+   1.0
+  ]
+ },
+ "case-plinth-owned": {
+  "width": 128,
+  "origin": [
+   0.461,
+   1.225
+  ],
+  "surface": 38.3
+ },
+ "case-plinth-consignment": {
+  "width": 128,
+  "origin": [
+   0.503,
+   1.176
+  ],
+  "surface": 49.4
+ },
+ "case-plinth-preowned": {
+  "width": 128,
+  "origin": [
+   0.482,
+   1.339
+  ],
+  "surface": 50.0
+ },
+ "case-plinth-unknown": {
+  "width": 128,
+  "origin": [
+   0.626,
+   1.217
+  ],
+  "surface": 77.4
+ },
+ "case-glass": {
+  "width": 118,
+  "origin": [
+   0.49,
+   1.0
+  ],
+  "surface": 10.9
+ },
+ "box-open": {
+  "width": 100,
+  "origin": [
+   0.519,
+   1.0
+  ],
+  "surface": 42.4
+ },
+ "box-sealed": {
+  "width": 100,
+  "origin": [
+   0.523,
+   1.0
+  ],
+  "surface": 45.8
+ },
+ "box-wrapped": {
+  "width": 100,
+  "origin": [
+   0.511,
+   1.0
+  ],
+  "surface": 40.8
+ },
+ "counter": {
+  "width": 192,
+  "origin": [
+   0.657,
+   1.0
+  ]
+ },
+ "desk": {
+  "width": 192,
+  "origin": [
+   0.931,
+   1.0
+  ]
+ },
+ "file-cabinet": {
+  "width": 112,
+  "origin": [
+   0.566,
+   1.0
+  ]
+ },
+ "wall-cabinet": {
+  "width": 118,
+  "origin": [
+   0.557,
+   1.0
+  ]
+ },
+ "van": {
+  "width": 200,
+  "origin": [
+   0.42,
+   1.0
+  ]
+ },
+ "plant": {
+  "width": 84,
+  "origin": [
+   0.5,
+   1.0
+  ]
+ },
+ "palm": {
+  "width": 170,
+  "origin": [
+   0.5,
+   1.0
+  ]
+ },
+ "rug": {
+  "width": 384,
+  "origin": [
+   0.5,
+   0.0
+  ]
+ },
+ "sign-boutique": {
+  "width": 240,
+  "origin": [
+   0.5,
+   0.5
+  ]
+ },
+ "sign-dock": {
+  "width": 230,
+  "origin": [
+   0.5,
+   0.5
+  ]
+ },
+ "sign-office": {
+  "width": 250,
+  "origin": [
+   0.5,
+   0.5
+  ]
+ },
+ "sparkle": {
+  "width": 26,
+  "origin": [
+   0.5,
+   0.5
+  ]
+ },
+ "watch": {
+  "width": 34,
+  "origin": [
+   0.5,
+   0.5
+  ]
+ }
+}

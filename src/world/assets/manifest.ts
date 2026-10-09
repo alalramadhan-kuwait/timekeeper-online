@@ -4,10 +4,19 @@
    key in ./final/ (PNG, WebP or SVG) and it is used instead of the placeholder in
    ./placeholder/. A character can also be an animated sheet, named
    `<key>@<frameWidth>x<frameHeight>.png`: row 1 is standing still, row 2 walking.
-   Sizes and anchor points are listed in ./README.md. */
+   Sizes and anchor points are listed in ./README.md.
+
+   Final art can be any resolution. ./final/art.json says, per key, how wide it
+   is drawn in world units, where it touches the floor (origin) and, for things
+   other things rest on, how high its top surface is. Keys it leaves out keep
+   the placeholder's values. */
 
 const placeholder = import.meta.glob('./placeholder/*.svg', { eager: true, query: '?url', import: 'default' }) as Record<string, string>;
 const final = import.meta.glob('./final/*.{png,webp,svg}', { eager: true, query: '?url', import: 'default' }) as Record<string, string>;
+const artJson = import.meta.glob('./final/art.json', { eager: true, import: 'default' }) as Record<string, Record<string, ArtSettings>>;
+const ART: Record<string, ArtSettings> = Object.values(artJson)[0] ?? {};
+
+interface ArtSettings { width?: number; origin?: [number, number]; surface?: number; cards?: boolean }
 
 export interface AssetDef {
   key: string;
@@ -18,7 +27,20 @@ export interface AssetDef {
   frame?: { width: number; height: number };
   /* Where the picture touches the floor, as a fraction of its size. */
   origin: [number, number];
+  /* How wide it is drawn, in world units; the texture is scaled to fit. */
+  drawWidth: number;
+  /* Height of the top surface above the anchor, for what stands on it (a case
+     base, a box in a stack). */
+  surface: number;
+  /* The mission board: whether the game pins a card per open mission on it. */
+  cards: boolean;
 }
+
+/* Surfaces of the placeholders, which were drawn to a common grid. */
+const SURFACE: Record<string, number> = {
+  'case-plinth-owned': 44, 'case-plinth-consignment': 44, 'case-plinth-preowned': 44, 'case-plinth-unknown': 44,
+  'box-wrapped': 48, 'box-sealed': 48, 'box-open': 48, pallet: 10,
+};
 
 const fileKey = (path: string) => path.split('/').pop()!.replace(/\.(svg|png|webp)$/, '');
 
@@ -40,7 +62,8 @@ const SPECS: [string, number, number, number, number][] = [
   ['wall-office-l', 64, 134, 1, 102 / 134], ['wall-office-r', 64, 134, 0, 102 / 134],
   ['case-plinth-owned', 128, 116, 0.5, 1], ['case-plinth-consignment', 128, 116, 0.5, 1],
   ['case-plinth-preowned', 128, 116, 0.5, 1], ['case-plinth-unknown', 128, 116, 0.5, 1],
-  ['case-glass', 128, 160, 0.5, 1], ['case-dust', 128, 160, 0.5, 1],
+  // the glass and the dust stand on the case base, so they are anchored at their own foot
+  ['case-glass', 128, 160, 0.5, 116 / 160], ['case-dust', 128, 160, 0.5, 116 / 160],
   ['watch', 36, 28, 0.5, 0.6], ['tag-new', 56, 26, 0.5, 0.5],
   ['wall-cabinet', 128, 196, 0.5, 1], ['counter', 192, 180, 2 / 3, 1], ['rug', 384, 192, 0.5, 0],
   ['plant', 72, 120, 0.5, 0.97], ['palm', 160, 260, 0.5, 0.97],
@@ -63,7 +86,14 @@ export const ASSETS: AssetDef[] = SPECS.map(([key, width, height, ox, oy]) => {
   const url = f?.url ?? placeholders.get(key);
   if (!url) throw new Error(`World asset "${key}" has no file`);
   const type: AssetDef['type'] = f ? (f.frame ? 'sheet' : f.svg ? 'svg' : 'image') : 'svg';
-  return { key, url, type, width, height, frame: f?.frame, origin: [ox, oy] };
+  const a = f ? ART[key] ?? {} : {};
+  return {
+    key, url, type, width, height, frame: f?.frame,
+    origin: a.origin ?? [ox, oy],
+    drawWidth: a.width ?? width,
+    surface: a.surface ?? SURFACE[key] ?? 0,
+    cards: a.cards ?? true,
+  };
 });
 
 export const ASSET = Object.fromEntries(ASSETS.map((a) => [a.key, a])) as Record<string, AssetDef>;

@@ -49,8 +49,8 @@ class Walker {
 
   constructor(private scene: WorldScene, public key: string, cell: [number, number], public speed = 260, labelText?: string) {
     this.fx = cell[0] + 0.5; this.fy = cell[1] + 0.5;
-    this.shadow = scene.add.image(0, 0, 'shadow').setOrigin(0.5, 0.5);
-    this.sprite = scene.add.sprite(0, 0, key).setOrigin(...ASSET[key].origin);
+    this.shadow = scene.fit(scene.add.image(0, 0, 'shadow'), 'shadow');
+    this.sprite = scene.fit(scene.add.sprite(0, 0, key), key);
     if (scene.textures.get(key).frameTotal > 2) this.sprite.play(`${key}-idle`, true);
     if (labelText) this.label = scene.label(0, 0, labelText, 'person');
     this.sync(0);
@@ -210,9 +210,17 @@ export class WorldScene extends Phaser.Scene {
   /* `ringDy` puts the selection ring under the object's footprint rather than its anchor. */
   tag(obj: Phaser.GameObjects.GameObject, sel: Selection, ringDy = -32) { obj.setData('sel', sel); obj.setData('ringDy', ringDy); }
 
-  private img(key: string, x: number, y: number, depth: number, dyn = true) {
+  /* Size and anchor a picture as the asset list says, whatever resolution the
+     artwork file has: placeholders and final art place the same way. */
+  fit<T extends Phaser.GameObjects.Image | Phaser.GameObjects.Sprite>(o: T, key: string, extra = 1): T {
     const a = ASSET[key];
-    const o = this.add.image(x, y, key).setOrigin(a.origin[0], a.origin[1]).setDepth(depth);
+    const frameWidth = o.frame.width || a.drawWidth;
+    o.setOrigin(a.origin[0], a.origin[1]).setScale((a.drawWidth / frameWidth) * extra);
+    return o;
+  }
+
+  private img(key: string, x: number, y: number, depth: number, dyn = true) {
+    const o = this.fit(this.add.image(x, y, key), key).setDepth(depth);
     if (dyn) this.dyn.push(o);
     return o;
   }
@@ -247,7 +255,7 @@ export class WorldScene extends Phaser.Scene {
     }
     const ground = (key: string, x: number, y: number) => {
       const p = iso(x, y);
-      this.add.image(p.x, p.y, key).setOrigin(0.5, 0).setDepth(-2e6 + (x + y));
+      this.fit(this.add.image(p.x, p.y, key), key).setDepth(-2e6 + (x + y));
     };
     for (let y = ROAD.y0; y < ROAD.y1; y++) {
       ground('tile-pavement', ROAD.x0 - 1, y);
@@ -256,14 +264,14 @@ export class WorldScene extends Phaser.Scene {
     }
     for (const [x, y] of [[-3, -6], [10, -6], [-4, 9], [30, -4], [31, 12], [14, 20], [24, 18], [-3, 24], [31, 23], [18, -7]]) {
       const p = iso(x + 1, y + 1);
-      this.add.image(p.x, p.y, 'palm').setOrigin(...ASSET.palm.origin).setDepth(depthAt(x + 1, y + 1));
+      this.fit(this.add.image(p.x, p.y, 'palm'), 'palm').setDepth(depthAt(x + 1, y + 1));
     }
   }
 
   private drawRooms() {
     const ground = (key: string, x: number, y: number) => {
       const p = iso(x, y);
-      this.add.image(p.x, p.y, key).setOrigin(0.5, 0).setDepth(-1e6 + (x + y));
+      this.fit(this.add.image(p.x, p.y, key), key).setDepth(-1e6 + (x + y));
     };
     const R = ROOMS;
     for (let x = R.floor.x0; x < R.floor.x1; x++) for (let y = R.floor.y0; y < R.floor.y1; y++)
@@ -281,8 +289,8 @@ export class WorldScene extends Phaser.Scene {
     // walls on the two far sides of each room, open at the doorways
     const wall = (room: string, side: 'l' | 'r', x: number, y: number) => {
       const p = iso(x, y);
-      const a = ASSET[`wall-${room}-${side}`];
-      this.add.image(p.x, p.y, a.key).setOrigin(...a.origin).setDepth(depthAt(x, y, -2));
+      const key = `wall-${room}-${side}`;
+      this.fit(this.add.image(p.x, p.y, key), key).setDepth(depthAt(x, y, -2));
     };
     for (let y = R.floor.y0; y < R.floor.y1; y++) wall('floor', 'l', R.floor.x0, y);
     for (let x = R.floor.x0; x < R.floor.x1; x++) wall('floor', 'r', x, R.floor.y0);
@@ -293,7 +301,7 @@ export class WorldScene extends Phaser.Scene {
 
     const sign = (key: string, x: number, y: number) => {
       const p = iso(x, y);
-      this.add.image(p.x, p.y - 150, key).setDepth(depthAt(x, y, -1));
+      this.fit(this.add.image(p.x, p.y - 175, key), key).setDepth(depthAt(x, y, -1));
     };
     sign('sign-boutique', 6.5, R.floor.y0);
     sign('sign-dock', 20.5, R.dock.y0);
@@ -302,16 +310,16 @@ export class WorldScene extends Phaser.Scene {
     // the wall clock tells real Kuwait time
     const cp = iso(R.floor.x0, 5.5);
     this.clockAt = { x: cp.x - 32, y: cp.y - 52 };
-    this.add.image(this.clockAt.x, this.clockAt.y, 'wall-clock').setDepth(depthAt(0, 5, -1)).setScale(0.9);
+    this.fit(this.add.image(this.clockAt.x, this.clockAt.y, 'wall-clock'), 'wall-clock', 0.9).setDepth(depthAt(0, 5, -1));
     this.clockHands = this.add.graphics().setDepth(depthAt(0, 5, -0.5));
     this.drawClock();
 
     // fixed furniture
     const rugP = iso(FIXTURES.rug.cell[0], FIXTURES.rug.cell[1]);
-    this.add.image(rugP.x, rugP.y, 'rug').setOrigin(0.5, 0).setDepth(-5e5);
+    this.fit(this.add.image(rugP.x, rugP.y, 'rug'), 'rug').setDepth(-5e5);
     const fixed = (key: string, x: number, y: number, w = 1, d = 1) => {
       const p = iso(x + w, y + d);
-      return this.add.image(p.x, p.y, key).setOrigin(...ASSET[key].origin).setDepth(depthAt(x + w, y + d));
+      return this.fit(this.add.image(p.x, p.y, key), key).setDepth(depthAt(x + w, y + d));
     };
     fixed('counter', FIXTURES.counter.cell[0], FIXTURES.counter.cell[1], 2, 1);
     fixed('desk', FIXTURES.desk.cell[0], FIXTURES.desk.cell[1], 2, 1);
@@ -369,28 +377,33 @@ export class WorldScene extends Phaser.Scene {
   private buildCase(c: CaseModel) {
     const [x, y] = c.cell;
     const base = depthAt(x + 1, y + 1);
-    const plinth = this.stand(PLINTH[c.shelf.ownership] ?? PLINTH.unknown, x, y);
-    // watches on the plinth, inside the glass
+    const plinthKey = PLINTH[c.shelf.ownership] ?? PLINTH.unknown;
+    const plinth = this.stand(plinthKey, x, y);
+    // the glass stands on the base; the watches stand on the glass case's own floor
+    const onPlinth = ASSET[plinthKey].surface;
+    const inside = onPlinth + ASSET['case-glass'].surface;
     const spots: [number, number][] = [[0.3, 0.3], [0.7, 0.3], [0.3, 0.7], [0.7, 0.7], [0.5, 0.5], [0.5, 0.18]];
     for (let i = 0; i < c.watches; i++) {
       const p = iso(x + spots[i][0], y + spots[i][1]);
-      this.img('watch', p.x, p.y - 44, base + 0.1 + i * 0.001);
+      this.img('watch', p.x, p.y - inside, base + 0.1 + i * 0.001);
     }
-    const glass = this.stand('case-glass', x, y, 1, 1, 0, 0.3);
-    if (c.dusty) this.stand('case-dust', x, y, 1, 1, 0, 0.35);
+    const glass = this.stand('case-glass', x, y, 1, 1, onPlinth, 0.3);
+    if (c.dusty) this.stand('case-dust', x, y, 1, 1, onPlinth, 0.35);
     const top = iso(x + 0.5, y + 0.5);
-    if (c.isNew) this.img('tag-new', top.x - 40, top.y - 92, base + 0.4);
-    if (c.onOrder) this.img('box-sealed', top.x + 46, top.y + 22, base + 0.45).setScale(0.32);
-    if (c.alert) this.bobbing(this.img('alert', top.x + 34, top.y - 98, LABEL_DEPTH - 1));
+    const gb = glass.getBounds();
+    if (c.isNew) this.img('tag-new', gb.left + 26, gb.top + 18, base + 0.4);
+    if (c.onOrder) this.fit(this.img('box-sealed', top.x + 46, top.y + 22, base + 0.45), 'box-sealed', 0.32);
+    if (c.alert) this.bobbing(this.img('alert', gb.right - 22, gb.top - 4, LABEL_DEPTH - 1));
     if (c.sparkle && !this.reduced) {
-      const e = this.add.particles(top.x, top.y - 70, 'sparkle', {
+      const k = ASSET.sparkle.drawWidth / (this.textures.get('sparkle').get().width || ASSET.sparkle.drawWidth);
+      const e = this.add.particles(gb.centerX, gb.centerY, 'sparkle', {
         x: { min: -44, max: 44 }, y: { min: -26, max: 22 }, lifespan: 900, frequency: 520,
-        scale: { start: 0.9, end: 0 }, alpha: { start: 1, end: 0 }, quantity: 1,
+        scale: { start: 0.9 * k, end: 0 }, alpha: { start: 1, end: 0 }, quantity: 1,
       }).setDepth(base + 0.5);
       this.dyn.push(e);
     }
     if (c.dusty && !this.reduced) {
-      const e = this.add.particles(top.x, top.y - 60, 'mote', {
+      const e = this.add.particles(gb.centerX, gb.centerY, 'mote', {
         x: { min: -40, max: 40 }, y: { min: -20, max: 20 }, lifespan: 2600, frequency: 700,
         speedY: { min: -8, max: -3 }, scale: { start: 0.8, end: 0.2 }, alpha: { start: 0.7, end: 0 },
       }).setDepth(base + 0.5);
@@ -408,14 +421,17 @@ export class WorldScene extends Phaser.Scene {
     const [x, y] = b.cell;
     const key = `box-${b.kind}`;
     let top: Phaser.GameObjects.Image | null = null;
+    let lift = ASSET.pallet.surface;                       // boxes stand on the pallet, then on each other
     for (let i = 0; i < b.stack; i++) {
-      const o = this.stand(i === b.stack - 1 ? key : 'box-sealed', x, y, 1, 1, 10 + i * 48, 0.1 + i * 0.01);
+      const k = i === b.stack - 1 ? key : 'box-sealed';
+      const o = this.stand(k, x, y, 1, 1, lift, 0.1 + i * 0.01);
       o.setInteractive({ useHandCursor: true, pixelPerfect: true, alphaTolerance: 1 });
       this.tag(o, { type: 'po', id: b.po.po_id });
+      lift += ASSET[k].surface;
       top = o;
     }
     const c = iso(x + 0.5, y + 0.5);
-    const lid = c.y - 10 - b.stack * 48 - 6;
+    const lid = (top ? top.getBounds().top : c.y - lift) - 2;
     if (b.progress !== null) {
       const g = this.add.graphics().setDepth(LABEL_DEPTH - 3);
       const w = 70, p = Phaser.Math.Clamp(b.progress, 0, 1);
@@ -437,7 +453,8 @@ export class WorldScene extends Phaser.Scene {
     const board = this.img('mission-board', p.x, p.y - 18, depthAt(b.x, b.y, -1));
     board.setInteractive({ useHandCursor: true, pixelPerfect: true, alphaTolerance: 1 });
     this.tag(board, { type: 'board' });
-    const cards = Math.min(12, m.board.open + m.board.changed);
+    // artwork with its own printed notes says so in art.json, and gets no extra cards
+    const cards = ASSET['mission-board'].cards ? Math.min(12, m.board.open + m.board.changed) : 0;
     for (let i = 0; i < cards; i++) {
       const col = i % 6, row = Math.floor(i / 6);
       const t = 0.12 + col * 0.14;
@@ -456,7 +473,7 @@ export class WorldScene extends Phaser.Scene {
     const fp = iso(fx + 0.5, fy + 0.5);
     const n = m.issues.unreliable + m.issues.check;
     if (n > 0) {
-      this.img('flag', fp.x + 6, fp.y - 104, depthAt(fx + 1, fy + 1, 0.2));
+      this.img('flag', fp.x + 6, files.getBounds().top + 4, depthAt(fx + 1, fy + 1, 0.2));
       this.dyn.push(this.label(fp.x, fp.y + 30, `${n} records to check`, 'review'));
     }
 
@@ -475,7 +492,7 @@ export class WorldScene extends Phaser.Scene {
           yoyo: true, repeat: -1, repeatDelay: r.mood === 'review' ? 400 : 1600,
         });
       }
-      if (r.mood === 'review') this.bobbing(this.img('alert', c.x + 22, c.y - 120, LABEL_DEPTH - 1));
+      if (r.mood === 'review') this.bobbing(this.img('alert', c.x + 22, w.sprite.getBounds().top + 4, LABEL_DEPTH - 1));
     }
     if (m.hiddenReps > 0) {
       const c = iso(9.5, 20);
@@ -488,7 +505,7 @@ export class WorldScene extends Phaser.Scene {
     this.walkers.push(mo);
     if (m.topMission) {
       const c = iso(8.5, 14.5);
-      this.bobbing(this.img('alert', c.x + 4, c.y - 132, LABEL_DEPTH - 1));
+      this.bobbing(this.img('alert', c.x + 4, mo.sprite.getBounds().top - 2, LABEL_DEPTH - 1));
     }
   }
 
@@ -554,7 +571,7 @@ export class WorldScene extends Phaser.Scene {
     const tints = [0xd6453d, 0x5f7ea8, 0x3f8f5a, 0xf2c230, 0x9aa0a6];
     const lane = Phaser.Math.Between(0, 1) ? ROAD.x0 + 1 : ROAD.x0;
     const a = iso(lane + 1, ROAD.y0), b = iso(lane + 1, ROAD.y1);
-    const car = this.add.image(a.x, a.y, 'van').setOrigin(...ASSET.van.origin).setScale(0.8).setTint(Phaser.Utils.Array.GetRandom(tints));
+    const car = this.fit(this.add.image(a.x, a.y, 'van'), 'van', 0.8).setTint(Phaser.Utils.Array.GetRandom(tints));
     this.dyn.push(car);
     this.tweens.add({
       targets: car, x: b.x, y: b.y, duration: 9000,
