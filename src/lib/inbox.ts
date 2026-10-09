@@ -59,6 +59,8 @@ export interface MyTask {
   id: string; title: string; details: string | null;
   priority: string; due_date: string | null; assigned_by: string | null;
   url?: string; // deep-link to the source record when the task came from a workflow
+  /** A marketing campaign's task: it opens the campaign panel and closes with the campaign. */
+  campaignId?: string;
 }
 
 export interface InboxData {
@@ -128,6 +130,7 @@ export async function loadInbox(user: User, profile: Profile | null, role: Role 
     myTasks = rows.map((r) => ({
       id: r.id, title: r.title, details: r.details, priority: r.priority, due_date: r.due_date, assigned_by: r.assigned_by,
       url: r.source_table === 'limited_projects' && r.source_id ? `#/limited-projects?focus=${r.source_id}` : undefined,
+      campaignId: r.source_table === 'marketing_campaigns' && r.source_id ? r.source_id : undefined,
     }));
   }
 
