@@ -141,3 +141,40 @@ The listening answers lead to exactly one outcome, with no open-ended follow-up.
 | **ACCEPT** as the automatic engine, moving on to the larger unseen test | Pronunciation: ≥ 8/9 with no dialect error, and kp02, kp14 and kp17 all right. Identity: ≥ 7/9 "Ali". Blind A/B against the recorded mode: Fahed not judged worse in all 3. |
 | **ONE TARGETED CORRECTION**, then one re-check of only the affected sentences | The failures share a single cause that can be fixed without training. Examples: the same word or sound wrong on Fahed raw, fixable by respelling or SSML; or errors that appear only after conversion. Identity must already pass. |
 | **REJECT** Fahed → VC (recorded mode stays the production path) | Identity < 6/9, or pronunciation errors in ≥ 3 sentences with different causes, or Fahed judged worse in all 3 blind pairs and unusable in any. |
+
+## 7. Listening result and decision (2026-10-09)
+
+The answers come from the page's database (artifact UpY4Pbyi1nkochsJ9yNJh1). The A/B key is `voice-src/screen/page-key.json`: A = recorded mode, B = Fahed.
+
+| Sentence | A/B | Ali? | Dialect | Raw vs processed |
+|---|---|---|---|---|
+| am-s01 | A (recorded) | yes | not Kuwaiti | same |
+| am-s05 | A (recorded) | yes | not Kuwaiti | same |
+| am-s08 | A (recorded) | – | – | same |
+| kp02 | – | no | not Kuwaiti | same |
+| kp14 | – | no | not Kuwaiti | raw better |
+| kp17 | – | no | not Kuwaiti | same |
+| SI6mbpgUIME-009 | – | no | not Kuwaiti | same |
+| vTah72jkpNo-005 | – | no | not Kuwaiti | same |
+| aaVA-8RN_fc-007 | – | no | not Kuwaiti | same |
+
+**Totals:**
+- **Dialect:** 0 of 8 answered sentences rated Kuwaiti.
+- **Identity:** 2 of 8 rated as Ali.
+- **Blind A/B:** the recorded mode won all 3.
+- **Post chain:** "same" 8 times and "raw better" once, so it adds nothing.
+
+**Decision: REJECT Fahed → VC as the automatic engine.** By the rule in section 6:
+- identity is under 6/9;
+- pronunciation fails in every sentence;
+- the recorded mode wins all three blind pairs.
+
+This is not a targeted-correction case. The failure is the whole dialect, not one word or one sound, and no word-level fix changes how Fahed speaks.
+
+**What this tells us:**
+- Fahed's ar-KW voice is not heard as Kuwaiti, even before conversion.
+- The voice conversion is not the problem: in the recorded mode the same chain was judged to be Ali, and the A/B preferred it.
+- So any automatic engine has to produce speech that a Kuwaiti hears as Kuwaiti before VC. No ready-made TTS tried so far does that: not Fahed, not Habibi (Saudi/Emirati), and not V5.
+- The 0.90 speaker similarity did not predict the human "is this Ali?" answer (2 of 8). This is another reason not to trust automatic metrics here.
+
+**Production stays on the recorded mode** (`ali-voice` skill, `tk_ali_voice.py`), unchanged.
