@@ -52,15 +52,15 @@ Changed beyond scaling, by `build_v2.py` (kept outside the repo):
   is squashed to about 86% of its height to fit 128 × 64 exactly. Redrawn 2:1
   tiles would look crisper.
 - **Walls**: each panel is assigned to the left or right side by the way its
-  bottom edge runs, and scaled so one panel spans one tile edge.
+  bottom edge runs, and scaled so one panel spans one tile edge. They are drawn
+  at about 33° (the bottom edge drops 0.65 px per px; the grid needs 0.5), so
+  the skirting steps down at every joint. To be redrawn.
 - **Case glass**: the vitrines include their glass, so the watches would sit
   behind it. The glass panes and gold posts of the walnut vitrine are redrawn as
   a see-through overlay (`case-glass`, `onFloor`) over the watches, which stand
   on the cream cushion.
 - **Wall clock**: the painted hands are removed (the TK monogram stays); the
   World draws the hands in live Kuwait time.
-- **Bench, counter, desk**: mirrored where needed so the long side runs along
-  the 2 × 1 footprint.
 - Pictures larger than twice their drawn size are scaled down to that, to keep
   the download small (2.3 MB in all).
 
