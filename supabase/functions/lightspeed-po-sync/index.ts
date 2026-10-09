@@ -183,6 +183,10 @@ Deno.serve(async (req: Request) => {
         outlet: c.outlet_id ? (outMap.get(c.outlet_id) ?? null) : null,
         created_date: (c.created_at ?? syncedAt).slice(0, 10),
         expected_arrival: c.due_at ? c.due_at.slice(0, 10) : null,
+        // Lightspeed's own time the consignment was received, stored exactly as Lightspeed
+        // gives it and never estimated. Only rows this run writes get it, so history is
+        // not backfilled: receiving times are recorded from the day this ships.
+        ls_received_at: c.received_at ?? null,
         status: mapStatus(c.status),
         ls_synced_at: syncedAt,
       };

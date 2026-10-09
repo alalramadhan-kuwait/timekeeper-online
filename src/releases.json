@@ -1,5 +1,17 @@
 [
   {
+    "version": "3.6.0",
+    "date": "2026-10-09",
+    "title": "Marketing campaigns",
+    "changes": [
+      "Owners can turn a marketing idea into a campaign from the Inbox: pick the goal, the watches, a target and a deadline, and give it to the marketing team.",
+      "The marketing team gets each campaign as a task in their Inbox. Open it to see the brief, upload drafts and send them for review.",
+      "The owner sees the draft pictures, approves them or asks for changes, and gets a message when a draft is waiting.",
+      "Once a post is out, the team records when it went out and the link. Nothing is posted, boosted or paid for from the app.",
+      "Every step is kept in the campaign's history, with a lesson at the end, so you can see what worked."
+    ]
+  },
+  {
     "version": "3.5.1",
     "date": "2026-10-08",
     "title": "A new face for Mohammed",
