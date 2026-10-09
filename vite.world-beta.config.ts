@@ -1,14 +1,15 @@
 /* Time Keeper World private beta: a separate static site with its own address
-   (alalramadhan-kuwait.github.io/tk-world-beta/), built from this repository's
-   World code and published to its own repository, so TK Online's deploy is
-   never involved. Build: npm run world:beta (output in dist-world-beta/). */
+   (alalramadhan-kuwait.github.io/timekeeper-online/world-beta/), built from
+   this repository's World code and committed to main as static files under
+   public/world-beta/: TK Online's own code never includes the World. Build:
+   npm run world:beta (output in dist-world-beta/). */
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'node:path';
 
 export default defineConfig({
   root: path.resolve(__dirname, 'beta/world'),
-  base: '/tk-world-beta/',
+  base: '/timekeeper-online/world-beta/',
   envDir: __dirname,
   publicDir: false,
   plugins: [react()],
