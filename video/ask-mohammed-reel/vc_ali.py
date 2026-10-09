@@ -1,4 +1,6 @@
-"""The Kuwaiti read of the «اسأل محمد» narration (voice-ali/proc, the speaker's own recordings, cleaned by
+"""Superseded by video/brand/tk_ali_voice.py (all steps, recordings in parts). Kept as the record of how the reel was made.
+
+The Kuwaiti read of the «اسأل محمد» narration (voice-ali/proc, the speaker's own recordings, cleaned by
 prep_ali.py) made into Ali Alyousifi's voice: the words and pronunciation stay the speaker's, the delivery is moved
 toward Ali's and the timbre becomes Ali's (Chatterbox VC, S3Gen, MIT). Consent: video/brand/VOICE-CONSENT.md.
 

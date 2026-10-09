@@ -5,4 +5,7 @@ dist
 
 # Voice source recordings (TK Voice). Audio stays out of git.
 voice-src/
+# a film's Kuwaiti read and the narration made from it (video/brand/tk_ali_voice.py)
+video/*/voice-rec/
+video/*/voice-vc/
 video/brand/__pycache__/*.cpython-313.pyc
