@@ -405,7 +405,8 @@ export class MallLayer {
         chipsMoved = true;
         const k = t.scaleX;
         r = t.getBounds();
-        this.healthBar(gr.brand, r.left + 4 * k, r.bottom - 4 * k, r.width - 8 * k, 3.5 * k, 0, bar);
+        // the bar may itself have been lifted clear of another label: draw it in its own coordinates
+        this.healthBar(gr.brand, r.left + 4 * k - bar.x, r.bottom - 4 * k - bar.y, r.width - 8 * k, 3.5 * k, 0, bar);
       }
     }
     if (chipsMoved) for (const gr of this.badges) this.followChip(gr);
@@ -422,9 +423,12 @@ export class MallLayer {
       gr.faded = on;
       for (const o of gr.items) { (o as Phaser.GameObjects.Image).setAlpha(on ? 0 : 1); if (o.input) o.input.enabled = !on; }
     };
+    // a label wholly under the page's bars (seen through the gaps between its buttons) fades too
+    const inView = (r: Phaser.Geom.Rectangle) => r.right > view.x && r.x < view.x + view.w && r.bottom > view.y && r.y < view.y + view.h;
     for (const gr of shown) {
-      if (!gr.cx && !gr.cy) { fade(gr, false); continue; }
       const r = rect(gr);
+      if (!inView(r)) { fade(gr, true); continue; }
+      if (!gr.cx && !gr.cy) { fade(gr, false); continue; }
       fade(gr, shown.some((o) => o !== gr && !o.faded && Phaser.Geom.Rectangle.Overlaps(rect(o), r)));
     }
   }
