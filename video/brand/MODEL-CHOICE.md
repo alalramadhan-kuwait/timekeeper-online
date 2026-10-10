@@ -250,3 +250,43 @@ This is the first model the user has judged more Kuwaiti than the alternatives, 
   - Whether its Kuwaiti survives cloning or conversion is unknown.
 
 Both options use Ali's reference audio with this checkpoint, locally only. The user's earlier instruction for this model was "no private audio", so **this needs the user's approval before it runs**.
+
+## Zero-training test: Chatterbox_Kuwaiti + Ali's voice, listening result (2026-10-10)
+
+**Page:** artifact PWduKW5Zb6ryX8Cnjn1TdY. Hidden key: A = built-in voice → VC to Ali, B = the checkpoint cloning Ali from `ref.wav` (`voice-src/ck-kw-ali/page-key.json`). Everything ran locally and nothing was trained.
+
+| Sentence | Ali? (A / B) | Dialect A (VC) | Dialect B (clone) | Better |
+|---|---|---|---|---|
+| am-s01 | yes / yes | near | near | B |
+| am-s05 | yes / yes | not Kuwaiti | near | B |
+| am-s08 | yes / yes | not Kuwaiti | not Kuwaiti | B |
+| kp02 | yes / yes | not Kuwaiti | near | B |
+| kp14 | yes / yes | not Kuwaiti | near | B |
+| kp17 (clone only) | – / yes | – | near | – |
+
+The user's note on kp17: «شفيك» and «امبارح» are said wrong, and **a Kuwaiti would say «أمس», not «امبارح»**. The second part is a fault in our test text, not the model.
+
+**Totals:**
+- **Ali's voice: 11 of 11 versions heard as Ali.** The clone route got 6 of 6. A1 Fahed got 2 of 8.
+- **Dialect, clone route:** "near" 5 of 6, "not Kuwaiti" 1 of 6, "Kuwaiti" 0 of 6.
+- **Dialect, VC route:** "near" 1 of 5, "not Kuwaiti" 4 of 5.
+- **The clone route won 5 of 5.**
+
+**Spelling test (clone route; all heard as Ali):**
+
+| Word | Best spelling chosen | Note |
+|---|---|---|
+| قال | **«قال» with ق** (not گال, not جال) | |
+| كم | **«چم»** | |
+| قاعد | **«گاعد»** without diacritics | «أدور» is still wrong |
+
+So this checkpoint follows a **mixed convention**: ق in قال, چ in چم, گ in گاعد. A per-model spelling map is a text-side fix that needs no training.
+
+**Reading:**
+- This is the best automatic result so far: **Ali's voice in every sentence and "near Kuwaiti" in 5 of 6**, with **no training**.
+- Compare SILMA without training (resembles Ali, dialect wrong) and Fahed → VC (dialect 0/8, Ali 2/8).
+- Cloning keeps the checkpoint's Kuwaiti better than voice conversion does.
+- It is **not yet fully Kuwaiti**: no sentence was rated «كويتية».
+- Still open:
+  - the end-of-sentence problems (it does not stop and needs trimming; one sentence crashed with the built-in voice, though not with Ali's reference);
+  - **no licence and no provenance**, which is fine for research only.
