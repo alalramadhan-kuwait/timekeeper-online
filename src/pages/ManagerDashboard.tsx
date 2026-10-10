@@ -447,7 +447,8 @@ function SalesLine({ name, sales, target, pct, frac, verdict, note, total }: {
     <div className={`py-2 ${verdict === 'behind' ? '-mx-2 rounded-lg bg-rose-50 px-2' : 'border-t border-slate-100 first:border-t-0'}`}>
       <div className="flex items-baseline justify-between text-sm">
         <span className={total ? 'font-semibold text-slate-900' : 'text-slate-700'}>{name}</span>
-        <span className={`font-mono text-sm font-semibold ${target ? pctCls : 'font-normal text-slate-400'}`}>{target ? `${pct}%` : 'no target'}</span>
+        {/* without a target there is no percentage; the line below already says "no target set" */}
+        {target ? <span className={`font-mono text-sm font-semibold ${pctCls}`}>{pct}%</span> : null}
       </div>
       <div className="relative mt-1.5 h-2 rounded bg-slate-200">
         <div className={`absolute inset-y-0 left-0 rounded ${target ? bar : ''}`} style={{ width: `${target ? fill : 0}%` }} />
