@@ -79,17 +79,17 @@ export interface BoutiquePlan {
   bench: [number, number] | null;        // 2 x 1, where clients sit
   plants: [number, number][];
   rug: [number, number] | null;          // flat
-  crate: [number, number];               // shown only while the brand has an open order
+  crate: [number, number];               // shown only while the brand has an open order; in a middle row, clear of the door
   sign: number;                          // where along the shop front the name hangs (0-8)
 }
 type Plan = Omit<BoutiquePlan, 'variant'>;
 const PLANS: Plan[] = [
   // a display hall: the pavilion centred at the back, cases either side
-  { pavilion: [3, 0], cases: [[1, 2], [6, 2], [3, 3]], counter: [0, 4], bench: [5, 4], plants: [[0, 0], [7, 0]], rug: [2, 2], crate: [7, 5], sign: 4 },
+  { pavilion: [3, 0], cases: [[1, 2], [6, 2], [3, 3]], counter: [0, 4], bench: [5, 4], plants: [[0, 0], [7, 0]], rug: [2, 2], crate: [7, 3], sign: 4 },
   // a salon: the pavilion in one corner, the cases along the far side, seating by the door
-  { pavilion: [0, 0], cases: [[4, 1], [6, 1], [6, 3]], counter: [3, 3], bench: [0, 4], plants: [[3, 0], [0, 5]], rug: [0, 2], crate: [7, 5], sign: 3.5 },
+  { pavilion: [0, 0], cases: [[4, 1], [6, 1], [6, 3]], counter: [3, 3], bench: [0, 4], plants: [[3, 0], [0, 5]], rug: [0, 2], crate: [7, 2], sign: 3.5 },
   // a long counter: the pavilion in the other corner, cases grouped on the open side
-  { pavilion: [6, 0], cases: [[0, 1], [2, 1], [1, 3]], counter: [4, 3], bench: [6, 4], plants: [[5, 0]], rug: [3, 1], crate: [0, 5], sign: 4.5 },
+  { pavilion: [6, 0], cases: [[0, 1], [2, 1], [1, 3]], counter: [4, 3], bench: [6, 4], plants: [[5, 0]], rug: [3, 1], crate: [3, 2], sign: 4.5 },
 ];
 export function boutiquePlan(s: SlotGeo): BoutiquePlan {
   const order = ['GG-N1', 'GG-N2', 'GG-S1', 'GG-S2', 'CA-N1', 'CA-N2', 'CA-S1'];

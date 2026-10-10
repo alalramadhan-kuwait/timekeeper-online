@@ -137,10 +137,10 @@ export class MallLayer {
     return o;
   }
 
-  private flat(key: string, lx: number, ly: number, depth = -8e5) {
+  private flat(key: string, lx: number, ly: number, depth = -8e5, extra = 1) {
     const [x, y] = toWorld(lx, ly);
     const p = iso(x, y);
-    return this.keep(this.scene.fit(this.scene.add.image(p.x, p.y, key), key).setDepth(depth)) as Phaser.GameObjects.Image;
+    return this.keep(this.scene.fit(this.scene.add.image(p.x, p.y, key), key, extra).setDepth(depth)) as Phaser.GameObjects.Image;
   }
 
   /* ── what follows the data ───────────────────────────────────────────── */
@@ -218,7 +218,11 @@ export class MallLayer {
     // the brand's colour in the floor inlay, a rug, plants and a cash desk where the plan has them
     // the inlay is drawn for 6 x 4: centred in the 8 x 6 shop, a border of plain floor round it
     this.flat('bq-floor-accent', g.x + (g.w - 6) / 2, g.y + (g.d - 4) / 2).setTint(accent).setAlpha(0.85);
-    if (plan.rug) this.flat('rug', plan.rug[0], plan.rug[1], -7.5e5).setTint(lighten(accent, 0.55));
+    // a rug in the brand's colour; the TK monogram rug belongs only to Time Keeper's own boutique
+    if (plan.rug) {
+      if (b.brand === 'Time Keeper') this.flat('rug', plan.rug[0], plan.rug[1], -7.5e5).setTint(lighten(accent, 0.55));
+      else this.flat('bq-rug', plan.rug[0], plan.rug[1], -7.5e5, 1.5).setTint(lighten(accent, 0.35));
+    }
     for (const [px, py] of plan.plants) this.place('plant', px, py, 1, 1, 0, true);
     // a bench where clients sit while they look
     if (plan.bench) this.place('bench', plan.bench[0], plan.bench[1], 2, 1, 0, true);
@@ -252,12 +256,13 @@ export class MallLayer {
       c.setInteractive({ useHandCursor: true, pixelPerfect: true, alphaTolerance: 1 });
       s.tag(c, sel, 0);
     }
-    // the name over the shop, with a health bar under it: on the back wall, or over the low front wall
+    // the name on the shop's wall: high on the back wall in the back row; in the front row on the
+    // name plate of the low wall that faces the camera (over the walkway it would cover the islands)
     const [x, y] = toWorld(g.x + plan.sign, g.side === 'n' ? 0 : g.y + g.d);
     const p = iso(x, y);
     // sized by its writing area, so a square plaque and a long thin one carry the name at the same size
     const ta = ASSET['sign-section'].text ?? [0.1, 0.1, 0.9, 0.9];
-    const sign = this.billboard('sign-section', p.x, p.y - (g.side === 'n' ? 170 : 52), TOP - 12, 230 / (ASSET['sign-section'].drawWidth * (ta[2] - ta[0])));
+    const sign = this.billboard('sign-section', p.x, p.y - (g.side === 'n' ? 170 : 44), TOP - 12, 230 / (ASSET['sign-section'].drawWidth * (ta[2] - ta[0])));
     sign.setInteractive({ useHandCursor: true }); s.tag(sign, sel, 0);
     const r = this.area(sign, 'sign-section');
     let t: Phaser.GameObjects.Text, bar: Phaser.GameObjects.Graphics;
@@ -316,7 +321,12 @@ export class MallLayer {
     const top = objs[1].getBounds().top;
     const c = iso(x + 0.5, y + 0.5);
     if (b.openPos.length) {
-      const cr = this.keep(s.fit(s.add.image(c.x + 44, c.y + 24 - lift, 'crate-po'), 'crate-po', 0.55).setDepth(depthAt(x + 1, y + 1, 0.4))) as Phaser.GameObjects.Image;
+      // an open order's crate stands by the kiosk; on an island, where the kiosks fill the platform,
+      // a smaller one waits on the platform behind it rather than out in the walkway
+      const island = g.kind === 'island';
+      const cr = this.keep(island
+        ? s.fit(s.add.image(c.x + 30, c.y - 10 - lift, 'crate-po'), 'crate-po', 0.4).setDepth(depthAt(x + 1, y + 1, -0.05))
+        : s.fit(s.add.image(c.x + 44, c.y + 24 - lift, 'crate-po'), 'crate-po', 0.55).setDepth(depthAt(x + 1, y + 1, 0.4))) as Phaser.GameObjects.Image;
       cr.setInteractive({ useHandCursor: true, pixelPerfect: true, alphaTolerance: 1 }); s.tag(cr, sel, 0);
     }
     if (b.sparkle && !s.reducedMotion) {

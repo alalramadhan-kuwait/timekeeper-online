@@ -4,7 +4,7 @@ import {
   BOUNDS, CORRIDORS, FIXTURES, ROAD, ROOMS, blockedCells, roomOf, walkable,
   type BoxModel, type Room, type WorldModel,
 } from '../model';
-import { FIGURE_SCALE, MALL, SECTIONS, WALK, sectionOfLocalX, toLocal, toWorld } from '../mall/layout';
+import { FIGURE_SCALE, MALL, SECTIONS, WALK, WALL_HEIGHT, sectionOfLocalX, toLocal, toWorld } from '../mall/layout';
 import { FloorBatch } from './FloorBatch';
 import { cellAt, depthAt, findPath, iso } from './iso';
 import { MallLayer } from './MallLayer';
@@ -177,7 +177,29 @@ export class WorldScene extends Phaser.Scene {
     this.keepInZone(delta);
     this.mall.lod(this.cameras.main.zoom / (this.base * 2));
     const cam = this.cameras.main, wv = cam.worldView, u = (this.base * 2) / cam.zoom, m = 6 * u;
-    this.mall.clampLabels({ x: wv.x + m, y: wv.y + this.insets.top * u + m, w: wv.width - 2 * m, h: wv.height - (this.insets.top + this.insets.bottom) * u - 2 * m });
+    const view = { x: wv.x + m, y: wv.y + this.insets.top * u + m, w: wv.width - 2 * m, h: wv.height - (this.insets.top + this.insets.bottom) * u - 2 * m };
+    this.mall.clampLabels(view);
+    this.clampAreaLabels(view);
+  }
+
+  /* The dock's and office's labels slide back inside the free screen when its edge would cut
+     them, as the mall's do. */
+  private areaClampKey = '';
+  private clampAreaLabels(view: { x: number; y: number; w: number; h: number }) {
+    const key = `${this.room},${Math.round(view.x)},${Math.round(view.y)},${Math.round(view.w)},${Math.round(view.h)}`;
+    if (key === this.areaClampKey) return;
+    this.areaClampKey = key;
+    for (const { t } of this.areaLabels) {
+      if (!t.active) continue;
+      const ox = (t.getData('clampDx') as number | undefined) ?? 0, oy = (t.getData('clampDy') as number | undefined) ?? 0;
+      if (ox || oy) { t.x -= ox; t.y -= oy; t.setData('clampDx', 0); t.setData('clampDy', 0); }
+      if (!t.visible) continue;
+      const r = t.getBounds();
+      if (r.right <= view.x || r.x >= view.x + view.w || r.bottom <= view.y || r.y >= view.y + view.h) continue;
+      const dx = r.x < view.x ? view.x - r.x : r.right > view.x + view.w ? view.x + view.w - r.right : 0;
+      const dy = r.y < view.y ? view.y - r.y : r.bottom > view.y + view.h ? view.y + view.h - r.bottom : 0;
+      if (dx || dy) { t.x += dx; t.y += dy; t.setData('clampDx', dx); t.setData('clampDy', dy); }
+    }
   }
 
   /* ── public, called from the page ─────────────────────────────────── */
@@ -245,8 +267,7 @@ export class WorldScene extends Phaser.Scene {
     if (!t) return;
     this.room = 'floor';
     this.showAreaLabels();
-    const [lx] = toLocal(t.cell[0], t.cell[1]);
-    this.section = sectionOfLocalX(lx);
+    this.showSectionOf(brand);
     const cam = this.cameras.main, px = this.base * 2;
     const z = Phaser.Math.Clamp(Math.max(cam.zoom, (t.boutique ? 0.6 : 0.85) * px), this.minZoom(), this.maxZoom());
     const ob = t.obj.getBounds();
@@ -254,9 +275,21 @@ export class WorldScene extends Phaser.Scene {
     const b = t.centre ? { centerX: t.centre.x, centerY: t.centre.y } : { centerX: ob.centerX, centerY: ob.centerY };
     this.markChosen(t.obj as Phaser.GameObjects.Image, 0);
     this.zoomTarget = z;
-    if (this.reduced) { cam.setZoom(z); cam.centerOn(b.centerX, b.centerY); }
-    else { cam.pan(b.centerX, b.centerY, 600, 'Sine.easeInOut', true); cam.zoomTo(z, 600, 'Sine.easeInOut', true); }
-    this.revealTo = { x: b.centerX, y: b.centerY };
+    const cy = this.onMall(b.centerX, b.centerY, z);
+    if (this.reduced) { cam.setZoom(z); cam.centerOn(b.centerX, cy); }
+    else { cam.pan(b.centerX, cy, 600, 'Sine.easeInOut', true); cam.zoomTo(z, 600, 'Sine.easeInOut', true); }
+    this.revealTo = { x: b.centerX, y: cy };
+  }
+
+  /* A view centred at (x, y) at zoom z, moved up or down so the free part of the screen stays on
+     the mall: not past its low front wall onto the sand, not above its back wall's top. */
+  private onMall(x: number, y: number, z: number) {
+    const cam = this.cameras.main, px = this.base * 2;
+    const below = (cam.height / 2 - this.insets.bottom * px) / z, above = (cam.height / 2 - this.insets.top * px) / z;
+    const lineY = (wy: number) => (x / 64 + 2 * wy) * 32;       // screen y of the line at mall row wy, in this column
+    const front = lineY(MALL.y0 + MALL.d) + 40, back = lineY(MALL.y0) - WALL_HEIGHT - 60;
+    if (front - back < below + above) return y;                  // the mall is shorter than the screen here
+    return Phaser.Math.Clamp(y, back + above, front - below);
   }
 
   zoomBy(f: number) {
@@ -278,14 +311,26 @@ export class WorldScene extends Phaser.Scene {
     const z = cam.zoomEffect.isRunning && this.zoomTarget ? this.zoomTarget : cam.zoom;
     const free = { x0: 0, y0: top * px, x1: cam.width - right * px, y1: cam.height - bottom * px };
     if (free.x1 - free.x0 < 80 || free.y1 - free.y0 < 80) return;
-    const c = o.getBounds();
+    const b = o.getBounds();
+    // a boutique is kept in view by its floor (pavilion and cases), not by its sign above it
+    const sel = o.getData('sel') as Selection | undefined;
+    const t = sel?.type === 'brand' ? this.mall.target(sel.brand) : null;
+    const c = t?.boutique && t.centre ? { centerX: t.centre.x, centerY: t.centre.y } : { centerX: b.centerX, centerY: b.centerY };
     // judged from where the camera is heading, if it is still moving there
     const mid = cam.panEffect.isRunning && this.revealTo ? this.revealTo : { x: cam.midPoint.x, y: cam.midPoint.y };
     const sx = (c.centerX - mid.x) * z + cam.width / 2, sy = (c.centerY - mid.y) * z + cam.height / 2;
     const m = 40 * px;
-    if (sx > free.x0 + m && sx < free.x1 - m && sy > free.y0 + m && sy < free.y1 - m) return;
-    const cx = c.centerX - ((free.x0 + free.x1) / 2 - cam.width / 2) / z;
-    const cy = c.centerY - ((free.y0 + free.y1) / 2 - cam.height / 2) / z;
+    const inFree = (x: number, y: number) => x > free.x0 + m && x < free.x1 - m && y > free.y0 + m && y < free.y1 - m;
+    const bx = (b.centerX - mid.x) * z + cam.width / 2, by = (b.centerY - mid.y) * z + cam.height / 2;
+    if (inFree(sx, sy) && inFree(bx, by)) return;
+    let cx = c.centerX - ((free.x0 + free.x1) / 2 - cam.width / 2) / z;
+    let cy = c.centerY - ((free.y0 + free.y1) / 2 - cam.height / 2) / z;
+    // a boutique's pavilion (what is tapped) can stand in a corner of a shop larger than the
+    // free part of the screen: slide the view just enough to keep it showing too
+    const px2 = (b.centerX - cx) * z + cam.width / 2, py2 = (b.centerY - cy) * z + cam.height / 2;
+    const lo = (v: number, a: number, z1: number) => (v < a ? v - a : v > z1 ? v - z1 : 0);
+    cx += lo(px2, free.x0 + m, free.x1 - m) / z;
+    cy += lo(py2, free.y0 + m, free.y1 - m) / z;
     this.revealTo = { x: cx, y: cy };
     if (this.reduced) cam.centerOn(cx, cy);
     else cam.pan(cx, cy, 450, 'Sine.easeInOut', true);
@@ -408,12 +453,14 @@ export class WorldScene extends Phaser.Scene {
     for (let y = R.office.y0; y < R.office.y1; y++) wall('office', 'l', R.office.x0, y);
     for (let x = R.office.x0; x < R.office.x1; x++) wall('office', 'r', x, R.office.y0);
 
-    const sign = (key: string, x: number, y: number) => {
+    const sign = (key: string, x: number, y: number, lift = 175) => {
       const p = iso(x, y);
-      this.fit(this.add.image(p.x, p.y - 175, key), key).setDepth(depthAt(x, y, -1));
+      this.fit(this.add.image(p.x, p.y - lift, key), key).setDepth(depthAt(x, y, -1));
     };
     sign('sign-dock', 20.5, R.dock.y0);
-    sign('sign-office', R.office.x0, 17);
+    // on the office's left wall, near its back corner, where an upright phone still shows it;
+    // raised clear of the filing cabinet's flag and count, which stand in front of it
+    sign('sign-office', R.office.x0, R.office.y0 + 2, 250);
 
     // the wall clock tells real Kuwait time, on the Grand Gallery's end wall
     const cp = iso(R.floor.x0, 5.5);
@@ -816,12 +863,26 @@ export class WorldScene extends Phaser.Scene {
     const sel = o.getData('sel') as Selection;
     if (sel.type === 'section') { this.hooks.onSection?.(sel.index); this.focusSection(sel.index); return; }
     this.markChosen(o as Phaser.GameObjects.Image, (o.getData('ringDy') as number) ?? -32);
+    if (sel.type === 'brand') this.showSectionOf(sel.brand);
     this.hooks.onSelect(sel);
+  }
+
+  /* The section buttons follow the brand being looked at. */
+  private showSectionOf(brand: string) {
+    const t = this.mall.target(brand);
+    if (!t) return;
+    const i = sectionOfLocalX(toLocal(t.cell[0], t.cell[1])[0]);
+    this.section = i;
+    this.hooks.onSection?.(i);
   }
 
   private markChosen(img: Phaser.GameObjects.Image, dy: number) {
     this.chosen = img;
-    this.selectRing.setVisible(true).setPosition(img.x, img.y + dy).setScale(dy === 0 ? 0.6 : 1);
+    this.selectRing.setVisible(true).setPosition(img.x, img.y + dy).setScale(dy === 0 ? 0.6 : 1).setDepth(LABEL_DEPTH - 2);
+    // a boutique is marked on its floor, round the shop under its furniture, not across its name sign
+    const sel = img.getData('sel') as Selection | undefined;
+    const t = sel?.type === 'brand' ? this.mall.target(sel.brand) : null;
+    if (t?.boutique && t.centre) this.selectRing.setPosition(t.centre.x, t.centre.y + 60).setScale(2.4).setDepth(-7e5);
     this.selectRing.setAlpha(1);
     if (!this.reduced) {
       this.tweens.killTweensOf(this.selectRing);
