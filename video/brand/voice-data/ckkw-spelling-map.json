@@ -57,12 +57,10 @@
    }
   },
   "باجر": {
-   "write": "باكر",
-   "status": "closest",
-   "note": "good, but should sound a bit nearer ج than ك; no spelling is fully right yet",
-   "forms": {
-    "باچر": "باكر"
-   }
+   "write": null,
+   "status": "unsolved",
+   "note": "test 1 picked باكر as closest, but round 2 the user: 'ما نقول باكر'. No spelling gives باچر yet",
+   "source": "round 2, 2026-10-10 (artifact JAkn4ex4qgRbgaH5s9poGS)"
   },
   "صديقي": {
    "write": "صديقي",
@@ -83,11 +81,236 @@
    "write": "أمس",
    "status": "word choice",
    "note": "Kuwaiti says أمس; never write امبارح"
+  },
+  "موقع": {
+   "write": "موقع",
+   "status": "keep",
+   "note": "plain spelling keeps a real q",
+   "source": "round 2, 2026-10-10 (artifact JAkn4ex4qgRbgaH5s9poGS)"
+  },
+  "أعتقد": {
+   "write": "أعتقد",
+   "status": "keep",
+   "note": "plain spelling keeps a real q",
+   "source": "round 2, 2026-10-10 (artifact JAkn4ex4qgRbgaH5s9poGS)"
+  },
+  "فقط": {
+   "write": "فقط",
+   "status": "keep",
+   "note": "plain spelling keeps a real q",
+   "source": "round 2, 2026-10-10 (artifact JAkn4ex4qgRbgaH5s9poGS)"
+  },
+  "المستقبل": {
+   "write": "المستقبل",
+   "status": "keep",
+   "note": "both spellings right",
+   "source": "round 2, 2026-10-10 (artifact JAkn4ex4qgRbgaH5s9poGS)"
+  },
+  "الطاقة": {
+   "write": "الطّاقَة",
+   "status": "chosen",
+   "note": "diacritics needed to keep a real q",
+   "source": "round 2, 2026-10-10 (artifact JAkn4ex4qgRbgaH5s9poGS)"
+  },
+  "شلون": {
+   "write": "اشلون",
+   "status": "chosen",
+   "source": "round 2, 2026-10-10 (artifact JAkn4ex4qgRbgaH5s9poGS)"
+  },
+  "هني": {
+   "write": "هنيه",
+   "status": "chosen",
+   "source": "round 2, 2026-10-10 (artifact JAkn4ex4qgRbgaH5s9poGS)"
+  },
+  "جديد": {
+   "write": "يديد",
+   "status": "chosen",
+   "forms": {
+    "جديدة": "يديدة",
+    "الجديد": "اليديد",
+    "الجديدة": "اليديدة"
+   },
+   "source": "round 2, 2026-10-10 (artifact JAkn4ex4qgRbgaH5s9poGS)"
+  },
+  "وايد": {
+   "write": "واجد",
+   "status": "closest",
+   "note": "the user: the model's pronunciation is wrong in both; واجد was nearer",
+   "source": "round 2, 2026-10-10 (artifact JAkn4ex4qgRbgaH5s9poGS)"
+  },
+  "قدام": {
+   "write": "جدام",
+   "status": "chosen",
+   "note": "both ق and گ wrong; the user wrote جدامك. Taken from the user's note, not generated in round 2",
+   "forms": {
+    "قدامك": "جدامك",
+    "گدام": "جدام"
+   },
+   "source": "round 2, 2026-10-10 (artifact JAkn4ex4qgRbgaH5s9poGS)"
+  },
+  "شنو": {
+   "write": "شنو",
+   "status": "keep",
+   "note": "plain spelling chosen",
+   "source": "round 2, 2026-10-10 (artifact JAkn4ex4qgRbgaH5s9poGS)"
+  },
+  "ليش": {
+   "write": "ليش",
+   "status": "keep",
+   "note": "plain spelling chosen",
+   "source": "round 2, 2026-10-10 (artifact JAkn4ex4qgRbgaH5s9poGS)"
+  },
+  "الحين": {
+   "write": "الحين",
+   "status": "keep",
+   "note": "plain spelling chosen",
+   "source": "round 2, 2026-10-10 (artifact JAkn4ex4qgRbgaH5s9poGS)"
+  },
+  "شوي": {
+   "write": "شوي",
+   "status": "keep",
+   "note": "plain spelling chosen",
+   "source": "round 2, 2026-10-10 (artifact JAkn4ex4qgRbgaH5s9poGS)"
+  },
+  "أبي": {
+   "write": "أبي",
+   "status": "keep",
+   "note": "plain spelling chosen",
+   "source": "round 2, 2026-10-10 (artifact JAkn4ex4qgRbgaH5s9poGS)"
+  },
+  "منو": {
+   "write": "منو",
+   "status": "keep",
+   "note": "plain spelling chosen",
+   "source": "round 2, 2026-10-10 (artifact JAkn4ex4qgRbgaH5s9poGS)"
+  },
+  "كبيرة": {
+   "write": "كبيرة",
+   "status": "keep",
+   "note": "plain spelling chosen",
+   "source": "round 2, 2026-10-10 (artifact JAkn4ex4qgRbgaH5s9poGS)"
+  },
+  "كان": {
+   "write": "كان",
+   "status": "keep",
+   "note": "plain spelling chosen",
+   "source": "round 2, 2026-10-10 (artifact JAkn4ex4qgRbgaH5s9poGS)"
+  },
+  "ترا": {
+   "write": "ترا",
+   "status": "keep",
+   "note": "plain spelling chosen",
+   "source": "round 2, 2026-10-10 (artifact JAkn4ex4qgRbgaH5s9poGS)"
+  },
+  "مافي": {
+   "write": "مافي",
+   "status": "keep",
+   "note": "plain spelling chosen",
+   "source": "round 2, 2026-10-10 (artifact JAkn4ex4qgRbgaH5s9poGS)"
+  },
+  "ماكو": {
+   "write": "ماكو",
+   "status": "keep",
+   "note": "plain spelling chosen",
+   "source": "round 2, 2026-10-10 (artifact JAkn4ex4qgRbgaH5s9poGS)"
+  },
+  "زين": {
+   "write": "زين",
+   "status": "keep",
+   "note": "said right",
+   "source": "round 2, 2026-10-10 (artifact JAkn4ex4qgRbgaH5s9poGS)"
+  },
+  "مو": {
+   "write": "مو",
+   "status": "keep",
+   "note": "said right",
+   "source": "round 2, 2026-10-10 (artifact JAkn4ex4qgRbgaH5s9poGS)"
+  },
+  "بعد": {
+   "write": "بعد",
+   "status": "keep",
+   "note": "said right",
+   "source": "round 2, 2026-10-10 (artifact JAkn4ex4qgRbgaH5s9poGS)"
+  },
+  "وين": {
+   "write": "وين",
+   "status": "keep",
+   "note": "said right",
+   "source": "round 2, 2026-10-10 (artifact JAkn4ex4qgRbgaH5s9poGS)"
+  },
+  "يبيلها": {
+   "write": "يبيلها",
+   "status": "keep",
+   "note": "said right",
+   "source": "round 2, 2026-10-10 (artifact JAkn4ex4qgRbgaH5s9poGS)"
+  },
+  "لين": {
+   "write": "لين",
+   "status": "near",
+   "note": "said nearly right; no alternative spelling tested",
+   "source": "round 2, 2026-10-10 (artifact JAkn4ex4qgRbgaH5s9poGS)"
+  },
+  "السموحة": {
+   "write": "السموحة",
+   "status": "near",
+   "note": "said nearly right; no alternative spelling tested",
+   "source": "round 2, 2026-10-10 (artifact JAkn4ex4qgRbgaH5s9poGS)"
+  },
+  "أكيد": {
+   "write": "أكيد",
+   "status": "near",
+   "note": "said nearly right; no alternative spelling tested",
+   "source": "round 2, 2026-10-10 (artifact JAkn4ex4qgRbgaH5s9poGS)"
+  },
+  "عيل": {
+   "write": null,
+   "status": "unsolved",
+   "note": "said wrong; spelling alone did not fix it",
+   "source": "round 2, 2026-10-10 (artifact JAkn4ex4qgRbgaH5s9poGS)"
+  },
+  "عاد": {
+   "write": null,
+   "status": "unsolved",
+   "note": "said wrong; spelling alone did not fix it",
+   "source": "round 2, 2026-10-10 (artifact JAkn4ex4qgRbgaH5s9poGS)"
+  },
+  "خلاص": {
+   "write": null,
+   "status": "unsolved",
+   "note": "said wrong; spelling alone did not fix it",
+   "source": "round 2, 2026-10-10 (artifact JAkn4ex4qgRbgaH5s9poGS)"
+  },
+  "أمس": {
+   "write": null,
+   "status": "unsolved",
+   "note": "said wrong; spelling alone did not fix it",
+   "source": "round 2, 2026-10-10 (artifact JAkn4ex4qgRbgaH5s9poGS)"
+  },
+  "يمديك": {
+   "write": null,
+   "status": "unclear",
+   "note": "marked wrong, the user's note was about باكر in the same sentence",
+   "source": "round 2, 2026-10-10 (artifact JAkn4ex4qgRbgaH5s9poGS)"
+  },
+  "شكثر": {
+   "write": null,
+   "status": "word choice",
+   "note": "the user: for a price a Kuwaiti says چم سعرها (see kuwaiti-lexicon.json)",
+   "source": "round 2, 2026-10-10 (artifact JAkn4ex4qgRbgaH5s9poGS)"
   }
  },
  "open": [
-  "words where Ali says a real q (موقع، أعتقد، فقط، الطاقة) may now be said with g by this model: untested",
-  "unsolved words may need a synonym in scripts or the fine-tune"
+  "عيل, عاد, خلاص, أمس, باچر, أدور, نقدر, صديقي: wrong in every spelling tried",
+  "محدودة was said wrong (k16 note), outside the tested word"
  ],
- "_layers": "This map is layer 2 of tk_kw_text.py: it runs after the general Kuwaiti lexicon (kuwaiti-lexicon.json), so keys include the lexicon's Kuwaiti forms (e.g. چذي) as 'forms'."
+ "_layers": "This map is layer 2 of tk_kw_text.py: it runs after the general Kuwaiti lexicon (kuwaiti-lexicon.json), so keys include the lexicon's Kuwaiti forms (e.g. چذي) as 'forms'.",
+ "round2_summary": {
+  "tested": 34,
+  "spelling_changed_result": 7,
+  "plain_fine": 16,
+  "near": 3,
+  "wrong_any_spelling": 5,
+  "word_choice": 2,
+  "unclear": 1
+ }
 }

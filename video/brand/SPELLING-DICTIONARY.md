@@ -31,7 +31,7 @@ including after و ف ب ل ال. It never guesses: an entry marked proposed or 
    - Letters أ and ب are drawn per sentence and the key is hidden.
    - Each version is rated separately on three things: **wrong words** (tap them), **dialect** (كويتية/قريبة/مو كويتية),
      and **rhythm and tone** (طبيعي/مقبول/آلي). The user then says which version is better.
-   - A sentence the dictionary leaves unchanged is reported and left out of the page.
+   - A sentence the dictionary leaves unchanged is generated once. It is left out of the A/B count, but it is still rated on the same three points, because the diagnosis needs every sentence.
 3. **Stop.** No third spelling round and no training are started from these results without approval.
 
 ## Decision rule (fixed in advance)
@@ -50,5 +50,27 @@ including after و ف ب ل ال. It never guesses: an entry marked proposed or 
 - **The dictionary does not help** (dict better or equal in fewer than 6): stop spelling work for this model and record why.
 
 ## Results
+
+### Round 2: 34 words (the user's ear, 2026-10-10, artifact JAkn4ex4qgRbgaH5s9poGS)
+
+| Outcome | Count | Words |
+|---|---|---|
+| A different spelling fixed or improved it | 7 | الطّاقَة (diacritics keep q), اشلون, هنيه, يديد, واجد (closest, still wrong), جدام (the user's note) |
+| The plain spelling was already right | 16 | موقع, أعتقد, فقط, المستقبل, شنو, ليش, الحين, شوي, أبي, منو, كبيرة, كان, ترا, مافي/ماكو, زين, مو, بعد, وين, يبيلها |
+| Near | 3 | لين, السموحة, أكيد |
+| Wrong in the only spelling tried | 5 | عيل, عاد, خلاص, أمس, (يمديك: unclear, the note was about باكر) |
+| Word choice, not spelling | 2 | شكثر → چم for a price; يدي → ايدي |
+
+Notes:
+- The model keeps a real q in formal words, so the "plain ق" rule is safe.
+- باكر was rejected ("ما نقول باكر"), so باچر is unsolved again.
+- محدودة was said wrong in k16.
+
+Together with round 1, these words are wrong in every spelling tried: عيل, عاد, خلاص, أمس, باچر, أدور, نقدر, صديقي.
+They are common, short words, and a respelling has nothing left to change.
+The dictionary changes only 4 of the 10 unseen sentences (u01, u02, u03, u08). The model already reads most written
+Kuwaiti the way it reads it, and the errors that remain sit in words the dictionary cannot fix.
+
+### Unseen sentences
 
 (Filled in after the user listens.)

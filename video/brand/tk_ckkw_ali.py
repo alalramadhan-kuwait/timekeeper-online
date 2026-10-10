@@ -37,7 +37,7 @@ def main():
         items, texts = [], {}
         for it in spec["items"]:
             fixed, changes = process(it["text"], "ckkw-spelling-map")
-            items += [(f"{it['id']}-raw", it["text"]), (f"{it['id']}-dict", fixed)]
+            items += [(f"{it['id']}-raw", it["text"])] + ([(f"{it['id']}-dict", fixed)] if fixed != it["text"] else [])
             texts[it["id"]] = {"raw": it["text"], "dict": fixed, "changes": changes}
         (OUT / "unseen").mkdir(parents=True, exist_ok=True)
         (OUT / "unseen/texts.json").write_text(json.dumps(texts, ensure_ascii=False, indent=1))
