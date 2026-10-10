@@ -807,7 +807,7 @@
    0.6667,
    1.0
   ],
-  "surface": 56
+  "surface": 56.0
  },
  "bq-seat": {
   "px": [
@@ -848,7 +848,7 @@
    0.8,
    1.0
   ],
-  "surface": 16
+  "surface": 16.0
  },
  "arch-pillar": {
   "px": [
@@ -889,7 +889,7 @@
    0.5,
    1.0
   ],
-  "surface": 56
+  "surface": 56.0
  },
  "kiosk-base-consignment": {
   "px": [
@@ -900,7 +900,7 @@
    0.5,
    1.0
   ],
-  "surface": 56
+  "surface": 56.0
  },
  "kiosk-base-preowned": {
   "px": [
@@ -911,7 +911,7 @@
    0.5,
    1.0
   ],
-  "surface": 56
+  "surface": 56.0
  },
  "kiosk-base-unknown": {
   "px": [
@@ -922,7 +922,7 @@
    0.5,
    1.0
   ],
-  "surface": 56
+  "surface": 56.0
  },
  "kiosk-glass": {
   "px": [

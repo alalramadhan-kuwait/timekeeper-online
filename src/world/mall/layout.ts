@@ -45,16 +45,41 @@ export function kioskCell(s: SlotGeo, position: number): [number, number] {
   return [s.x + col, s.y + (position < 2 ? 0 : 2)];
 }
 
-/* Inside a boutique (6 x 4): the pavilion against the far side, cases either side of it,
-   the board at the corner nearest the camera, the crate for open orders opposite. */
-export interface BoutiquePlan { pavilion: [number, number]; cases: [number, number][]; board: [number, number]; crate: [number, number]; door: [number, number] }
+/* Inside a boutique (6 x 4), in three arrangements so neighbouring boutiques differ: the
+   pavilion against the far side (the back wall in the back row, the walkway in the front
+   row), cases for its stock, a cash desk, plants and a rug. Cells are the slot's own. */
+export interface BoutiquePlan {
+  variant: number;
+  pavilion: [number, number];
+  cases: [number, number][];
+  counter: [number, number] | null;     // 2 x 1
+  plants: [number, number][];
+  rug: [number, number] | null;          // 3 x 3, flat
+  crate: [number, number];
+  sign: number;                          // where along the shop front the name hangs (0-6)
+}
+const PLANS: Omit<BoutiquePlan, 'variant'>[] = [
+  { pavilion: [2, 0], cases: [[0, 1], [5, 1], [0, 3]], counter: null, plants: [[0, 0], [5, 0]], rug: [1, 1], crate: [5, 3], sign: 3 },
+  { pavilion: [0, 0], cases: [[3, 1], [5, 1], [5, 3]], counter: [2, 3], plants: [[2, 0]], rug: [2, 0], crate: [0, 3], sign: 2.5 },
+  { pavilion: [4, 0], cases: [[0, 1], [2, 1], [0, 3]], counter: [3, 3], plants: [[3, 0], [5, 3]], rug: [0, 0], crate: [2, 3], sign: 3.5 },
+];
 export function boutiquePlan(s: SlotGeo): BoutiquePlan {
-  if (s.side === 'n') {
-    return { pavilion: [s.x + 2, s.y], cases: [[s.x, s.y + 1], [s.x + 5, s.y + 1], [s.x + 4, s.y + 3]],
-      board: [s.x, s.y + 3], crate: [s.x + 5, s.y + 3], door: [s.x + 3, s.y + 3] };
-  }
-  return { pavilion: [s.x + 2, s.y], cases: [[s.x, s.y + 1], [s.x + 5, s.y + 1], [s.x + 4, s.y + 3]],
-    board: [s.x, s.y + 3], crate: [s.x + 5, s.y + 3], door: [s.x + 3, s.y] };
+  const order = ['GG-N1', 'GG-N2', 'GG-S1', 'GG-S2', 'CA-N1', 'CA-N2', 'CA-S1'];
+  const variant = Math.max(0, order.indexOf(s.slot)) % PLANS.length;
+  const p = PLANS[variant];
+  const at = ([x, y]: [number, number]): [number, number] => [s.x + x, s.y + y];
+  return {
+    variant, pavilion: at(p.pavilion), cases: p.cases.map(at), counter: p.counter ? at(p.counter) : null,
+    plants: p.plants.map(at), rug: p.rug ? at(p.rug) : null, crate: at(p.crate), sign: p.sign,
+  };
+}
+
+/* A display bay's furnishing: a wall cabinet against the back wall (back row) or a plant by
+   the low wall (front row), and a rug under its four kiosks. */
+export function bayDecor(s: SlotGeo): { fixture: [number, number]; kind: 'cabinet' | 'plant'; rug: [number, number] } {
+  return s.side === 'n'
+    ? { fixture: [s.x + 1, s.y], kind: 'cabinet', rug: [s.x, s.y + 1] }
+    : { fixture: [s.x + 1, s.y + 3], kind: 'plant', rug: [s.x, s.y] };
 }
 
 /* Pillars at the ends of each archway, planters in the strips' corners. */
@@ -77,9 +102,16 @@ export function mallBlocked(places: { slot: string; position: number }[]): Set<s
       const p = boutiquePlan(s);
       add(p.pavilion[0], p.pavilion[1], 2, 2);
       p.cases.forEach(([x, y]) => add(x, y));
+      p.plants.forEach(([x, y]) => add(x, y));
+      if (p.counter) add(p.counter[0], p.counter[1], 2, 1);
       add(p.crate[0], p.crate[1]);
     } else if (s.kind === 'island') {
-      add(s.x, s.y, s.w, s.d);
+      // an island in use is a platform; a spare one holds a bench and a plant
+      if (places.some((pl) => pl.slot === s.slot)) add(s.x, s.y, s.w, s.d);
+      else { add(s.x, s.y, 2, 1); add(s.x + 3, s.y); }
+    } else {
+      const d = bayDecor(s);
+      add(d.fixture[0], d.fixture[1]);
     }
   }
   for (const pl of places) {

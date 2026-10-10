@@ -528,17 +528,22 @@ export class WorldScene extends Phaser.Scene {
     const n = m.issues.unreliable + m.issues.check;
     if (n > 0) {
       this.img('flag', fp.x + 6, files.getBounds().top + 4, depthAt(fx + 1, fy + 1, 0.2));
-      this.dyn.push(this.label(fp.x, fp.y + 30, `${n} records to check`, 'review'));
+      // above the cabinet, clear of the desk in front of it
+      this.dyn.push(this.label(fp.x, files.getBounds().top - 40, `${n} records to check`, 'review'));
     }
 
     // supplier visitors waiting: one per supplier with a recorded unpaid balance
-    for (const r of m.reps) {
+    m.reps.forEach((r, i) => {
       const w = new Walker(this, 'char-rep', r.cell, 400);
       w.setInteractive({ type: 'supplier', key: r.supplier.supplier_key });
       this.walkers.push(w);
       const c = iso(r.cell[0] + 0.5, r.cell[1] + 0.5);
-      const kd = `${r.supplier.recorded_unpaid.toLocaleString('en-US', { minimumFractionDigits: 3, maximumFractionDigits: 3 })} KD`;
-      this.dyn.push(this.label(c.x, c.y + 14, kd, r.mood === 'review' ? 'review' : 'money'));
+      // the balance, rounded (the visitor's panel has it to the fils); neighbours sit a cell
+      // apart, so alternate ones carry theirs above the head rather than at the feet
+      const kd = `${Math.round(r.supplier.recorded_unpaid).toLocaleString('en-US')} KD`;
+      const above = i % 2 === 1;
+      const t = this.label(c.x, above ? w.sprite.getBounds().top - 26 : c.y + 12, kd, r.mood === 'review' ? 'review' : 'money').setScale(0.78);
+      this.dyn.push(t);
       if (!this.reduced && r.mood !== 'calm') {
         // tapping a foot, faster when the balance is up for review
         this.tweens.add({
@@ -546,8 +551,7 @@ export class WorldScene extends Phaser.Scene {
           yoyo: true, repeat: -1, repeatDelay: r.mood === 'review' ? 400 : 1600,
         });
       }
-      if (r.mood === 'review') this.bobbing(this.img('alert', c.x + 22, w.sprite.getBounds().top + 4, LABEL_DEPTH - 1));
-    }
+    });
     if (m.hiddenReps > 0) {
       const c = iso(9.5, 20);
       this.dyn.push(this.label(c.x, c.y + 10, `+${m.hiddenReps} more suppliers`, 'info'));
@@ -599,7 +603,7 @@ export class WorldScene extends Phaser.Scene {
     }
     this.buildMallDelivery();
     // the owner: whoever is looking, in a dishdasha, ghutra and agal
-    const prev = this.owner?.cell ?? toWorld(4, WALK.y0 + 1);
+    const prev = this.owner?.cell ?? toWorld(5, WALK.y0 + 1);
     this.owner = new Walker(this, 'char-owner', prev, 210, 'You');
     this.owner.setInteractive({ type: 'owner' });
     this.walkers.push(this.owner);

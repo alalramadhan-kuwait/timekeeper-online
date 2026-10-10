@@ -1,45 +1,52 @@
 import Phaser from 'phaser';
 import { ASSET } from '../assets/manifest';
-import { ARCHES, MALL, PILLARS, PLANTERS, SECTIONS, SLOT_GEO, WALK, boutiquePlan, kioskCell, mallBlocked, toWorld, type SlotGeo } from '../mall/layout';
+import { ARCHES, MALL, PILLARS, PLANTERS, SECTIONS, SLOT_GEO, WALK, bayDecor, boutiquePlan, kioskCell, mallBlocked, toWorld, type SlotGeo } from '../mall/layout';
 import { displayName, type MallBrand, type MallModel, type MallSpot } from '../mall/model';
 import type { Ownership, StockClass } from '../types';
 import { depthAt, iso } from './iso';
 import type { WorldScene } from './WorldScene';
 
-/* The Watch Mall on the Floor tab: three sections, boutiques for the major brands, kiosks in
+/* The Watch Mall on the Floor tab: three sections, boutiques for the major brands, cases in
    display areas for the rest. Everything here follows world_mall()'s stored places, so a
-   brand stands where an owner put it, whatever its stock does. */
+   brand stands where an owner put it, whatever its stock does.
+
+   What is written in the mall is kept short: a brand's name and its stock health. Units,
+   values, orders and sales are in the board that opens when anything of the brand is
+   tapped. Labels never overlap: after every change of zoom the lower-priority ones are
+   lifted clear or hidden. */
 
 const FONT = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
 const TOP = 1_000_000;                         // the scene's label layer
 const HEALTH: [StockClass, number][] = [['fast', 0x3f8f5a], ['healthy', 0x7fb38f], ['new', 0x5f7ea8], ['slow', 0xd9a441], ['dead', 0x9a958b]];
-const OWN_COLOUR: Record<Ownership, number> = { owned: 0x9b6a43, consignment: 0x7a5a96, pre_owned: 0x3f8f8a, unknown: 0x9aa0a6 };
 const PLINTH: Record<Ownership, string> = {
   owned: 'case-plinth-owned', consignment: 'case-plinth-consignment', pre_owned: 'case-plinth-preowned', unknown: 'case-plinth-unknown',
 };
-const KIOSK: Record<Ownership, string> = {
-  owned: 'kiosk-base-owned', consignment: 'kiosk-base-consignment', pre_owned: 'kiosk-base-preowned', unknown: 'kiosk-base-unknown',
-};
-const DEFAULT_COLOURS = [0x22304d, 0x7a2e35, 0x2d6f7a, 0x5a4a8a, 0x8a6a2e, 0x3f6b4a, 0x6b3f5a];
+/* Pale tints, so each boutique's pavilion has its own finish (an owner's colour wins). */
+const FINISH = [0xffe4b5, 0xd6ecff, 0xffd8de, 0xe4dcff, 0xd8f5e2, 0xfff0c2, 0xf0e0d0];
+const ACCENT = [0x22304d, 0x7a2e35, 0x2d6f7a, 0x5a4a8a, 0x8a6a2e, 0x3f6b4a, 0x6b3f5a];
+const SECTION_RUG = [0xffffff, 0xe8d8ff, 0xd8f0e8];
 
-export const kd0 = (n: number) => `${Math.round(n).toLocaleString('en-US')} KD`;
 const short = (s: string, n: number) => (s.length > n ? `${s.slice(0, n - 1)}…` : s);
+const lighten = (c: number, k: number) => {
+  const r = (c >> 16) & 255, g = (c >> 8) & 255, b = c & 255, f = (v: number) => Math.round(v + (255 - v) * k);
+  return (f(r) << 16) | (f(g) << 8) | f(b);
+};
 
 type Obj = Phaser.GameObjects.Image | Phaser.GameObjects.Text | Phaser.GameObjects.Graphics | Phaser.GameObjects.Particles.ParticleEmitter;
+type Group = { items: Obj[]; prio: number; dy: number };
 
 export class MallLayer {
   private dyn: Obj[] = [];
   /* level of detail: what shows at which zoom */
-  private kioskDetail: Obj[] = [];            // kiosk boards: zoomed in
-  private boutiqueDetail: Obj[] = [];         // boutique boards: zoomed in
-  private kioskTags: Phaser.GameObjects.Text[] = [];   // a display area's names: section view
+  private chips: Group[] = [];                // a kiosk's name and health: close up
+  private lists: Group[] = [];                // a display area's brands: section view
+  private signs: Group[] = [];                // boutique names and health: section view and closer
+  private badges: Group[] = [];               // the three missions that matter most
   private sectionSigns: Obj[] = [];
-  private displayTags: Phaser.GameObjects.Text[] = [];
   private lastCss = -1;
-  private shown = true;                         // false while another area is chosen
+  private shown = true;                       // false while another area is chosen
   private targets = new Map<string, { obj: Phaser.GameObjects.Image | Phaser.GameObjects.Text; cell: [number, number]; boutique: boolean }>();
-  blocked = new Set<string>();       // world cells
-  private lastSign: Phaser.GameObjects.Image | null = null;
+  blocked = new Set<string>();                // world cells
 
   constructor(private scene: WorldScene) {}
 
@@ -47,11 +54,10 @@ export class MallLayer {
 
   drawStatic() {
     const s = this.scene;
-    const tile = (key: string, lx: number, ly: number, tint?: number) => {
+    const tile = (key: string, lx: number, ly: number) => {
       const [x, y] = toWorld(lx, ly);
       const p = iso(x, y);
-      const o = s.fit(s.add.image(p.x, p.y, key), key).setDepth(-1e6 + (x + y));
-      if (tint !== undefined) o.setTint(tint);
+      s.fit(s.add.image(p.x, p.y, key), key).setDepth(-1e6 + (x + y));
     };
     const slotAt = new Map<string, SlotGeo>();
     for (const g of Object.values(SLOT_GEO)) if (g.kind !== 'island') for (let i = 0; i < g.w; i++) for (let j = 0; j < g.d; j++) slotAt.set(`${g.x + i},${g.y + j}`, g);
@@ -60,19 +66,14 @@ export class MallLayer {
       if (ARCHES.includes(lx)) tile('mall-tile-arch', lx, ly);
       else if (g?.kind === 'boutique') tile('mall-tile-boutique', lx, ly);
       else if (g?.kind === 'bay') tile('mall-tile-bay', lx, ly);
-      else {
-        const sec = SECTIONS.find((x) => lx >= x.x0 && lx < x.x1)!;
-        tile(sec.tiles[(lx + ly) % 2], lx, ly);
-      }
+      else tile(SECTIONS.find((x) => lx >= x.x0 && lx < x.x1)!.tiles[(lx + ly) % 2], lx, ly);
     }
-    // flat inlays: a border round each display bay
     for (const g of Object.values(SLOT_GEO)) {
       if (g.kind !== 'bay') continue;
       const [x, y] = toWorld(g.x, g.y);
       const p = iso(x, y);
       s.fit(s.add.image(p.x, p.y, 'bay-floor-border'), 'bay-floor-border').setDepth(-9e5);
     }
-
     // the back wall: a feature wall per boutique, a plainer one per display bay, plain in the archways
     const backAt = (key: string, lx: number) => {
       const [x, y] = toWorld(lx, 0);
@@ -85,7 +86,6 @@ export class MallLayer {
       else if (g?.kind === 'bay') { backAt('bay-wall', lx); lx += 3; }
       else { backAt('mall-wall-r', lx); lx += 1; }
     }
-    // the far end wall (the Grand Gallery's), full height
     for (let ly = 0; ly < MALL.d; ly++) {
       const [x, y] = toWorld(0, ly);
       const p = iso(x, y);
@@ -94,11 +94,11 @@ export class MallLayer {
     // the near sides are cut away to a low wall, so the camera sees in
     for (let lx = 0; lx < MALL.w;) {
       const g = slotAt.get(`${lx},${MALL.d - 1}`);
-      const [key, n] = g?.kind === 'boutique' ? ['bq-front', 6] : g?.kind === 'bay' ? ['bay-front', 3] : ['mall-ledge-r', 1];
+      const [key, n] = g?.kind === 'boutique' ? ['bq-front', 6] as const : g?.kind === 'bay' ? ['bay-front', 3] as const : ['mall-ledge-r', 1] as const;
       const [x, y] = toWorld(lx, MALL.d);
       const p = iso(x, y);
-      s.fit(s.add.image(p.x, p.y, key as string), key as string).setDepth(depthAt(x + (n as number), y, 1));
-      lx += n as number;
+      s.fit(s.add.image(p.x, p.y, key), key).setDepth(depthAt(x + n, y, 1));
+      lx += n;
     }
     // the near end opens onto the corridor to the loading dock, along the walkway
     for (let ly = 0; ly < MALL.d; ly++) {
@@ -107,22 +107,30 @@ export class MallLayer {
       const p = iso(x, y);
       s.fit(s.add.image(p.x, p.y, 'mall-ledge-l'), 'mall-ledge-l').setDepth(depthAt(x, y + 1, 1));
     }
-    // archway pillars and planters
-    for (const [lx, ly] of PILLARS) this.standFixed('arch-pillar', lx, ly);
-    for (const [lx, ly] of PLANTERS) this.standFixed('planter-mall', lx, ly);
+    for (const [lx, ly] of PILLARS) this.place('arch-pillar', lx, ly);
+    for (const [lx, ly] of PLANTERS) this.place('planter-mall', lx, ly);
   }
 
-  private standFixed(key: string, lx: number, ly: number, w = 1, d = 1) {
+  /* Something standing on the floor, footprint w x d from mall cell (lx, ly). */
+  private place(key: string, lx: number, ly: number, w = 1, d = 1, lift = 0, keep = false) {
     const [x, y] = toWorld(lx, ly);
     const p = iso(x + w, y + d);
-    return this.scene.fit(this.scene.add.image(p.x, p.y, key), key).setDepth(depthAt(x + w, y + d));
+    const o = this.scene.fit(this.scene.add.image(p.x, p.y - lift, key), key).setDepth(depthAt(x + w, y + d));
+    if (keep) this.dyn.push(o);
+    return o;
+  }
+
+  private flat(key: string, lx: number, ly: number, depth = -8e5) {
+    const [x, y] = toWorld(lx, ly);
+    const p = iso(x, y);
+    return this.keep(this.scene.fit(this.scene.add.image(p.x, p.y, key), key).setDepth(depth)) as Phaser.GameObjects.Image;
   }
 
   /* ── what follows the data ───────────────────────────────────────────── */
 
   build(m: MallModel) {
     for (const o of this.dyn) o.destroy();
-    this.dyn = []; this.kioskDetail = []; this.boutiqueDetail = []; this.kioskTags = []; this.sectionSigns = []; this.displayTags = [];
+    this.dyn = []; this.chips = []; this.lists = []; this.signs = []; this.badges = []; this.sectionSigns = [];
     this.targets.clear();
     this.lastCss = -1;
     this.blocked = new Set([...mallBlocked(m.data.places)].map((k) => {
@@ -141,184 +149,175 @@ export class MallLayer {
       this.sectionSigns.push(sign, t);
     });
 
-    // display areas: in the section view, one label with the area's brands; a tap lists them
+    // the three brands whose missions weigh most get a numbered badge; the rest are in the boards
+    const ranked = m.spots.filter((sp) => sp.brand.missions.length)
+      .map((sp) => ({ sp, w: Math.max(...sp.brand.missions.map((x) => x.weight_kd ?? 0)) }))
+      .sort((a, b) => b.w - a.w).slice(0, 3);
+    const rank = new Map(ranked.map((r, i) => [r.sp.brand.brand, i + 1]));
+
+    // display areas: furnishing, and in the section view one label listing the area's brands
     for (const g of Object.values(SLOT_GEO)) {
       if (g.kind === 'boutique') continue;
       const here = m.spots.filter((sp) => sp.slot.slot === g.slot).sort((a, b) => a.position - b.position);
+      if (g.kind === 'island') {
+        if (here.length) {
+          const pl = this.place('island-platform', g.x, g.y, g.w, g.d, 0, true);
+          pl.setInteractive({ useHandCursor: true, pixelPerfect: true, alphaTolerance: 1 }); this.scene.tag(pl, { type: 'display', slot: g.slot }, 0);
+        }
+        else { this.place('bench', g.x, g.y, 2, 1, 0, true); this.place('plant', g.x + 3, g.y, 1, 1, 0, true); }
+      } else {
+        const d = bayDecor(g);
+        this.flat('rug', d.rug[0], d.rug[1], -8.5e5).setTint(SECTION_RUG[g.section]).setAlpha(0.9);
+        const fx = this.place(d.kind === 'cabinet' ? 'wall-cabinet' : 'plant', d.fixture[0], d.fixture[1], 1, 1, 0, true);
+        if (here.length) { fx.setInteractive({ useHandCursor: true, pixelPerfect: true, alphaTolerance: 1 }); this.scene.tag(fx, { type: 'display', slot: g.slot }, 0); }
+      }
       if (!here.length) continue;
-      const [x, y] = toWorld(g.x + g.w / 2, g.kind === 'island' ? g.y + 0.5 : g.side === 'n' ? g.y : g.y + g.d);
+      const [x, y] = toWorld(g.x + g.w / 2, g.kind === 'island' ? g.y + 0.5 : g.side === 'n' ? g.y + 0.6 : g.y + g.d);
       const p = iso(x, y);
-      const names = here.map((sp) => short(sp.brand.brand, 14) + (sp.brand.missions.length ? ' !' : ''));
       const lines = [displayName(g.slot).toUpperCase()];
+      const names = here.map((sp) => short(sp.brand.brand, 14));
       for (let i = 0; i < names.length; i += 2) lines.push(names.slice(i, i + 2).join(' · '));
-      const tag = this.text(p.x, p.y - (g.side === 'n' ? 120 : g.kind === 'island' ? 40 : 10), lines.join('\n'),
-        { size: 13, colour: '#ffffff', bg: '#22304de6', depth: TOP - 6 }).setAlign('center').setLineSpacing(2);
-      tag.setOrigin(0.5, g.side === 's' ? 0 : 1);
+      const tag = this.text(p.x, p.y - (g.side === 'n' ? 150 : g.kind === 'island' ? 70 : 30), lines.join('\n'),
+        { size: 12.5, colour: '#ffffff', bg: '#22304de6', depth: TOP - 6 }).setAlign('center').setLineSpacing(2).setOrigin(0.5, 1);
       tag.setInteractive({ useHandCursor: true });
       this.scene.tag(tag, { type: 'display', slot: g.slot }, 0);
-      this.kioskTags.push(tag);
+      this.lists.push({ items: [tag], prio: 2, dy: 0 });
     }
 
-    // walkway islands, where brands stand on them (spare ones stay clear floor until used)
-    for (const g of Object.values(SLOT_GEO)) {
-      if (g.kind === 'island' && m.spots.some((sp) => sp.slot.slot === g.slot)) this.keep(this.standFixed('island-platform', g.x, g.y, g.w, g.d));
-    }
-    for (const sp of m.spots) {
-      if (sp.slot.kind === 'boutique') this.boutique(sp, m);
-      else this.kiosk(sp);
-    }
-    this.applyLod(true);
+    m.spots.forEach((sp) => {
+      if (sp.slot.kind === 'boutique') this.boutique(sp, rank.get(sp.brand.brand) ?? 0);
+      else this.kiosk(sp, rank.get(sp.brand.brand) ?? 0);
+    });
+    this.applyLod();
   }
 
-  private boutique(sp: MallSpot, m: MallModel) {
+  private boutique(sp: MallSpot, rank: number) {
     const s = this.scene, b = sp.brand, g = sp.slot, plan = boutiquePlan(g);
-    const colour = b.colour ? parseInt(b.colour.slice(1), 16) : DEFAULT_COLOURS[Object.values(SLOT_GEO).indexOf(g) % DEFAULT_COLOURS.length];
-    // the brand colour on the floor inlay
-    {
-      const [x, y] = toWorld(g.x, g.y);
-      const p = iso(x, y);
-      this.keep(s.fit(s.add.image(p.x, p.y, 'bq-floor-accent'), 'bq-floor-accent').setDepth(-8e5).setTint(colour).setAlpha(0.8));
-    }
+    const i = Object.values(SLOT_GEO).indexOf(g);
+    const accent = b.colour ? parseInt(b.colour.slice(1), 16) : ACCENT[i % ACCENT.length];
     const sel = { type: 'brand' as const, brand: b.brand };
-    // the pavilion: the brand's shop-in-shop
-    const pav = this.stand('boutique-pavilion', plan.pavilion[0], plan.pavilion[1], 2, 2);
+    // the brand's colour in the floor inlay, a rug, plants and a cash desk where the plan has them
+    this.flat('bq-floor-accent', g.x, g.y).setTint(accent).setAlpha(0.85);
+    if (plan.rug) this.flat('rug', plan.rug[0], plan.rug[1], -7.5e5).setTint(lighten(accent, 0.55));
+    for (const [px, py] of plan.plants) this.place('plant', px, py, 1, 1, 0, true);
+    if (plan.counter) {
+      const c = this.place('counter', plan.counter[0], plan.counter[1], 2, 1, 0, true);
+      c.setInteractive({ useHandCursor: true, pixelPerfect: true, alphaTolerance: 1 }); s.tag(c, sel);
+    }
+    // the pavilion, in its own finish
+    const pav = this.place('boutique-pavilion', plan.pavilion[0], plan.pavilion[1], 2, 2, 0, true);
+    pav.setTint(b.colour ? lighten(accent, 0.7) : FINISH[i % FINISH.length]);
+    if (plan.variant === 1) pav.setFlipX(true);
     pav.setInteractive({ useHandCursor: true, pixelPerfect: true, alphaTolerance: 1 });
     s.tag(pav, sel, -24);
     // cases: one per kind of ownership it holds (up to three), watches by units
     const owns = (Object.entries(b.ownership) as [Ownership, { units: number; cost: number }][])
       .filter(([, v]) => v.units > 0).sort((a, c) => c[1].cost - a[1].cost).slice(0, 3);
-    if (owns.length === 1 && b.units > 10) owns.push(owns[0]);
-    owns.forEach(([own, v], i) => {
-      const [cx, cy] = plan.cases[i];
-      const [wx, wy] = toWorld(cx, cy);
-      const plinth = s.stand(PLINTH[own], wx, wy);
-      const onPlinth = ASSET[PLINTH[own]].surface;
-      const glassOnFloor = ASSET['case-glass'].onFloor;
-      const inside = glassOnFloor ? onPlinth : onPlinth + ASSET['case-glass'].surface;
-      const spots: [number, number][] = [[0.3, 0.3], [0.7, 0.3], [0.3, 0.7], [0.7, 0.7], [0.5, 0.5], [0.5, 0.18]];
-      const n = watchesFor(owns.length > 1 && owns[0][0] === owns[1][0] ? v.units / 2 : v.units);
-      for (let k = 0; k < n; k++) {
-        const p = iso(wx + spots[k][0], wy + spots[k][1]);
-        s.img('watch', p.x, p.y - inside, depthAt(wx + 1, wy + 1) + 0.1 + k * 0.001);
-      }
-      const glass = s.stand('case-glass', wx, wy, 1, 1, glassOnFloor ? 0 : onPlinth, 0.3);
-      if (b.dusty) s.stand('case-dust', wx, wy, 1, 1, onPlinth, 0.35);
-      for (const o of [plinth, glass]) { o.setInteractive({ useHandCursor: true, pixelPerfect: true, alphaTolerance: 1 }); s.tag(o, sel); }
+    while (owns.length && owns.length < 3 && b.units > 10 * owns.length) owns.push(owns[0]);
+    owns.forEach(([own, v], k) => {
+      const [cx, cy] = plan.cases[k];
+      const share = owns.filter(([o]) => o === own).length;
+      for (const o of this.vitrine(own, v.units / share, cx, cy, 0, b.dusty)) { o.setInteractive({ useHandCursor: true, pixelPerfect: true, alphaTolerance: 1 }); s.tag(o, sel); }
     });
-    // open orders: a crate by the door
     if (b.openPos.length) {
-      const c = this.stand('crate-po', plan.crate[0], plan.crate[1]);
+      const c = this.place('crate-po', plan.crate[0], plan.crate[1], 1, 1, 0, true);
       c.setInteractive({ useHandCursor: true, pixelPerfect: true, alphaTolerance: 1 });
       s.tag(c, sel, 0);
     }
-    // the name over the shop: on the back wall, or hung over the walkway
-    {
-      const [x, y] = toWorld(g.x + g.w / 2, g.side === 'n' ? 0 : g.y + g.d);
-      const p = iso(x, y);
-      const sign = this.billboard('sign-section', p.x, p.y - (g.side === 'n' ? 168 : 46), TOP - 12, 0.55);
-      const t = this.textIn(sign, 'sign-section', b.brand.toUpperCase(), { size: 30, colour: '#f3e7cf', bold: true });
-      this.lastSign = sign;
-      sign.setInteractive({ useHandCursor: true }); s.tag(sign, sel, 0);
-      if (b.featured) this.keep(this.text(t.x, sign.getBounds().top - 6, '★ Featured', { size: 14, colour: '#22304d', bg: '#f2c230', depth: TOP - 11 }).setOrigin(0.5, 1));
-    }
-    // the board: units, value, health, ownership and orders
-    const [bx, by] = toWorld(plan.board[0], plan.board[1]);
-    const bp = iso(bx + 0.55, by + 0.85);
-    const board = this.billboard('board-major', bp.x, bp.y, depthAt(bx + 1, by + 1, 0.6), 1);
-    board.setInteractive({ useHandCursor: true }); s.tag(board, sel, 0);
-    this.boutiqueDetail.push(board, ...this.writeBoard(board, 'board-major', b, false, depthAt(bx + 1, by + 1, 0.61)));
-    if (b.missions.length) {
-      // a mission: a marker by the shop's name (and on its board, close up)
-      const sb = this.lastSign!.getBounds();
-      this.keep(s.bobbing(s.fit(s.add.image(sb.right - 4, sb.top + 8, 'alert'), 'alert', 0.8).setDepth(TOP - 1)));
-    }
-    this.targets.set(b.brand, { obj: board, cell: [bx, by], boutique: true });
-    void m;
+    // the name over the shop, with a health bar under it: on the back wall, or over the low front wall
+    const [x, y] = toWorld(g.x + plan.sign, g.side === 'n' ? 0 : g.y + g.d);
+    const p = iso(x, y);
+    const sign = this.billboard('sign-section', p.x, p.y - (g.side === 'n' ? 170 : 52), TOP - 12, 0.55);
+    const t = this.textIn(sign, 'sign-section', b.brand.toUpperCase(), { size: 30, colour: '#f3e7cf', bold: true });
+    sign.setInteractive({ useHandCursor: true }); s.tag(sign, sel, 0);
+    // the sign's panel (the picture itself has a clear margin): name above, health bar below
+    const r = this.area(sign, 'sign-section');
+    t.y -= r.h * 0.12;
+    sign.setData('panel', new Phaser.Geom.Rectangle(r.x - r.w * 0.08, r.y - r.h * 0.12, r.w * 1.16, r.h * 1.3));
+    const bar = this.healthBar(b, r.x + r.w * 0.12, r.y + r.h * 0.74, r.w * 0.76, Math.max(5, r.h * 0.14), TOP - 11.9);
+    const items: Obj[] = [sign, t, bar];
+    if (b.featured) items.push(this.text(r.x + 6, r.y + 2, '★', { size: 16, colour: '#f2c230', depth: TOP - 11.8 }).setOrigin(0.5, 0.5));
+    this.signs.push({ items, prio: 3, dy: 0 });
+    if (rank) this.badge(rank, r.x + r.w + 4, r.y, sel);
+    this.targets.set(b.brand, { obj: sign, cell: toWorld(plan.pavilion[0], plan.pavilion[1]), boutique: true });
   }
 
-  private kiosk(sp: MallSpot) {
+  /* A display case: the base by ownership, watches by units, the glass over them. */
+  private vitrine(own: Ownership, units: number, lx: number, ly: number, lift: number, dusty: boolean) {
+    const s = this.scene;
+    const [wx, wy] = toWorld(lx, ly);
+    const base = depthAt(wx + 1, wy + 1);
+    const fp = iso(wx + 1, wy + 1);
+    const plinth = this.keep(s.fit(s.add.image(fp.x, fp.y - lift, PLINTH[own]), PLINTH[own]).setDepth(base)) as Phaser.GameObjects.Image;
+    const onPlinth = ASSET[PLINTH[own]].surface;
+    const glassOnFloor = ASSET['case-glass'].onFloor;
+    const inside = (glassOnFloor ? onPlinth : onPlinth + ASSET['case-glass'].surface) + lift;
+    const spots: [number, number][] = [[0.3, 0.3], [0.7, 0.3], [0.3, 0.7], [0.7, 0.7], [0.5, 0.5], [0.5, 0.18]];
+    const n = watchesFor(units);
+    for (let k = 0; k < n; k++) {
+      const p = iso(wx + spots[k][0], wy + spots[k][1]);
+      this.keep(s.fit(s.add.image(p.x, p.y - inside, 'watch'), 'watch').setDepth(base + 0.1 + k * 0.001));
+    }
+    const glass = this.keep(s.fit(s.add.image(fp.x, fp.y - (glassOnFloor ? 0 : onPlinth) - lift, 'case-glass'), 'case-glass').setDepth(base + 0.3)) as Phaser.GameObjects.Image;
+    if (dusty) this.keep(s.fit(s.add.image(fp.x, fp.y - onPlinth - lift, 'case-dust'), 'case-dust').setDepth(base + 0.35));
+    return [plinth, glass];
+  }
+
+  private kiosk(sp: MallSpot, rank: number) {
     const s = this.scene, b = sp.brand, g = sp.slot;
     const [lx, ly] = kioskCell(g, sp.position);
-    const [x, y] = toWorld(lx, ly);
     const lift = g.kind === 'island' ? ASSET['island-platform'].surface : 0;
     const sel = { type: 'brand' as const, brand: b.brand };
-    const p = iso(x + 1, y + 1);
-    const k = this.keep(s.fit(s.add.image(p.x, p.y - lift, KIOSK[b.mainOwnership]), KIOSK[b.mainOwnership])
-      .setDepth(depthAt(x + 1, y + 1, 0.2))) as Phaser.GameObjects.Image;
-    if (!b.inStock) k.setAlpha(0.45);
-    k.setInteractive({ useHandCursor: true, pixelPerfect: true, alphaTolerance: 1 });
-    s.tag(k, sel, 0);
-    const top = k.getBounds().top;
+    // until the kiosk art arrives, a small brand's stock stands in a display case like the boutiques'
+    const objs = this.vitrine(b.inStock ? b.mainOwnership : 'unknown', b.inStock ? b.units : 0, lx, ly, lift, b.inStock && b.dusty);
+    for (const o of objs) { if (!b.inStock) o.setAlpha(0.5); o.setInteractive({ useHandCursor: true, pixelPerfect: true, alphaTolerance: 1 }); s.tag(o, sel); }
+    const [x, y] = toWorld(lx, ly);
+    const top = objs[1].getBounds().top;
     const c = iso(x + 0.5, y + 0.5);
     if (b.openPos.length) {
-      const cr = this.keep(s.fit(s.add.image(c.x + 40, c.y + 20 - lift, 'crate-po'), 'crate-po', 0.6).setDepth(depthAt(x + 1, y + 1, 0.25))) as Phaser.GameObjects.Image;
+      const cr = this.keep(s.fit(s.add.image(c.x + 44, c.y + 24 - lift, 'crate-po'), 'crate-po', 0.55).setDepth(depthAt(x + 1, y + 1, 0.4))) as Phaser.GameObjects.Image;
       cr.setInteractive({ useHandCursor: true, pixelPerfect: true, alphaTolerance: 1 }); s.tag(cr, sel, 0);
     }
-    if (b.sparkle && !this.scene.reducedMotion) {
-      const e = s.add.particles(c.x, top + 20, 'sparkle', {
-        x: { min: -30, max: 30 }, y: { min: -16, max: 16 }, lifespan: 900, frequency: 700,
+    if (b.sparkle && !s.reducedMotion) {
+      const e = s.add.particles(c.x, top + 24, 'sparkle', {
+        x: { min: -30, max: 30 }, y: { min: -16, max: 16 }, lifespan: 900, frequency: 800,
         scale: { start: 0.7 * (ASSET.sparkle.drawWidth / (s.textures.get('sparkle').get().width || ASSET.sparkle.drawWidth)), end: 0 },
         alpha: { start: 1, end: 0 }, quantity: 1,
-      }).setDepth(depthAt(x + 1, y + 1, 0.4));
+      }).setDepth(depthAt(x + 1, y + 1, 0.5));
       this.keep(e);
     }
-    // zoomed in: a small board with the name, units, value and health
-    // neighbours on an island stand a cell apart: alternate boards are raised so none overlap
-    const raise = g.kind === 'island' && sp.position % 2 ? 78 : 0;
-    const board = this.billboard('board-minor', c.x, top + 4 - raise, TOP - 5, 0.72);
-    board.setInteractive({ useHandCursor: true }); s.tag(board, sel, 0);
-    this.kioskDetail.push(board, ...this.writeBoard(board, 'board-minor', b, true, TOP - 4.9));
-    if (b.missions.length) {
-      const a = this.keep(s.fit(s.add.image(board.getBounds().right - 6, board.getBounds().top + 4, 'alert'), 'alert', 0.8).setDepth(TOP - 1)) as Phaser.GameObjects.Image;
-      s.bobbing(a);
-      this.kioskDetail.push(a);
-    }
-    this.targets.set(b.brand, { obj: k, cell: [x, y], boutique: false });
+    // close up: a compact chip with the name and a health bar
+    const t = this.text(c.x, top - 4, short(b.brand, 16), { size: 13, colour: '#ffffff', bg: '#22304de6', depth: TOP - 5 }).setOrigin(0.5, 1);
+    t.setInteractive({ useHandCursor: true }); s.tag(t, sel, 0);
+    const bar = this.keep(s.add.graphics().setDepth(TOP - 4.9)) as Phaser.GameObjects.Graphics;
+    const chip = { items: [t, bar] as Obj[], prio: 1, dy: 0, brand: b };
+    this.chips.push(chip);
+    if (rank) this.badge(rank, 0, 0, sel, t);
+    this.targets.set(b.brand, { obj: objs[1], cell: [x, y], boutique: false });
   }
 
-  /* Writes a board: name, units and value, a health bar, ownership and orders. */
-  private writeBoard(board: Phaser.GameObjects.Image, key: string, b: MallBrand, small: boolean, depth: number): Obj[] {
+  /* Stock health at cost, as one bar: fast, healthy, new, slow, dead. */
+  private healthBar(b: MallBrand, x: number, y: number, w: number, h: number, depth: number, into?: Phaser.GameObjects.Graphics) {
+    const g = into ?? (this.keep(this.scene.add.graphics().setDepth(depth)) as Phaser.GameObjects.Graphics);
+    g.clear();
+    const total = HEALTH.reduce((n, [c]) => n + (b.classes[c]?.cost_value ?? 0), 0);
+    g.fillStyle(0x3a4560, 1).fillRect(x, y, w, h);
+    let hx = x;
+    if (total > 0) for (const [c, col] of HEALTH) {
+      const ww = ((b.classes[c]?.cost_value ?? 0) / total) * w;
+      if (ww > 0) { g.fillStyle(col, 1).fillRect(hx, y, ww, h); hx += ww; }
+    }
+    return g;
+  }
+
+  /* A mission badge: a small numbered disc, 1 for the mission that weighs most. It sits on
+     the shop sign, or follows a kiosk's chip. */
+  private badge(n: number, x: number, y: number, sel: { type: 'brand'; brand: string }, follow?: Phaser.GameObjects.Text) {
     const s = this.scene;
-    const r = this.area(board, key);
-    const out: Obj[] = [];
-    const g = s.add.graphics().setDepth(depth);
-    g.fillStyle(0x22304d, 1).fillRoundedRect(r.x, r.y, r.w, r.h, 6);
-    out.push(this.keep(g));
-    const pad = r.w * 0.06, inner = r.w - 2 * pad;
-    const line = (txt: string, y: number, size: number, colour = '#f3e7cf', bold = false) => {
-      const t = this.text(r.x + pad, y, txt, { size, colour, bold, depth: depth + 0.001 }).setOrigin(0, 0);
-      if (t.displayWidth > inner) t.setScale((inner / t.displayWidth) * t.scaleX);
-      out.push(t);
-      return t;
-    };
-    const fs = small ? r.h / 5.2 : r.h / 7.2;
-    let y = r.y + pad * 0.6;
-    line(b.brand, y, fs * 1.05, '#ffffff', true); y += fs * 1.45;
-    line(`${b.units.toLocaleString('en-US')} units · ${kd0(b.cost)}`, y, fs * 0.92, '#f2d58a', true); y += fs * 1.35;
-    // health: stock at cost by class
-    const total = HEALTH.reduce((n, [c]) => n + (b.classes[c]?.cost_value ?? 0), 0) || 1;
-    let hx = r.x + pad;
-    const hh = small ? fs * 0.55 : fs * 0.5;
-    g.fillStyle(0x3a4560, 1).fillRect(r.x + pad, y, inner, hh);
-    for (const [c, col] of HEALTH) {
-      const w = ((b.classes[c]?.cost_value ?? 0) / total) * inner;
-      if (w > 0) { g.fillStyle(col, 1).fillRect(hx, y, w, hh); hx += w; }
-    }
-    y += hh + fs * 0.45;
-    if (small) return out;
-    // ownership split, by cost
-    const ownTotal = Object.values(b.ownership).reduce((n, o) => n + (o?.cost ?? 0), 0) || 1;
-    let ox = r.x + pad;
-    for (const own of ['owned', 'consignment', 'pre_owned', 'unknown'] as Ownership[]) {
-      const w = ((b.ownership[own]?.cost ?? 0) / ownTotal) * inner;
-      if (w > 0) { g.fillStyle(OWN_COLOUR[own], 1).fillRect(ox, y, w, hh * 0.6); ox += w; }
-    }
-    y += hh * 0.6 + fs * 0.4;
-    const owned = Math.round(((b.ownership.owned?.cost ?? 0) / ownTotal) * 100);
-    line(`Owned ${owned}% · consignment ${Math.round(((b.ownership.consignment?.cost ?? 0) / ownTotal) * 100)}%`, y, fs * 0.72); y += fs * 1.05;
-    const po = b.openPos.length ? `${b.openPos.length} open PO${b.openPos.length === 1 ? '' : 's'}` : 'No open POs';
-    line(`${po} · sold yesterday ${b.soldYesterday}`, y, fs * 0.72);
-    return out;
+    const t = this.text(x, y, String(n), { size: 14, colour: '#22304d', bg: '#f2c230', bold: true, depth: TOP - 1.9 }).setOrigin(0.5, 0.5).setPadding(6, 2, 6, 2);
+    t.setInteractive({ useHandCursor: true }); s.tag(t, sel, 0);
+    t.setData('follow', follow ?? null);
+    this.badges.push({ items: [t], prio: 4, dy: 0 });
   }
 
   /* The writing area of a board or sign, in world units. */
@@ -332,7 +331,6 @@ export class MallLayer {
     const r = this.area(o, key);
     const t = this.text(r.x + r.w / 2, r.y + r.h / 2, txt, { ...st, depth: o.depth + 0.01 }).setOrigin(0.5, 0.5);
     if (t.displayWidth > r.w * 0.92) t.setScale((r.w * 0.92) / t.width);
-    if (o === undefined) return t;
     return t;
   }
 
@@ -350,54 +348,104 @@ export class MallLayer {
     return this.keep(this.scene.fit(this.scene.add.image(x, y, key), key, extra).setDepth(depth)) as Phaser.GameObjects.Image;
   }
 
-  private stand(key: string, lx: number, ly: number, w = 1, d = 1) {
-    const [x, y] = toWorld(lx, ly);
-    return this.keep(this.scene.stand(key, x, y, w, d)) as Phaser.GameObjects.Image;
-  }
-
   private keep<T extends Obj>(o: T): T { this.dyn.push(o); return o; }
 
-  /* ── level of detail and camera help ─────────────────────────────────── */
+  /* ── level of detail, and keeping labels apart ───────────────────────── */
 
-  /* The mall's labels and boards float above everything; another area's view hides them. */
+  /* The mall's labels float above everything; another area's view hides them. */
   setShown(on: boolean) {
     if (on === this.shown) return;
     this.shown = on;
-    this.applyLod(true);
+    this.applyLod();
   }
 
-  /* cssPerUnit: CSS pixels per world unit at the current zoom. */
+  /* cssPerUnit: CSS pixels per world unit at the current zoom. Re-applied whenever the level
+     changes, and as the zoom moves (labels keep their size on screen). */
   lod(cssPerUnit: number) {
-    // re-applied whenever the level changes, and as the zoom moves (names keep their size)
-    const level = (c: number) => (c >= 0.62 ? 3 : c >= 0.45 ? 2 : c >= 0.3 ? 1 : 0);
-    if (level(cssPerUnit) === level(this.lastCss) && Math.abs(cssPerUnit - this.lastCss) < 0.01) return;
+    const level = (c: number) => (c >= 0.62 ? 3 : c >= 0.3 ? 1 : 0);
+    if (level(cssPerUnit) === level(this.lastCss) && Math.abs(cssPerUnit - this.lastCss) < 0.015) return;
     this.lastCss = cssPerUnit;
-    this.applyLod(false);
+    this.applyLod();
   }
 
-  private applyLod(force: boolean) {
-    const css = this.lastCss < 0 ? 0.5 : this.lastCss;
-    // three levels: the whole mall (section names), a section (shop names and each display
-    // area's brands), close up (every brand's board)
-    const on = this.shown;
-    const detail = on && css >= 0.62, overview = css < 0.3;
-    for (const o of this.kioskDetail) (o as Phaser.GameObjects.Image).setVisible(detail);
-    for (const o of this.boutiqueDetail) (o as Phaser.GameObjects.Image).setVisible(on && (detail || css >= 0.45));
-    // display-area labels keep a readable size on screen (about 11 px), whatever the zoom
-    const k = Phaser.Math.Clamp(0.85 / Math.max(css, 0.05), 0.6, 4);
-    for (const t of this.kioskTags) t.setVisible(on && !detail && !overview).setScale(k);
+  /* Three levels: the whole mall (section names), a section (shop names, health and each
+     display area's brands), close up (every kiosk's name and health). */
+  private applyLod() {
+    const css = this.lastCss < 0 ? 0.5 : this.lastCss, on = this.shown;
+    const close = on && css >= 0.62, overview = css < 0.3;
+    const reset = (gs: Group[]) => {
+      for (const gr of gs) if (gr.dy) { for (const o of gr.items) (o as Phaser.GameObjects.Image).y += gr.dy; gr.dy = 0; }
+    };
+    for (const gs of [this.chips, this.lists, this.signs, this.badges]) reset(gs);
+    const vis = (gs: Group[], v: boolean) => { for (const gr of gs) for (const o of gr.items) (o as Phaser.GameObjects.Image).setVisible(v); };
+    vis(this.chips, close);
+    vis(this.lists, on && !close && !overview);
+    vis(this.signs, on && !overview);
+    vis(this.badges, on && !overview);
+    // names keep a readable size on screen, whatever the zoom
+    const listScale = Phaser.Math.Clamp(0.8 / Math.max(css, 0.05), 0.6, 4);
+    for (const gr of this.lists) (gr.items[0] as Phaser.GameObjects.Text).setScale(listScale);
+    const chipScale = Phaser.Math.Clamp(0.7 / Math.max(css, 0.05), 0.55, 2);
+    for (const gr of this.chips as (Group & { brand: MallBrand })[]) {
+      const [t, bar] = gr.items as [Phaser.GameObjects.Text, Phaser.GameObjects.Graphics];
+      t.setScale(chipScale);
+      const tb = t.getBounds();
+      this.healthBar(gr.brand, tb.left + 4 * chipScale, tb.bottom - 4 * chipScale, tb.width - 8 * chipScale, 3.5 * chipScale, 0, bar);
+    }
+    const badgeScale = Phaser.Math.Clamp(0.75 / Math.max(css, 0.05), 0.6, 3);
+    for (const gr of this.badges) {
+      const t = gr.items[0] as Phaser.GameObjects.Text;
+      t.setScale(badgeScale);
+      const f = t.getData('follow') as Phaser.GameObjects.Text | null;
+      if (f) {
+        // on a kiosk: beside its chip close up, otherwise above the case
+        const fb = f.getBounds();
+        if (f.visible) t.setPosition(fb.right + 2 * badgeScale, fb.top + 4 * badgeScale);
+        else t.setPosition(f.x, f.y - 6);
+      }
+    }
     for (const o of this.sectionSigns) (o as Phaser.GameObjects.Image).setVisible(on && overview);
-    void force;
+    this.declutter();
+  }
+
+  /* Higher-priority labels keep their place; a lower one that would overlap is lifted clear
+     (up to three tries) or, failing that, hidden until the zoom changes. */
+  private declutter() {
+    const all = [...this.badges, ...this.signs, ...this.lists, ...this.chips]
+      .filter((g) => (g.items[0] as Phaser.GameObjects.Image).visible)
+      .sort((a, b) => b.prio - a.prio);
+    const placed: Phaser.Geom.Rectangle[] = [];
+    // a sign counts by its panel, not its picture's clear margin
+    const boundsOf = (g: Group) => {
+      const rs = g.items.filter((o) => !(o instanceof Phaser.GameObjects.Graphics))
+        .map((o) => (o.getData('panel') as Phaser.Geom.Rectangle | undefined) ?? (o as Phaser.GameObjects.Image).getBounds());
+      return rs.reduce((a, r) => Phaser.Geom.Rectangle.Union(a, r, a), Phaser.Geom.Rectangle.Clone(rs[0]));
+    };
+    for (const g of all) {
+      let r = boundsOf(g);
+      const hits = () => placed.some((p) => Phaser.Geom.Rectangle.Overlaps(p, r));
+      if (g.prio >= 3 || !hits()) { placed.push(r); continue; }
+      let ok = false;
+      for (let i = 0; i < 3 && !ok; i++) {
+        const step = r.height * 0.6 + 6;
+        for (const o of g.items) (o as Phaser.GameObjects.Image).y -= step;
+        g.dy += step;
+        r = boundsOf(g);
+        ok = !hits();
+      }
+      if (ok) placed.push(r);
+      else for (const o of g.items) (o as Phaser.GameObjects.Image).setVisible(false);
+    }
   }
 
   /* Where a brand stands: the object to frame and select. */
   target(brand: string) { return this.targets.get(brand) ?? null; }
 
-  /* A section's extent on screen, in world units. */
+  /* A section's extent on screen, in world units: its floor, and its back wall and signs. */
   sectionBounds(i: number) {
     const sec = SECTIONS[i];
-    const [x0, y0] = toWorld(sec.x0 - 0.5, 0), [x1, y1] = toWorld(sec.x1 + 0.5, MALL.d);
-    const left = iso(x0, y1).x, right = iso(x1, y0).x, top = iso(x0, y0).y - 260, bottom = iso(x1, y1).y + 30;
+    const [x0, y0] = toWorld(sec.x0 - 0.3, 0), [x1, y1] = toWorld(sec.x1 + 0.3, MALL.d);
+    const left = iso(x0, y1).x, right = iso(x1, y0).x, top = iso(x0, y0).y - 200, bottom = iso(x1, y1).y + 10;
     return { x: left, y: top, w: right - left, h: bottom - top };
   }
 }
