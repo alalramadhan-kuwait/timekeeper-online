@@ -1,14 +1,19 @@
 import Phaser from 'phaser';
 import { ASSETS, ASSET, settleArt } from '../assets/manifest';
 import {
-  BOUNDS, CORRIDORS, FIXTURES, ROAD, ROOMS, blockedCells, walkable,
-  type BoxModel, type CaseModel, type Look, type Room, type WorldModel,
+  BOUNDS, CORRIDORS, FIXTURES, ROAD, ROOMS, blockedCells, roomOf, walkable,
+  type BoxModel, type Room, type WorldModel,
 } from '../model';
+import { MALL, SECTIONS, WALK, toLocal, toWorld } from '../mall/layout';
 import { cellAt, depthAt, findPath, iso } from './iso';
+import { MallLayer } from './MallLayer';
 
 export type Selection =
+  | { type: 'brand'; brand: string }
+  | { type: 'display'; slot: string }
+  | { type: 'section'; index: number }
+  | { type: 'shopper'; section: number }
   | { type: 'case'; id: string }
-  | { type: 'cabinet'; index: number }
   | { type: 'po'; id: string }
   | { type: 'supplier'; key: string }
   | { type: 'person'; name: string }
@@ -21,16 +26,10 @@ export type Selection =
 export interface SceneHooks {
   onSelect: (s: Selection | null) => void;
   onReady: () => void;
+  onSection?: (i: number | null) => void;   // a section sign was tapped
 }
 
 const LABEL_DEPTH = 1_000_000;
-const PLINTH: Record<string, string> = {
-  owned: 'case-plinth-owned', consignment: 'case-plinth-consignment',
-  pre_owned: 'case-plinth-preowned', unknown: 'case-plinth-unknown',
-};
-const LOOK: Record<Look, string> = {
-  sales: 'char-staff-sales', manager: 'char-staff-manager', ops: 'char-staff-ops', office: 'char-staff-office',
-};
 /* How much of the surroundings each area's zone takes in, in world units. */
 const ZONE_MARGIN = { x: 128, y: 64 };
 
@@ -105,7 +104,7 @@ export class WorldScene extends Phaser.Scene {
   private reduced = false;
   private dyn: Phaser.GameObjects.GameObject[] = [];
   private walkers: Walker[] = [];
-  private wanderers: { w: Walker; room: Room; home: [number, number] }[] = [];
+  private wanderers: { w: Walker; room: Room; home: [number, number]; area?: { x0: number; y0: number; x1: number; y1: number } }[] = [];
   private owner!: Walker;
   private blocked = new Set<string>();
   private selectRing!: Phaser.GameObjects.Image;
@@ -121,8 +120,14 @@ export class WorldScene extends Phaser.Scene {
   private cover = { right: 0, bottom: 0 };               // CSS px covered by an open details panel
   private chosen: Phaser.GameObjects.Image | null = null;   // what the open panel is about
   private revealTo: { x: number; y: number } | null = null;
+  private mall!: MallLayer;
+  private areaLabels: { t: Phaser.GameObjects.Text; room: Room | null }[] = [];   // the dock's and office's labels
+  private labelRoom: Room | null = null;                 // the area labels being made now belong to
+  private section: number | null = 0;                    // the mall section framed on the Floor tab (null: the whole mall)
 
   constructor() { super('world'); }
+
+  get reducedMotion() { return this.reduced; }
 
   init(data: { model: WorldModel; hooks: SceneHooks; reducedMotion: boolean; dpr: number }) {
     this.model = data.model;
@@ -150,6 +155,7 @@ export class WorldScene extends Phaser.Scene {
     this.input.addPointer(1);
     this.makeSheetAnimations();
     this.cameras.main.setBackgroundColor('#dfca93');
+    this.mall = new MallLayer(this);
     this.drawGround();
     this.drawRooms();
     this.selectRing = this.add.image(0, 0, 'select').setVisible(false).setDepth(LABEL_DEPTH - 2);
@@ -163,6 +169,7 @@ export class WorldScene extends Phaser.Scene {
   update(time: number, delta: number) {
     for (const w of this.walkers) w.sync(time);
     this.keepInZone(delta);
+    this.mall.lod(this.cameras.main.zoom / (this.base * 2));
   }
 
   /* ── public, called from the page ─────────────────────────────────── */
@@ -175,7 +182,9 @@ export class WorldScene extends Phaser.Scene {
   setInsets(top: number, bottom: number) { this.insets = { top, bottom }; }
 
   focus(room: Room, animate = true) {
+    if (room === 'floor') { this.room = room; this.focusSection(this.section, animate); return; }
     this.room = room;
+    this.showAreaLabels();
     const cam = this.cameras.main;
     this.revealTo = null;
     const zn = this.zone(room);
@@ -195,6 +204,44 @@ export class WorldScene extends Phaser.Scene {
       cam.setZoom(z); cam.centerOn(cx, cy);
     }
     if (room === 'dock' && this.deliveryPending) { const arrive = this.deliveryPending; this.deliveryPending = null; arrive(); }
+  }
+
+  /* Frames one section of the mall (or the whole mall). On a phone held upright the section
+     fills the height and the rest is a sideways pan away. */
+  focusSection(i: number | null, animate = true) {
+    this.room = 'floor';
+    this.section = i;
+    this.showAreaLabels();
+    this.revealTo = null;
+    const cam = this.cameras.main, px = this.base * 2;
+    const top = this.insets.top * px, bottom = this.insets.bottom * px;
+    const vw = cam.width, vh = Math.max(cam.height - top - bottom, cam.height * 0.4);
+    const r = i === null ? this.zone('floor') : this.mall.sectionBounds(i);
+    let z = Math.min(vw / r.w, vh / r.h);
+    if (i !== null && vw / vh < 0.8) z = Math.max(z, Math.min(vh / r.h, (vw / r.w) * 2.2));
+    z = Phaser.Math.Clamp(z, this.minZoom(), this.maxZoom());
+    const cx = r.x + r.w / 2, cy = r.y + r.h / 2 - (top - bottom) / 2 / z;
+    if (animate && !this.reduced) {
+      cam.pan(cx, cy, 650, 'Sine.easeInOut', true);
+      cam.zoomTo(z, 650, 'Sine.easeInOut', true);
+    } else { cam.setZoom(z); cam.centerOn(cx, cy); }
+  }
+
+  /* Takes the camera to a brand and marks it, as if it had been tapped. */
+  focusBrand(brand: string) {
+    const t = this.mall.target(brand);
+    if (!t) return;
+    this.room = 'floor';
+    this.showAreaLabels();
+    const [lx] = toLocal(t.cell[0], t.cell[1]);
+    this.section = lx < 12.5 ? 0 : lx < 25.5 ? 1 : 2;
+    const cam = this.cameras.main, px = this.base * 2;
+    const z = Phaser.Math.Clamp(Math.max(cam.zoom, (t.boutique ? 0.6 : 0.85) * px), this.minZoom(), this.maxZoom());
+    const b = t.obj.getBounds();
+    this.markChosen(t.obj as Phaser.GameObjects.Image, 0);
+    if (this.reduced) { cam.setZoom(z); cam.centerOn(b.centerX, b.centerY); }
+    else { cam.pan(b.centerX, b.centerY, 600, 'Sine.easeInOut', true); cam.zoomTo(z, 600, 'Sine.easeInOut', true); }
+    this.revealTo = { x: b.centerX, y: b.centerY };
   }
 
   zoomBy(f: number) {
@@ -238,11 +285,24 @@ export class WorldScene extends Phaser.Scene {
       info: { bg: '#22304de6', fg: '#fbf3dc', size: 18 },
     };
     const s = style[kind];
-    return this.add.text(x, y, text, {
+    const t = this.add.text(x, y, text, {
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
       fontSize: `${s.size}px`, fontStyle: '600', color: s.fg, backgroundColor: s.bg,
       padding: { x: 8, y: 4 }, resolution: 2,
     }).setOrigin(0.5, 0).setDepth(LABEL_DEPTH);
+    // fixed labels belong to the area they stand in, and show only while that area is chosen
+    // (the office sits just below the mall, so their labels would otherwise cross)
+    if (kind !== 'person') {
+      const [cx, cy] = cellAt(x, y + 40);
+      this.areaLabels.push({ t, room: this.labelRoom ?? roomOf(cx, cy) });
+    }
+    return t;
+  }
+
+  private showAreaLabels() {
+    this.areaLabels = this.areaLabels.filter((a) => a.t.active);
+    for (const a of this.areaLabels) a.t.setVisible(a.room === null || a.room === this.room);
+    this.mall?.setShown(this.room === 'floor');
   }
 
   /* `ringDy` puts the selection ring under the object's footprint rather than its anchor. */
@@ -257,14 +317,14 @@ export class WorldScene extends Phaser.Scene {
     return o;
   }
 
-  private img(key: string, x: number, y: number, depth: number, dyn = true) {
+  img(key: string, x: number, y: number, depth: number, dyn = true) {
     const o = this.fit(this.add.image(x, y, key), key).setDepth(depth);
     if (dyn) this.dyn.push(o);
     return o;
   }
 
   /* Something standing on the floor, footprint w x d starting at cell (x, y). */
-  private stand(key: string, x: number, y: number, w = 1, d = 1, lift = 0, bias = 0) {
+  stand(key: string, x: number, y: number, w = 1, d = 1, lift = 0, bias = 0) {
     const p = iso(x + w, y + d);
     return this.img(key, p.x, p.y - lift, depthAt(x + w, y + d, bias));
   }
@@ -300,7 +360,7 @@ export class WorldScene extends Phaser.Scene {
       for (let x = ROAD.x0; x < ROAD.x1 - 1; x++) ground('tile-road', x, y);
       ground('tile-pavement', ROAD.x1 - 1, y);
     }
-    for (const [x, y] of [[-3, -6], [10, -6], [-4, 9], [30, -4], [31, 12], [14, 20], [24, 18], [-3, 24], [31, 23], [18, -7]]) {
+    for (const [x, y] of [[-3, -6], [10, -6], [-29, 9], [30, -4], [31, 12], [14, 20], [24, 18], [-3, 24], [31, 23], [18, -7]]) {
       const p = iso(x + 1, y + 1);
       this.fit(this.add.image(p.x, p.y, 'palm'), 'palm').setDepth(depthAt(x + 1, y + 1));
     }
@@ -312,17 +372,14 @@ export class WorldScene extends Phaser.Scene {
       this.fit(this.add.image(p.x, p.y, key), key).setDepth(-1e6 + (x + y));
     };
     const R = ROOMS;
-    for (let x = R.floor.x0; x < R.floor.x1; x++) for (let y = R.floor.y0; y < R.floor.y1; y++)
-      ground((x + y) % 2 ? 'tile-marble-b' : 'tile-marble-a', x, y);
+    this.mall.drawStatic();
     for (let x = R.dock.x0; x < R.dock.x1; x++) for (let y = R.dock.y0; y < R.dock.y1; y++)
       ground(x === R.dock.x1 - 1 ? 'tile-hazard' : 'tile-concrete', x, y);
     for (let x = R.office.x0; x < R.office.x1; x++) for (let y = R.office.y0; y < R.office.y1; y++)
       ground('tile-parquet', x, y);
-    const [toDock, toOffice] = CORRIDORS;
+    const [toDock] = CORRIDORS;
     for (let x = toDock.x0; x < toDock.x1; x++) for (let y = toDock.y0; y < toDock.y1; y++)
       ground(x === toDock.x0 ? 'tile-marble-a' : 'tile-concrete', x, y);
-    for (let x = toOffice.x0; x < toOffice.x1; x++) for (let y = toOffice.y0; y < toOffice.y1; y++)
-      ground(y === toOffice.y0 ? 'tile-marble-b' : 'tile-parquet', x, y);
 
     // walls on the two far sides of each room, open at the doorways
     const wall = (room: string, side: 'l' | 'r', x: number, y: number) => {
@@ -330,36 +387,30 @@ export class WorldScene extends Phaser.Scene {
       const key = `wall-${room}-${side}`;
       this.fit(this.add.image(p.x, p.y, key), key).setDepth(depthAt(x, y, -2));
     };
-    for (let y = R.floor.y0; y < R.floor.y1; y++) wall('floor', 'l', R.floor.x0, y);
-    for (let x = R.floor.x0; x < R.floor.x1; x++) wall('floor', 'r', x, R.floor.y0);
     for (let y = R.dock.y0; y < R.dock.y1; y++) if (y < toDock.y0 || y >= toDock.y1) wall('dock', 'l', R.dock.x0, y);
     for (let x = R.dock.x0; x < R.dock.x1; x++) wall('dock', 'r', x, R.dock.y0);
     for (let y = R.office.y0; y < R.office.y1; y++) wall('office', 'l', R.office.x0, y);
-    for (let x = R.office.x0; x < R.office.x1; x++) if (x < toOffice.x0 || x >= toOffice.x1) wall('office', 'r', x, R.office.y0);
+    for (let x = R.office.x0; x < R.office.x1; x++) wall('office', 'r', x, R.office.y0);
 
     const sign = (key: string, x: number, y: number) => {
       const p = iso(x, y);
       this.fit(this.add.image(p.x, p.y - 175, key), key).setDepth(depthAt(x, y, -1));
     };
-    sign('sign-boutique', 6.5, R.floor.y0);
     sign('sign-dock', 20.5, R.dock.y0);
     sign('sign-office', R.office.x0, 17);
 
-    // the wall clock tells real Kuwait time
+    // the wall clock tells real Kuwait time, on the Grand Gallery's end wall
     const cp = iso(R.floor.x0, 5.5);
-    this.clockAt = { x: cp.x - 32, y: cp.y - 52 };
-    this.fit(this.add.image(this.clockAt.x, this.clockAt.y, 'wall-clock'), 'wall-clock', 0.9).setDepth(depthAt(0, 5, -1));
-    this.clockHands = this.add.graphics().setDepth(depthAt(0, 5, -0.5));
+    this.clockAt = { x: cp.x - 32, y: cp.y - 100 };
+    this.fit(this.add.image(this.clockAt.x, this.clockAt.y, 'wall-clock'), 'wall-clock', 0.9).setDepth(depthAt(R.floor.x0, 5, -1));
+    this.clockHands = this.add.graphics().setDepth(depthAt(R.floor.x0, 5, -0.5));
     this.drawClock();
 
     // fixed furniture
-    const rugP = iso(FIXTURES.rug.cell[0], FIXTURES.rug.cell[1]);
-    this.fit(this.add.image(rugP.x, rugP.y, 'rug'), 'rug').setDepth(-5e5);
     const fixed = (key: string, x: number, y: number, w = 1, d = 1) => {
       const p = iso(x + w, y + d);
       return this.fit(this.add.image(p.x, p.y, key), key).setDepth(depthAt(x + w, y + d));
     };
-    fixed('counter', FIXTURES.counter.cell[0], FIXTURES.counter.cell[1], 2, 1);
     fixed('desk', FIXTURES.desk.cell[0], FIXTURES.desk.cell[1], 2, 1);
     FIXTURES.staffDesks.forEach(([x, y]) => fixed('desk-small', x, y));
     FIXTURES.benches.forEach(([x, y]) => fixed('bench', x, y, 2, 1));
@@ -396,66 +447,22 @@ export class WorldScene extends Phaser.Scene {
     this.deliveryPending = null;
 
     const m = this.model;
-    this.blocked = blockedCells(m);
-    m.cases.forEach((c) => this.buildCase(c));
-    m.cabinets.forEach((c) => {
-      const o = this.stand('wall-cabinet', c.cell[0], c.cell[1]);
-      o.setInteractive({ useHandCursor: true, pixelPerfect: true, alphaTolerance: 1 });
-      this.tag(o, { type: 'cabinet', index: c.index });
-    });
+    this.mall.build(m.mall);
+    this.blocked = new Set([...blockedCells(m), ...this.mall.blocked]);
+    this.labelRoom = 'dock';
     m.boxes.forEach((b) => this.buildBox(b));
     if (m.hiddenBoxes > 0) {
       const p = iso(24, 10);
       this.dyn.push(this.label(p.x, p.y - 40, `+${m.hiddenBoxes} more POs`, 'info'));
     }
+    this.labelRoom = 'office';
     this.buildOffice();
+    this.labelRoom = null;
     this.buildPeople();
+    this.labelRoom = 'dock';
     this.buildDelivery();
-  }
-
-  private buildCase(c: CaseModel) {
-    const [x, y] = c.cell;
-    const base = depthAt(x + 1, y + 1);
-    const plinthKey = PLINTH[c.shelf.ownership] ?? PLINTH.unknown;
-    const plinth = this.stand(plinthKey, x, y);
-    // the glass stands on the base (or, drawn as a whole cabinet, on the floor);
-    // the watches stand on the glass case's own floor
-    const onPlinth = ASSET[plinthKey].surface;
-    const glassOnFloor = ASSET['case-glass'].onFloor;
-    const inside = glassOnFloor ? onPlinth : onPlinth + ASSET['case-glass'].surface;
-    const spots: [number, number][] = [[0.3, 0.3], [0.7, 0.3], [0.3, 0.7], [0.7, 0.7], [0.5, 0.5], [0.5, 0.18]];
-    for (let i = 0; i < c.watches; i++) {
-      const p = iso(x + spots[i][0], y + spots[i][1]);
-      this.img('watch', p.x, p.y - inside, base + 0.1 + i * 0.001);
-    }
-    const glass = this.stand('case-glass', x, y, 1, 1, glassOnFloor ? 0 : onPlinth, 0.3);
-    if (c.dusty) this.stand('case-dust', x, y, 1, 1, onPlinth, 0.35);
-    const top = iso(x + 0.5, y + 0.5);
-    const gb = glass.getBounds();
-    if (c.isNew) this.img('tag-new', gb.left + 26, gb.top + 18, base + 0.4);
-    if (c.onOrder) this.fit(this.img('box-sealed', top.x + 46, top.y + 22, base + 0.45), 'box-sealed', 0.32);
-    if (c.alert) this.bobbing(this.img('alert', gb.right - 22, gb.top - 4, LABEL_DEPTH - 1));
-    if (c.sparkle && !this.reduced) {
-      const k = ASSET.sparkle.drawWidth / (this.textures.get('sparkle').get().width || ASSET.sparkle.drawWidth);
-      const e = this.add.particles(gb.centerX, gb.centerY, 'sparkle', {
-        x: { min: -44, max: 44 }, y: { min: -26, max: 22 }, lifespan: 900, frequency: 520,
-        scale: { start: 0.9 * k, end: 0 }, alpha: { start: 1, end: 0 }, quantity: 1,
-      }).setDepth(base + 0.5);
-      this.dyn.push(e);
-    }
-    if (c.dusty && !this.reduced) {
-      const e = this.add.particles(gb.centerX, gb.centerY, 'mote', {
-        x: { min: -40, max: 40 }, y: { min: -20, max: 20 }, lifespan: 2600, frequency: 700,
-        speedY: { min: -8, max: -3 }, scale: { start: 0.8, end: 0.2 }, alpha: { start: 0.7, end: 0 },
-      }).setDepth(base + 0.5);
-      this.dyn.push(e);
-    }
-    const front = iso(x + 1, y + 1);
-    this.dyn.push(this.label(front.x, front.y + 2, c.shelf.brand, 'case'));
-    for (const o of [glass, plinth]) {
-      o.setInteractive({ useHandCursor: true, pixelPerfect: true, alphaTolerance: 1 });
-      this.tag(o, { type: 'case', id: c.id });
-    }
+    this.labelRoom = null;
+    this.showAreaLabels();
   }
 
   private buildBox(b: BoxModel) {
@@ -552,21 +559,76 @@ export class WorldScene extends Phaser.Scene {
   }
 
   private buildPeople() {
+    // staff: only those the attendance records show on duty now, in the look an owner chose
     for (const s of this.model.staff) {
       const first = s.person.name.split(' ')[0];
-      const w = new Walker(this, LOOK[s.look], s.home, 380, first);
+      const w = new Walker(this, s.key, s.home, 380, first);
       w.setInteractive({ type: 'person', name: s.person.name });
       this.walkers.push(w);
       this.wanderers.push({ w, room: s.room, home: s.home });
     }
+    // shoppers are illustrative: how many walk each section follows its last 30 days' sales
+    this.model.mall.shoppers.forEach((n, i) => {
+      const sec = SECTIONS[i];
+      for (let k = 0; k < n; k++) {
+        const home = toWorld(sec.x0 + 2 + ((k * 4) % 9), k % 2 ? WALK.y1 - 1 : WALK.y0);
+        const w = new Walker(this, `char-shopper-${((i * 2 + k) % 6) + 1}`, home, 520);
+        w.setInteractive({ type: 'shopper', section: i });
+        this.walkers.push(w);
+        const [x0] = toWorld(sec.x0, 0), [x1] = toWorld(sec.x1, 0);
+        this.wanderers.push({ w, room: 'floor', home, area: { x0, y0: MALL.y0, x1, y1: MALL.y0 + MALL.d } });
+      }
+    });
+    // Mohammed in the mall, by the brand his biggest open mission is about
+    const withMission = this.model.mall.spots.filter((sp) => sp.brand.missions.length)
+      .sort((a, b) => Math.max(...b.brand.missions.map((m) => m.weight_kd ?? 0)) - Math.max(...a.brand.missions.map((m) => m.weight_kd ?? 0)));
+    if (withMission.length) {
+      const sp = withMission[0];
+      const lx = sp.slot.kind === 'boutique' ? sp.slot.x + 3 : sp.cell[0];
+      const ly = sp.slot.side === 's' ? WALK.y1 - 1 : WALK.y0;
+      const mo = new Walker(this, 'char-mohammed', toWorld(lx, ly), 300);
+      mo.setInteractive({ type: 'mohammed' });
+      this.walkers.push(mo);
+      const c = iso(...toWorld(lx + 0.5, ly + 0.5));
+      this.bobbing(this.img('alert', c.x + 4, mo.sprite.getBounds().top - 2, LABEL_DEPTH - 1));
+    }
+    this.buildMallDelivery();
     // the owner: whoever is looking, in a dishdasha, ghutra and agal
-    const prev = this.owner?.cell ?? ([4, 15] as [number, number]);
+    const prev = this.owner?.cell ?? toWorld(4, WALK.y0 + 1);
     this.owner = new Walker(this, 'char-owner', prev, 210, 'You');
     this.owner.setInteractive({ type: 'owner' });
     this.walkers.push(this.owner);
     if (!this.reduced) {
       this.time.addEvent({ delay: 1600, loop: true, callback: () => this.wander() });
     }
+  }
+
+  /* A delivery Lightspeed has logged in the last day or so: a courier pushes the trolley in
+     from the loading dock to the brand it is for (or, if the PO has no brand, just inside). */
+  private buildMallDelivery() {
+    const d = this.model.delivery;
+    if (!d.seen) return;
+    const sp = d.brand ? this.model.mall.spots.find((x) => x.brand.brand === d.brand) : undefined;
+    const tx = sp ? (sp.slot.kind === 'boutique' ? sp.slot.x + 3 : sp.cell[0]) : MALL.w - 3;
+    const ty = sp && sp.slot.side === 's' ? WALK.y1 - 1 : WALK.y0 + 1;
+    const start = toWorld(MALL.w - 1, WALK.y0 + 1), stop = toWorld(tx, ty);
+    const courier = new Walker(this, 'char-driver-n', [start[0] + 1, start[1]], 480, 'Delivery');
+    const trolley = new Walker(this, 'trolley', start, 480);
+    for (const w of [courier, trolley]) { w.setInteractive({ type: 'delivery' }); this.walkers.push(w); }
+    if (this.reduced) return;
+    const go = () => {
+      const there = findPath(trolley.cell, stop, (x, y) => this.open(x, y));
+      if (!there) return;
+      trolley.walk(there, () => this.time.delayedCall(2600, back));
+      courier.walk([trolley.cell, ...there.slice(0, -1)]);
+    };
+    const back = () => {
+      const home = findPath(trolley.cell, start, (x, y) => this.open(x, y));
+      if (!home) return;
+      trolley.walk(home, () => this.time.delayedCall(5000, go));
+      courier.walk([trolley.cell, ...home.slice(0, -1)]);
+    };
+    this.time.delayedCall(1200, go);
   }
 
   private buildDelivery() {
@@ -624,7 +686,7 @@ export class WorldScene extends Phaser.Scene {
     });
   }
 
-  private bobbing(o: Phaser.GameObjects.Image) {
+  bobbing(o: Phaser.GameObjects.Image) {
     if (!this.reduced) this.tweens.add({ targets: o, y: o.y - 8, duration: 700, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
     return o;
   }
@@ -636,7 +698,7 @@ export class WorldScene extends Phaser.Scene {
     if (!idle.length) return;
     const p = Phaser.Utils.Array.GetRandom(idle);
     if (Math.random() < 0.35) return;
-    const R = ROOMS[p.room];
+    const R = p.area ?? ROOMS[p.room];
     for (let tries = 0; tries < 8; tries++) {
       const tx = Phaser.Math.Clamp(p.home[0] + Phaser.Math.Between(-3, 3), R.x0, R.x1 - 1);
       const ty = Phaser.Math.Clamp(p.home[1] + Phaser.Math.Between(-3, 3), R.y0, R.y1 - 1);
@@ -732,23 +794,33 @@ export class WorldScene extends Phaser.Scene {
 
   private choose(o: Phaser.GameObjects.GameObject) {
     const sel = o.getData('sel') as Selection;
-    const img = o as Phaser.GameObjects.Image;
+    if (sel.type === 'section') { this.hooks.onSection?.(sel.index); this.focusSection(sel.index); return; }
+    this.markChosen(o as Phaser.GameObjects.Image, (o.getData('ringDy') as number) ?? -32);
+    this.hooks.onSelect(sel);
+  }
+
+  private markChosen(img: Phaser.GameObjects.Image, dy: number) {
     this.chosen = img;
-    const dy = (o.getData('ringDy') as number) ?? -32;
     this.selectRing.setVisible(true).setPosition(img.x, img.y + dy).setScale(dy === 0 ? 0.6 : 1);
     this.selectRing.setAlpha(1);
     if (!this.reduced) {
       this.tweens.killTweensOf(this.selectRing);
       this.tweens.add({ targets: this.selectRing, alpha: { from: 1, to: 0.35 }, duration: 700, yoyo: true, repeat: -1 });
     }
-    this.hooks.onSelect(sel);
   }
 
   private walkOwnerTo(wx: number, wy: number) {
     const [x, y] = cellAt(wx, wy);
     if (!this.open(x, y)) return;
     const path = findPath(this.owner.cell, [x, y], (a, b) => this.open(a, b));
-    if (!path) return;
+    if (!path) {
+      // another area with no way through: step straight there
+      this.owner.fx = x + 0.5; this.owner.fy = y + 0.5;
+      this.hooks.onSelect(null);
+      this.selectRing.setVisible(false);
+      this.chosen = null;
+      return;
+    }
     const t = iso(x + 0.5, y + 0.5);
     this.targetRing.setVisible(true).setPosition(t.x, t.y).setDepth(depthAt(x + 0.5, y + 0.5, -2)).setAlpha(1);
     this.tweens.add({ targets: this.targetRing, alpha: 0, delay: Math.max(0, path.length * this.owner.speed - 200), duration: 400 });

@@ -569,5 +569,144 @@
    0.024,
    0.735
   ]
+ },
+ "boutique-pavilion": {
+  "size": [
+   512,
+   512
+  ],
+  "width": 323,
+  "origin": [
+   0.5,
+   0.871
+  ]
+ },
+ "board-major": {
+  "size": [
+   512,
+   512
+  ],
+  "width": 278,
+  "origin": [
+   0.5,
+   0.781
+  ],
+  "text": [
+   0.236,
+   0.256,
+   0.77,
+   0.72
+  ]
+ },
+ "board-minor": {
+  "size": [
+   512,
+   512
+  ],
+  "width": 170,
+  "origin": [
+   0.5,
+   0.781
+  ],
+  "text": [
+   0.236,
+   0.256,
+   0.77,
+   0.72
+  ]
+ },
+ "sign-section": {
+  "size": [
+   512,
+   512
+  ],
+  "width": 455,
+  "origin": [
+   0.5,
+   0.385
+  ],
+  "text": [
+   0.2,
+   0.2,
+   0.8,
+   0.57
+  ]
+ },
+ "planter-mall": {
+  "size": [
+   512,
+   512
+  ],
+  "width": 225,
+  "origin": [
+   0.5,
+   0.818
+  ]
+ },
+ "crate-po": {
+  "size": [
+   512,
+   512
+  ],
+  "width": 112,
+  "origin": [
+   0.5,
+   0.838
+  ]
+ },
+ "mall-select": {
+  "size": [
+   512,
+   512
+  ],
+  "width": 296,
+  "origin": [
+   0.5,
+   0.625
+  ]
+ },
+ "kiosk-base-owned": {
+  "size": [
+   512,
+   512
+  ],
+  "width": 163,
+  "origin": [
+   0.5,
+   0.818
+  ]
+ },
+ "kiosk-base-consignment": {
+  "size": [
+   512,
+   512
+  ],
+  "width": 163,
+  "origin": [
+   0.5,
+   0.818
+  ]
+ },
+ "kiosk-base-preowned": {
+  "size": [
+   512,
+   512
+  ],
+  "width": 163,
+  "origin": [
+   0.5,
+   0.818
+  ]
+ },
+ "kiosk-base-unknown": {
+  "size": [
+   512,
+   512
+  ],
+  "width": 163,
+  "origin": [
+   0.5,
+   0.818
+  ]
  }
 }

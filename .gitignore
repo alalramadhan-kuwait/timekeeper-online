@@ -7,3 +7,4 @@ dist
 voice-src/
 video/brand/__pycache__/*.cpython-313.pyc
 dist-world-beta
+dist-world-mall

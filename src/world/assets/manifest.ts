@@ -23,7 +23,7 @@ const final = import.meta.glob('./final/*.{png,webp,svg}', { eager: true, query:
 const artJson = import.meta.glob('./final/art.json', { eager: true, import: 'default' }) as Record<string, Record<string, ArtSettings>>;
 const ART: Record<string, ArtSettings> = Object.values(artJson)[0] ?? {};
 
-interface ArtSettings { size?: [number, number]; width?: number; origin?: [number, number]; surface?: number; cards?: boolean; onFloor?: boolean }
+interface ArtSettings { size?: [number, number]; width?: number; origin?: [number, number]; surface?: number; cards?: boolean; onFloor?: boolean; text?: [number, number, number, number] }
 interface Contract { px: [number, number]; origin: [number, number]; surface?: number; onFloor?: boolean }
 const CONTRACT = contract as unknown as Record<string, Contract>;
 
@@ -46,7 +46,17 @@ export interface AssetDef {
   /* The case glass: drawn as a whole cabinet standing on the floor, rather than
      a glass box resting on the case base. */
   onFloor: boolean;
+  /* Boards and signs: the plain area the game writes on, as fractions of the picture
+     (left, top, right, bottom). */
+  text: [number, number, number, number] | null;
 }
+
+/* Where the game writes on boards and signs drawn to the contract (see the mall spec). */
+const TEXT_AREA: Record<string, [number, number, number, number]> = {
+  'board-major': [32 / 320, 30 / 400, 288 / 320, 204 / 400],
+  'board-minor': [20 / 192, 18 / 256, 172 / 192, 102 / 256],
+  'sign-section': [40 / 480, 16 / 92, 440 / 480, 76 / 92],
+};
 
 /* Surfaces of the placeholders, which were drawn to a common grid. */
 const SURFACE: Record<string, number> = {
@@ -93,6 +103,16 @@ const SPECS: [string, number, number, number, number][] = [
   ['char-rep', 72, 128, 0.5, 0.96], ['char-driver', 72, 128, 0.5, 0.96],
 ];
 
+/* The Watch Mall's pictures (and any key added to the contract later) are placed by the
+   contract alone: its size is twice the world size, and its surface is in world units. */
+const LISTED = new Set(SPECS.map((s) => s[0]));
+for (const [key, c] of Object.entries(CONTRACT)) {
+  if (!LISTED.has(key)) {
+    SPECS.push([key, c.px[0] / 2, c.px[1] / 2, c.origin[0], c.origin[1]]);
+    if (c.surface !== undefined) SURFACE[key] = c.surface;
+  }
+}
+
 export const ASSETS: AssetDef[] = SPECS.map(([key, width, height, ox, oy]) => {
   const f = finals.get(key);
   const url = f?.url ?? placeholders.get(key);
@@ -106,6 +126,7 @@ export const ASSETS: AssetDef[] = SPECS.map(([key, width, height, ox, oy]) => {
     surface: a.surface ?? SURFACE[key] ?? 0,
     cards: a.cards ?? true,
     onFloor: a.onFloor ?? false,
+    text: a.text ?? TEXT_AREA[key] ?? null,
   };
 });
 
@@ -128,6 +149,7 @@ export function settleArt(sizeOf: (key: string) => [number, number] | null): str
     a.surface = c.surface ?? SURFACE[a.key] ?? 0;
     a.onFloor = c.onFloor ?? false;
     a.cards = true;
+    a.text = TEXT_AREA[a.key] ?? null;
     byContract.push(a.key);
   }
   return byContract;

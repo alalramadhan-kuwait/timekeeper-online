@@ -17,7 +17,8 @@
     "sw:check": "node scripts/sw-check.mjs",
     "release:check": "node scripts/release-check.mjs",
     "world:art": "node scripts/world-art-check.mjs",
-    "world:beta": "vite build --config vite.world-beta.config.ts"
+    "world:beta": "vite build --config vite.world-beta.config.ts",
+    "world:mall": "WORLD_SITE=world-mall vite build --config vite.world-beta.config.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.106.0",

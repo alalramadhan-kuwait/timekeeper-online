@@ -5,6 +5,8 @@ import { WorldScene, type SceneHooks } from './WorldScene';
 export interface WorldGame {
   setModel: (m: WorldModel) => void;
   focus: (r: Room) => void;
+  focusSection: (i: number | null) => void;
+  focusBrand: (brand: string) => void;
   setInsets: (top: number, bottom: number) => void;
   zoomBy: (f: number) => void;
   clearSelection: () => void;
@@ -54,6 +56,8 @@ export function createGame(parent: HTMLElement, model: WorldModel, hooks: SceneH
   return {
     setModel: (m) => withScene((s) => s.setModel(m)),
     focus: (r) => withScene((s) => s.focus(r)),
+    focusSection: (i) => withScene((s) => s.focusSection(i)),
+    focusBrand: (b) => withScene((s) => s.focusBrand(b)),
     setInsets: (t, b) => withScene((s) => s.setInsets(t, b)),
     zoomBy: (f) => withScene((s) => s.zoomBy(f)),
     clearSelection: () => withScene((s) => s.clearSelection()),

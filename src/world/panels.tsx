@@ -5,21 +5,26 @@ import { KIND_LABEL, OWNERSHIP_LABEL, missionTitle } from './model';
 import type { Mission, MissionEvent, PoDetail, PoSearch, Shelf, Snapshot, StockClass } from './types';
 import type { Selection } from './game/WorldScene';
 import { day, kd, kd0, num, plural, when } from './format';
+import type { MallModel } from './mall/model';
+import { MallPanelBody, isMallView } from './mall/panels';
 
 /* What opens when something in the World is tapped. Every figure here comes
    straight from the snapshot or the PO functions; nothing is recalculated. */
 
-export type View = Selection | { type: 'search' } | { type: 'mission'; key: string };
+export type View = Selection | { type: 'search' } | { type: 'mission'; key: string }
+  | { type: 'brands' } | { type: 'mall-settings' } | { type: 'move'; brand: string };
 
-interface Ctx {
+export interface Ctx {
   s: Snapshot;
+  mall: MallModel;
   open: (v: View) => void;
   refresh: () => Promise<void>;
+  focusBrand: (brand: string) => void;
 }
 
 /* ── small parts ─────────────────────────────────────────────────────── */
 
-function Stat({ label, value, sub }: { label: string; value: string; sub?: string }) {
+export function Stat({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
     <div className="rounded-xl bg-[#f6f1e7] px-3 py-2.5">
       <div className="text-[11px] font-medium uppercase tracking-wide text-[#7b6a55]">{label}</div>
@@ -29,7 +34,7 @@ function Stat({ label, value, sub }: { label: string; value: string; sub?: strin
   );
 }
 
-function Note({ children, tone = 'info' }: { children: React.ReactNode; tone?: 'info' | 'warn' }) {
+export function Note({ children, tone = 'info' }: { children: React.ReactNode; tone?: 'info' | 'warn' }) {
   return (
     <p className={`rounded-lg px-3 py-2 text-xs leading-relaxed ${tone === 'warn' ? 'bg-amber-50 text-amber-900' : 'bg-slate-50 text-slate-600'}`}>
       {children}
@@ -37,7 +42,7 @@ function Note({ children, tone = 'info' }: { children: React.ReactNode; tone?: '
   );
 }
 
-function Row({ onClick, children }: { onClick?: () => void; children: React.ReactNode }) {
+export function Row({ onClick, children }: { onClick?: () => void; children: React.ReactNode }) {
   const Tag = onClick ? 'button' : 'div';
   return (
     <Tag onClick={onClick} className={`flex w-full items-center gap-3 border-b border-slate-100 py-2.5 text-left text-sm last:border-0 ${onClick ? 'hover:bg-slate-50' : ''}`}>
@@ -47,7 +52,7 @@ function Row({ onClick, children }: { onClick?: () => void; children: React.Reac
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+export function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="mt-5">
       <h3 className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-[#7b6a55]">{title}</h3>
@@ -61,7 +66,7 @@ const CLASS_COLOURS: Record<StockClass, string> = {
 };
 const CLASS_LABEL: Record<StockClass, string> = { fast: 'Fast', healthy: 'Healthy', new: 'New', slow: 'Slow', dead: 'Dead' };
 
-function ClassBar({ shelf }: { shelf: Shelf }) {
+export function ClassBar({ shelf }: { shelf: Pick<Shelf, 'classes'> }) {
   const order: StockClass[] = ['fast', 'healthy', 'new', 'slow', 'dead'];
   const total = order.reduce((n, c) => n + (shelf.classes[c]?.cost_value ?? 0), 0) || 1;
   return (
@@ -96,7 +101,7 @@ function stateBadge(m: Mission) {
   return <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${c}`}>{t}</span>;
 }
 
-function MissionRows({ missions, ctx }: { missions: Mission[]; ctx: Ctx }) {
+export function MissionRows({ missions, ctx }: { missions: Mission[]; ctx: Ctx }) {
   if (!missions.length) return <p className="text-sm text-slate-500">Nothing here needs a look.</p>;
   return (
     <div>
@@ -151,26 +156,6 @@ function CasePanel({ id, ctx }: { id: string; ctx: Ctx }) {
         </Section>
       )}
       {missions.length > 0 && <Section title="Missions"><MissionRows missions={missions} ctx={ctx} /></Section>}
-    </div>
-  );
-}
-
-function CabinetPanel({ index, ctx, cabinets }: { index: number; ctx: Ctx; cabinets: Shelf[][] }) {
-  const shelves = cabinets[index] ?? [];
-  return (
-    <div>
-      <Head title="Wall cabinet" sub={`${plural(shelves.length, 'brand')} on these shelves`} />
-      <div className="mt-3">
-        {shelves.map((x) => (
-          <Row key={`${x.brand}|${x.ownership}`} onClick={() => ctx.open({ type: 'case', id: `${x.brand}|${x.ownership}` })}>
-            <div className="flex items-baseline gap-2">
-              <span className="truncate font-medium text-slate-800">{x.brand}</span>
-              <span className="text-xs text-slate-500">{OWNERSHIP_LABEL[x.ownership]}</span>
-            </div>
-            <div className="text-xs tabular-nums text-slate-500">{plural(x.units, 'unit')} · {kd0(x.cost_value)} at cost</div>
-          </Row>
-        ))}
-      </div>
     </div>
   );
 }
@@ -301,8 +286,10 @@ function SupplierPanel({ k, ctx }: { k: string; ctx: Ctx }) {
 }
 
 function PersonPanel({ name, ctx }: { name: string; ctx: Ctx }) {
-  const p = ctx.s.people.staff.find((x) => x.name === name);
+  const p = ctx.mall.staff.find((x) => x.name === name);
   if (!p) return null;
+  const d = p.duty;
+  const duty = d.state === 'on' ? `On duty since ${clockOf(d.clock_in)}` : d.state === 'unclosed' ? `Clocked in ${clockOf(d.clock_in)}, no clock-out yet` : 'Not clocked in today';
   return (
     <div>
       <Head title={p.name} sub={p.name_ar ?? undefined} />
@@ -310,10 +297,13 @@ function PersonPanel({ name, ctx }: { name: string; ctx: Ctx }) {
         <Stat label="Role" value={p.role ?? '—'} />
         <Stat label="Works at" value={p.location ?? '—'} />
       </div>
-      <p className="mt-3 text-xs text-slate-500">The World shows names and roles only.</p>
+      <p className="mt-3 text-sm text-slate-700">{duty}</p>
+      <p className="mt-3 text-xs text-slate-500">The World shows names, roles and whether the attendance records show someone on duty. Looks are set by an owner in Mall settings.</p>
     </div>
   );
 }
+
+const clockOf = (t: string | null) => (t ? new Date(t).toLocaleTimeString('en-GB', { timeZone: 'Asia/Kuwait', hour: '2-digit', minute: '2-digit', hour12: false }) : '—');
 
 function OwnerPanel({ ctx }: { ctx: Ctx }) {
   return (
@@ -577,7 +567,7 @@ function SearchPanel({ ctx }: { ctx: Ctx }) {
   );
 }
 
-function Head({ title, sub, tone }: { title: string; sub?: string; tone?: string }) {
+export function Head({ title, sub, tone }: { title: string; sub?: string; tone?: string }) {
   const chip: Record<string, string> = { owned: '#9b6a43', consignment: '#7a5a96', pre_owned: '#3f8f8a', unknown: '#9aa0a6' };
   return (
     <div className="pr-8">
@@ -596,10 +586,10 @@ export function Loading() {
   return <div className="flex items-center gap-2 py-4 text-sm text-slate-500"><Loader2 size={16} className="animate-spin" /> Loading…</div>;
 }
 
-export function PanelBody({ view, ctx, cabinets }: { view: View; ctx: Ctx; cabinets: Shelf[][] }) {
+export function PanelBody({ view, ctx }: { view: View; ctx: Ctx }) {
+  if (isMallView(view)) return <MallPanelBody view={view} ctx={ctx} />;
   switch (view.type) {
     case 'case': return <CasePanel id={view.id} ctx={ctx} />;
-    case 'cabinet': return <CabinetPanel index={view.index} ctx={ctx} cabinets={cabinets} />;
     case 'po': return <PoPanel key={view.id} id={view.id} ctx={ctx} />;
     case 'supplier': return <SupplierPanel k={view.key} ctx={ctx} />;
     case 'person': return <PersonPanel name={view.name} ctx={ctx} />;

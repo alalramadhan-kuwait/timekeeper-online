@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, ChevronLeft, Minus, Plus, RefreshCw, Search, X } from 'lucide-react';
+import { ArrowLeft, ChevronLeft, Maximize2, Minus, Plus, RefreshCw, Search, Settings2, Store, X } from 'lucide-react';
 import avatar from '../assets/ask-mohammed.webp';
 import { loadSnapshot } from './api';
 import { buildModel, missionTitle, type Room } from './model';
 import { createGame, type WorldGame } from './game/createGame';
 import type { Selection } from './game/WorldScene';
 import { Loading, PanelBody, type View } from './panels';
+import { loadMall, type MallData } from './mall/data';
+import { SECTIONS } from './mall/layout';
 import { clock, day, kd, kd0, num } from './format';
 import type { Snapshot } from './types';
 
@@ -22,7 +24,7 @@ import type { Snapshot } from './types';
  */
 
 const ROOMS: { room: Room; label: string; short: string }[] = [
-  { room: 'floor', label: 'Boutique Floor', short: 'Floor' },
+  { room: 'floor', label: 'Watch Mall', short: 'Floor' },
   { room: 'dock', label: 'Loading Dock', short: 'Dock' },
   { room: 'office', label: "Manager's Office", short: 'Office' },
 ];
@@ -35,6 +37,8 @@ export default function WorldPage({ onClose }: { onClose?: () => void }) {
   const panelRef = useRef<HTMLElement>(null);
   const game = useRef<WorldGame | null>(null);
   const [snap, setSnap] = useState<Snapshot | null>(null);
+  const [mallData, setMallData] = useState<MallData | null>(null);
+  const [section, setSection] = useState<number | null>(0);
   const [err, setErr] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
   const [room, setRoom] = useState<Room>('floor');
@@ -47,18 +51,21 @@ export default function WorldPage({ onClose }: { onClose?: () => void }) {
     `Sales to ${day(snap.meta.sales_through)}`,
   ] : [], [snap]);
 
-  const model = useMemo(() => (snap ? buildModel(snap) : null), [snap]);
+  const model = useMemo(() => (snap && mallData ? buildModel(snap, mallData) : null), [snap, mallData]);
 
   const refresh = useCallback(async () => {
     setBusy(true);
-    try { setSnap(await loadSnapshot()); setErr(null); }
-    catch (e) { setErr((e as Error).message); }
+    try {
+      const [s, m] = await Promise.all([loadSnapshot(), loadMall()]);
+      setSnap(s); setMallData(m); setErr(null);
+    } catch (e) { setErr((e as Error).message); }
     setBusy(false);
   }, []);
 
   useEffect(() => {
     let live = true;
-    loadSnapshot().then((s) => { if (live) setSnap(s); }, (e) => { if (live) setErr((e as Error).message); });
+    Promise.all([loadSnapshot(), loadMall()]).then(([s, m]) => { if (live) { setSnap(s); setMallData(m); } },
+      (e) => { if (live) setErr((e as Error).message); });
     return () => { live = false; };
   }, []);
   // the stock cache refreshes hourly and the PO sync daily; follow them while open
@@ -73,6 +80,7 @@ export default function WorldPage({ onClose }: { onClose?: () => void }) {
     game.current = createGame(host.current, model, {
       onSelect: (s: Selection | null) => setStack(s ? [s] : []),
       onReady: () => setReady(true),
+      onSection: (i) => setSection(i),
     });
   }, [model]);
   useEffect(() => { if (model && ready) game.current?.setModel(model); }, [model, ready]);
@@ -118,9 +126,10 @@ export default function WorldPage({ onClose }: { onClose?: () => void }) {
   }, [first]);
   const open = useCallback((v: View) => setStack((s) => [...s, v]), []);
   const closePanel = () => { setStack([]); game.current?.clearSelection(); };
-  const cabinets = useMemo(() => model?.cabinets.reduce<Snapshot['floor']['shelves'][]>((a, c) => { a[c.index] = c.shelves; return a; }, []) ?? [], [model]);
+  const focusBrand = useCallback((b: string) => { setRoom('floor'); game.current?.focusBrand(b); }, []);
+  const pickSection = (i: number | null) => { setRoom('floor'); setSection(i); game.current?.focusSection(i); };
 
-  if (err && !snap) {
+  if (err && !(snap && mallData)) {
     const denied = /owner|permission|42501|not allowed/i.test(err);
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#dfca93] p-6">
@@ -143,7 +152,7 @@ export default function WorldPage({ onClose }: { onClose?: () => void }) {
     <div className="fixed inset-0 z-50 select-none overflow-hidden bg-[#dfca93] text-slate-900">
       <div ref={host} className="absolute inset-0 touch-none" aria-label="Time Keeper World map" />
 
-      {(!snap || !ready) && (
+      {(!snap || !mallData || !ready) && (
         <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 bg-[#dfca93]">
           <img src={avatar} alt="" className="h-20 w-20 rounded-full bg-amber-400 ring-4 ring-white motion-safe:animate-pulse" />
           <div className="text-center">
@@ -185,11 +194,27 @@ export default function WorldPage({ onClose }: { onClose?: () => void }) {
             </button>
           ))}
         </nav>
+        {room === 'floor' && model && (
+          <div className={`pointer-events-auto -mx-1 ${view ? 'hidden sm:flex' : 'flex'} items-center gap-1.5 overflow-x-auto px-1 pb-0.5 [scrollbar-width:none]`} aria-label="Mall sections">
+            {SECTIONS.map((sec, i) => (
+              <button key={sec.key} onClick={() => pickSection(i)}
+                className={`shrink-0 rounded-full px-3 py-1.5 text-[12.5px] font-medium shadow-md ${section === i ? 'bg-[#b8893b] text-white' : 'bg-white/95 text-[#22304d]'}`}>
+                <span className="hidden sm:inline">{sec.name}</span><span className="sm:hidden">{sec.short}</span>
+              </button>
+            ))}
+            <button onClick={() => pickSection(null)} aria-label="Whole mall"
+              className={`grid h-8 w-8 shrink-0 place-items-center rounded-full shadow-md ${section === null ? 'bg-[#b8893b] text-white' : 'bg-white/95 text-[#22304d]'}`}><Maximize2 size={15} /></button>
+            <button onClick={() => setStack([{ type: 'brands' }])}
+              className="flex shrink-0 items-center gap-1.5 rounded-full bg-[#22304d] px-3 py-1.5 text-[12.5px] font-medium text-white shadow-md"><Store size={14} /> Find a brand</button>
+            <button onClick={() => setStack([{ type: 'mall-settings' }])} aria-label="Mall settings"
+              className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-white/95 text-[#22304d] shadow-md"><Settings2 size={15} /></button>
+          </div>
+        )}
         {snap && (
-          <div className={`pointer-events-auto -mx-1 ${view ? 'hidden sm:flex' : 'flex'} gap-1.5 overflow-x-auto px-1 pb-1 [scrollbar-width:none]`}>
+          <div className={`pointer-events-auto -mx-1 ${view ? 'hidden sm:flex' : room === 'floor' ? 'hidden sm:flex' : 'flex'} gap-1.5 overflow-x-auto px-1 pb-1 [scrollbar-width:none]`}>
             <Kpi label="Recorded unpaid" value={kd(snap.payments.total)} sub={`${num(snap.payments.pos)} POs`} onClick={() => { game.current?.focus('office'); setRoom('office'); }} />
             <Kpi label="Open POs" value={kd0(snap.commitments.open_po_value)} sub={`${num(snap.commitments.open_pos)} POs`} onClick={() => { game.current?.focus('dock'); setRoom('dock'); }} />
-            <Kpi label="Stock at cost" value={kd0(Object.values(snap.floor.totals).reduce((n, t) => n + (t?.cost_value ?? 0), 0))} sub="owned, consignment, pre-owned" onClick={() => { game.current?.focus('floor'); setRoom('floor'); }} />
+            <Kpi label="Stock at cost" value={kd0(Object.values(snap.floor.totals).reduce((n, t) => n + (t?.cost_value ?? 0), 0))} sub="owned, consignment, pre-owned" onClick={() => pickSection(section)} />
             <Kpi label="Missions" value={num(todo)} sub="to do" onClick={() => setStack([{ type: 'board' }])} />
           </div>
         )}
@@ -227,7 +252,7 @@ export default function WorldPage({ onClose }: { onClose?: () => void }) {
             <button onClick={closePanel} aria-label="Close" className="pointer-events-auto ml-auto grid h-8 w-8 place-items-center rounded-full text-slate-500 hover:bg-slate-100"><X size={18} /></button>
           </div>
           <div className={`${stack.length > 1 ? '' : '-mt-6 '}overflow-y-auto overscroll-contain px-5 pb-6 pt-1 select-text`}>
-            {busy && !snap ? <Loading /> : <PanelBody view={view} ctx={{ s: snap, open, refresh }} cabinets={cabinets} />}
+            {busy && !snap ? <Loading /> : model && <PanelBody view={view} ctx={{ s: snap, mall: model.mall, open, refresh, focusBrand }} />}
           </div>
         </aside>
       )}

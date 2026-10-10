@@ -577,5 +577,651 @@
    0.5,
    0.96
   ]
+ },
+ "mall-tile-gg-a": {
+  "px": [
+   256,
+   128
+  ],
+  "origin": [
+   0.5,
+   0
+  ]
+ },
+ "mall-tile-gg-b": {
+  "px": [
+   256,
+   128
+  ],
+  "origin": [
+   0.5,
+   0
+  ]
+ },
+ "mall-tile-ca-a": {
+  "px": [
+   256,
+   128
+  ],
+  "origin": [
+   0.5,
+   0
+  ]
+ },
+ "mall-tile-ca-b": {
+  "px": [
+   256,
+   128
+  ],
+  "origin": [
+   0.5,
+   0
+  ]
+ },
+ "mall-tile-dc-a": {
+  "px": [
+   256,
+   128
+  ],
+  "origin": [
+   0.5,
+   0
+  ]
+ },
+ "mall-tile-dc-b": {
+  "px": [
+   256,
+   128
+  ],
+  "origin": [
+   0.5,
+   0
+  ]
+ },
+ "mall-tile-boutique": {
+  "px": [
+   256,
+   128
+  ],
+  "origin": [
+   0.5,
+   0
+  ]
+ },
+ "mall-tile-bay": {
+  "px": [
+   256,
+   128
+  ],
+  "origin": [
+   0.5,
+   0
+  ]
+ },
+ "mall-tile-arch": {
+  "px": [
+   256,
+   128
+  ],
+  "origin": [
+   0.5,
+   0
+  ]
+ },
+ "bq-floor-accent": {
+  "px": [
+   1280,
+   640
+  ],
+  "origin": [
+   0.4,
+   0.0
+  ]
+ },
+ "bay-floor-border": {
+  "px": [
+   896,
+   448
+  ],
+  "origin": [
+   0.5714,
+   0.0
+  ]
+ },
+ "bq-rug": {
+  "px": [
+   512,
+   256
+  ],
+  "origin": [
+   0.5,
+   0.0
+  ]
+ },
+ "bq-wall": {
+  "px": [
+   768,
+   704
+  ],
+  "origin": [
+   0.0,
+   0.4545
+  ]
+ },
+ "bq-wall-accent": {
+  "px": [
+   768,
+   704
+  ],
+  "origin": [
+   0.0,
+   0.4545
+  ]
+ },
+ "bay-wall": {
+  "px": [
+   384,
+   512
+  ],
+  "origin": [
+   0.0,
+   0.625
+  ]
+ },
+ "mall-wall-r": {
+  "px": [
+   128,
+   384
+  ],
+  "origin": [
+   0.0,
+   0.8333
+  ]
+ },
+ "mall-wall-l": {
+  "px": [
+   128,
+   384
+  ],
+  "origin": [
+   1.0,
+   0.8333
+  ]
+ },
+ "bq-front": {
+  "px": [
+   784,
+   504
+  ],
+  "origin": [
+   0.0,
+   0.2381
+  ]
+ },
+ "bq-front-accent": {
+  "px": [
+   784,
+   504
+  ],
+  "origin": [
+   0.0,
+   0.2381
+  ]
+ },
+ "bay-front": {
+  "px": [
+   400,
+   312
+  ],
+  "origin": [
+   0.0,
+   0.3846
+  ]
+ },
+ "mall-ledge-r": {
+  "px": [
+   144,
+   184
+  ],
+  "origin": [
+   0.0,
+   0.6522
+  ]
+ },
+ "mall-ledge-l": {
+  "px": [
+   144,
+   184
+  ],
+  "origin": [
+   1.0,
+   0.6522
+  ]
+ },
+ "bq-counter": {
+  "px": [
+   384,
+   352
+  ],
+  "origin": [
+   0.6667,
+   1.0
+  ],
+  "surface": 56
+ },
+ "bq-seat": {
+  "px": [
+   256,
+   288
+  ],
+  "origin": [
+   0.5,
+   1.0
+  ]
+ },
+ "planter-mall": {
+  "px": [
+   256,
+   352
+  ],
+  "origin": [
+   0.5,
+   1.0
+  ]
+ },
+ "bench-mall": {
+  "px": [
+   384,
+   288
+  ],
+  "origin": [
+   0.6667,
+   1.0
+  ]
+ },
+ "island-platform": {
+  "px": [
+   640,
+   352
+  ],
+  "origin": [
+   0.8,
+   1.0
+  ],
+  "surface": 16
+ },
+ "arch-pillar": {
+  "px": [
+   128,
+   544
+  ],
+  "origin": [
+   0.5,
+   1.0
+  ]
+ },
+ "arch-lintel": {
+  "px": [
+   384,
+   288
+  ],
+  "origin": [
+   1.0,
+   0.3333
+  ]
+ },
+ "sign-section": {
+  "px": [
+   480,
+   92
+  ],
+  "origin": [
+   0.5,
+   0.5
+  ]
+ },
+ "kiosk-base-owned": {
+  "px": [
+   256,
+   288
+  ],
+  "origin": [
+   0.5,
+   1.0
+  ],
+  "surface": 56
+ },
+ "kiosk-base-consignment": {
+  "px": [
+   256,
+   288
+  ],
+  "origin": [
+   0.5,
+   1.0
+  ],
+  "surface": 56
+ },
+ "kiosk-base-preowned": {
+  "px": [
+   256,
+   288
+  ],
+  "origin": [
+   0.5,
+   1.0
+  ],
+  "surface": 56
+ },
+ "kiosk-base-unknown": {
+  "px": [
+   256,
+   288
+  ],
+  "origin": [
+   0.5,
+   1.0
+  ],
+  "surface": 56
+ },
+ "kiosk-glass": {
+  "px": [
+   256,
+   288
+  ],
+  "origin": [
+   0.5,
+   1.0
+  ]
+ },
+ "kiosk-dust": {
+  "px": [
+   256,
+   288
+  ],
+  "origin": [
+   0.5,
+   1.0
+  ]
+ },
+ "kiosk-empty": {
+  "px": [
+   256,
+   288
+  ],
+  "origin": [
+   0.5,
+   1.0
+  ]
+ },
+ "board-major": {
+  "px": [
+   320,
+   400
+  ],
+  "origin": [
+   0.5,
+   0.98
+  ]
+ },
+ "board-minor": {
+  "px": [
+   192,
+   256
+  ],
+  "origin": [
+   0.5,
+   0.98
+  ]
+ },
+ "trolley": {
+  "px": [
+   256,
+   256
+  ],
+  "origin": [
+   0.5,
+   1.0
+  ]
+ },
+ "char-shopper-1": {
+  "px": [
+   144,
+   256
+  ],
+  "origin": [
+   0.5,
+   0.96
+  ]
+ },
+ "char-shopper-2": {
+  "px": [
+   144,
+   256
+  ],
+  "origin": [
+   0.5,
+   0.96
+  ]
+ },
+ "char-shopper-3": {
+  "px": [
+   144,
+   256
+  ],
+  "origin": [
+   0.5,
+   0.96
+  ]
+ },
+ "char-shopper-4": {
+  "px": [
+   144,
+   256
+  ],
+  "origin": [
+   0.5,
+   0.96
+  ]
+ },
+ "char-shopper-5": {
+  "px": [
+   144,
+   256
+  ],
+  "origin": [
+   0.5,
+   0.96
+  ]
+ },
+ "char-shopper-6": {
+  "px": [
+   144,
+   256
+  ],
+  "origin": [
+   0.5,
+   0.96
+  ]
+ },
+ "char-sales-n": {
+  "px": [
+   144,
+   256
+  ],
+  "origin": [
+   0.5,
+   0.96
+  ]
+ },
+ "char-sales-w": {
+  "px": [
+   144,
+   256
+  ],
+  "origin": [
+   0.5,
+   0.96
+  ]
+ },
+ "char-sales-wh": {
+  "px": [
+   144,
+   256
+  ],
+  "origin": [
+   0.5,
+   0.96
+  ]
+ },
+ "char-manager-n": {
+  "px": [
+   144,
+   256
+  ],
+  "origin": [
+   0.5,
+   0.96
+  ]
+ },
+ "char-manager-w": {
+  "px": [
+   144,
+   256
+  ],
+  "origin": [
+   0.5,
+   0.96
+  ]
+ },
+ "char-manager-wh": {
+  "px": [
+   144,
+   256
+  ],
+  "origin": [
+   0.5,
+   0.96
+  ]
+ },
+ "char-ops-n": {
+  "px": [
+   144,
+   256
+  ],
+  "origin": [
+   0.5,
+   0.96
+  ]
+ },
+ "char-ops-w": {
+  "px": [
+   144,
+   256
+  ],
+  "origin": [
+   0.5,
+   0.96
+  ]
+ },
+ "char-ops-wh": {
+  "px": [
+   144,
+   256
+  ],
+  "origin": [
+   0.5,
+   0.96
+  ]
+ },
+ "char-office-n": {
+  "px": [
+   144,
+   256
+  ],
+  "origin": [
+   0.5,
+   0.96
+  ]
+ },
+ "char-office-w": {
+  "px": [
+   144,
+   256
+  ],
+  "origin": [
+   0.5,
+   0.96
+  ]
+ },
+ "char-office-wh": {
+  "px": [
+   144,
+   256
+  ],
+  "origin": [
+   0.5,
+   0.96
+  ]
+ },
+ "char-driver-n": {
+  "px": [
+   144,
+   256
+  ],
+  "origin": [
+   0.5,
+   0.96
+  ]
+ },
+ "char-driver-w": {
+  "px": [
+   144,
+   256
+  ],
+  "origin": [
+   0.5,
+   0.96
+  ]
+ },
+ "char-driver-wh": {
+  "px": [
+   144,
+   256
+  ],
+  "origin": [
+   0.5,
+   0.96
+  ]
+ },
+ "boutique-pavilion": {
+  "px": [
+   512,
+   576
+  ],
+  "origin": [
+   0.5,
+   1.0
+  ]
+ },
+ "crate-po": {
+  "px": [
+   256,
+   224
+  ],
+  "origin": [
+   0.5,
+   1.0
+  ]
+ },
+ "mall-select": {
+  "px": [
+   280,
+   144
+  ],
+  "origin": [
+   0.5,
+   0.5
+  ]
  }
 }

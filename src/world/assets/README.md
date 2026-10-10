@@ -29,6 +29,22 @@ data, permissions or calculations is touched by it.
 Units: world units are the game's own (one floor tile is 128 × 64). Contract
 sizes are pixels at twice that (one floor tile is 256 × 128 px).
 
+## The Watch Mall (Floor tab, 10 Oct 2026)
+
+The mall's 64 keys (floors, walls, kiosks, boards, signs, archways, staff looks,
+shoppers) are in `contract.json` like every other key: size at twice world units,
+anchor, and surface where something stands on it. The full spec, with connection
+points, lettering areas and a template PNG per key, was sent to the owners as the
+"Watch Mall Artwork" page. Keys without a final picture use a placeholder drawn to
+the same contract, so a final PNG drops in with no code change.
+
+Starter pack v0.1 (owners, 10 Oct): the three floor tiles are exact 2:1 and used as
+is; the storefront (`boutique-pavilion`), kiosk (all four `kiosk-base-…`), boards,
+section sign, planter, crate and selection ring are placed by `final/art.json`.
+Those objects are drawn at about 35°, not 2:1, so they are scaled to their
+footprints until redrawn. `final/art.json` may also give a board or sign's writing
+area as `text: [left, top, right, bottom]` (fractions of the picture).
+
 ## Replacement specs for the pieces still to come
 
 All pictures: one object per PNG, transparent background, no text labels, 2:1
