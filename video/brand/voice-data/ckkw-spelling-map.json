@@ -41,7 +41,8 @@
    "source": "first test, sp3",
    "forms": {
     "گاعد": "گاعد"
-   }
+   },
+   "unseen_check": "u01: گاعد marked wrong in a new sentence"
   },
   "كم": {
    "write": "چم",
@@ -120,7 +121,8 @@
   "هني": {
    "write": "هنيه",
    "status": "chosen",
-   "source": "round 2, 2026-10-10 (artifact JAkn4ex4qgRbgaH5s9poGS)"
+   "source": "round 2, 2026-10-10 (artifact JAkn4ex4qgRbgaH5s9poGS)",
+   "unseen_check": "u03: هنيه marked wrong in a new sentence"
   },
   "جديد": {
    "write": "يديد",
@@ -136,7 +138,8 @@
    "write": "واجد",
    "status": "closest",
    "note": "the user: the model's pronunciation is wrong in both; واجد was nearer",
-   "source": "round 2, 2026-10-10 (artifact JAkn4ex4qgRbgaH5s9poGS)"
+   "source": "round 2, 2026-10-10 (artifact JAkn4ex4qgRbgaH5s9poGS)",
+   "unseen_check": "u01: واجد marked wrong in a new sentence"
   },
   "قدام": {
    "write": "جدام",
@@ -312,5 +315,6 @@
   "wrong_any_spelling": 5,
   "word_choice": 2,
   "unclear": 1
- }
+ },
+ "unseen_result": "Unseen check 2026-10-10: the dictionary raised dialect 50%→60% and rhythm 60%→65% but word accuracy fell 84%→81%; it won 2 of 4 A/B. Stopped per the pre-fixed rule; see SPELLING-DICTIONARY.md."
 }

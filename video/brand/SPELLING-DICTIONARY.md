@@ -71,6 +71,37 @@ They are common, short words, and a respelling has nothing left to change.
 The dictionary changes only 4 of the 10 unseen sentences (u01, u02, u03, u08). The model already reads most written
 Kuwaiti the way it reads it, and the errors that remain sit in words the dictionary cannot fix.
 
-### Unseen sentences
+### Unseen sentences (the user's ear, 2026-10-10, artifact UE8xsW8URZQijnLmM76Hag)
 
-(Filled in after the user listens.)
+**Scorecard** (used for every test from now on, so each round shows its change as a percentage):
+- **Dialect:** كويتية = 100, قريبة = 50, مو كويتية = 0.
+- **Rhythm and tone:** طبيعي = 100, مقبول = 50, آلي = 0.
+- **Word accuracy:** the share of words not tapped as wrong.
+
+| | Without dictionary | With dictionary | Change |
+|---|---|---|---|
+| Dialect, all 10 | 50% | 60% | +10 points |
+| Rhythm and tone, all 10 | 60% | 65% | +5 points |
+| Word accuracy, all 10 | 84% | 81% | −3 points |
+| Sentences with no wrong word | 2/10 | 2/10 | 0 |
+| Dialect, 4 changed sentences only | 50% | 75% | +25 points |
+| Rhythm, 4 changed sentences only | 62% | 75% | +13 points |
+| Word accuracy, 4 changed sentences only | 94% | 89% | −5 points |
+| A/B wins (4 changed sentences) | 2 | 2 | tie |
+
+What the details show:
+- Word choice helped: أمس, جذي, هنيه and چم sounded more Kuwaiti.
+- Some of the model's own spellings broke words in new sentences: گاعد, واجد and هنيه were tapped wrong in u01 and u03.
+- In the 6 sentences the dictionary did not touch, 13 words were wrong: قلت, قبل, راحت, منو, زيادة, باجر, عيل, الكمية, قريب, السموحة, تأخر, تتصل, شكثر.
+  - Many of these are ordinary words, not dialect words.
+  - Some had passed in the word test (منو, قبل), so the model is not consistent from sentence to sentence.
+
+### Verdict
+
+- **The dictionary does not help enough.** It won 2 of 4 against the pre-fixed bar (at least 7 of 10, with fewer wrong words). It made more wrong words, not fewer. Spelling work for this model stops here, as the rule says.
+- **The general Kuwaiti lexicon is kept and is useful.** Its word choices (أمس, جذي, چم, ايدي, جدام) are what raised the dialect score. It stays model-independent for any future model and for a general Kuwaiti model.
+- **Diagnosis: the main gap is word pronunciation, and speaking style comes second.**
+  - Wrong words appear in 8 of 10 sentences, and spelling cannot fix them.
+  - Rhythm was robotic in only 1 of 14 versions, but it was natural in only 3 of 10 sentences.
+  - Training must therefore teach how words are said, from Ali's speech with correct Kuwaiti transcripts. Rhythm and tone come along from whole natural utterances: the pilot selection already keeps sentence endings.
+  - This is a finding, not a start: no training without approval.
