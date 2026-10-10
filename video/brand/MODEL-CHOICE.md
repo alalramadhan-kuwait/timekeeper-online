@@ -233,3 +233,20 @@ The user listened to the six untrained SILMA sentences, cloned from Ali's 7.5 s 
 - **"It's clear, but it needs training on the voice and the tone."**
 
 **Gate 3 (the baseline is a viable starting point): passed.** The voice identity and clarity are there, and the dialect, voice detail and tone are exactly what the fine-tune is meant to teach. This is the listening justification for training that was asked for. Training is still not started: the backups, the pilot dataset and the user's approval of the run are still open.
+
+## The user's listening verdict on Chatterbox_Kuwaiti (2026-10-10)
+
+**"Better, honestly, but it doesn't sound like Ali."** The voice is the checkpoint's own built-in one, so it was never going to sound like Ali.
+
+This is the first model the user has judged more Kuwaiti than the alternatives, and it got there **without our data**. The evidence:
+
+- **Kuwaiti pronunciation can be learned by the Chatterbox architecture.** Genarabia's training did what our V1–V5 did not.
+- **A zero-training route now exists to test:** Kuwaiti pronunciation from this checkpoint, plus Ali's identity. There are two local options:
+  - (a) clone Ali's voice directly in the checkpoint, with `ref.wav` as the audio prompt;
+  - (b) generate with its built-in voice and convert the result to Ali with Chatterbox VC (the method that worked in recorded mode).
+- **Caveats:**
+  - It does not stop on 3 of 6 sentences (trimming fixes this) and crashes on 1.
+  - No licence or provenance, so research only.
+  - Whether its Kuwaiti survives cloning or conversion is unknown.
+
+Both options use Ali's reference audio with this checkpoint, locally only. The user's earlier instruction for this model was "no private audio", so **this needs the user's approval before it runs**.
