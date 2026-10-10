@@ -35,6 +35,23 @@ CONNECTIVES = {"و", "لكن", "إنه", "انه", "اللي", "عشان", "بس
 PROMPT = ("هلا والله، معاكم علي اليوسفي. اليوم بنتكلم عن الساعات: رولكس، أوميغا، باتيك فيليب، أوديمار بيغيه، جيجر لوكولتر، "
           "تيودور، كارتييه. شلون، شنو، وايد، الحين، قاعد، نقدر، تقريباً، الوقت، قبل، حق.")
 AR = re.compile(r"[ء-ي]+")
+# the second pass sometimes turns Ali's Kuwaiti into MSA; where the first pass heard the Kuwaiti word in the same place, keep it
+KUWAITI = {"الحين": {"الآن", "الان"}, "هني": {"هنا"}, "راح": {"رح", "سوف"}, "شنو": {"ماذا", "ما"}, "وايد": {"كثير", "جدا", "جداً"},
+           "شلون": {"كيف"}, "ليش": {"لماذا"}, "وين": {"أين"}, "مو": {"ليس", "مش"}, "هذي": {"هذه"}, "جذي": {"كذا", "هكذا"}}
+
+
+def restore_dialect(old, toks):
+    """old: first-pass words; toks: second-pass words. Returns toks with Kuwaiti words put back, and their indices."""
+    bare = lambda w: w.strip("،.؟!,?")
+    sm = difflib.SequenceMatcher(a=[bare(o) for o in old], b=[bare(t) for t in toks])
+    back = []
+    for op, a0, a1, b0, b1 in sm.get_opcodes():
+        if op == "replace" and a1 - a0 == b1 - b0:
+            for o, j in zip(old[a0:a1], range(b0, b1)):
+                if bare(o) in KUWAITI and bare(toks[j]) in KUWAITI[bare(o)]:
+                    toks[j] = toks[j].replace(bare(toks[j]), bare(o))
+                    back.append(j)
+    return toks, back
 
 
 def fix(word):
@@ -49,7 +66,22 @@ def fix(word):
     return word
 
 
+def redo_text():
+    """--redo-text: apply restore_dialect to an existing drafts.json without running Whisper again."""
+    d = json.loads((OUT / "drafts.json").read_text())
+    n = 0
+    for c in d["clips"]:
+        toks, back = restore_dialect(c["whisper_first"].split(), c["draft"].split())
+        c["draft"] = " ".join(toks)
+        n += len(back)
+    (OUT / "drafts.json").write_text(json.dumps(d, ensure_ascii=False, indent=1))
+    print("Kuwaiti words restored:", n)
+
+
 def main():
+    import sys
+    if "--redo-text" in sys.argv:
+        return redo_text()
     from faster_whisper import WhisperModel
     m = WhisperModel("mobiuslabsgmbh/faster-whisper-large-v3-turbo", device="cpu", compute_type="int8")
     cands = json.loads((OUT / "candidates.json").read_text())
@@ -74,6 +106,7 @@ def main():
             if w.probability < 0.6 or f != t:
                 marks.append(i)
         old = c["text_whisper"].split()
+        toks, back = restore_dialect(old, toks)
         sm = difflib.SequenceMatcher(a=[o.strip("،.؟!,?") for o in old], b=[t.strip("،.؟!,?") for t in toks])
         for op, a0, a1, b0, b1 in sm.get_opcodes():
             if op != "equal":

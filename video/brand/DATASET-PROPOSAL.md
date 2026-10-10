@@ -66,6 +66,14 @@ What it covers and what it lacks:
 | Audio | No audible music or artefact in reviewed clips. Original pitch, rhythm and pauses untouched: no speed-up, no pause shortening |
 | Separation | No clip from the 3 evaluation episodes, and none of the test sentences in Stage 3 |
 
+**Drafting result (2026-10-10, `tk_pilot_draft.py`).** The drafting cut all 160 clips (20.3 min) and ran a second Whisper pass with a
+prompt of Ali's vocabulary.
+- The two passes agree on only 70% of words on average.
+- 150 of 160 clips are flagged: 133 have 3 or more uncertain words, 76 are B-music, 29 contain digits or Latin letters, and 5 end on a connective.
+- So the shortcut does not hold: the user reviews **152 clips (19.8 min)**, not 110–140. That is about 2–2.5 h in sessions, with progress saved.
+- Review page: artifact QPrhcEizPSRQ7zWz1Zyc1d.
+- The second pass turns some Kuwaiti words into MSA (الحين → الآن), so where the first pass heard the Kuwaiti word, it is kept.
+
 ### Stage 2: which model can learn from 20–30 minutes
 
 > **Superseded on 2026-10-09 by MODEL-CHOICE.md.** After auditing Lahgtna-OmniVoice v2 and SILMA, the recommendation is **SILMA TTS v1**, with Qwen3-TTS (Saudi) as second choice. The table below is kept as the earlier analysis.

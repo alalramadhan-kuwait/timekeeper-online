@@ -100,8 +100,16 @@ function words(text, arr, save) {
 const done = c => c.questions.every(q => st(c.id)[q.key]);
 function renderBar() {
   const bar = $("#bar"); bar.textContent = "";
-  PARTS.forEach(p => { const b = el("button", "part", "صفحة " + p); b.type = "button"; b.setAttribute("aria-pressed", String(p === part));
-    b.addEventListener("click", () => { part = p; renderBar(); render(); window.scrollTo(0, 0); }); bar.append(b); });
+  const go = p => { part = p; renderBar(); render(); window.scrollTo(0, 0); };
+  if (PARTS.length > 12) {   // long reviews: previous / page n of N / next, so the sticky bar stays one line
+    const i = PARTS.indexOf(part);
+    const prev = el("button", "part", "السابق"); prev.type = "button"; prev.disabled = i === 0; prev.addEventListener("click", () => go(PARTS[i - 1]));
+    const next = el("button", "part", "التالي"); next.type = "button"; next.disabled = i === PARTS.length - 1; next.addEventListener("click", () => go(PARTS[i + 1]));
+    const firstOpen = PARTS.find(p => CARDS.some(c => c.part === p && !done(c)));
+    const jump = el("button", "part", "أول صفحة ناقصة"); jump.type = "button"; jump.hidden = !firstOpen || firstOpen === part; jump.addEventListener("click", () => go(firstOpen));
+    bar.append(prev, el("span", null, "صفحة " + part + " من " + PARTS.length), next, jump);
+  } else PARTS.forEach(p => { const b = el("button", "part", "صفحة " + p); b.type = "button"; b.setAttribute("aria-pressed", String(p === part));
+    b.addEventListener("click", () => go(p)); bar.append(b); });
   const c = el("span", null, "خلصت " + CARDS.filter(done).length + " من " + CARDS.length); c.id = "count";
   const sv = el("span", "save"); sv.id = "save"; bar.append(c, sv);
 }
@@ -116,7 +124,7 @@ function render() {
     if (c.edit) {   // an editable transcript, prefilled with Claude's draft; c.edit.marks = words worth a closer listen
       const ed = el("section", "step");
       if (c.edit.marks && c.edit.marks.length) ed.append(el("p", "hint", "انتبه لهالكلمات: " + c.edit.marks.join("، ")));
-      const tx = el("textarea", "sent"); tx.rows = 3; tx.value = s[c.edit.key] ?? c.edit.value;
+      const tx = el("textarea", "sent"); tx.rows = 4; tx.value = s[c.edit.key] ?? c.edit.value;
       tx.addEventListener("input", () => { s[c.edit.key] = tx.value; save(); });
       ed.append(el("p", "hint", c.edit.label), tx); card.append(ed);
     }
