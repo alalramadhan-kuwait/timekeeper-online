@@ -1,0 +1,149 @@
+<title>__TITLE__</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Noto+Naskh+Arabic:wght@500;600&display=swap">
+<style>
+/* Layout: pages of cards from data. A card = sentence text, players (one hidden-mapping letter per version), then
+   one-tap questions; answers save to the page database per card. Buttons update in place so audio keeps playing. RTL. */
+:root{
+  --paper:#f2f4f3; --card:#ffffff; --ink:#18211e; --muted:#5d6b66; --line:#d9e0dd;
+  --dial:#1f4d3f; --dial-soft:#e3eeea; --bad:#b4442e; --bad-soft:#f7e4df; --ok:#2f7a4f; --ref:#8a5a12; --ref-soft:#f6ecd9;
+  --ui:"IBM Plex Sans Arabic",system-ui,"Segoe UI",Tahoma,sans-serif;
+  --read:"Noto Naskh Arabic","IBM Plex Sans Arabic",serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#121816; --card:#1a2220; --ink:#e7eeeb; --muted:#9aa8a3; --line:#2b3633;
+  --dial:#7fc3a9; --dial-soft:#1f302b; --bad:#f08a72; --bad-soft:#3a2420; --ok:#7fd1a0; --ref:#e9b86a; --ref-soft:#33291a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#121816; --card:#1a2220; --ink:#e7eeeb; --muted:#9aa8a3; --line:#2b3633;
+  --dial:#7fc3a9; --dial-soft:#1f302b; --bad:#f08a72; --bad-soft:#3a2420; --ok:#7fd1a0; --ref:#e9b86a; --ref-soft:#33291a; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--ui);font-size:15px;line-height:1.6;padding-inline:16px;padding-block:0 48px}
+main{max-width:760px;margin-inline:auto;display:grid;gap:14px}
+header{padding-block:26px 4px;display:grid;gap:6px}
+h1{font-family:var(--read);font-weight:600;font-size:1.8rem;line-height:1.3;margin:0;text-wrap:balance}
+.lede{color:var(--muted);margin:0;max-width:64ch}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:2;background:var(--paper);padding-block:10px;display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;border-bottom:1px solid var(--line);font-size:.86rem;color:var(--muted)}
+.part{font:inherit;font-size:.85rem;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:4px 12px;cursor:pointer;font-variant-numeric:tabular-nums}
+.part[aria-pressed="true"]{background:var(--dial);border-color:var(--dial);color:var(--card)}
+.save{margin-inline-start:auto}.save.ok{color:var(--ok)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;display:grid;gap:12px}
+.sent{font-family:var(--read);font-size:1.1rem;line-height:1.8;margin:0}
+.step{border-top:1px solid var(--line);padding-top:12px;display:grid;gap:8px}
+.step h3{margin:0;font-size:.95rem;font-weight:600;display:flex;gap:8px;align-items:baseline}
+.step h3 small{font-weight:400;color:var(--muted);font-size:.8rem}
+.n{color:var(--dial);font-variant-numeric:tabular-nums}
+.play{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.play b{font-size:.86rem;min-width:7em;color:var(--muted);font-weight:500}
+.play.ref{background:var(--ref-soft);border-radius:8px;padding:6px 10px}
+.play.ref b{color:var(--ref)}
+audio{flex:1;min-width:200px;height:36px}
+.choices{display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:.86rem}
+.choices>span{color:var(--muted);min-width:10em}
+.opt{font:inherit;font-size:.85rem;border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:999px;padding:4px 14px;cursor:pointer}
+.opt[aria-pressed="true"]{background:var(--dial);border-color:var(--dial);color:var(--card)}
+.hint{font-size:.78rem;color:var(--muted);margin:0}
+.words{display:flex;flex-wrap:wrap;gap:4px;font-family:var(--read);font-size:1.08rem;line-height:1.7}
+.w{font:inherit;border:1px solid transparent;background:transparent;color:var(--ink);border-radius:6px;padding:0 5px;cursor:pointer}
+.w:hover{border-color:var(--line)}
+.w[aria-pressed="true"]{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
+textarea{font:inherit;width:100%;min-height:2.6em;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink);resize:vertical}
+button:focus-visible,textarea:focus-visible{outline:2px solid var(--dial);outline-offset:2px}
+details summary{cursor:pointer}
+.choices:has(>span:empty)>span{display:none}
+.notice{border:1px dashed var(--line);border-radius:8px;padding:10px 12px;font-size:.88rem;color:var(--muted);margin:0}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+<main dir="rtl" lang="ar">
+  <header>
+    <h1>__TITLE__</h1>
+    <p class="lede">__LEDE__</p>
+  </header>
+  <div class="bar" id="bar"></div>
+  <p class="notice" id="notice" hidden>إجاباتك تنحفظ في هالجهاز بس. لما تخلص، اضغط «انسخ الإجابات» تحت والصقها لي بالمحادثة.</p>
+  <div id="list" style="display:grid;gap:14px"></div>
+  <div id="copybox" hidden style="display:grid;gap:8px">
+    <button type="button" class="opt" id="copy" style="justify-self:start">انسخ الإجابات</button>
+    <textarea id="dump" readonly hidden></textarea>
+  </div>
+</main>
+<script>
+const CARDS = __CARDS__;   // [{id, part, title, text?, players:[{label, src, text?, ref?}], questions:[{key, label, options:[[v,t]]}], words?}]
+const PARTS = [...new Set(CARDS.map(c => c.part))];
+const state = {};
+let db = null, part = PARTS[0];
+const $ = s => document.querySelector(s);
+const st = id => state[id] ||= { wrong: [], note: "" };
+try { Object.assign(state, JSON.parse(localStorage.getItem("__KEY__") || "{}")); } catch (e) {}
+function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+function player(p) {
+  const row = el("div", "play" + (p.ref ? " ref" : ""));
+  const au = el("audio"); au.controls = true; au.preload = "none"; au.src = p.src;
+  au.addEventListener("play", () => document.querySelectorAll("audio").forEach(a => { if (a !== au) a.pause(); }));
+  row.append(el("b", null, p.label), au);
+  if (!p.text) return row;
+  const box = el("div", null); box.style.display = "grid"; box.style.gap = "4px";
+  box.append(row, el("p", "hint", p.text)); return box;
+}
+function choice(q, s, save) {
+  const row = el("div", "choices"); row.append(el("span", null, q.label));
+  const btns = q.options.map(([v, t]) => { const b = el("button", "opt", t); b.type = "button"; b.setAttribute("aria-pressed", String(s[q.key] === v));
+    b.addEventListener("click", () => { s[q.key] = s[q.key] === v ? "" : v; btns.forEach((x, i) => x.setAttribute("aria-pressed", String(s[q.key] === q.options[i][0]))); save(); }); return b; });
+  row.append(...btns); return row;
+}
+function words(text, arr, save) {
+  const box = el("div", "words");
+  text.split(/\s+/).forEach((w, i) => { const b = el("button", "w", w); b.type = "button"; b.setAttribute("aria-pressed", String(arr.includes(i)));
+    b.addEventListener("click", () => { const k = arr.indexOf(i); k < 0 ? arr.push(i) : arr.splice(k, 1); b.setAttribute("aria-pressed", String(arr.includes(i))); save(); });
+    box.append(b); });
+  return box;
+}
+const done = c => c.questions.every(q => st(c.id)[q.key]);
+function renderBar() {
+  const bar = $("#bar"); bar.textContent = "";
+  PARTS.forEach(p => { const b = el("button", "part", "صفحة " + p); b.type = "button"; b.setAttribute("aria-pressed", String(p === part));
+    b.addEventListener("click", () => { part = p; renderBar(); render(); window.scrollTo(0, 0); }); bar.append(b); });
+  const c = el("span", null, "خلصت " + CARDS.filter(done).length + " من " + CARDS.length); c.id = "count";
+  const sv = el("span", "save"); sv.id = "save"; bar.append(c, sv);
+}
+function render() {
+  const list = $("#list"); list.textContent = "";
+  for (const c of CARDS.filter(x => x.part === part)) {
+    const s = st(c.id), save = () => queue(c.id);
+    const card = el("article", "card");
+    card.append(el("p", "hint", c.title));
+    if (c.text) card.append(el("p", "sent", c.text));
+    const pl = el("section", "step"); c.players.forEach(p => pl.append(player(p))); card.append(pl);
+    const qs = el("section", "step"); c.questions.forEach(q => qs.append(choice(q, s, save)));
+    if (c.words) qs.append(el("p", "hint", "إذا في كلمة انقالت غلط أو مو كويتية، اضغط عليها:"), words(c.text, s.wrong, save));
+    card.append(qs);
+    const ta = el("textarea"); ta.id = "note-" + c.id; ta.placeholder = "ملاحظة (اختياري)"; ta.value = s.note || "";
+    ta.addEventListener("input", () => { s.note = ta.value; save(); });
+    card.append(ta); list.append(card);
+  }
+}
+const pending = {};
+function queue(id) {
+  try { localStorage.setItem("__KEY__", JSON.stringify(state)); } catch (e) {}
+  const cnt = $("#count"); if (cnt) cnt.textContent = "خلصت " + CARDS.filter(done).length + " من " + CARDS.length;
+  if (!db) return;
+  clearTimeout(pending[id]); const sv = $("#save"); if (sv) { sv.textContent = "يحفظ…"; sv.className = "save"; }
+  pending[id] = setTimeout(() => db.doc("answers/" + id).set({ ...state[id], at: new Date().toISOString() })
+    .then(() => { const v = $("#save"); if (v) { v.textContent = "محفوظ"; v.className = "save ok"; } })
+    .catch(() => { const v = $("#save"); if (v) v.textContent = "ما انحفظ، حاول مرة ثانية"; }), 600);
+}
+$("#copy").addEventListener("click", () => {
+  const t = CARDS.map(c => c.id + " | " + c.questions.map(q => q.key + "=" + (st(c.id)[q.key] || "-")).join(" | ") + (st(c.id).note ? " | note=" + st(c.id).note : "")).join("\n");
+  const ta = $("#dump"); ta.value = t;
+  navigator.clipboard?.writeText(t).then(() => { $("#copy").textContent = "انتسخت ✓"; }).catch(() => { ta.hidden = false; ta.select(); });
+  if (!navigator.clipboard) { ta.hidden = false; ta.select(); }
+});
+renderBar(); render();
+(async () => {
+  db = window.claude?.use ? await window.claude.use("db") : null;
+  if (!db) { $("#notice").hidden = false; $("#copybox").hidden = false; return; }
+  try {
+    const snap = await db.collection("answers").get();
+    snap.docs.forEach(d => { const v = d.data(); if (v) state[d.id] = { ...v, wrong: v.wrong || [], note: v.note || "" }; });
+    if (![...document.querySelectorAll("audio")].some(a => !a.paused) && !document.activeElement?.matches("textarea")) { renderBar(); render(); }
+  } catch (e) {}
+})();
+</script>
