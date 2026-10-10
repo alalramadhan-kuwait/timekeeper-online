@@ -1,22 +1,93 @@
-{"_note": "How to spell Kuwaiti words for Genarabia-ai/Chatterbox_Kuwaiti cloned to Ali (research only). From the user's 12-word listening test, 2026-10-10 (artifact Lr2aurzZi2KxTKoGf8SKw4; spec voice-data/ckkw-spelling-12.json). Applies to this model only; SILMA and the training transcripts keep the 'write what Ali says' convention until tested.",
+{
+ "_note": "How to spell Kuwaiti words for Genarabia-ai/Chatterbox_Kuwaiti cloned to Ali (research only). From the user's 12-word listening test, 2026-10-10 (artifact Lr2aurzZi2KxTKoGf8SKw4; spec voice-data/ckkw-spelling-12.json). Applies to this model only; SILMA and the training transcripts keep the 'write what Ali says' convention until tested.",
  "rule_q": "Write plain ق for Ali's g: this model already says it the Kuwaiti way. ق beat گ and ج in all 7 tested words (قبل، الوقت، حق، الطريق، فرق، منطقة، قليلة) and in قال (earlier test). Exception from the earlier test: قاعد sounded better as گاعد.",
  "words": {
-  "قبل": {"write": "قبل", "status": "chosen"},
-  "الوقت": {"write": "الوقت", "status": "chosen"},
-  "حق": {"write": "حق", "status": "chosen"},
-  "الطريق": {"write": "الطريق", "status": "chosen"},
-  "فرق": {"write": "فرق", "status": "chosen"},
-  "منطقة": {"write": "منطقة", "status": "chosen"},
-  "قليلة": {"write": "قليلة", "status": "chosen"},
-  "قال": {"write": "قال", "status": "chosen", "source": "first test, sp1"},
-  "قاعد": {"write": "گاعد", "status": "chosen", "source": "first test, sp3"},
-  "كم": {"write": "چم", "status": "chosen", "source": "first test, sp2"},
-  "كذا": {"write": "جذي", "status": "chosen", "note": "the user: كذا is Saudi, جذي is the Kuwaiti word"},
-  "باجر": {"write": "باكر", "status": "closest", "note": "good, but should sound a bit nearer ج than ك; no spelling is fully right yet"},
-  "صديقي": {"write": "صديقي", "status": "unsolved", "note": "all three wrong; ق closest"},
-  "نقدر": {"write": null, "status": "unsolved", "note": "all wrong; with ق the word was dropped entirely"},
-  "أدور": {"write": null, "status": "unsolved", "note": "all three spellings wrong (also wrong in the first test)"},
-  "امبارح": {"write": "أمس", "status": "word choice", "note": "Kuwaiti says أمس; never write امبارح"}
+  "قبل": {
+   "write": "قبل",
+   "status": "chosen"
+  },
+  "الوقت": {
+   "write": "الوقت",
+   "status": "chosen"
+  },
+  "حق": {
+   "write": "حق",
+   "status": "chosen"
+  },
+  "الطريق": {
+   "write": "الطريق",
+   "status": "chosen"
+  },
+  "فرق": {
+   "write": "فرق",
+   "status": "chosen"
+  },
+  "منطقة": {
+   "write": "منطقة",
+   "status": "chosen"
+  },
+  "قليلة": {
+   "write": "قليلة",
+   "status": "chosen"
+  },
+  "قال": {
+   "write": "قال",
+   "status": "chosen",
+   "source": "first test, sp1"
+  },
+  "قاعد": {
+   "write": "گاعد",
+   "status": "chosen",
+   "source": "first test, sp3",
+   "forms": {
+    "گاعد": "گاعد"
+   }
+  },
+  "كم": {
+   "write": "چم",
+   "status": "chosen",
+   "source": "first test, sp2"
+  },
+  "كذا": {
+   "write": "جذي",
+   "status": "chosen",
+   "note": "the user: كذا is Saudi, جذي is the Kuwaiti word",
+   "forms": {
+    "چذي": "جذي"
+   }
+  },
+  "باجر": {
+   "write": "باكر",
+   "status": "closest",
+   "note": "good, but should sound a bit nearer ج than ك; no spelling is fully right yet",
+   "forms": {
+    "باچر": "باكر"
+   }
+  },
+  "صديقي": {
+   "write": "صديقي",
+   "status": "unsolved",
+   "note": "all three wrong; ق closest"
+  },
+  "نقدر": {
+   "write": null,
+   "status": "unsolved",
+   "note": "all wrong; with ق the word was dropped entirely"
+  },
+  "أدور": {
+   "write": null,
+   "status": "unsolved",
+   "note": "all three spellings wrong (also wrong in the first test)"
+  },
+  "امبارح": {
+   "write": "أمس",
+   "status": "word choice",
+   "note": "Kuwaiti says أمس; never write امبارح"
+  }
  },
- "open": ["words where Ali says a real q (موقع، أعتقد، فقط، الطاقة) may now be said with g by this model: untested",
-          "unsolved words may need a synonym in scripts or the fine-tune"]}
+ "open": [
+  "words where Ali says a real q (موقع، أعتقد، فقط، الطاقة) may now be said with g by this model: untested",
+  "unsolved words may need a synonym in scripts or the fine-tune"
+ ],
+ "_layers": "This map is layer 2 of tk_kw_text.py: it runs after the general Kuwaiti lexicon (kuwaiti-lexicon.json), so keys include the lexicon's Kuwaiti forms (e.g. چذي) as 'forms'."
+}

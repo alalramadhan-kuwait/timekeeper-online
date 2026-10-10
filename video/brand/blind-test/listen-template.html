@@ -114,7 +114,8 @@ function render() {
     if (c.text) card.append(el("p", "sent", c.text));
     const pl = el("section", "step"); c.players.forEach(p => pl.append(player(p))); card.append(pl);
     const qs = el("section", "step"); c.questions.forEach(q => qs.append(choice(q, s, save)));
-    if (c.words) qs.append(el("p", "hint", "إذا في كلمة انقالت غلط أو مو كويتية، اضغط عليها:"), words(c.text, s.wrong, save));
+    if (c.words === true) qs.append(el("p", "hint", "إذا في كلمة انقالت غلط أو مو كويتية، اضغط عليها:"), words(c.text, s.wrong, save));
+    else if (Array.isArray(c.words)) c.words.forEach(w => qs.append(el("p", "hint", w.label), words(c.text, s[w.key] ||= [], save)));
     card.append(qs);
     const ta = el("textarea"); ta.id = "note-" + c.id; ta.placeholder = "ملاحظة (اختياري)"; ta.value = s.note || "";
     ta.addEventListener("input", () => { s.note = ta.value; save(); });
@@ -132,7 +133,7 @@ function queue(id) {
     .catch(() => { const v = $("#save"); if (v) v.textContent = "ما انحفظ، حاول مرة ثانية"; }), 600);
 }
 $("#copy").addEventListener("click", () => {
-  const t = CARDS.map(c => c.id + " | " + c.questions.map(q => q.key + "=" + (st(c.id)[q.key] || "-")).join(" | ") + (st(c.id).note ? " | note=" + st(c.id).note : "")).join("\n");
+  const t = CARDS.map(c => c.id + " | " + c.questions.map(q => q.key + "=" + (st(c.id)[q.key] || "-")).join(" | ") + (Array.isArray(c.words) ? " | " + c.words.map(w => w.key + "=" + (st(c.id)[w.key] || []).join(",")).join(" | ") : "") + (st(c.id).note ? " | note=" + st(c.id).note : "")).join("\n");
   const ta = $("#dump"); ta.value = t;
   navigator.clipboard?.writeText(t).then(() => { $("#copy").textContent = "انتسخت ✓"; }).catch(() => { ta.hidden = false; ta.select(); });
   if (!navigator.clipboard) { ta.hidden = false; ta.select(); }

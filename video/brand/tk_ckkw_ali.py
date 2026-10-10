@@ -31,6 +31,17 @@ def main():
         spec = json.loads((ROOT / f"video/brand/voice-data/{name}.json").read_text())
         items = [(f"{g['id']}-{tag}", text) for g in spec["groups"] for tag, text in g["variants"]]
         return clone(items, OUT / ("spell12" if name == "ckkw-spelling-12" else name), vc_too=False)
+    if "--unseen" in sys.argv:            # dictionary check: each new sentence as written (raw) and after tk_kw_text.py (dict)
+        from tk_kw_text import process
+        spec = json.loads((ROOT / "video/brand/voice-data/ckkw-unseen-10.json").read_text())
+        items, texts = [], {}
+        for it in spec["items"]:
+            fixed, changes = process(it["text"], "ckkw-spelling-map")
+            items += [(f"{it['id']}-raw", it["text"]), (f"{it['id']}-dict", fixed)]
+            texts[it["id"]] = {"raw": it["text"], "dict": fixed, "changes": changes}
+        (OUT / "unseen").mkdir(parents=True, exist_ok=True)
+        (OUT / "unseen/texts.json").write_text(json.dumps(texts, ensure_ascii=False, indent=1))
+        return clone(items, OUT / "unseen", vc_too=False)
     clone(BASE + SPELL, OUT, vc_too=True)
 
 

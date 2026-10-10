@@ -1,0 +1,13 @@
+{"_note": "10 new sentences for the spelling-dictionary check (Genarabia Chatterbox_Kuwaiti cloned to Ali, research only). Fixed 2026-10-10 before the round-2 spelling results were read and never used to build the dictionary. 'text' is written the way our scripts are written today. Each sentence is generated twice from the same text: raw (as written) and dictionary (text after tk_kw_text.py applies the general lexicon's confirmed word choices and the model's spelling map). The user rates blind, separately: wrong words (tap them), Kuwaiti dialect, and rhythm/natural tone.",
+ "items": [
+  {"id": "u01", "text": "الحين قاعد أشيك على الطلبات، وايد منها وصلت امبارح."},
+  {"id": "u02", "text": "كم سعر الساعة الجديدة اللي قدام الكاشير؟"},
+  {"id": "u03", "text": "ترا هالموديل مو موجود بكل الفروع، بس عندنا وحدة هني."},
+  {"id": "u04", "text": "ليش ما قلت لي قبل؟ كان حجزتها لك."},
+  {"id": "u05", "text": "منو اللي باع الساعة الكبيرة؟ أبي أعرف وين راحت."},
+  {"id": "u06", "text": "عيل خلنا نطلب شوي زيادة باجر قبل لا تخلص."},
+  {"id": "u07", "text": "زين، بس الموقع يقول الكمية قليلة، وأعتقد بتخلص قريب."},
+  {"id": "u08", "text": "يمديك تمر علي بعد الدوام؟ أبي أوريك شي كذا حلو."},
+  {"id": "u09", "text": "السموحة، الطلب تأخر لين الحين، بس أكيد يوصلك هالأسبوع."},
+  {"id": "u10", "text": "خلاص، مافي داعي تتصل، النظام يقول لك شكثر باقي بكل فرع."}
+ ]}
