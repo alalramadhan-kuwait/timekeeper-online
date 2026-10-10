@@ -45,6 +45,20 @@ Those objects are drawn at about 35°, not 2:1, so they are scaled to their
 footprints until redrawn. `final/art.json` may also give a board or sign's writing
 area as `text: [left, top, right, bottom]` (fractions of the picture).
 
+First set, 39 pictures (owners, 10 Oct, alignment prototypes): every one passed
+`npm run world:art` and `npm run world:geometry` (which measures floor lines,
+connection points, kiosk tops and writing areas against `mall-geometry.json`).
+Each was compared with what it would replace, in the game on an iPhone screen.
+In use: the nine floor tiles, both floor inlays, all eight walls and low walls and
+the two accent layers (the game tints them with the boutique's colour),
+`arch-pillar`, `boutique-pavilion`, `bq-counter`, `crate-po`, `sign-section`,
+`board-major`, `board-minor` and `mall-select`. Held back, kept out of `final/`:
+the four `kiosk-base-…` and `kiosk-glass` (they measure correctly and are separate
+layers, but the tall flat cabinets read worse than the V2 display cases the
+kiosks use now), and the five neutral staff figures (thinner and plainer than the
+V2 characters and the placeholders). The low walls draw no top thickness behind
+their front edge; they still join.
+
 ## Replacement specs for the pieces still to come
 
 All pictures: one object per PNG, transparent background, no text labels, 2:1

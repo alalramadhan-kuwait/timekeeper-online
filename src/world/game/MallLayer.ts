@@ -142,8 +142,10 @@ export class MallLayer {
     SECTIONS.forEach((sec, i) => {
       const [x, y] = toWorld((sec.x0 + sec.x1) / 2, 0);
       const p = iso(x, y);
-      const sign = this.billboard('sign-section', p.x, p.y - 330, TOP - 20, 1.4);
-      const t = this.textIn(sign, 'sign-section', sec.name, { size: 40, colour: '#f3e7cf', serif: true });
+      const ta = ASSET['sign-section'].text ?? [0.1, 0.1, 0.9, 0.9];
+      const sign = this.billboard('sign-section', p.x, p.y - 330, TOP - 20, 380 / (ASSET['sign-section'].drawWidth * (ta[2] - ta[0])));
+      const r = this.area(sign, 'sign-section');
+      const t = this.textIn(sign, 'sign-section', sec.name, { size: Math.min(40, r.h * 0.75), colour: '#f3e7cf', serif: true });
       sign.setInteractive({ useHandCursor: true });
       this.scene.tag(sign, { type: 'section', index: i }, 0);
       this.sectionSigns.push(sign, t);
@@ -201,12 +203,18 @@ export class MallLayer {
     if (plan.rug) this.flat('rug', plan.rug[0], plan.rug[1], -7.5e5).setTint(lighten(accent, 0.55));
     for (const [px, py] of plan.plants) this.place('plant', px, py, 1, 1, 0, true);
     if (plan.counter) {
-      const c = this.place('counter', plan.counter[0], plan.counter[1], 2, 1, 0, true);
+      const c = this.place('bq-counter', plan.counter[0], plan.counter[1], 2, 1, 0, true);
       c.setInteractive({ useHandCursor: true, pixelPerfect: true, alphaTolerance: 1 }); s.tag(c, sel);
+    }
+    // the brand's colour on the trims of its wall: the back wall in the back row, the low front wall in the front row
+    {
+      const [wx, wy] = toWorld(g.x, g.side === 'n' ? 0 : MALL.d);
+      const wp = iso(wx, wy), key = g.side === 'n' ? 'bq-wall-accent' : 'bq-front-accent';
+      this.keep(s.fit(s.add.image(wp.x, wp.y, key), key).setDepth(g.side === 'n' ? depthAt(wx, wy, -1.9) : depthAt(wx + 6, wy, 1.1)).setTint(accent));
     }
     // the pavilion, in its own finish
     const pav = this.place('boutique-pavilion', plan.pavilion[0], plan.pavilion[1], 2, 2, 0, true);
-    pav.setTint(b.colour ? lighten(accent, 0.7) : FINISH[i % FINISH.length]);
+    pav.setTint(lighten(b.colour ? accent : FINISH[i % FINISH.length], b.colour ? 0.7 : 0.45));
     if (plan.variant === 1) pav.setFlipX(true);
     pav.setInteractive({ useHandCursor: true, pixelPerfect: true, alphaTolerance: 1 });
     s.tag(pav, sel, -24);
@@ -227,14 +235,25 @@ export class MallLayer {
     // the name over the shop, with a health bar under it: on the back wall, or over the low front wall
     const [x, y] = toWorld(g.x + plan.sign, g.side === 'n' ? 0 : g.y + g.d);
     const p = iso(x, y);
-    const sign = this.billboard('sign-section', p.x, p.y - (g.side === 'n' ? 170 : 52), TOP - 12, 0.55);
-    const t = this.textIn(sign, 'sign-section', b.brand.toUpperCase(), { size: 30, colour: '#f3e7cf', bold: true });
+    // sized by its writing area, so a square plaque and a long thin one carry the name at the same size
+    const ta = ASSET['sign-section'].text ?? [0.1, 0.1, 0.9, 0.9];
+    const sign = this.billboard('sign-section', p.x, p.y - (g.side === 'n' ? 170 : 52), TOP - 12, 230 / (ASSET['sign-section'].drawWidth * (ta[2] - ta[0])));
     sign.setInteractive({ useHandCursor: true }); s.tag(sign, sel, 0);
-    // the sign's panel (the picture itself has a clear margin): name above, health bar below
     const r = this.area(sign, 'sign-section');
-    t.y -= r.h * 0.12;
-    sign.setData('panel', new Phaser.Geom.Rectangle(r.x - r.w * 0.08, r.y - r.h * 0.12, r.w * 1.16, r.h * 1.3));
-    const bar = this.healthBar(b, r.x + r.w * 0.12, r.y + r.h * 0.74, r.w * 0.76, Math.max(5, r.h * 0.14), TOP - 11.9);
+    let t: Phaser.GameObjects.Text, bar: Phaser.GameObjects.Graphics;
+    if (r.h < r.w * 0.35) {
+      // a long plaque: the name fills it, the health bar hangs just under it
+      t = this.textIn(sign, 'sign-section', b.brand.toUpperCase(), { size: Math.min(26, r.h * 0.8), colour: '#f3e7cf', bold: true });
+      const bd = sign.getBounds();
+      bar = this.healthBar(b, r.x, bd.bottom + 2, r.w, 6, TOP - 11.9);
+      sign.setData('panel', new Phaser.Geom.Rectangle(bd.x, bd.y, bd.width, bd.height + 9));
+    } else {
+      // a taller plaque (the picture itself has a clear margin): name above, health bar below, inside it
+      t = this.textIn(sign, 'sign-section', b.brand.toUpperCase(), { size: 30, colour: '#f3e7cf', bold: true });
+      t.y -= r.h * 0.12;
+      sign.setData('panel', new Phaser.Geom.Rectangle(r.x - r.w * 0.08, r.y - r.h * 0.12, r.w * 1.16, r.h * 1.3));
+      bar = this.healthBar(b, r.x + r.w * 0.12, r.y + r.h * 0.74, r.w * 0.76, Math.max(5, r.h * 0.14), TOP - 11.9);
+    }
     const items: Obj[] = [sign, t, bar];
     if (b.featured) items.push(this.text(r.x + 6, r.y + 2, '★', { size: 16, colour: '#f2c230', depth: TOP - 11.8 }).setOrigin(0.5, 0.5));
     this.signs.push({ items, prio: 3, dy: 0 });
