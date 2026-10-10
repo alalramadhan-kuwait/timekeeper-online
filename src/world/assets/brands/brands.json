@@ -1,0 +1,79 @@
+{
+ "Gerald Charles": {
+  "file": "gerald-charles.png",
+  "plate": "dark",
+  "px": [
+   404,
+   158
+  ],
+  "official_site": "https://www.geraldcharles.com/",
+  "source_url": "https://www.geraldcharles.com/logo.png",
+  "source_sha256": "8cabd50e9fefd1ca25fd680615f1174b7f4b8e56a30eff5b988b023c3bb746d1"
+ },
+ "West End": {
+  "file": "west-end.png",
+  "plate": "dark",
+  "px": [
+   1028,
+   75
+  ],
+  "official_site": "https://www.westendwatchco.ch/",
+  "source_url": "https://www.westendwatchco.ch/templates/westend-watch/img/logo.png",
+  "source_sha256": "d2e434267f43cbbf4b9f4869db82f2b8c524e227e44b97fb08cc19b8516393ac"
+ },
+ "Dennison": {
+  "file": "dennison.png",
+  "plate": "dark",
+  "px": [
+   1028,
+   97
+  ],
+  "official_site": "https://dennisonwatch.com/",
+  "source_url": "https://dennisonwatch.com/cdn/shop/files/Dennison_Logo_-_White_-_SVG.svg?v=1789252144",
+  "source_sha256": "1a718b36a21509703c76e8a3ebfc7bdbc54abaf36fef486251e818f854b29d56"
+ },
+ "Delugs": {
+  "file": "delugs.png",
+  "plate": "light",
+  "px": [
+   633,
+   121
+  ],
+  "official_site": "https://delugs.com/",
+  "source_url": "https://delugs.com/cdn/shop/files/delugs_1.png?v=1713457850",
+  "source_sha256": "0d968913f3e16d87204649b92d0fff290af484328877c47a57ae7a609831642c"
+ },
+ "Nivada Grenchen": {
+  "file": "nivada-grenchen.png",
+  "plate": "dark",
+  "px": [
+   1028,
+   996
+  ],
+  "official_site": "https://nivadagrenchenofficial.com/",
+  "source_url": "https://nivadagrenchenofficial.com/cdn/shop/files/joy_Logo_Nivada_white_900x_433eab4b-8d62-40b0-9e4b-bdc41200f732.svg?v=1762893650",
+  "source_sha256": "368b40a14cd20f1aa8c9c18d0b9864c8b5ba5a85dce3459d94bd06dc598f8898"
+ },
+ "Time Keeper": {
+  "file": "time-keeper.png",
+  "plate": "light",
+  "px": [
+   926,
+   80
+  ],
+  "official_site": "https://www.time-keeper.com/",
+  "source_url": "https://time-keeper.com/cdn/shop/files/TK_Logo_-_Text_Only_1aff5796-fabd-48a8-972a-353bc02b4747.png?v=1655200509",
+  "source_sha256": "3465b6c3d4fbe815baac27372b2c73cebc6ad884039eba4f57df7f3a01cf8630"
+ },
+ "Behrens Original": {
+  "file": "behrens-original.png",
+  "plate": "dark",
+  "px": [
+   438,
+   220
+  ],
+  "official_site": "https://www.behrenswatches.com/",
+  "source_url": "https://www.behrenswatches.com/static/upload/image/20231012/1697092520432782.png",
+  "source_sha256": "b55832419ad71d4609ee211098fedb519dccc135c510b9f7ea95e73a59daba03"
+ }
+}

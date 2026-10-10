@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { ASSETS, ASSET, settleArt } from '../assets/manifest';
+import { BRAND_LOGOS } from '../assets/brandLogos';
 import {
   BOUNDS, CORRIDORS, FIXTURES, ROAD, ROOMS, blockedCells, roomOf, walkable,
   type BoxModel, type Room, type WorldModel,
@@ -148,6 +149,7 @@ export class WorldScene extends Phaser.Scene {
       else if (a.type === 'sheet' && a.frame) this.load.spritesheet(a.key, a.url, { frameWidth: a.frame.width, frameHeight: a.frame.height });
       else this.load.image(a.key, a.url);
     }
+    for (const l of Object.values(BRAND_LOGOS)) this.load.image(l.key, l.url);
   }
 
   create() {

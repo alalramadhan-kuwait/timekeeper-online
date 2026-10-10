@@ -1,5 +1,14 @@
 [
   {
+    "version": "3.7.1",
+    "date": "2026-10-10",
+    "title": "Brand logos on the boutiques",
+    "changes": [
+      "The seven boutiques in Time Keeper World now carry their brands' own logos, on a plate chosen so each logo stands out: dark behind a white logo, light behind a black one.",
+      "Every logo is the brand's own, taken from its official website, and is never stretched or redrawn."
+    ]
+  },
+  {
     "version": "3.7.0",
     "date": "2026-10-10",
     "title": "Time Keeper World, for owners",
@@ -9,7 +18,7 @@
       "Find any brand by name, or jump straight to the Grand Gallery, Collectors' Arcade or Discovery Court.",
       "Brands stay where an owner puts them. Owners can move a brand, feature it or give its boutique a colour, and every change is recorded.",
       "Only the owners can open it. Nobody else sees the World button, and the World is never downloaded to their phones.",
-    "On Today, a sales channel with no target (such as WhatsApp) no longer says \"no target\" twice."
+      "On Today, a sales channel with no target (such as WhatsApp) no longer says \"no target\" twice."
     ]
   },
   {

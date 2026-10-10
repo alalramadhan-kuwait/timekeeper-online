@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { ASSET } from '../assets/manifest';
+import { BRAND_LOGOS, type BrandLogo } from '../assets/brandLogos';
 import { ARCHES, FIGURE_SCALE, MALL, PILLARS, PLANTERS, SECTIONS, SLOT_GEO, WALK, WALL_HEIGHT, bayDecor, boutiquePlan, kioskCell, mallBlocked, toWorld, type SlotGeo } from '../mall/layout';
 import { displayName, type MallBrand, type MallModel, type MallSpot } from '../mall/model';
 import type { Ownership, StockClass } from '../types';
@@ -36,7 +37,7 @@ const lighten = (c: number, k: number) => {
   return (f(r) << 16) | (f(g) << 8) | f(b);
 };
 
-type Obj = Phaser.GameObjects.Image | Phaser.GameObjects.Text | Phaser.GameObjects.Graphics | Phaser.GameObjects.Particles.ParticleEmitter;
+type Obj = Phaser.GameObjects.Image | Phaser.GameObjects.Text | Phaser.GameObjects.Graphics | Phaser.GameObjects.Rectangle | Phaser.GameObjects.Particles.ParticleEmitter;
 type Group = { items: Obj[]; prio: number; dy: number };
 
 export class MallLayer {
@@ -49,7 +50,7 @@ export class MallLayer {
   private sectionSigns: Obj[] = [];
   private lastCss = -1;
   private shown = true;                       // false while another area is chosen
-  private targets = new Map<string, { obj: Phaser.GameObjects.Image | Phaser.GameObjects.Text; cell: [number, number]; boutique: boolean; centre?: { x: number; y: number } }>();
+  private targets = new Map<string, { obj: Phaser.GameObjects.Image | Phaser.GameObjects.Text | Phaser.GameObjects.Rectangle; cell: [number, number]; boutique: boolean; centre?: { x: number; y: number } }>();
   blocked = new Set<string>();                // world cells
 
   constructor(private scene: WorldScene) {}
@@ -260,9 +261,24 @@ export class MallLayer {
     // name plate of the low wall that faces the camera (over the walkway it would cover the islands)
     const [x, y] = toWorld(g.x + plan.sign, g.side === 'n' ? 0 : g.y + g.d);
     const p = iso(x, y);
-    // sized by its writing area, so a square plaque and a long thin one carry the name at the same size
+    // the brand's own logo where we have it; otherwise its name, painted
+    const logo = BRAND_LOGOS[b.brand];
+    const { sign, items, r } = logo && s.textures.exists(logo.key)
+      ? this.logoSign(logo, b, p.x, p.y, g.side, sel)
+      : this.nameSign(b, p.x, p.y - (g.side === 'n' ? 170 : 44), sel);
+    if (b.featured) items.push(this.text(r.x + 6, r.y + 2, '★', { size: 16, colour: '#f2c230', depth: TOP - 11.8 }).setOrigin(0.5, 0.5));
+    this.signs.push({ items, prio: 3, dy: 0 });
+    if (rank) this.badge(rank, r.x + r.w + 4, r.y, sel, undefined, items);
+    const mid = iso(...toWorld(g.x + g.w / 2, g.y + g.d / 2));
+    this.targets.set(b.brand, { obj: sign as Phaser.GameObjects.Image | Phaser.GameObjects.Rectangle, cell: toWorld(plan.pavilion[0], plan.pavilion[1]), boutique: true, centre: { x: mid.x, y: mid.y - 60 } });
+  }
+
+  /* The brand's name painted on a plaque, for a brand without a logo file. Sized by its writing
+     area, so a square plaque and a long thin one carry the name at the same size. */
+  private nameSign(b: MallBrand, x: number, y: number, sel: { type: 'brand'; brand: string }) {
+    const s = this.scene;
     const ta = ASSET['sign-section'].text ?? [0.1, 0.1, 0.9, 0.9];
-    const sign = this.billboard('sign-section', p.x, p.y - (g.side === 'n' ? 170 : 44), TOP - 12, 230 / (ASSET['sign-section'].drawWidth * (ta[2] - ta[0])));
+    const sign = this.billboard('sign-section', x, y, TOP - 12, 230 / (ASSET['sign-section'].drawWidth * (ta[2] - ta[0])));
     sign.setInteractive({ useHandCursor: true }); s.tag(sign, sel, 0);
     const r = this.area(sign, 'sign-section');
     let t: Phaser.GameObjects.Text, bar: Phaser.GameObjects.Graphics;
@@ -279,12 +295,29 @@ export class MallLayer {
       sign.setData('panel', new Phaser.Geom.Rectangle(r.x - r.w * 0.08, r.y - r.h * 0.12, r.w * 1.16, r.h * 1.3));
       bar = this.healthBar(b, r.x + r.w * 0.12, r.y + r.h * 0.74, r.w * 0.76, Math.max(5, r.h * 0.14), TOP - 11.9);
     }
-    const items: Obj[] = [sign, t, bar];
-    if (b.featured) items.push(this.text(r.x + 6, r.y + 2, '★', { size: 16, colour: '#f2c230', depth: TOP - 11.8 }).setOrigin(0.5, 0.5));
-    this.signs.push({ items, prio: 3, dy: 0 });
-    if (rank) this.badge(rank, r.x + r.w + 4, r.y, sel, undefined, items);
-    const mid = iso(...toWorld(g.x + g.w / 2, g.y + g.d / 2));
-    this.targets.set(b.brand, { obj: sign, cell: toWorld(plan.pavilion[0], plan.pavilion[1]), boutique: true, centre: { x: mid.x, y: mid.y - 60 } });
+    return { sign: sign as Obj, items: [sign, t, bar] as Obj[], r };
+  }
+
+  /* The brand's own logo on a plaque in the colour that makes it stand out: navy behind a white
+     logo, cream behind a black one, in a gold frame. The logo is only scaled, evenly, to fit. The
+     plaque takes the logo's shape so the name reads at a section's zoom on a phone (about
+     7 CSS px a letter): a square plaque for a stacked logo, a long one for a word mark, and for a
+     logo that is one long line of small words, a band the width of the shop front. */
+  private logoSign(logo: BrandLogo, b: MallBrand, x: number, wallY: number, side: SlotGeo['side'], sel: { type: 'brand'; brand: string }) {
+    const s = this.scene;
+    const [w, h, fw, fh] = logo.aspect < 1.4 ? [148, 148, 0.8, 0.8] : logo.aspect <= 12.5 ? [264, 106, 0.85, 0.72] : [470, 56, 0.94, 0.74];
+    // the back row's hangs from the top of its wall; the front row's stands on the low front
+    // wall and rises into the shop, so it never reaches over the walkway
+    const cy = side === 'n' ? wallY - 196 + h / 2 : wallY - 17 - h / 2;
+    const plate = this.keep(s.add.rectangle(x, cy, w, h, logo.plate === 'dark' ? 0x17233b : 0xf6f1e6)
+      .setStrokeStyle(5, 0xcba454).setRounded(Math.min(14, h * 0.18)).setDepth(TOP - 12));
+    const img = this.keep(s.add.image(x, cy, logo.key).setDepth(TOP - 11.99));
+    img.setScale(Math.min((w * fw) / img.width, (h * fh) / img.height));
+    plate.setInteractive({ useHandCursor: true }); s.tag(plate, sel, 0);
+    const bd = plate.getBounds();
+    const bar = this.healthBar(b, bd.x + 10, bd.bottom + 3, bd.width - 20, 6, TOP - 11.9);
+    plate.setData('panel', new Phaser.Geom.Rectangle(bd.x, bd.y, bd.width, bd.height + 11));
+    return { sign: plate as Obj, items: [plate, img, bar] as Obj[], r: { x: bd.x + 4, y: bd.y + 4, w: bd.width - 8, h: bd.height - 8 } };
   }
 
   /* A display case: the base by ownership, watches by units, the glass over them. */
