@@ -7,11 +7,12 @@ import type { Selection } from './game/WorldScene';
 import { day, kd, kd0, num, plural, when } from './format';
 import type { MallModel } from './mall/model';
 import { MallPanelBody, isMallView } from './mall/panels';
+import type { DockView } from './dock/DockSheet';
 
 /* What opens when something in the World is tapped. Every figure here comes
    straight from the snapshot or the PO functions; nothing is recalculated. */
 
-export type View = Selection | { type: 'search' } | { type: 'mission'; key: string }
+export type View = Selection | DockView | { type: 'search' } | { type: 'mission'; key: string }
   | { type: 'brands' } | { type: 'mall-settings' } | { type: 'move'; brand: string };
 
 export interface Ctx {

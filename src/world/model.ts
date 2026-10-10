@@ -1,20 +1,14 @@
-import type { Mission, OpenPo, Snapshot, SupplierUnpaid } from './types';
+import type { Mission, Snapshot, SupplierUnpaid } from './types';
 import type { MallData, MallStaff } from './mall/data';
 import { buildMall, type MallModel } from './mall/model';
 import { MALL, WALK, toWorld } from './mall/layout';
+import { DOCK_PLAN, type DockData } from './dock/data';
 
 /* Turns a snapshot into the things the scene draws. Pure and deterministic: the
    same snapshot always lays the World out the same way, and every object keeps
    the key of the record it stands for, so whatever is tapped leads back to it. */
 
 export type Room = 'floor' | 'dock' | 'office';
-
-export type BoxKind = 'wrapped' | 'sealed' | 'open';
-export interface BoxModel {
-  po: OpenPo; cell: [number, number]; kind: BoxKind; stack: number;
-  progress: number | null;          // received / ordered for part-received POs
-  alert: boolean;
-}
 
 export type RepMood = 'calm' | 'waiting' | 'review';
 export interface RepModel { supplier: SupplierUnpaid; cell: [number, number]; mood: RepMood }
@@ -27,8 +21,7 @@ export interface PersonModel { person: MallStaff; room: Room; family: Family; ke
 
 export interface WorldModel {
   mall: MallModel;
-  boxes: BoxModel[];
-  hiddenBoxes: number;              // open POs beyond the dock's slots (still in the list)
+  dock: DockData | null;            // null while the dock's records are loading, or if they could not be read
   reps: RepModel[];
   hiddenReps: number;
   staff: PersonModel[];                   // on duty now, verified by attendance
@@ -43,26 +36,29 @@ export interface WorldModel {
 
 export interface Rect { x0: number; y0: number; x1: number; y1: number }   // cells x0..x1-1, y0..y1-1
 
+/* The loading dock is laid out on its own plan (dock/data.ts: rows of supplier bays, the main
+   aisle, then receiving and payments to the south); plan cell (0, 0) stands at DOCK_AT. Its main
+   aisle lines up with the corridor from the mall's walkway. */
+const CORRIDOR_Y = MALL.y0 + WALK.y0 + 1;               // the corridor's first row: the walkway's second
+export const DOCK_AT = { x: 15, y: CORRIDOR_Y - DOCK_PLAN.MAIN };
+export const dockCell = (x: number, y: number): [number, number] => [DOCK_AT.x + x, DOCK_AT.y + y];
+
 export const ROOMS: Record<Room, Rect> = {
   floor: { x0: MALL.x0, y0: MALL.y0, x1: MALL.x0 + MALL.w, y1: MALL.y0 + MALL.d },   // the Watch Mall
-  dock: { x0: 15, y0: 0, x1: 26, y1: 11 },
+  dock: { x0: DOCK_AT.x, y0: DOCK_AT.y, x1: DOCK_AT.x + DOCK_PLAN.W, y1: DOCK_AT.y + DOCK_PLAN.DEPTH },
   office: { x0: 0, y0: 13, x1: 11, y1: 21 },
 };
 
-/* Doorways between the rooms, two cells deep: the mall's walkway opens onto the dock. The
-   office's old doorway into the boutique is closed: the owner steps between areas instead. */
+/* Doorways between the rooms, two cells deep: from the middle of the mall's walkway, two cells
+   wide, into the dock's main aisle. The office's old doorway into the boutique is closed: the
+   owner steps between areas instead. */
 export const CORRIDORS: Rect[] = [
-  { x0: 13, y0: MALL.y0 + WALK.y0, x1: 15, y1: MALL.y0 + WALK.y1 },   // mall walkway ↔ dock
+  { x0: 13, y0: CORRIDOR_Y, x1: 15, y1: CORRIDOR_Y + 2 },   // mall walkway ↔ dock
 ];
 
-export const ROAD = { x0: 27, x1: 30, y0: Math.min(-9, MALL.y0 - 6), y1: 27 };
-export const BOUNDS = { x0: Math.min(-30, MALL.x0 - 5), y0: Math.min(-9, MALL.y0 - 6), x1: 33, y1: 27 };
-
-const BOX_SLOTS: [number, number][] = (() => {
-  const s: [number, number][] = [];
-  for (const y of [1, 3, 5, 7, 9]) for (const x of [17, 19, 21, 23]) s.push([x, y]);
-  return s;
-})();
+/* The road runs past the dock's yard. */
+export const ROAD = { x0: ROOMS.dock.x1 + 5, x1: ROOMS.dock.x1 + 8, y0: Math.min(-9, MALL.y0 - 6, ROOMS.dock.y0 - 7), y1: 27 };
+export const BOUNDS = { x0: Math.min(-30, MALL.x0 - 5), y0: ROAD.y0, x1: ROAD.x1 + 3, y1: 27 };
 
 const REP_SLOTS: [number, number][] = [[1, 19], [2, 19], [4, 19], [5, 19], [7, 19], [8, 19]];
 
@@ -73,17 +69,28 @@ export const FIXTURES = {
   files: [0, 14] as [number, number],
   benches: [[1, 18], [4, 18], [7, 18]] as [number, number][],
   board: { x: 7, y: 13, len: 3 },
-  plants: [[10, 20], [0, 20], [25, 10]] as [number, number][],
-  van: { cell: [27, 3] as [number, number], w: 1, d: 2 },
-  pallets: BOX_SLOTS,
+  plants: [[10, 20], [0, 20]] as [number, number][],
+  // in the yard's marked bay, by the dock's door
+  van: { cell: dockCell(DOCK_PLAN.W + 1, DOCK_PLAN.SOUTH + 1), w: 1, d: 2 },
 };
+
+/* The dock's furniture that people walk round, in plan cells: each bay's rack (its back row),
+   the free bays' benches, the receiving table, the part-received rack, the board, the payments
+   desk and cabinet, the plant and the two trolleys. */
+export function dockBlocked(): [number, number][] {
+  const c: [number, number][] = [];
+  for (let i = 0; i < 16; i++) { const b = DOCK_PLAN.bay(i); c.push([b.x, b.y], [b.x + 1, b.y]); }
+  const S = DOCK_PLAN.SOUTH, D = DOCK_PLAN.DEPTH, W = DOCK_PLAN.W;
+  c.push([8, S + 1], [9, S + 1], [6, D - 2], [7, D - 2], [6, S], [7, S], [0, S + 1], [1, S + 2], [2, S + 2], [4, D - 1], [W - 2, 2], [9, D - 2]);
+  return c;
+}
 
 export function blockedCells(m: WorldModel): Set<string> {
   const b = new Set<string>();
   const add = (x: number, y: number, w = 1, d = 1) => {
     for (let i = 0; i < w; i++) for (let j = 0; j < d; j++) b.add(`${x + i},${y + j}`);
   };
-  m.boxes.forEach((x) => add(x.cell[0], x.cell[1]));
+  dockBlocked().forEach(([x, y]) => add(...dockCell(x, y)));
   add(FIXTURES.desk.cell[0], FIXTURES.desk.cell[1], FIXTURES.desk.w, FIXTURES.desk.d);
   FIXTURES.staffDesks.forEach(([x, y]) => add(x, y));
   add(FIXTURES.files[0], FIXTURES.files[1]);
@@ -130,26 +137,12 @@ export function lookKey(family: Family, look: MallStaff['look']): string {
 
 const HOMES: Record<Room, [number, number][]> = {
   floor: ([[3, 0], [9, 1], [16, 0], [22, 1], [29, 0], [35, 1], [6, 1]] as [number, number][]).map(([x, y]) => toWorld(Math.round((x * MALL.w) / 38), y ? WALK.y1 - 1 : WALK.y0)),
-  dock: [[18, 4], [22, 6], [20, 2], [24, 8]],
+  dock: ([[2, DOCK_PLAN.MAIN], [6, DOCK_PLAN.MAIN + 1], [4, DOCK_PLAN.MAIN - 4], [9, DOCK_PLAN.SOUTH]] as [number, number][]).map(([x, y]) => dockCell(x, y)),
   office: [[2, 15], [9, 15], [7, 17], [3, 17]],
 };
 
-export function buildModel(s: Snapshot, mallData: MallData): WorldModel {
+export function buildModel(s: Snapshot, mallData: MallData, dock: DockData | null = null): WorldModel {
   const openMissions = s.missions.filter((m) => m.state === 'open' || m.state === 'changed_since_review');
-  const missionPos = new Set(openMissions.map((m) => String(m.params.po_id ?? '')).filter(Boolean));
-
-  const partial = new Map(s.receipts.partial.map((p) => [p.po_id, p]));
-  const open = [...s.commitments.list].sort((a, b) => a.created_date.localeCompare(b.created_date) || a.po_number.localeCompare(b.po_number));
-  const boxes: BoxModel[] = open.slice(0, BOX_SLOTS.length).map((po, i) => {
-    const p = partial.get(po.po_id);
-    const kind: BoxKind = po.status === 'Pending Approval' ? 'wrapped' : po.status === 'Partially Received' ? 'open' : 'sealed';
-    return {
-      po, cell: BOX_SLOTS[i], kind,
-      stack: po.outstanding_units >= 20 ? 3 : po.outstanding_units >= 5 ? 2 : 1,
-      progress: p && p.ordered_qty > 0 ? p.received_qty / p.ordered_qty : null,
-      alert: missionPos.has(po.po_id),
-    };
-  });
 
   const suppliers = [...s.payments.by_supplier].sort((a, b) => b.recorded_unpaid - a.recorded_unpaid);
   const reps: RepModel[] = suppliers.slice(0, REP_SLOTS.length).map((supplier, i) => ({
@@ -165,14 +158,17 @@ export function buildModel(s: Snapshot, mallData: MallData): WorldModel {
     return { person, room, family, key: lookKey(family, person.look), home };
   });
 
-  const recent = s.receipts.log.recent[0];
-  const seenToday = !!recent && Date.now() - new Date(recent.detected_at).getTime() < 36 * 3600 * 1000;
+  // a delivery is shown only for a receipt that happened in the last day and a half: by Lightspeed's
+  // own time where it has one, else when our sync first saw it. A receiving time Lightspeed
+  // recorded long ago and our log only now picked up is history, not a delivery.
+  const recent = s.receipts.log.recent.find((e) => e.event !== 'po_source_time_recorded');
+  const seenToday = !!recent && Date.now() - new Date(recent.at).getTime() < 36 * 3600 * 1000;
 
   const top = openMissions.find((m) => m.kind !== 'data_issue') ?? openMissions[0] ?? null;
 
   return {
     mall: buildMall(s, mallData),
-    boxes, hiddenBoxes: Math.max(0, open.length - boxes.length),
+    dock,
     reps, hiddenReps: Math.max(0, suppliers.length - reps.length),
     staff,
     owners: s.people.owners.map((o) => o.name),

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, ChevronLeft, Maximize2, Minus, Plus, RefreshCw, Search, Settings2, Store, X } from 'lucide-react';
+import { ArrowLeft, ChevronLeft, Maximize2, Minus, Plus, RefreshCw, RotateCcw, Scan, Search, Settings2, Store, X } from 'lucide-react';
 import avatar from '../assets/ask-mohammed.webp';
 import { loadSnapshot } from './api';
 import { buildModel, missionTitle, type Room } from './model';
@@ -11,6 +11,9 @@ import { loadMall, type MallData } from './mall/data';
 import { SECTIONS } from './mall/layout';
 import { clock, day, kd, kd0, num } from './format';
 import type { Snapshot } from './types';
+import { buildDock, loadDock, type DockRaw } from './dock/data';
+import { DockSheet, bayForView, isDockView, type DockView } from './dock/DockSheet';
+import type { DockArea } from './game/DockLayer';
 
 /**
  * Time Keeper World («عالم تايم كيبر»): the owners' living map of the boutique
@@ -38,6 +41,11 @@ export default function WorldPage({ onClose }: { onClose?: () => void }) {
   const game = useRef<WorldGame | null>(null);
   const [snap, setSnap] = useState<Snapshot | null>(null);
   const [mallData, setMallData] = useState<MallData | null>(null);
+  // the dock's records: undefined while loading, null if they could not be read (the dock then stands empty)
+  const [dockRaw, setDockRaw] = useState<DockRaw | null | undefined>(undefined);
+  const [dockArea, setDockArea] = useState<DockArea>('orders');
+  const areasRef = useRef<HTMLDivElement>(null);
+  const frameDockNext = useRef(false);
   const [section, setSection] = useState<number | null>(0);
   const [err, setErr] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
@@ -51,23 +59,26 @@ export default function WorldPage({ onClose }: { onClose?: () => void }) {
     `Sales to ${day(snap.meta.sales_through)}`,
   ] : [], [snap]);
 
-  const model = useMemo(() => (snap && mallData ? buildModel(snap, mallData) : null), [snap, mallData]);
+  const dock = useMemo(() => (snap && dockRaw ? buildDock(snap, dockRaw) : null), [snap, dockRaw]);
+  const model = useMemo(() => (snap && mallData && dockRaw !== undefined ? buildModel(snap, mallData, dock) : null), [snap, mallData, dockRaw, dock]);
+  const readDock = useCallback((s: Snapshot) => loadDock(s).then(setDockRaw, () => setDockRaw(null)), []);
 
   const refresh = useCallback(async () => {
     setBusy(true);
     try {
       const [s, m] = await Promise.all([loadSnapshot(), loadMall()]);
+      await readDock(s);
       setSnap(s); setMallData(m); setErr(null);
     } catch (e) { setErr((e as Error).message); }
     setBusy(false);
-  }, []);
+  }, [readDock]);
 
   useEffect(() => {
     let live = true;
-    Promise.all([loadSnapshot(), loadMall()]).then(([s, m]) => { if (live) { setSnap(s); setMallData(m); } },
+    Promise.all([loadSnapshot(), loadMall()]).then(([s, m]) => { if (live) { setSnap(s); setMallData(m); readDock(s); } },
       (e) => { if (live) setErr((e as Error).message); });
     return () => { live = false; };
-  }, []);
+  }, [readDock]);
   // the stock cache refreshes hourly and the PO sync daily; follow them while open
   useEffect(() => {
     const t = setInterval(() => { if (document.visibilityState === 'visible') refresh(); }, 30 * 60 * 1000);
@@ -78,20 +89,33 @@ export default function WorldPage({ onClose }: { onClose?: () => void }) {
   useEffect(() => {
     if (!model || game.current || !host.current) return;
     game.current = createGame(host.current, model, {
-      onSelect: (s: Selection | null) => setStack(s ? [s] : []),
+      onSelect: (s: Selection | null) => setStack(s ? [s.type === 'dock-area'
+        ? (s.area === 'pay' ? { type: 'dock-pay' } : { type: 'dock-recv', tab: s.area === 'history' ? 'hist' : 'part' })
+        : s] : []),
       onReady: () => setReady(true),
       onSection: (i) => setSection(i),
     });
   }, [model]);
   useEffect(() => { if (model && ready) game.current?.setModel(model); }, [model, ready]);
-  // tell the game how much of the screen the bars cover, then frame the first area
+  // tell the game how much of the screen the bars cover (the dock has its area bar at the bottom),
+  // then frame the first area, or the dock once its bars are in place
+  const measureInsets = useCallback(() => {
+    const top = headerRef.current?.getBoundingClientRect().bottom ?? 0;
+    const bar = areasRef.current?.getBoundingClientRect();
+    const bottom = room === 'dock' && bar ? window.innerHeight - bar.top : window.innerWidth < 640 ? 96 : 24;
+    game.current?.setInsets(top, bottom);
+  }, [room]);
   useEffect(() => {
     if (!ready) return;
-    const bottom = window.innerWidth < 640 ? 96 : 24;
-    game.current?.setInsets(headerRef.current?.getBoundingClientRect().bottom ?? 0, bottom);
+    measureInsets();
     game.current?.focus(room);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready]);
+  useEffect(() => {
+    if (!ready) return;
+    measureInsets();
+    if (frameDockNext.current && room === 'dock') { frameDockNext.current = false; game.current?.frameDock('orders'); }
+  }, [room, ready, measureInsets]);
   useEffect(() => () => { game.current?.destroy(); game.current = null; }, []);
 
   useEffect(() => {
@@ -103,6 +127,14 @@ export default function WorldPage({ onClose }: { onClose?: () => void }) {
   }, []);
 
   const view = stack[stack.length - 1] ?? null;
+  const dockView = isDockView(view) ? view : null;
+  // what an open dock sheet is about: a bay's tag shows its supplier, a station stays in view
+  useEffect(() => {
+    if (!dock || !dockView) return;
+    if (dockView.type === 'dock-po') return;          // an order keeps whatever the sheet under it chose
+    if (dockView.type === 'dock-recv' || dockView.type === 'dock-pay') game.current?.showDock({ area: dockView.type === 'dock-recv' ? 'recv' : 'pay' });
+    else game.current?.showDock({ bay: bayForView(dock, dockView) ?? undefined });
+  }, [dock, dockView]);
   // keep what was tapped in sight beside the side panel, or above the phone sheet
   const first = stack[0];
   useEffect(() => {
@@ -123,8 +155,15 @@ export default function WorldPage({ onClose }: { onClose?: () => void }) {
     });
     ro.observe(a);
     return () => ro.disconnect();
-  }, [first]);
+    // a dock sheet is a new element for each step, so it is watched again
+  }, [first, view]);
   const open = useCallback((v: View) => setStack((s) => [...s, v]), []);
+  const goDock = (area: DockArea, fitOnly = false) => {
+    setDockArea(area);
+    game.current?.frameDock(area, fitOnly);
+    if (fitOnly || area === 'orders') closePanel();
+    else setStack([area === 'recv' ? { type: 'dock-recv' } : { type: 'dock-pay' }]);
+  };
   const closePanel = () => { setStack([]); game.current?.clearSelection(); };
   const focusBrand = useCallback((b: string) => { setRoom('floor'); game.current?.focusBrand(b); }, []);
   const pickSection = (i: number | null) => { setRoom('floor'); setSection(i); game.current?.focusSection(i); };
@@ -186,14 +225,27 @@ export default function WorldPage({ onClose }: { onClose?: () => void }) {
             </button>
           </div>
         </div>
-        <nav className="pointer-events-auto flex gap-1 self-start rounded-full bg-white/95 p-1 shadow-lg" aria-label="Areas">
-          {ROOMS.map((r) => (
-            <button key={r.room} onClick={() => { setRoom(r.room); game.current?.focus(r.room); }}
-              className={`whitespace-nowrap rounded-full px-3 py-1.5 text-[13px] font-medium transition-colors ${room === r.room ? 'bg-[#22304d] text-white' : 'text-[#22304d] hover:bg-slate-100'}`}>
-              <span className="hidden sm:inline">{r.label}</span><span className="sm:hidden">{r.short}</span>
-            </button>
-          ))}
-        </nav>
+        <div className="flex items-center gap-2">
+          <nav className="pointer-events-auto flex gap-1 self-start rounded-full bg-white/95 p-1 shadow-lg" aria-label="Areas">
+            {ROOMS.map((r) => (
+              <button key={r.room} onClick={() => {
+                if (r.room === 'dock') { setStack([]); setDockArea('orders'); if (room === 'dock') game.current?.frameDock('orders'); else { frameDockNext.current = true; setRoom('dock'); } return; }
+                setRoom(r.room); game.current?.focus(r.room);
+              }}
+                className={`whitespace-nowrap rounded-full px-3 py-1.5 text-[13px] font-medium transition-colors ${room === r.room ? 'bg-[#22304d] text-white' : 'text-[#22304d] hover:bg-slate-100'}`}>
+                <span className="hidden sm:inline">{r.label}</span><span className="sm:hidden">{r.short}</span>
+              </button>
+            ))}
+          </nav>
+          {room === 'dock' && (
+            <div className="pointer-events-auto ml-auto flex gap-1.5">
+              <button onClick={() => goDock(dockArea, true)} aria-label="Fit area" title="Fit area"
+                className="grid h-10 w-10 place-items-center rounded-xl bg-white text-[#22304d] shadow-lg"><Scan size={19} /></button>
+              <button onClick={() => goDock('orders')} aria-label="Reset view" title="Reset view"
+                className="grid h-10 w-10 place-items-center rounded-xl bg-white text-[#22304d] shadow-lg"><RotateCcw size={18} /></button>
+            </div>
+          )}
+        </div>
         {room === 'floor' && model && (
           <div className={`pointer-events-auto -mx-1 ${view ? 'hidden sm:flex' : 'flex'} items-center gap-1.5 overflow-x-auto px-1 pb-0.5 [scrollbar-width:none]`} aria-label="Mall sections">
             {SECTIONS.map((sec, i) => (
@@ -211,9 +263,9 @@ export default function WorldPage({ onClose }: { onClose?: () => void }) {
           </div>
         )}
         {snap && (
-          <div className={`pointer-events-auto -mx-1 ${view ? 'hidden sm:flex' : room === 'floor' ? 'hidden sm:flex' : 'flex'} gap-1.5 overflow-x-auto px-1 pb-1 [scrollbar-width:none]`}>
+          <div className={`pointer-events-auto -mx-1 ${room === 'dock' ? 'hidden' : view ? 'hidden sm:flex' : room === 'floor' ? 'hidden sm:flex' : 'flex'} gap-1.5 overflow-x-auto px-1 pb-1 [scrollbar-width:none]`}>
             <Kpi label="Recorded unpaid" value={kd(snap.payments.total)} sub={`${num(snap.payments.pos)} POs`} onClick={() => { game.current?.focus('office'); setRoom('office'); }} />
-            <Kpi label="Open POs" value={kd0(snap.commitments.open_po_value)} sub={`${num(snap.commitments.open_pos)} POs`} onClick={() => { game.current?.focus('dock'); setRoom('dock'); }} />
+            <Kpi label="Open POs" value={kd0(snap.commitments.open_po_value)} sub={`${num(snap.commitments.open_pos)} POs`} onClick={() => { setStack([]); frameDockNext.current = true; setRoom('dock'); }} />
             <Kpi label="Stock at cost" value={kd0(Object.values(snap.floor.totals).reduce((n, t) => n + (t?.cost_value ?? 0), 0))} sub="owned, consignment, pre-owned" onClick={() => pickSection(section)} />
             <Kpi label="Missions" value={num(todo)} sub="to do" onClick={() => setStack([{ type: 'board' }])} />
           </div>
@@ -221,7 +273,7 @@ export default function WorldPage({ onClose }: { onClose?: () => void }) {
       </header>
 
       {/* Mohammed with today's top mission */}
-      {top && !view && (
+      {top && !view && room !== 'dock' && (
         <button onClick={() => setStack([{ type: 'mission', key: top.key }])}
           className="absolute bottom-0 left-0 z-30 m-3 flex max-w-[min(420px,calc(100%-5.5rem))] items-center gap-3 rounded-2xl bg-white/95 p-2.5 pr-4 text-left shadow-xl"
           style={{ marginBottom: 'calc(0.75rem + env(safe-area-inset-bottom, 0px))' }}>
@@ -234,13 +286,31 @@ export default function WorldPage({ onClose }: { onClose?: () => void }) {
         </button>
       )}
 
-      <div className="absolute bottom-0 right-0 z-30 m-3 flex flex-col gap-1.5" style={{ marginBottom: 'calc(0.75rem + env(safe-area-inset-bottom, 0px))' }}>
+      {/* the dock's three areas, within thumb reach */}
+      {room === 'dock' && (
+        <div ref={areasRef} role="tablist" aria-label="Dock areas"
+          className="absolute inset-x-3 bottom-0 z-30 mx-auto grid max-w-[420px] grid-cols-3 gap-1 rounded-[18px] bg-[#17233b]/95 p-1 shadow-[0_6px_18px_rgba(0,0,0,.25)]"
+          style={{ marginBottom: 'calc(14px + env(safe-area-inset-bottom, 0px))' }}>
+          {([['orders', 'Open orders', dock?.open.length], ['recv', 'Receiving', dock?.partial.length], ['pay', 'Payments', dock?.owed.length]] as [DockArea, string, number | undefined][]).map(([a, l, n]) => (
+            <button key={a} role="tab" aria-selected={dockArea === a} onClick={() => goDock(a)}
+              className={`min-h-[48px] rounded-[14px] px-1 py-[9px] text-[13px] font-semibold leading-[1.15] ${dockArea === a ? 'bg-[#f6f1e6] text-[#22304d]' : 'text-[#d9deea]'}`}>
+              {l}<b className={`mt-0.5 block text-[17px] tabular-nums ${dockArea === a ? 'text-[#17233b]' : 'text-white'}`}>{n ?? '—'}</b>
+            </button>
+          ))}
+        </div>
+      )}
+
+      <div className={`absolute bottom-0 right-0 z-30 m-3 ${room === 'dock' ? 'hidden' : 'flex'} flex-col gap-1.5`} style={{ marginBottom: 'calc(0.75rem + env(safe-area-inset-bottom, 0px))' }}>
         <button onClick={() => game.current?.zoomBy(1.25)} aria-label="Zoom in" className="grid h-10 w-10 place-items-center rounded-full bg-white text-[#22304d] shadow-lg"><Plus size={18} /></button>
         <button onClick={() => game.current?.zoomBy(0.8)} aria-label="Zoom out" className="grid h-10 w-10 place-items-center rounded-full bg-white text-[#22304d] shadow-lg"><Minus size={18} /></button>
       </div>
 
       {/* details: a side panel on wide screens, a sheet from the bottom on phones */}
-      {view && snap && (
+      {dockView && dock && (
+        <DockSheet key={stack.length} view={dockView} dock={dock} canGoBack={stack.length > 1} panelRef={panelRef}
+          open={(v: DockView) => open(v)} back={() => setStack((s) => s.slice(0, -1))} close={closePanel} />
+      )}
+      {view && !dockView && snap && (
         <aside ref={panelRef} className="tk-sheet-enter absolute inset-x-0 bottom-0 z-40 flex max-h-[60%] flex-col rounded-t-3xl bg-white shadow-2xl sm:inset-x-auto sm:bottom-3 sm:right-3 sm:top-3 sm:max-h-none sm:w-[400px] sm:rounded-3xl"
           style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
           {/* above the body, which is pulled up under it, so the buttons stay tappable */}

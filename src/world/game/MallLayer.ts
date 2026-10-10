@@ -3,6 +3,7 @@ import { ASSET } from '../assets/manifest';
 import { BRAND_LOGOS, type BrandLogo } from '../assets/brandLogos';
 import { ARCHES, FIGURE_SCALE, MALL, PILLARS, PLANTERS, SECTIONS, SLOT_GEO, WALK, WALL_HEIGHT, bayDecor, boutiquePlan, kioskCell, mallBlocked, toWorld, type SlotGeo } from '../mall/layout';
 import { displayName, type MallBrand, type MallModel, type MallSpot } from '../mall/model';
+import { CORRIDORS } from '../model';
 import type { Ownership, StockClass } from '../types';
 import { FloorBatch } from './FloorBatch';
 import { depthAt, iso } from './iso';
@@ -118,10 +119,11 @@ export class MallLayer {
       else if (g?.kind === 'bay') { run(lx, g.w, front, 'bay-front', 3, 'mall-ledge-r'); lx += g.w; }
       else { front('mall-ledge-r', lx, 1); lx += 1; }
     }
-    // the near end opens onto the corridor to the loading dock, along the walkway
+    // the near end opens onto the corridor to the loading dock, in the middle of the walkway
+    const [toDock] = CORRIDORS;
     for (let ly = 0; ly < MALL.d; ly++) {
-      if (ly >= WALK.y0 && ly < WALK.y1) continue;
       const [x, y] = toWorld(MALL.w, ly);
+      if (y >= toDock.y0 && y < toDock.y1) continue;
       const p = iso(x, y);
       s.fit(s.add.image(p.x, p.y, 'mall-ledge-l'), 'mall-ledge-l').setDepth(depthAt(x, y + 1, 1));
     }

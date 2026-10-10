@@ -1,11 +1,15 @@
 [
   {
-    "version": "3.7.1",
+    "version": "3.8.0",
     "date": "2026-10-10",
-    "title": "Brand logos on the boutiques",
+    "title": "A new Loading Dock",
     "changes": [
-      "The seven boutiques in Time Keeper World now carry their brands' own logos, on a plate chosen so each logo stands out: dark behind a white logo, light behind a black one.",
-      "Every logo is the brand's own, taken from its official website, and is never stretched or redrawn."
+      "The Loading Dock in Time Keeper World is rebuilt: one bay per supplier with open orders, the largest amount still to come first, each with a small number tag. Tap a bay to see the supplier's orders.",
+      "Each order shows what is still to come, how many pieces have arrived and three small icons for the order, the shipment and the payment. Tap an icon to see what it means.",
+      "An order opens on Items, Receiving and Payment tabs. Its key numbers stay at the top while you switch between them, and anything worth checking is in one \"to review\" row.",
+      "Receiving and Payments have their own corners of the dock, and the bar at the bottom takes you to open orders, partly received orders and payments.",
+      "Lightspeed's order status is shown exactly as Lightspeed has it, and an order is never called late unless an expected date is on record.",
+      "The seven boutiques in the Watch Mall now carry their brands' own logos, on a plate chosen so each logo stands out: dark behind a white logo, light behind a black one."
     ]
   },
   {

@@ -2,9 +2,11 @@ import Phaser from 'phaser';
 import { ASSETS, ASSET, settleArt } from '../assets/manifest';
 import { BRAND_LOGOS } from '../assets/brandLogos';
 import {
-  BOUNDS, CORRIDORS, FIXTURES, ROAD, ROOMS, blockedCells, roomOf, walkable,
-  type BoxModel, type Room, type WorldModel,
+  BOUNDS, CORRIDORS, FIXTURES, ROAD, ROOMS, blockedCells, dockCell, roomOf, walkable,
+  type Room, type WorldModel,
 } from '../model';
+import { DOCK_PLAN } from '../dock/data';
+import { AREA_FOCUS, DOCK_AREAS, DOCK_BOUNDS, DockLayer, bayFocus, type DockArea } from './DockLayer';
 import { FIGURE_SCALE, MALL, SECTIONS, WALK, WALL_HEIGHT, sectionOfLocalX, toLocal, toWorld } from '../mall/layout';
 import { FloorBatch } from './FloorBatch';
 import { cellAt, depthAt, findPath, iso } from './iso';
@@ -17,6 +19,8 @@ export type Selection =
   | { type: 'shopper'; section: number }
   | { type: 'case'; id: string }
   | { type: 'po'; id: string }
+  | { type: 'bay'; no: number }                                         // a supplier bay on the dock
+  | { type: 'dock-area'; area: 'recv' | 'partial' | 'history' | 'pay' }  // a station on the dock
   | { type: 'supplier'; key: string }
   | { type: 'person'; name: string }
   | { type: 'board' }
@@ -39,9 +43,8 @@ const ZONE_MARGIN = { x: 128, y: 64 };
    on an iPhone 15); the 16 x 17 sections are larger, so they fill the screen at that scale. */
 const SECTION_VIEW = { w: (12.6 + 11) * 64, h: (12.6 + 11) * 32 + 210 };
 
-const FOCUS: Record<Room, { x0: number; y0: number; x1: number; y1: number }> = {
+const FOCUS: Record<Exclude<Room, 'dock'>, { x0: number; y0: number; x1: number; y1: number }> = {
   floor: ROOMS.floor,
-  dock: { ...ROOMS.dock, x1: ROAD.x1 },
   office: ROOMS.office,
 };
 
@@ -131,10 +134,15 @@ export class WorldScene extends Phaser.Scene {
   private areaLabels: { t: Phaser.GameObjects.Text; room: Room | null }[] = [];   // the dock's and office's labels
   private labelRoom: Room | null = null;                 // the area labels being made now belong to
   private section: number | null = 0;                    // the mall section framed on the Floor tab (null: the whole mall)
+  private dock!: DockLayer;
+  private dockFocus: { x: number; y: number } | null = null;   // what an open dock sheet keeps in view
+  private dockArea: DockArea = 'orders';                  // the part of the dock framed last
 
   constructor() { super('world'); }
 
   get reducedMotion() { return this.reduced; }
+  /* Canvas pixels per CSS pixel. */
+  get dpr() { return this.base * 2; }
 
   init(data: { model: WorldModel; hooks: SceneHooks; reducedMotion: boolean; dpr: number }) {
     this.model = data.model;
@@ -164,6 +172,7 @@ export class WorldScene extends Phaser.Scene {
     this.makeSheetAnimations();
     this.cameras.main.setBackgroundColor('#dfca93');
     this.mall = new MallLayer(this);
+    this.dock = new DockLayer(this);
     this.drawGround();
     this.drawRooms();
     this.selectRing = this.add.image(0, 0, 'select').setVisible(false).setDepth(LABEL_DEPTH - 2);
@@ -182,6 +191,12 @@ export class WorldScene extends Phaser.Scene {
     const view = { x: wv.x + m, y: wv.y + this.insets.top * u + m, w: wv.width - 2 * m, h: wv.height - (this.insets.top + this.insets.bottom) * u - 2 * m };
     this.mall.clampLabels(view);
     this.clampAreaLabels(view);
+    const cssH = cam.height / this.dpr;
+    this.dock.layout(cam, u, {
+      top: this.insets.top + 6,
+      bottom: (this.cover.bottom ? cssH - this.cover.bottom : cssH - this.insets.bottom) - 6,
+      width: cam.width / this.dpr,
+    });
   }
 
   /* The dock's and office's labels slide back inside the free screen when its edge would cut
@@ -215,6 +230,7 @@ export class WorldScene extends Phaser.Scene {
 
   focus(room: Room, animate = true) {
     if (room === 'floor') { this.room = room; this.focusSection(this.section, animate); return; }
+    if (room === 'dock') { this.frameDock('orders', false, animate); return; }
     this.room = room;
     this.showAreaLabels();
     const cam = this.cameras.main;
@@ -235,7 +251,6 @@ export class WorldScene extends Phaser.Scene {
     } else {
       cam.setZoom(z); cam.centerOn(cx, cy);
     }
-    if (room === 'dock' && this.deliveryPending) { const arrive = this.deliveryPending; this.deliveryPending = null; arrive(); }
   }
 
   /* Frames one section of the mall (or the whole mall). On a phone held upright the section
@@ -261,6 +276,49 @@ export class WorldScene extends Phaser.Scene {
       cam.pan(cx, cy, 650, 'Sine.easeInOut', true);
       cam.zoomTo(z, 650, 'Sine.easeInOut', true);
     } else { cam.setZoom(z); cam.centerOn(cx, cy); }
+  }
+
+  /* Frames a part of the dock, as the approved design does: the bays at a scale where every tag
+     reads (the view a little low, so the back row clears the header), receiving and payments
+     closer; or, with `fitOnly`, the whole of that part on screen. */
+  frameDock(area: DockArea, fitOnly = false, animate = true) {
+    this.room = 'dock';
+    this.dockArea = area;
+    this.showAreaLabels();
+    this.revealTo = null;
+    const cam = this.cameras.main, px = this.dpr;
+    const top = this.insets.top + 6, bottom = this.insets.bottom + 6;
+    const vw = cam.width / px, vh = Math.max(cam.height / px - top - bottom, 120);
+    const a = DOCK_AREAS[area];
+    const pt = (x: number, y: number, z = 0) => { const p = iso(...dockCell(x, y)); return { x: p.x, y: p.y - z }; };
+    const pts = [pt(a.x0, a.y0, 200), pt(a.x1, a.y0), pt(a.x1, a.y1), pt(a.x0, a.y1)];
+    const xs = pts.map((p) => p.x), ys = pts.map((p) => p.y);
+    const fit = Math.min(vw / (Math.max(...xs) - Math.min(...xs) + 60), vh / (Math.max(...ys) - Math.min(...ys) + 60));
+    let zc = fitOnly ? fit : area === 'orders' ? Math.max(fit, 0.36) : Math.max(fit, 0.62);
+    zc = Phaser.Math.Clamp(zc, 0.18, 1.1);
+    let cx = (Math.max(...xs) + Math.min(...xs)) / 2, cy = (Math.max(...ys) + Math.min(...ys)) / 2;
+    const tags = this.dock.tagPoints();
+    if (area === 'orders' && !fitOnly && tags.length) {
+      cx = tags.reduce((n, q) => n + q.x, 0) / tags.length;
+      cy = tags.reduce((n, q) => n + q.y, 0) / tags.length + 40;
+    }
+    const z = zc * px;
+    // the point sits in the middle of the part of the screen the bars leave free
+    const ccy = cy - (top - bottom) / 2 / zc;
+    this.zoomTarget = z;
+    if (animate && !this.reduced) {
+      cam.pan(cx, ccy, 650, 'Sine.easeInOut', true);
+      cam.zoomTo(z, 650, 'Sine.easeInOut', true);
+    } else { cam.setZoom(z); cam.centerOn(cx, ccy); }
+    if (this.deliveryPending) { const arrive = this.deliveryPending; this.deliveryPending = null; arrive(); }
+  }
+
+  /* What an open dock sheet is about: a bay (its tag shows the supplier's name and stays in view
+     above the sheet), a station, or nothing. */
+  showDock(sel: { bay?: number; area?: 'recv' | 'pay' } | null) {
+    const bay = sel?.bay ? this.model.dock?.bays.find((b) => b.no === sel.bay) ?? null : null;
+    this.dock.select(bay?.no ?? null);
+    this.dockFocus = bay ? bayFocus(bay) : sel?.area ? AREA_FOCUS[sel.area] : null;
   }
 
   /* Takes the camera to a brand and marks it, as if it had been tapped. */
@@ -299,13 +357,14 @@ export class WorldScene extends Phaser.Scene {
     cam.setZoom(Phaser.Math.Clamp(cam.zoom * f, this.minZoom(), this.maxZoom()));
   }
 
-  clearSelection() { this.selectRing.setVisible(false); this.chosen = null; }
+  clearSelection() { this.selectRing.setVisible(false); this.chosen = null; this.dock.select(null); this.dockFocus = null; }
 
   /* A details panel now covers part of the screen (CSS px from the top, right
      and bottom edges): if what was tapped sits under it, bring it into the
      part still showing. */
   reveal(top: number, right: number, bottom: number) {
     this.cover = { right, bottom };
+    if (this.room === 'dock' && this.dockFocus) { this.revealDock(top, right, bottom); return; }
     const o = this.chosen;
     if (!o || !o.active) return;
     const cam = this.cameras.main, px = this.base * 2;
@@ -333,6 +392,20 @@ export class WorldScene extends Phaser.Scene {
     const lo = (v: number, a: number, z1: number) => (v < a ? v - a : v > z1 ? v - z1 : 0);
     cx += lo(px2, free.x0 + m, free.x1 - m) / z;
     cy += lo(py2, free.y0 + m, free.y1 - m) / z;
+    this.revealTo = { x: cx, y: cy };
+    if (this.reduced) cam.centerOn(cx, cy);
+    else cam.pan(cx, cy, 450, 'Sine.easeInOut', true);
+  }
+
+  /* A dock sheet keeps its bay or station in the middle of the part of the screen left free. A
+     sheet that covers nearly all of it (an order's details) leaves the camera where it is. */
+  private revealDock(top: number, right: number, bottom: number) {
+    const cam = this.cameras.main, px = this.dpr, f = this.dockFocus!;
+    const z = cam.zoomEffect.isRunning && this.zoomTarget ? this.zoomTarget : cam.zoom;
+    const free = { x0: 0, y0: top * px, x1: cam.width - right * px, y1: cam.height - bottom * px };
+    if (free.y1 - free.y0 < 120 * px || free.x1 - free.x0 < 120 * px) return;
+    const cx = f.x - ((free.x0 + free.x1) / 2 - cam.width / 2) / z;
+    const cy = f.y - ((free.y0 + free.y1) / 2 - cam.height / 2) / z;
     this.revealTo = { x: cx, y: cy };
     if (this.reduced) cam.centerOn(cx, cy);
     else cam.pan(cx, cy, 450, 'Sine.easeInOut', true);
@@ -367,6 +440,7 @@ export class WorldScene extends Phaser.Scene {
     this.areaLabels = this.areaLabels.filter((a) => a.t.active);
     for (const a of this.areaLabels) a.t.setVisible(a.room === null || a.room === this.room);
     this.mall?.setShown(this.room === 'floor');
+    this.dock?.setShown(this.room === 'dock');
   }
 
   /* `ringDy` puts the selection ring under the object's footprint rather than its anchor. */
@@ -424,7 +498,7 @@ export class WorldScene extends Phaser.Scene {
       ground('tile-pavement', ROAD.x1 - 1, y);
     }
     road.draw();
-    for (const [x, y] of [[-3, -6], [10, -6], [-29, 9], [30, -4], [31, 12], [14, 20], [24, 18], [-3, 24], [31, 23], [18, -7]]) {
+    for (const [x, y] of [[-3, -6], [10, -6], [-29, 9], [ROAD.x1 + 1, -4], [ROAD.x1 + 1, 12], [14, 20], [24, 18], [-3, 24], [ROAD.x1 + 1, 23], [11, -12]]) {
       const p = iso(x + 1, y + 1);
       this.fit(this.add.image(p.x, p.y, 'palm'), 'palm').setDepth(depthAt(x + 1, y + 1));
     }
@@ -435,14 +509,10 @@ export class WorldScene extends Phaser.Scene {
     const ground = (key: string, x: number, y: number) => { const p = iso(x, y); floor.add(key, p.x, p.y); };
     const R = ROOMS;
     this.mall.drawStatic();
-    for (let x = R.dock.x0; x < R.dock.x1; x++) for (let y = R.dock.y0; y < R.dock.y1; y++)
-      ground(x === R.dock.x1 - 1 ? 'tile-hazard' : 'tile-concrete', x, y);
     for (let x = R.office.x0; x < R.office.x1; x++) for (let y = R.office.y0; y < R.office.y1; y++)
       ground('tile-parquet', x, y);
-    const [toDock] = CORRIDORS;
-    for (let x = toDock.x0; x < toDock.x1; x++) for (let y = toDock.y0; y < toDock.y1; y++)
-      ground(x === toDock.x0 ? 'tile-marble-a' : 'tile-concrete', x, y);
     floor.draw();
+    this.dock.drawStatic();      // the dock's floors, walls, corridor and stations
 
     // walls on the two far sides of each room, open at the doorways
     const wall = (room: string, side: 'l' | 'r', x: number, y: number) => {
@@ -450,8 +520,6 @@ export class WorldScene extends Phaser.Scene {
       const key = `wall-${room}-${side}`;
       this.fit(this.add.image(p.x, p.y, key), key).setDepth(depthAt(x, y, -2));
     };
-    for (let y = R.dock.y0; y < R.dock.y1; y++) if (y < toDock.y0 || y >= toDock.y1) wall('dock', 'l', R.dock.x0, y);
-    for (let x = R.dock.x0; x < R.dock.x1; x++) wall('dock', 'r', x, R.dock.y0);
     for (let y = R.office.y0; y < R.office.y1; y++) wall('office', 'l', R.office.x0, y);
     for (let x = R.office.x0; x < R.office.x1; x++) wall('office', 'r', x, R.office.y0);
 
@@ -459,7 +527,6 @@ export class WorldScene extends Phaser.Scene {
       const p = iso(x, y);
       this.fit(this.add.image(p.x, p.y - lift, key), key).setDepth(depthAt(x, y, -1));
     };
-    sign('sign-dock', 20.5, R.dock.y0);
     // on the office's left wall, near its back corner, where an upright phone still shows it;
     // raised clear of the filing cabinet's flag and count, which stand in front of it
     sign('sign-office', R.office.x0, R.office.y0 + 2, 250);
@@ -480,7 +547,6 @@ export class WorldScene extends Phaser.Scene {
     FIXTURES.staffDesks.forEach(([x, y]) => fixed('desk-small', x, y));
     FIXTURES.benches.forEach(([x, y]) => fixed('bench', x, y, 2, 1));
     FIXTURES.plants.forEach(([x, y]) => fixed('plant', x, y));
-    for (const [x, y] of FIXTURES.pallets) fixed('pallet', x, y);
   }
 
   private drawClock() {
@@ -514,12 +580,7 @@ export class WorldScene extends Phaser.Scene {
     const m = this.model;
     this.mall.build(m.mall);
     this.blocked = new Set([...blockedCells(m), ...this.mall.blocked]);
-    this.labelRoom = 'dock';
-    m.boxes.forEach((b) => this.buildBox(b));
-    if (m.hiddenBoxes > 0) {
-      const p = iso(24, 10);
-      this.dyn.push(this.label(p.x, p.y - 40, `+${m.hiddenBoxes} more POs`, 'info'));
-    }
+    this.dock.build(m.dock);
     this.labelRoom = 'office';
     this.buildOffice();
     this.labelRoom = null;
@@ -528,34 +589,6 @@ export class WorldScene extends Phaser.Scene {
     this.buildDelivery();
     this.labelRoom = null;
     this.showAreaLabels();
-  }
-
-  private buildBox(b: BoxModel) {
-    const [x, y] = b.cell;
-    const key = `box-${b.kind}`;
-    let top: Phaser.GameObjects.Image | null = null;
-    let lift = ASSET.pallet.surface;                       // boxes stand on the pallet, then on each other
-    for (let i = 0; i < b.stack; i++) {
-      const k = i === b.stack - 1 ? key : 'box-sealed';
-      const o = this.stand(k, x, y, 1, 1, lift, 0.1 + i * 0.01);
-      o.setInteractive({ useHandCursor: true, pixelPerfect: true, alphaTolerance: 1 });
-      this.tag(o, { type: 'po', id: b.po.po_id });
-      lift += ASSET[k].surface;
-      top = o;
-    }
-    const c = iso(x + 0.5, y + 0.5);
-    const lid = (top ? top.getBounds().top : c.y - lift) - 2;
-    if (b.progress !== null) {
-      const g = this.add.graphics().setDepth(LABEL_DEPTH - 3);
-      const w = 70, p = Phaser.Math.Clamp(b.progress, 0, 1);
-      g.fillStyle(0x22304d, 0.9).fillRoundedRect(c.x - w / 2 - 3, lid - 18, w + 6, 12, 5);
-      g.fillStyle(0xf2c230, 1).fillRoundedRect(c.x - w / 2, lid - 15, Math.max(4, w * p), 6, 3);
-      this.dyn.push(g);
-    }
-    if (b.alert) this.bobbing(this.img('alert', c.x + 30, lid - 4, LABEL_DEPTH - 1));
-    if (top && !this.reduced && b.kind === 'wrapped') {
-      this.tweens.add({ targets: top, alpha: { from: 1, to: 0.86 }, duration: 1400, yoyo: true, repeat: -1 });
-    }
   }
 
   private buildOffice() {
@@ -703,12 +736,14 @@ export class WorldScene extends Phaser.Scene {
   private buildDelivery() {
     const v = FIXTURES.van;
     const d = this.model.delivery;
-    const parked = iso(v.cell[0] + v.w, v.cell[1] + v.d);
-    const van = this.img('van', parked.x, parked.y, depthAt(v.cell[0] + v.w, v.cell[1] + v.d));
-    van.setInteractive({ useHandCursor: true, pixelPerfect: true, alphaTolerance: 1 });
-    this.tag(van, { type: 'delivery' });
+    // a van stands in the yard only while a delivery is on record; none is ever shown on its way
     if (d.seen) {
-      const driver = new Walker(this, 'char-driver', [26, 4], 420);
+      const parked = iso(v.cell[0] + v.w, v.cell[1] + v.d);
+      const van = this.img('van', parked.x, parked.y, depthAt(v.cell[0] + v.w, v.cell[1] + v.d));
+      van.setInteractive({ useHandCursor: true, pixelPerfect: true, alphaTolerance: 1 });
+      this.tag(van, { type: 'delivery' });
+      const door = dockCell(DOCK_PLAN.W, DOCK_PLAN.SOUTH + 2), inside = dockCell(DOCK_PLAN.W - 2, DOCK_PLAN.SOUTH + 2);
+      const driver = new Walker(this, 'char-driver', door, 420);
       driver.setInteractive({ type: 'delivery' });
       this.walkers.push(driver);
       if (!this.reduced) {
@@ -724,9 +759,9 @@ export class WorldScene extends Phaser.Scene {
             van.setDepth(depthAt(v.cell[0] + v.w, v.cell[1] + v.d));
             driver.sprite.setVisible(true); driver.shadow.setVisible(true);
             const shuttle = () => {
-              const there = findPath(driver.cell, [24, 4], (x, y) => this.open(x, y) || x >= 25);
+              const there = findPath(driver.cell, inside, (x, y) => this.open(x, y) || (x === door[0] && y === door[1]));
               driver.walk(there ?? [], () => this.time.delayedCall(1800, () => {
-                const back = findPath(driver.cell, [26, 4], (x, y) => this.open(x, y) || x >= 25);
+                const back = findPath(driver.cell, door, (x, y) => this.open(x, y) || (x === door[0] && y === door[1]));
                 driver.walk(back ?? [], () => this.time.delayedCall(2600, shuttle));
               }));
             };
@@ -735,7 +770,7 @@ export class WorldScene extends Phaser.Scene {
         }); };
         if (this.room === 'dock') arrive(); else this.deliveryPending = arrive;
       }
-      const c = iso(26.5, 5);
+      const c = iso(v.cell[0] + 0.5, v.cell[1] + v.d);
       this.dyn.push(this.label(c.x, c.y + 30, `Delivery: ${d.poNumber ?? 'logged'}`, 'info'));
     }
     if (!this.reduced) this.time.addEvent({ delay: 14000, loop: true, callback: () => this.passingCar() });
@@ -781,6 +816,7 @@ export class WorldScene extends Phaser.Scene {
   /* The part of the World the camera may show for an area: the room with its
      walls and signs, and a margin of the rooms and ground around it. */
   private zone(room: Room) {
+    if (room === 'dock') return DOCK_BOUNDS;
     const r = FOCUS[room];
     const minX = iso(r.x0, r.y1).x, maxX = iso(r.x1, r.y0).x;
     const minY = iso(r.x0, r.y0).y - 150, maxY = iso(r.x1, r.y1).y + 20;
@@ -864,6 +900,8 @@ export class WorldScene extends Phaser.Scene {
   private choose(o: Phaser.GameObjects.GameObject) {
     const sel = o.getData('sel') as Selection;
     if (sel.type === 'section') { this.hooks.onSection?.(sel.index); this.focusSection(sel.index); return; }
+    // the dock marks its own: the chosen bay's tag shows the supplier's name
+    if (sel.type === 'bay' || sel.type === 'dock-area') { this.selectRing.setVisible(false); this.chosen = null; this.hooks.onSelect(sel); return; }
     this.markChosen(o as Phaser.GameObjects.Image, (o.getData('ringDy') as number) ?? -32);
     if (sel.type === 'brand') this.showSectionOf(sel.brand);
     this.hooks.onSelect(sel);

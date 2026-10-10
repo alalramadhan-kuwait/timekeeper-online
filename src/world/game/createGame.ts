@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import type { Room, WorldModel } from '../model';
+import type { DockArea } from './DockLayer';
 import { WorldScene, type SceneHooks } from './WorldScene';
 
 export interface WorldGame {
@@ -11,6 +12,8 @@ export interface WorldGame {
   zoomBy: (f: number) => void;
   clearSelection: () => void;
   reveal: (top: number, right: number, bottom: number) => void;
+  frameDock: (area: DockArea, fitOnly?: boolean) => void;
+  showDock: (sel: { bay?: number; area?: 'recv' | 'pay' } | null) => void;
   destroy: () => void;
 }
 
@@ -62,6 +65,8 @@ export function createGame(parent: HTMLElement, model: WorldModel, hooks: SceneH
     zoomBy: (f) => withScene((s) => s.zoomBy(f)),
     clearSelection: () => withScene((s) => s.clearSelection()),
     reveal: (t, r, b) => withScene((s) => s.reveal(t, r, b)),
+    frameDock: (a, f) => withScene((s) => s.frameDock(a, f)),
+    showDock: (sel) => withScene((s) => s.showDock(sel)),
     destroy: () => { ro.disconnect(); game.destroy(true); },
   };
 }
