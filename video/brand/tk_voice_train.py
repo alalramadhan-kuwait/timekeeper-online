@@ -227,7 +227,9 @@ def lora_state(t3):
 def load_tts(device, ckpt=None, r=32):
     from chatterbox.mtl_tts import ChatterboxMultilingualTTS
 
-    tts = ChatterboxMultilingualTTS.from_pretrained(device=device, t3_model="v3")
+    import os
+    base = os.environ.get("TK_T3_BASE")   # e.g. /root/ck-kw: fine-tune another checkpoint of the same architecture
+    tts = ChatterboxMultilingualTTS.from_local(base, device) if base else ChatterboxMultilingualTTS.from_pretrained(device=device, t3_model="v3")
     if ckpt:
         add_lora(tts.t3, r)
         missing = tts.t3.load_state_dict(torch.load(ckpt, map_location=device), strict=False)

@@ -45,9 +45,15 @@ def main():
     clone(BASE + SPELL, OUT, vc_too=True)
 
 
-def clone(items, out, vc_too):
+def clone(items, out, vc_too, lora=None):
     out.mkdir(parents=True, exist_ok=True)
     tts = ChatterboxMultilingualTTS.from_local("/root/ck-kw", "cpu")
+    if lora:   # a pilot fine-tune (tk_pilot0.py): LoRA weights on top of the checkpoint's T3
+        from tk_voice_train import add_lora
+        add_lora(tts.t3, 32)
+        res = tts.t3.load_state_dict(torch.load(lora, map_location="cpu"), strict=False)
+        assert not res.unexpected_keys, res.unexpected_keys
+        tts.t3.eval()
     orig = tts.t3.inference
     cap = {"n": 1000}
     def capped(*a, **k):
