@@ -23,8 +23,11 @@ function serviceWorkerManifest(): Plugin {
       const sw = resolve(out, 'sw.js');
       if (!existsSync(sw)) return;
 
+      /* Time Keeper World is left out: it is for the three owners only, so it
+         must never be pushed onto every phone that installs the app. An owner's
+         device fetches it the first time the World opens. */
       const assets = Object.keys(bundle)
-        .filter((f) => /\.(js|css)$/.test(f))
+        .filter((f) => /\.(js|css)$/.test(f) && !f.startsWith('assets/world-'))
         .sort()
         .map((f) => './' + f);
 
@@ -68,4 +71,20 @@ export default defineConfig(({ command }) => ({
   base: command === 'build' ? '/timekeeper-online/' : '/',
   server: { port: 5180 },
   define: { __BUILD_SHA__: JSON.stringify(buildSha) },
+  build: {
+    // the World's pictures load through its game engine, which wants real files
+    assetsInlineLimit: (file: string) => (file.includes('/src/world/') ? false : undefined),
+    rollupOptions: {
+      output: {
+        /* The World and its game engine are split off at their lazy import, so
+           nothing else in the app depends on them. Only their file names are
+           marked, for the service worker to leave them out; assigning modules
+           to chunks by hand here once pulled shared code into the World's file
+           and made every page load it. */
+        chunkFileNames: (chunk) =>
+          chunk.moduleIds.some((id) => id.includes('/src/world/') || id.includes('/node_modules/phaser/'))
+            ? 'assets/world-[hash].js' : 'assets/[name]-[hash].js',
+      },
+    },
+  },
 }));

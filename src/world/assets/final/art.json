@@ -1,0 +1,628 @@
+{
+ "char-owner": {
+  "size": [
+   120,
+   248
+  ],
+  "width": 60.0,
+  "origin": [
+   0.444,
+   1.0
+  ]
+ },
+ "char-mohammed": {
+  "size": [
+   106,
+   247
+  ],
+  "width": 53.1,
+  "origin": [
+   0.445,
+   1.0
+  ]
+ },
+ "char-rep": {
+  "size": [
+   117,
+   248
+  ],
+  "width": 58.5,
+  "origin": [
+   0.495,
+   1.0
+  ]
+ },
+ "char-staff-manager": {
+  "size": [
+   103,
+   247
+  ],
+  "width": 51.6,
+  "origin": [
+   0.438,
+   1.0
+  ]
+ },
+ "char-staff-office": {
+  "size": [
+   107,
+   249
+  ],
+  "width": 53.3,
+  "origin": [
+   0.437,
+   1.0
+  ]
+ },
+ "char-staff-ops": {
+  "size": [
+   107,
+   248
+  ],
+  "width": 53.5,
+  "origin": [
+   0.436,
+   1.0
+  ]
+ },
+ "char-staff-sales": {
+  "size": [
+   108,
+   249
+  ],
+  "width": 53.8,
+  "origin": [
+   0.437,
+   1.0
+  ]
+ },
+ "char-driver": {
+  "size": [
+   111,
+   249
+  ],
+  "width": 55.4,
+  "origin": [
+   0.4,
+   1.0
+  ]
+ },
+ "bench": {
+  "size": [
+   270,
+   192
+  ],
+  "width": 192,
+  "origin": [
+   0.717,
+   1.0
+  ]
+ },
+ "counter": {
+  "size": [
+   262,
+   237
+  ],
+  "width": 192,
+  "origin": [
+   0.656,
+   1.0
+  ]
+ },
+ "desk-small": {
+  "size": [
+   264,
+   225
+  ],
+  "width": 128,
+  "origin": [
+   0.634,
+   1.0
+  ]
+ },
+ "desk": {
+  "size": [
+   293,
+   249
+  ],
+  "width": 192,
+  "origin": [
+   0.673,
+   1.0
+  ]
+ },
+ "file-cabinet": {
+  "size": [
+   170,
+   259
+  ],
+  "width": 100,
+  "origin": [
+   0.5,
+   1.0
+  ]
+ },
+ "pallet": {
+  "size": [
+   248,
+   165
+  ],
+  "width": 124,
+  "origin": [
+   0.473,
+   1.0
+  ],
+  "surface": 16.8
+ },
+ "plant": {
+  "size": [
+   168,
+   213
+  ],
+  "width": 84,
+  "origin": [
+   0.497,
+   1.0
+  ]
+ },
+ "palm": {
+  "size": [
+   213,
+   267
+  ],
+  "width": 150,
+  "origin": [
+   0.484,
+   1.0
+  ]
+ },
+ "flag": {
+  "size": [
+   80,
+   151
+  ],
+  "width": 40,
+  "origin": [
+   0.326,
+   1.0
+  ]
+ },
+ "box-open": {
+  "size": [
+   208,
+   193
+  ],
+  "width": 104,
+  "origin": [
+   0.505,
+   1.0
+  ],
+  "surface": 41.5
+ },
+ "box-sealed": {
+  "size": [
+   208,
+   203
+  ],
+  "width": 104,
+  "origin": [
+   0.506,
+   1.0
+  ],
+  "surface": 46.2
+ },
+ "box-wrapped": {
+  "size": [
+   208,
+   201
+  ],
+  "width": 104,
+  "origin": [
+   0.466,
+   1.0
+  ],
+  "surface": 45.2
+ },
+ "case-plinth-consignment": {
+  "size": [
+   248,
+   245
+  ],
+  "width": 124,
+  "origin": [
+   0.498,
+   1.0
+  ],
+  "surface": 47.2
+ },
+ "case-plinth-owned": {
+  "size": [
+   248,
+   243
+  ],
+  "width": 124,
+  "origin": [
+   0.498,
+   1.0
+  ],
+  "surface": 48.4
+ },
+ "case-plinth-preowned": {
+  "size": [
+   248,
+   243
+  ],
+  "width": 124,
+  "origin": [
+   0.496,
+   1.0
+  ],
+  "surface": 47.9
+ },
+ "case-plinth-unknown": {
+  "size": [
+   248,
+   243
+  ],
+  "width": 124,
+  "origin": [
+   0.496,
+   1.0
+  ],
+  "surface": 47.5
+ },
+ "van": {
+  "size": [
+   320,
+   265
+  ],
+  "width": 200,
+  "origin": [
+   0.356,
+   1.0
+  ]
+ },
+ "wall-cabinet": {
+  "size": [
+   236,
+   215
+  ],
+  "width": 118,
+  "origin": [
+   0.637,
+   1.0
+  ]
+ },
+ "case-glass": {
+  "size": [
+   248,
+   243
+  ],
+  "width": 124,
+  "origin": [
+   0.498,
+   1.0
+  ],
+  "onFloor": true
+ },
+ "alert": {
+  "size": [
+   68,
+   68
+  ],
+  "width": 34,
+  "origin": [
+   0.5,
+   1.0
+  ]
+ },
+ "watch": {
+  "size": [
+   60,
+   78
+  ],
+  "width": 30,
+  "origin": [
+   0.5,
+   0.8
+  ]
+ },
+ "case-dust": {
+  "size": [
+   168,
+   127
+  ],
+  "width": 84,
+  "origin": [
+   0.5,
+   0.82
+  ]
+ },
+ "sign-boutique": {
+  "size": [
+   348,
+   145
+  ],
+  "width": 240,
+  "origin": [
+   0.5,
+   0.5
+  ]
+ },
+ "sign-dock": {
+  "size": [
+   388,
+   135
+  ],
+  "width": 240,
+  "origin": [
+   0.5,
+   0.5
+  ]
+ },
+ "sign-office": {
+  "size": [
+   390,
+   140
+  ],
+  "width": 250,
+  "origin": [
+   0.5,
+   0.5
+  ]
+ },
+ "sparkle": {
+  "size": [
+   52,
+   53
+  ],
+  "width": 26,
+  "origin": [
+   0.5,
+   0.5
+  ]
+ },
+ "tag-new": {
+  "size": [
+   120,
+   49
+  ],
+  "width": 60,
+  "origin": [
+   0.5,
+   0.5
+  ]
+ },
+ "rug": {
+  "size": [
+   321,
+   174
+  ],
+  "width": 384,
+  "origin": [
+   0.5,
+   0.0
+  ]
+ },
+ "mission-board": {
+  "size": [
+   249,
+   266
+  ],
+  "width": 200,
+  "origin": [
+   0.0,
+   0.56
+  ],
+  "cards": false
+ },
+ "wall-clock": {
+  "size": [
+   160,
+   176
+  ],
+  "width": 80,
+  "origin": [
+   0.483,
+   0.527
+  ]
+ },
+ "tile-concrete": {
+  "size": [
+   129,
+   75
+  ],
+  "width": 129,
+  "origin": [
+   0.509,
+   0.0
+  ]
+ },
+ "tile-hazard": {
+  "size": [
+   129,
+   75
+  ],
+  "width": 129,
+  "origin": [
+   0.502,
+   0.0
+  ]
+ },
+ "tile-marble-a": {
+  "size": [
+   130,
+   77
+  ],
+  "width": 130,
+  "origin": [
+   0.506,
+   0.0
+  ]
+ },
+ "tile-marble-b": {
+  "size": [
+   129,
+   76
+  ],
+  "width": 129,
+  "origin": [
+   0.504,
+   0.0
+  ]
+ },
+ "tile-parquet": {
+  "size": [
+   129,
+   76
+  ],
+  "width": 129,
+  "origin": [
+   0.5,
+   0.0
+  ]
+ },
+ "tile-pavement": {
+  "size": [
+   129,
+   75
+  ],
+  "width": 129,
+  "origin": [
+   0.504,
+   0.0
+  ]
+ },
+ "tile-sand": {
+  "size": [
+   129,
+   75
+  ],
+  "width": 129,
+  "origin": [
+   0.505,
+   0.0
+  ]
+ },
+ "wall-dock-r": {
+  "size": [
+   133,
+   276
+  ],
+  "width": 67.6,
+  "origin": [
+   0.023,
+   0.725
+  ]
+ },
+ "wall-dock-l": {
+  "size": [
+   134,
+   276
+  ],
+  "width": 67.5,
+  "origin": [
+   0.97,
+   0.728
+  ]
+ },
+ "wall-floor-l": {
+  "size": [
+   131,
+   257
+  ],
+  "width": 67.6,
+  "origin": [
+   0.969,
+   0.72
+  ]
+ },
+ "wall-floor-r": {
+  "size": [
+   124,
+   258
+  ],
+  "width": 67.3,
+  "origin": [
+   0.016,
+   0.721
+  ]
+ },
+ "wall-office-l": {
+  "size": [
+   128,
+   260
+  ],
+  "width": 67.7,
+  "origin": [
+   0.969,
+   0.735
+  ]
+ },
+ "wall-office-r": {
+  "size": [
+   124,
+   260
+  ],
+  "width": 67.3,
+  "origin": [
+   0.024,
+   0.735
+  ]
+ },
+ "planter-mall": {
+  "size": [
+   512,
+   512
+  ],
+  "width": 225,
+  "origin": [
+   0.5,
+   0.818
+  ]
+ },
+ "kiosk-base-owned": {
+  "size": [
+   512,
+   512
+  ],
+  "width": 163,
+  "origin": [
+   0.5,
+   0.818
+  ]
+ },
+ "kiosk-base-consignment": {
+  "size": [
+   512,
+   512
+  ],
+  "width": 163,
+  "origin": [
+   0.5,
+   0.818
+  ]
+ },
+ "kiosk-base-preowned": {
+  "size": [
+   512,
+   512
+  ],
+  "width": 163,
+  "origin": [
+   0.5,
+   0.818
+  ]
+ },
+ "kiosk-base-unknown": {
+  "size": [
+   512,
+   512
+  ],
+  "width": 163,
+  "origin": [
+   0.5,
+   0.818
+  ]
+ }
+}

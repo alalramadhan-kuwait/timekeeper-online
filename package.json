@@ -1,11 +1,11 @@
 {
   "name": "timekeeper-online",
   "private": true,
-  "version": "3.6.0",
+  "version": "3.7.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npm run shared:check && npm run release:check && npm test && tsc && vite build && npm run sw:check",
+    "build": "npm run shared:check && npm run release:check && npm run world:art && npm test && tsc && vite build && npm run sw:check",
     "shared:check": "node scripts/shared-check.mjs",
     "shared:hash": "node scripts/shared-check.mjs --write",
     "preview": "vite preview",
@@ -15,13 +15,18 @@
     "deploy": "echo 'Deploys are automatic: push to main and GitHub Actions builds and publishes it. Deploying from a laptop once overwrote the live site with an older build, so this is disabled on purpose.' && exit 1",
     "test": "tsx src/shared/__tests__/run.ts",
     "sw:check": "node scripts/sw-check.mjs",
-    "release:check": "node scripts/release-check.mjs"
+    "release:check": "node scripts/release-check.mjs",
+    "world:art": "node scripts/world-art-check.mjs",
+    "world:geometry": "node scripts/world-mall-geometry.mjs",
+    "world:beta": "vite build --config vite.world-beta.config.ts",
+    "world:mall": "WORLD_SITE=world-mall vite build --config vite.world-beta.config.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.106.0",
     "date-fns": "^3.3.1",
     "lucide-react": "^0.344.0",
     "motion": "^13.2.0",
+    "phaser": "4.2.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.22.0"
