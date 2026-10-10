@@ -5,7 +5,7 @@
 Plus a spelling test in the clone route: the same sentence written three ways (ق/گ/ج, ك/چ/تش, plain/diacritised),
 to see which spelling the checkpoint reads as Kuwaiti.
 The checkpoint often fails to stop: generation is capped at about 4 speech tokens per letter and trailing silence is
-trimmed. Output: voice-src/ck-kw-ali/ (not in git).  Run: /root/tkvoice/bin/python video/brand/tk_ckkw_ali.py"""
+trimmed. Output: voice-src/ck-kw-ali/ (not in git).  Run: /root/tkvoice/bin/python video/brand/tk_ckkw_ali.py [--spelling]   (--spelling: the 12-word test only, into spell12/)"""
 import json, re, subprocess, time
 from pathlib import Path
 import torch, torchaudio
@@ -25,6 +25,16 @@ def trim(src, dst):
 
 
 def main():
+    import sys
+    if "--spelling" in sys.argv:          # the 12-word spelling test only (voice-data/ckkw-spelling-12.json)
+        spec = json.loads((ROOT / "video/brand/voice-data/ckkw-spelling-12.json").read_text())
+        items = [(f"{g['id']}-{tag}", text) for g in spec["groups"] for tag, text in g["variants"]]
+        return clone(items, OUT / "spell12", vc_too=False)
+    clone(BASE + SPELL, OUT, vc_too=True)
+
+
+def clone(items, out, vc_too):
+    out.mkdir(parents=True, exist_ok=True)
     tts = ChatterboxMultilingualTTS.from_local("/root/ck-kw", "cpu")
     orig = tts.t3.inference
     cap = {"n": 1000}
@@ -32,17 +42,19 @@ def main():
         k["max_new_tokens"] = cap["n"]; return orig(*a, **k)
     tts.t3.inference = capped
     tts.prepare_conditionals(str(REF), exaggeration=0.5)
-    for sid, text in BASE + SPELL:
+    for sid, text in items:
         cap["n"] = min(1000, 4 * len(re.sub(r"\s", "", text)) + 40)
         torch.manual_seed(0); t = time.time()
         try:
             wav = tts.generate(text, language_id="ar", exaggeration=0.5, cfg_weight=0.5)
         except Exception as e:
             print("clone", sid, "CRASH", type(e).__name__, flush=True); continue
-        torchaudio.save(str(OUT / f"raw-clone-{sid}.wav"), wav, tts.sr)
-        trim(OUT / f"raw-clone-{sid}.wav", OUT / f"clone-{sid}.wav")
+        torchaudio.save(str(out / f"raw-clone-{sid}.wav"), wav, tts.sr)
+        trim(out / f"raw-clone-{sid}.wav", out / f"clone-{sid}.wav")
         print("clone", sid, f"{time.time()-t:.0f}s", flush=True)
     del tts
+    if not vc_too:
+        return
     from chatterbox.vc import ChatterboxVC
     vc = ChatterboxVC.from_pretrained("cpu"); vc.set_target_voice(str(REF))
     for sid, _ in BASE:
