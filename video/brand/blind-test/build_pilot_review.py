@@ -15,27 +15,32 @@ OUT = SRC / "review" / f"b{BATCH}"
 (OUT / "audio").mkdir(parents=True, exist_ok=True)
 D = json.loads((SRC / "drafts.json").read_text())
 order = sorted([c for c in D["clips"] if c["review"]], key=lambda c: (c["tier"] != "A", len(c["marks"]) / max(1, len(c["draft"].split())), c["id"]))
-batches = [order[i:i + SIZE] for i in range(0, len(order), SIZE)]
-(SRC / "review" / "batches.json").write_text(json.dumps([[c["id"] for c in b] for b in batches]))
+# answers already collected (review/answers.json, merged from each batch's page): a clip left unanswered goes into the next batch
+ANS = json.loads((SRC / "review" / "answers.json").read_text()) if (SRC / "review" / "answers.json").exists() else {}
+done = {k for k, a in ANS.items() if a.get("text_ok") and a.get("clip")}
+todo = [c for c in order if c["id"] not in done]
+batch = todo[:SIZE]
+left = -(-len(todo) // SIZE)
+(SRC / "review" / f"b{BATCH}.json").write_text(json.dumps([c["id"] for c in batch]))
 cards = []
-for c in batches[BATCH - 1]:
+for c in batch:
     name = f"{c['id']}.mp3"
     if not (OUT / "audio" / name).exists():
-        old = SRC / "review" / "audio" / name
-        if old.exists():
-            old.rename(OUT / "audio" / name)
+        old = next((p for p in (SRC / "review").glob(f"*/audio/{name}") if p.parent.parent != OUT), None)
+        if old:
+            subprocess.run(["cp", str(old), str(OUT / "audio" / name)], check=True)
         else:
             subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", str(SRC / "clips" / f"{c['id']}.wav"), "-ac", "1", "-b:a", "80k", str(OUT / "audio" / name)], check=True)
     toks = c["draft"].split()
     n = len(cards)
     cards.append({"id": c["id"], "part": n // 3 + 1, "title": f"مقطع {n + 1}", "players": [{"label": "علي", "src": f"audio/{name}"}],
-                  "edit": {"key": "text", "value": c["draft"], "marks": [toks[i] for i in c["marks"] if i < len(toks)],
-                           "label": "إذا فيه غلط، عدّل النص هني (ق حتى لو قالها گ، والأرقام بالكلمات)."},
+                  "edit": {"key": "text", "value": ANS.get(c["id"], {}).get("text") or c["draft"], "marks": [toks[i] for i in c["marks"] if i < len(toks)],
+                           "label": "إذا فيه غلط، عدّل النص هني (ق حتى لو قالها گ. الأرقام خلها أرقام، أنا أحولها)."},
                   "questions": [{"key": "text_ok", "label": "النص؟", "options": [["yes", "صح"], ["fixed", "عدّلته"], ["unsure", "مو متأكد"]]},
                                 {"key": "clip", "label": "المقطع؟", "options": [["ok", "سليم"], ["cut", "مقطوع"], ["noise", "فيه صوت ثاني أو موسيقى"]]}]})
 page = (Path(__file__).parent / "listen-template.html").read_text()
 page = page.replace("__TITLE__", f"مقاطع علي، دفعة {BATCH}").replace("__KEY__", f"tk-pilot-review-b{BATCH}").replace(
-    "__LEDE__", f"دفعة {BATCH} من {len(batches)}: {len(cards)} مقاطع حقيقية من حلقات علي، ومعاها نص كتبته أنا. "
+    "__LEDE__", f"دفعة {BATCH} (باقي {left} دفعات مع هذي): {len(cards)} مقاطع حقيقية من حلقات علي، ومعاها نص كتبته أنا. "
                 f"اسمع، وإذا النص صح ضغطتين وخلصت: «صح» و«سليم». إذا فيه غلط عدّله بالمربع.")
 (OUT / "index.html").write_text(page.replace("__CARDS__", json.dumps(cards, ensure_ascii=False)))
-print(len(batches), "batches;", len(cards), "cards,", cards[-1]["part"] if cards else 0, "pages ->", OUT)
+print(left, "batches left;", len(cards), "cards,", cards[-1]["part"] if cards else 0, "pages ->", OUT)

@@ -74,6 +74,15 @@ prompt of Ali's vocabulary.
 - Review page: artifact QPrhcEizPSRQ7zWz1Zyc1d.
 - The second pass turns some Kuwaiti words into MSA (الحين → الآن), so where the first pass heard the Kuwaiti word, it is kept.
 
+**Review in batches (the user found 152 at once too many).**
+- Each batch is 15 clips, easiest first. Each clip takes two taps when the draft is right. A clip left unanswered moves into the next batch.
+- Answers are kept in `voice-data/pilot-review-answers.json`. It is text only, so it can be committed.
+
+**Batch 1 (artifact 1aLMPm4zuwAJsuqzSZeziT): 12 of 15 answered.**
+- 6 drafts were already right, and 6 were edited.
+- **Draft word accuracy was 92.4%**, below the 98% needed to skip review, so the audit rule holds and every clip is listened to.
+- Digits and Latin brand names are left as the user wrote them. The dataset build turns them into spoken Arabic.
+
 ### Stage 2: which model can learn from 20–30 minutes
 
 > **Superseded on 2026-10-09 by MODEL-CHOICE.md.** After auditing Lahgtna-OmniVoice v2 and SILMA, the recommendation is **SILMA TTS v1**, with Qwen3-TTS (Saudi) as second choice. The table below is kept as the earlier analysis.
