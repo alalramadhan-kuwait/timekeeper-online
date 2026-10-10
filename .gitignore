@@ -9,3 +9,4 @@ voice-src/
 video/*/voice-rec/
 video/*/voice-vc/
 video/brand/__pycache__/*.cpython-313.pyc
+__pycache__/
