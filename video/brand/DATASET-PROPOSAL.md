@@ -83,6 +83,12 @@ prompt of Ali's vocabulary.
 - **Draft word accuracy was 92.4%**, below the 98% needed to skip review, so the audit rule holds and every clip is listened to.
 - Digits and Latin brand names are left as the user wrote them. The dataset build turns them into spoken Arabic.
 
+**Batch 2 (artifact AsARMr6GcRKmxW1J4tizpF), after which the user stopped ("اعتقد كافي").**
+- In total, 26 clips are answered, and all 26 are clean and complete Ali.
+- 13 drafts were right as written, and 13 were edited.
+- **Draft word accuracy over both batches was 91.5%.**
+- **Verified material: 4.0 minutes**, all pool A. That is below the pilot's 20-minute floor.
+
 ### Stage 2: which model can learn from 20–30 minutes
 
 > **Superseded on 2026-10-09 by MODEL-CHOICE.md.** After auditing Lahgtna-OmniVoice v2 and SILMA, the recommendation is **SILMA TTS v1**, with Qwen3-TTS (Saudi) as second choice. The table below is kept as the earlier analysis.
