@@ -213,10 +213,11 @@ export default function Layout() {
           </div>
         </div>
         <nav className="flex-1 overflow-y-auto py-3">
-          {/* owners only (stock_ai_access); the World checks again on the server */}
+          {/* owners only (stock_ai_access); the World checks again on the server. On a phone the
+              World button sits in the top bar instead; the desktop has no top bar, so it stays here. */}
           {askAllowed && (
             <NavLink to="/world" onClick={() => setOpen(false)}
-              className="mx-3 mb-2 flex items-center gap-3 rounded-lg bg-amber-400/10 px-3 py-2 text-sm font-medium text-amber-300 hover:bg-amber-400/20">
+              className="mx-3 mb-2 hidden md:flex items-center gap-3 rounded-lg bg-amber-400/10 px-3 py-2 text-sm font-medium text-amber-300 hover:bg-amber-400/20">
               <Castle size={16} /> <span className="flex-1">Time Keeper World</span>
             </NavLink>
           )}
@@ -277,13 +278,21 @@ export default function Layout() {
                    paddingRight: 'calc(1rem + var(--sa-r))' }}>
           <button onClick={() => setOpen((o) => !o)} aria-label="Menu"><Menu size={20} /></button>
           <span className="font-semibold whitespace-nowrap">Timekeeper Online</span>
-          {/* On the narrowest phones the name needs the room; the menu still shows the version. */}
-          <span className="hidden min-[360px]:inline-flex shrink-0">
+          {/* On the narrowest phones the name needs the room; the menu still shows the version.
+              An owner's bar also holds the World button, so theirs gives the version up below 430px. */}
+          <span className={`hidden shrink-0 ${askAllowed ? 'min-[430px]:inline-flex' : 'min-[360px]:inline-flex'}`}>
             <VersionChip tone="light" compact className="text-[10px] text-slate-400" />
           </span>
           <div className="ml-auto flex items-center gap-1">
             {showInstall && (
               <button onClick={handleInstall} aria-label="Install app" className="p-1"><Download size={20} /></button>
+            )}
+            {/* owners only, as in the menu; the hit area reaches past the pill to a full finger's size */}
+            {askAllowed && (
+              <NavLink to="/world" aria-label="Time Keeper World"
+                className="relative mr-1 flex h-7 items-center gap-1.5 rounded-full bg-amber-400/15 px-2 min-[360px]:px-2.5 text-[13px] font-semibold text-amber-300 ring-1 ring-inset ring-amber-400/40 active:bg-amber-400/30 before:absolute before:-inset-x-1.5 before:-inset-y-2 before:content-['']">
+                <Castle size={16} /> <span className="hidden min-[360px]:inline">World</span>
+              </NavLink>
             )}
             <NavLink to="/notifications" aria-label="Notifications" className="relative p-1">
               <Bell size={20} />
