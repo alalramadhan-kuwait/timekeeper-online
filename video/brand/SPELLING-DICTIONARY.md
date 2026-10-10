@@ -105,3 +105,13 @@ What the details show:
   - Rhythm was robotic in only 1 of 14 versions, but it was natural in only 3 of 10 sentences.
   - Training must therefore teach how words are said, from Ali's speech with correct Kuwaiti transcripts. Rhythm and tone come along from whole natural utterances: the pilot selection already keeps sentence endings.
   - This is a finding, not a start: no training without approval.
+
+### Spot test after the verdict (the user's sentence, 2026-10-10, artifact TGwF5KgJPsPujCU5Vc5Mmm)
+
+«جاسم راح البقالة وشرا عصير بطاط وطماط. شلونك شخبارك؟», read as written with no dictionary.
+- **Words:** 100% (no word tapped).
+- **Dialect:** 50% (قريبة).
+- **Rhythm:** 50% (مقبول).
+
+Everyday words came out right here, but it still does not sound fully Kuwaiti. That fits the diagnosis: after the
+words, the remaining gap is the speaking style.

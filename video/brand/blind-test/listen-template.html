@@ -113,6 +113,13 @@ function render() {
     card.append(el("p", "hint", c.title));
     if (c.text) card.append(el("p", "sent", c.text));
     const pl = el("section", "step"); c.players.forEach(p => pl.append(player(p))); card.append(pl);
+    if (c.edit) {   // an editable transcript, prefilled with Claude's draft; c.edit.marks = words worth a closer listen
+      const ed = el("section", "step");
+      if (c.edit.marks && c.edit.marks.length) ed.append(el("p", "hint", "انتبه لهالكلمات: " + c.edit.marks.join("، ")));
+      const tx = el("textarea", "sent"); tx.rows = 3; tx.value = s[c.edit.key] ?? c.edit.value;
+      tx.addEventListener("input", () => { s[c.edit.key] = tx.value; save(); });
+      ed.append(el("p", "hint", c.edit.label), tx); card.append(ed);
+    }
     const qs = el("section", "step"); c.questions.forEach(q => qs.append(choice(q, s, save)));
     if (c.words === true) qs.append(el("p", "hint", "إذا في كلمة انقالت غلط أو مو كويتية، اضغط عليها:"), words(c.text, s.wrong, save));
     else if (Array.isArray(c.words)) c.words.forEach(w => qs.append(el("p", "hint", w.label), words(c.text, s[w.key] ||= [], save)));
@@ -133,7 +140,7 @@ function queue(id) {
     .catch(() => { const v = $("#save"); if (v) v.textContent = "ما انحفظ، حاول مرة ثانية"; }), 600);
 }
 $("#copy").addEventListener("click", () => {
-  const t = CARDS.map(c => c.id + " | " + c.questions.map(q => q.key + "=" + (st(c.id)[q.key] || "-")).join(" | ") + (Array.isArray(c.words) ? " | " + c.words.map(w => w.key + "=" + (st(c.id)[w.key] || []).join(",")).join(" | ") : "") + (st(c.id).note ? " | note=" + st(c.id).note : "")).join("\n");
+  const t = CARDS.map(c => c.id + " | " + c.questions.map(q => q.key + "=" + (st(c.id)[q.key] || "-")).join(" | ") + (Array.isArray(c.words) ? " | " + c.words.map(w => w.key + "=" + (st(c.id)[w.key] || []).join(",")).join(" | ") : "") + (c.edit && st(c.id)[c.edit.key] != null ? " | text=" + st(c.id)[c.edit.key] : "") + (st(c.id).note ? " | note=" + st(c.id).note : "")).join("\n");
   const ta = $("#dump"); ta.value = t;
   navigator.clipboard?.writeText(t).then(() => { $("#copy").textContent = "انتسخت ✓"; }).catch(() => { ta.hidden = false; ta.select(); });
   if (!navigator.clipboard) { ta.hidden = false; ta.select(); }
