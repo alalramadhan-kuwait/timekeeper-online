@@ -5,7 +5,7 @@
 Plus a spelling test in the clone route: the same sentence written three ways (ق/گ/ج, ك/چ/تش, plain/diacritised),
 to see which spelling the checkpoint reads as Kuwaiti.
 The checkpoint often fails to stop: generation is capped at about 4 speech tokens per letter and trailing silence is
-trimmed. Output: voice-src/ck-kw-ali/ (not in git).  Run: /root/tkvoice/bin/python video/brand/tk_ckkw_ali.py [--spelling]   (--spelling: the 12-word test only, into spell12/)"""
+trimmed. Output: voice-src/ck-kw-ali/ (not in git).  Run: /root/tkvoice/bin/python video/brand/tk_ckkw_ali.py [--spelling <spec>]   (a spelling test only, e.g. ckkw-spelling-34)"""
 import json, re, subprocess, time
 from pathlib import Path
 import torch, torchaudio
@@ -26,10 +26,11 @@ def trim(src, dst):
 
 def main():
     import sys
-    if "--spelling" in sys.argv:          # the 12-word spelling test only (voice-data/ckkw-spelling-12.json)
-        spec = json.loads((ROOT / "video/brand/voice-data/ckkw-spelling-12.json").read_text())
+    if "--spelling" in sys.argv:          # a spelling test only: --spelling <spec name, e.g. ckkw-spelling-34>
+        name = sys.argv[sys.argv.index("--spelling") + 1] if len(sys.argv) > sys.argv.index("--spelling") + 1 else "ckkw-spelling-12"
+        spec = json.loads((ROOT / f"video/brand/voice-data/{name}.json").read_text())
         items = [(f"{g['id']}-{tag}", text) for g in spec["groups"] for tag, text in g["variants"]]
-        return clone(items, OUT / "spell12", vc_too=False)
+        return clone(items, OUT / ("spell12" if name == "ckkw-spelling-12" else name), vc_too=False)
     clone(BASE + SPELL, OUT, vc_too=True)
 
 
