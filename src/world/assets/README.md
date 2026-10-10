@@ -59,6 +59,20 @@ kiosks use now), and the five neutral staff figures (thinner and plainer than th
 V2 characters and the placeholders). The low walls draw no top thickness behind
 their front edge; they still join.
 
+The plan (owners' Option B, 10 Oct): the mall is 50 × 17 cells, boutiques 8 × 6 and
+display areas 4 × 6 (`mall/layout.ts`). The walls and inlays above were drawn for the
+first plan's 6-cell boutiques and 3-cell display areas, and are used as they are:
+a boutique's back wall is `mall-wall-r`, the 6-cell `bq-wall` and `mall-wall-r`
+again, joined at their connection points; a display area's is `bay-wall` and one
+`mall-wall-r`; the low front walls are built the same way from `bq-front`,
+`bay-front` and `mall-ledge-r`; `bq-floor-accent` and `bay-floor-border` are centred
+in the larger floors. Pictures drawn for the new widths (an 8-cell `bq-wall`, a
+4-cell `bay-wall`) would drop in by changing the run lengths in `drawStatic`.
+People and display cases are drawn 20% larger than the floor grid
+(`FIGURE_SCALE`), except the kiosks on a walkway island, which stand one cell apart.
+Every floor tile, in the mall and in the other areas, is drawn through
+`game/FloorBatch.ts`: one GPU layer per tile picture instead of one image per tile.
+
 ## Replacement specs for the pieces still to come
 
 All pictures: one object per PNG, transparent background, no text labels, 2:1

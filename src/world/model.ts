@@ -55,8 +55,8 @@ export const CORRIDORS: Rect[] = [
   { x0: 13, y0: MALL.y0 + WALK.y0, x1: 15, y1: MALL.y0 + WALK.y1 },   // mall walkway ↔ dock
 ];
 
-export const ROAD = { x0: 27, x1: 30, y0: -9, y1: 27 };
-export const BOUNDS = { x0: -30, y0: -9, x1: 33, y1: 27 };
+export const ROAD = { x0: 27, x1: 30, y0: Math.min(-9, MALL.y0 - 6), y1: 27 };
+export const BOUNDS = { x0: Math.min(-30, MALL.x0 - 5), y0: Math.min(-9, MALL.y0 - 6), x1: 33, y1: 27 };
 
 const BOX_SLOTS: [number, number][] = (() => {
   const s: [number, number][] = [];
@@ -129,7 +129,7 @@ export function lookKey(family: Family, look: MallStaff['look']): string {
 }
 
 const HOMES: Record<Room, [number, number][]> = {
-  floor: ([[3, 4], [9, 6], [16, 4], [22, 6], [29, 4], [35, 6], [6, 6]] as [number, number][]).map(([x, y]) => toWorld(x, y)),
+  floor: ([[3, 0], [9, 1], [16, 0], [22, 1], [29, 0], [35, 1], [6, 1]] as [number, number][]).map(([x, y]) => toWorld(Math.round((x * MALL.w) / 38), y ? WALK.y1 - 1 : WALK.y0)),
   dock: [[18, 4], [22, 6], [20, 2], [24, 8]],
   office: [[2, 15], [9, 15], [7, 17], [3, 17]],
 };

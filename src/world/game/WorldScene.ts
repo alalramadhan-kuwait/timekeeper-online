@@ -4,7 +4,8 @@ import {
   BOUNDS, CORRIDORS, FIXTURES, ROAD, ROOMS, blockedCells, roomOf, walkable,
   type BoxModel, type Room, type WorldModel,
 } from '../model';
-import { MALL, SECTIONS, WALK, toLocal, toWorld } from '../mall/layout';
+import { FIGURE_SCALE, MALL, SECTIONS, WALK, sectionOfLocalX, toLocal, toWorld } from '../mall/layout';
+import { FloorBatch } from './FloorBatch';
 import { cellAt, depthAt, findPath, iso } from './iso';
 import { MallLayer } from './MallLayer';
 
@@ -32,6 +33,10 @@ export interface SceneHooks {
 const LABEL_DEPTH = 1_000_000;
 /* How much of the surroundings each area's zone takes in, in world units. */
 const ZONE_MARGIN = { x: 128, y: 64 };
+/* The span a section view fits on screen, in world units: 12 cells along by 11 across with the
+   back wall and its signs. It sets the section view's scale (a floor tile about 73 CSS px wide
+   on an iPhone 15); the 16 x 17 sections are larger, so they fill the screen at that scale. */
+const SECTION_VIEW = { w: (12.6 + 11) * 64, h: (12.6 + 11) * 32 + 210 };
 
 const FOCUS: Record<Room, { x0: number; y0: number; x1: number; y1: number }> = {
   floor: ROOMS.floor,
@@ -171,6 +176,8 @@ export class WorldScene extends Phaser.Scene {
     for (const w of this.walkers) w.sync(time);
     this.keepInZone(delta);
     this.mall.lod(this.cameras.main.zoom / (this.base * 2));
+    const cam = this.cameras.main, wv = cam.worldView, u = (this.base * 2) / cam.zoom, m = 6 * u;
+    this.mall.clampLabels({ x: wv.x + m, y: wv.y + this.insets.top * u + m, w: wv.width - 2 * m, h: wv.height - (this.insets.top + this.insets.bottom) * u - 2 * m });
   }
 
   /* ── public, called from the page ─────────────────────────────────── */
@@ -217,11 +224,14 @@ export class WorldScene extends Phaser.Scene {
     const cam = this.cameras.main, px = this.base * 2;
     const top = this.insets.top * px, bottom = this.insets.bottom * px;
     const vw = cam.width, vh = Math.max(cam.height - top - bottom, cam.height * 0.4);
-    const r = i === null ? this.zone('floor') : this.mall.sectionBounds(i);
+    // a section view keeps one scale, set by SECTION_VIEW, centred on the section's walkway: the
+    // section fills the screen, and its far ends are a short pan away
+    const r = i === null ? this.zone('floor') : { x: 0, y: 0, ...SECTION_VIEW };
     let z = Math.min(vw / r.w, vh / r.h);
     if (i !== null && vw / vh < 0.8) z = Math.max(z, Math.min(vh / r.h, (vw / r.w) * 2.2));
     z = Phaser.Math.Clamp(z, this.minZoom(), this.maxZoom());
-    const cx = r.x + r.w / 2, cy = r.y + r.h / 2 - (top - bottom) / 2 / z;
+    const c = i === null ? { x: r.x + r.w / 2, y: r.y + r.h / 2 } : this.mall.sectionCentre(i);
+    const cx = c.x, cy = c.y - (top - bottom) / 2 / z;
     this.zoomTarget = z;
     if (animate && !this.reduced) {
       cam.pan(cx, cy, 650, 'Sine.easeInOut', true);
@@ -236,10 +246,12 @@ export class WorldScene extends Phaser.Scene {
     this.room = 'floor';
     this.showAreaLabels();
     const [lx] = toLocal(t.cell[0], t.cell[1]);
-    this.section = lx < 12.5 ? 0 : lx < 25.5 ? 1 : 2;
+    this.section = sectionOfLocalX(lx);
     const cam = this.cameras.main, px = this.base * 2;
     const z = Phaser.Math.Clamp(Math.max(cam.zoom, (t.boutique ? 0.6 : 0.85) * px), this.minZoom(), this.maxZoom());
-    const b = t.obj.getBounds();
+    const ob = t.obj.getBounds();
+    // a boutique is framed by its floor, not by its sign
+    const b = t.centre ? { centerX: t.centre.x, centerY: t.centre.y } : { centerX: ob.centerX, centerY: ob.centerY };
     this.markChosen(t.obj as Phaser.GameObjects.Image, 0);
     this.zoomTarget = z;
     if (this.reduced) { cam.setZoom(z); cam.centerOn(b.centerX, b.centerY); }
@@ -318,7 +330,8 @@ export class WorldScene extends Phaser.Scene {
   fit<T extends Phaser.GameObjects.Image | Phaser.GameObjects.Sprite>(o: T, key: string, extra = 1): T {
     const a = ASSET[key];
     const frameWidth = o.frame.width || a.drawWidth;
-    o.setOrigin(a.origin[0], a.origin[1]).setScale((a.drawWidth / frameWidth) * extra);
+    const people = key.startsWith('char-') ? FIGURE_SCALE : 1;
+    o.setOrigin(a.origin[0], a.origin[1]).setScale((a.drawWidth / frameWidth) * extra * people);
     return o;
   }
 
@@ -356,15 +369,14 @@ export class WorldScene extends Phaser.Scene {
       const p = iso(gx, gy);
       g.fillEllipse(p.x, p.y, rnd.between(10, 34), rnd.between(4, 10));
     }
-    const ground = (key: string, x: number, y: number) => {
-      const p = iso(x, y);
-      this.fit(this.add.image(p.x, p.y, key), key).setDepth(-2e6 + (x + y));
-    };
+    const road = new FloorBatch(this, -2e6);
+    const ground = (key: string, x: number, y: number) => { const p = iso(x, y); road.add(key, p.x, p.y); };
     for (let y = ROAD.y0; y < ROAD.y1; y++) {
       ground('tile-pavement', ROAD.x0 - 1, y);
       for (let x = ROAD.x0; x < ROAD.x1 - 1; x++) ground('tile-road', x, y);
       ground('tile-pavement', ROAD.x1 - 1, y);
     }
+    road.draw();
     for (const [x, y] of [[-3, -6], [10, -6], [-29, 9], [30, -4], [31, 12], [14, 20], [24, 18], [-3, 24], [31, 23], [18, -7]]) {
       const p = iso(x + 1, y + 1);
       this.fit(this.add.image(p.x, p.y, 'palm'), 'palm').setDepth(depthAt(x + 1, y + 1));
@@ -372,10 +384,8 @@ export class WorldScene extends Phaser.Scene {
   }
 
   private drawRooms() {
-    const ground = (key: string, x: number, y: number) => {
-      const p = iso(x, y);
-      this.fit(this.add.image(p.x, p.y, key), key).setDepth(-1e6 + (x + y));
-    };
+    const floor = new FloorBatch(this, -1e6);
+    const ground = (key: string, x: number, y: number) => { const p = iso(x, y); floor.add(key, p.x, p.y); };
     const R = ROOMS;
     this.mall.drawStatic();
     for (let x = R.dock.x0; x < R.dock.x1; x++) for (let y = R.dock.y0; y < R.dock.y1; y++)
@@ -385,6 +395,7 @@ export class WorldScene extends Phaser.Scene {
     const [toDock] = CORRIDORS;
     for (let x = toDock.x0; x < toDock.x1; x++) for (let y = toDock.y0; y < toDock.y1; y++)
       ground(x === toDock.x0 ? 'tile-marble-a' : 'tile-concrete', x, y);
+    floor.draw();
 
     // walls on the two far sides of each room, open at the doorways
     const wall = (room: string, side: 'l' | 'r', x: number, y: number) => {
@@ -580,7 +591,7 @@ export class WorldScene extends Phaser.Scene {
     this.model.mall.shoppers.forEach((n, i) => {
       const sec = SECTIONS[i];
       for (let k = 0; k < n; k++) {
-        const home = toWorld(sec.x0 + 2 + ((k * 4) % 9), k % 2 ? WALK.y1 - 1 : WALK.y0);
+        const home = toWorld(sec.x0 + 2 + ((k * 4) % (sec.x1 - sec.x0 - 3)), k % 2 ? WALK.y1 - 1 : WALK.y0);
         const w = new Walker(this, `char-shopper-${((i * 2 + k) % 6) + 1}`, home, 520);
         w.setInteractive({ type: 'shopper', section: i });
         this.walkers.push(w);
