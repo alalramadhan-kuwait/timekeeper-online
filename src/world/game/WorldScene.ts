@@ -120,6 +120,7 @@ export class WorldScene extends Phaser.Scene {
   private cover = { right: 0, bottom: 0 };               // CSS px covered by an open details panel
   private chosen: Phaser.GameObjects.Image | null = null;   // what the open panel is about
   private revealTo: { x: number; y: number } | null = null;
+  private zoomTarget: number | null = null;              // where a running zoom is heading
   private mall!: MallLayer;
   private areaLabels: { t: Phaser.GameObjects.Text; room: Room | null }[] = [];   // the dock's and office's labels
   private labelRoom: Room | null = null;                 // the area labels being made now belong to
@@ -221,6 +222,7 @@ export class WorldScene extends Phaser.Scene {
     if (i !== null && vw / vh < 0.8) z = Math.max(z, Math.min(vh / r.h, (vw / r.w) * 2.2));
     z = Phaser.Math.Clamp(z, this.minZoom(), this.maxZoom());
     const cx = r.x + r.w / 2, cy = r.y + r.h / 2 - (top - bottom) / 2 / z;
+    this.zoomTarget = z;
     if (animate && !this.reduced) {
       cam.pan(cx, cy, 650, 'Sine.easeInOut', true);
       cam.zoomTo(z, 650, 'Sine.easeInOut', true);
@@ -239,6 +241,7 @@ export class WorldScene extends Phaser.Scene {
     const z = Phaser.Math.Clamp(Math.max(cam.zoom, (t.boutique ? 0.6 : 0.85) * px), this.minZoom(), this.maxZoom());
     const b = t.obj.getBounds();
     this.markChosen(t.obj as Phaser.GameObjects.Image, 0);
+    this.zoomTarget = z;
     if (this.reduced) { cam.setZoom(z); cam.centerOn(b.centerX, b.centerY); }
     else { cam.pan(b.centerX, b.centerY, 600, 'Sine.easeInOut', true); cam.zoomTo(z, 600, 'Sine.easeInOut', true); }
     this.revealTo = { x: b.centerX, y: b.centerY };
@@ -258,7 +261,9 @@ export class WorldScene extends Phaser.Scene {
     this.cover = { right, bottom };
     const o = this.chosen;
     if (!o || !o.active) return;
-    const cam = this.cameras.main, px = this.base * 2, z = cam.zoom;
+    const cam = this.cameras.main, px = this.base * 2;
+    // judged at the zoom the camera is heading to, if it is still zooming there
+    const z = cam.zoomEffect.isRunning && this.zoomTarget ? this.zoomTarget : cam.zoom;
     const free = { x0: 0, y0: top * px, x1: cam.width - right * px, y1: cam.height - bottom * px };
     if (free.x1 - free.x0 < 80 || free.y1 - free.y0 < 80) return;
     const c = o.getBounds();
