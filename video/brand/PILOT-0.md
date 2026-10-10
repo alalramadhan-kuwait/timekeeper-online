@@ -52,3 +52,17 @@ Baseline already measured on these sentences: words 84%, dialect 50%, rhythm 60%
    or explicitly lets pilot 0 run before that.
 2. **The user approves this page.**
 - 2026-10-10: the user explicitly allowed pilot 0 to run before the backup check ("شغّل التدريب الحين"); backup verification is still owed afterwards.
+
+## Training log (2026-10-10)
+
+The run finished in 21 minutes on CPU. 22 clips trained and 2 were held out.
+
+| Step | Train speech loss | Val speech loss |
+|---|---|---|
+| 0 | | 6.585 |
+| 150 | 3.51 | **5.207** |
+| 300 | 1.97 | 6.013 |
+
+- Validation loss fell by step 150, so the model is learning.
+- By step 300 it rose again, a sign of memorising 22 clips.
+- Loss is a diagnostic only: the user's ear picks the step.
