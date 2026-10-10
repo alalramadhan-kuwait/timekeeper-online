@@ -1,4 +1,4 @@
-# Pilot 0: can Chatterbox_Kuwaiti learn from Ali? (plan, waiting for approval)
+# Pilot 0: can Chatterbox_Kuwaiti learn from Ali? (approved 2026-10-10)
 
 The user chose option 1 on 2026-10-10: a small learning test on the verified clips, before more review time is spent.
 It is **not** the Stage 3 pilot. Its only question: does a short fine-tune on Ali's real speech move the model toward
@@ -51,3 +51,4 @@ Baseline already measured on these sentences: words 84%, dialect 50%, rhythm 60%
    copies in `voice-src/` and changes no original. The user either verifies the backups (Mac restore check and Drive checksums)
    or explicitly lets pilot 0 run before that.
 2. **The user approves this page.**
+- 2026-10-10: the user explicitly allowed pilot 0 to run before the backup check ("شغّل التدريب الحين"); backup verification is still owed afterwards.
