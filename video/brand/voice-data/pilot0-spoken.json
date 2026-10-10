@@ -1,0 +1,15 @@
+{"_note": "Pilot 0: digits and Latin words in the verified clip texts, written as spoken, in Kuwaiti Arabic letters (ق for g, as the transcript convention). Applied as whole-phrase replacements per clip. Clips whose numbers are ambiguous are left out of pilot 0, not guessed.",
+ "exclude": {"TlGXbHWi-vU-u019": "15 دينار / 49 ألف / 183: the spoken amounts are unclear from the text", "JtVZPG9Jxqk-u041": "بالخمسة إلى 6000: unclear how the range was said"},
+ "replace": {
+  "2GWn1WniyDI-u005": [["LVMH", "إل في إم إتش"]],
+  "TlGXbHWi-vU-u012": [["25 ضعف", "خمسة وعشرين ضعف"]],
+  "JtVZPG9Jxqk-u030": [["37", "سبعة وثلاثين"], ["in house", "إن هاوس"]],
+  "TlGXbHWi-vU-u014": [["25 جرام", "خمسة وعشرين جرام"]],
+  "TlGXbHWi-vU-u000": [["25 سنة", "خمسة وعشرين سنة"]],
+  "TlGXbHWi-vU-u008": [["11", "إحدعش"]],
+  "JtVZPG9Jxqk-u017": [["dual time", "دوال تايم"]],
+  "TlGXbHWi-vU-u018": [["25 سنة", "خمسة وعشرين سنة"], ["100 قطعة", "مية قطعة"]],
+  "JtVZPG9Jxqk-u033": [["5 links bracelet", "فايف لينكس بريسلت"], ["GMT", "جي إم تي"]],
+  "JtVZPG9Jxqk-u020": [["roses gold", "روز قولد"], ["42", "اثنين وأربعين"]],
+  "JtVZPG9Jxqk-u037": [["40", "أربعين"], ["IWC", "آي دبليو سي"]]
+ }}
