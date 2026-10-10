@@ -290,3 +290,28 @@ So this checkpoint follows a **mixed convention**: ق in قال, چ in چم, گ 
 - Still open:
   - the end-of-sentence problems (it does not stop and needs trimming; one sentence crashed with the built-in voice, though not with Ali's reference);
   - **no licence and no provenance**, which is fine for research only.
+
+## Spelling test for Chatterbox_Kuwaiti + Ali, 12 words (2026-10-10)
+
+The result is in `voice-data/ckkw-spelling-map.json`.
+
+**Main finding: this model already turns a plain ق into Kuwaiti g.**
+- ق beat گ and ج in all 7 tested words (قبل، الوقت، حق، الطريق، فرق، منطقة، قليلة), and also in قال.
+- So its training text was evidently written with ق for g.
+- The one exception is قاعد → گاعد.
+
+**Other choices:**
+- **كم → چم.**
+- **كذا → جذي.** The user's note: كذا is Saudi; جذي is Kuwaiti.
+- **باجر → باكر,** the closest, but it should lean towards ج.
+
+**Unsolved** (every spelling wrong):
+- **صديقي:** ق is the closest.
+- **نقدر:** with ق the model dropped the word.
+- **أدور.**
+
+These need a synonym in scripts or the fine-tune.
+
+**Untested risk:** words where Ali says a real q (موقع، أعتقد، فقط، الطاقة) may now come out with g.
+
+**Consequence for any fine-tune of this model:** its training transcripts must follow *its* convention (ق for g), not ours (گ for g). Otherwise the model has to unlearn a spelling it already reads correctly.
