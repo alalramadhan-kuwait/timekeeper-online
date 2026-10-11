@@ -135,7 +135,7 @@
      "polaroid": true,
      "aspect": 0.8,
      "label": "رسم جنتا، 1970",
-     "w": 360,
+     "w": 460,
      "x": [
       [
        0,
@@ -158,7 +158,7 @@
       ],
       [
        2.63,
-       330,
+       360,
        "inOutCubic"
       ]
      ],
@@ -182,7 +182,7 @@
       ],
       [
        2.63,
-       0.7,
+       0.8,
        "inOutCubic"
       ]
      ]
@@ -561,7 +561,7 @@
      "polaroid": true,
      "aspect": 0.8676789587852495,
      "label": "Royal Oak · 5402ST",
-     "w": 420,
+     "w": 500,
      "x": 360,
      "y": 600,
      "z": 10,
@@ -593,9 +593,16 @@
       ],
       [
        2.18,
-       1.006
+       1.035
       ]
-     ]
+     ],
+     "idle": {
+      "type": "float",
+      "amp": 3,
+      "speed": 0.25,
+      "phase": 4.46,
+      "from": 0.62
+     }
     },
     {
      "type": "text",
@@ -743,9 +750,9 @@
      "polaroid": true,
      "aspect": 1.1619462599854757,
      "label": "الميناء · Stern",
-     "w": 380,
+     "w": 460,
      "x": 360,
-     "y": 640,
+     "y": 660,
      "z": 10,
      "rot": [
       [
@@ -775,9 +782,16 @@
       ],
       [
        10.46,
-       1.006
+       1.035
       ]
-     ]
+     ],
+     "idle": {
+      "type": "float",
+      "amp": 3,
+      "speed": 0.25,
+      "phase": 3.82,
+      "from": 7.06
+     }
     },
     {
      "type": "svg",
@@ -1069,9 +1083,9 @@
      "polaroid": true,
      "aspect": 0.9937888198757764,
      "label": "Calibre 2121 · 1971",
-     "w": 460,
+     "w": 520,
      "x": 360,
-     "y": 600,
+     "y": 580,
      "z": 10,
      "rot": [
       [
@@ -1096,9 +1110,16 @@
       ],
       [
        21.36,
-       1.006
+       1.035
       ]
-     ]
+     ],
+     "idle": {
+      "type": "float",
+      "amp": 3,
+      "speed": 0.25,
+      "phase": 4.96,
+      "from": 10.91
+     }
     },
     {
      "type": "text",
@@ -1415,9 +1436,9 @@
      "polaroid": true,
      "aspect": 1.4388489208633093,
      "label": "دي ماركي وبوتي (صورة 1992)",
-     "w": 300,
+     "w": 420,
      "x": 360,
-     "y": 470,
+     "y": 450,
      "z": 20,
      "rot": [
       [
@@ -1447,9 +1468,16 @@
       ],
       [
        9.09,
-       1.006
+       1.035
       ]
-     ]
+     ],
+     "idle": {
+      "type": "float",
+      "amp": 3,
+      "speed": 0.25,
+      "phase": 3.82,
+      "from": 4.37
+     }
     },
     {
      "type": "text",
@@ -2347,8 +2375,8 @@
      "polaroid": true,
      "aspect": 0.7615421227986673,
      "label": "أول ظهور، فبراير 1972",
-     "w": 190,
-     "x": 125,
+     "w": 280,
+     "x": 165,
      "y": 640,
      "z": 24,
      "rot": [
@@ -2374,9 +2402,16 @@
       ],
       [
        13.56,
-       1.006
+       1.035
       ]
-     ]
+     ],
+     "idle": {
+      "type": "float",
+      "amp": 3,
+      "speed": 0.25,
+      "phase": 5.05,
+      "from": 11.71
+     }
     },
     {
      "type": "cutout",
@@ -3107,9 +3142,16 @@
       ],
       [
        17.87,
-       1.006
+       1.035
       ]
-     ]
+     ],
+     "idle": {
+      "type": "float",
+      "amp": 3,
+      "speed": 0.25,
+      "phase": 1.85,
+      "from": 8.75
+     }
     },
     {
      "type": "svg",
@@ -3464,9 +3506,9 @@
      "polaroid": true,
      "aspect": 1.4814814814814814,
      "label": "Royal Oak · 1972",
-     "w": 240,
+     "w": 360,
      "x": 360,
-     "y": 330,
+     "y": 320,
      "z": 12,
      "rot": [
       [
@@ -3491,9 +3533,16 @@
       ],
       [
        17.27,
-       1.006
+       1.035
       ]
-     ]
+     ],
+     "idle": {
+      "type": "float",
+      "amp": 3,
+      "speed": 0.25,
+      "phase": 4.04,
+      "from": 2.29
+     }
     }
    ],
    "dur": 17.27,
@@ -3759,7 +3808,7 @@
      "polaroid": true,
      "aspect": 0.8938547486033519,
      "label": "الحرفيون",
-     "w": 250,
+     "w": 310,
      "x": 220,
      "y": 420,
      "z": 20,
@@ -3791,9 +3840,16 @@
       ],
       [
        12.37,
-       1.006
+       1.035
       ]
-     ]
+     ],
+     "idle": {
+      "type": "float",
+      "amp": 3,
+      "speed": 0.25,
+      "phase": 1.52,
+      "from": 9.03
+     }
     },
     {
      "type": "image",
@@ -3801,7 +3857,7 @@
      "polaroid": true,
      "aspect": 1.3333333333333333,
      "label": "السوار",
-     "w": 250,
+     "w": 310,
      "x": 500,
      "y": 440,
      "z": 21,
@@ -3833,9 +3889,16 @@
       ],
       [
        12.37,
-       1.006
+       1.035
       ]
-     ]
+     ],
+     "idle": {
+      "type": "float",
+      "amp": 3,
+      "speed": 0.25,
+      "phase": 4.2,
+      "from": 9.38
+     }
     },
     {
      "type": "image",
@@ -3843,7 +3906,7 @@
      "polaroid": true,
      "aspect": 1.1619462599854757,
      "label": "الميناء",
-     "w": 250,
+     "w": 310,
      "x": 220,
      "y": 760,
      "z": 22,
@@ -3875,9 +3938,16 @@
       ],
       [
        12.37,
-       1.006
+       1.035
       ]
-     ]
+     ],
+     "idle": {
+      "type": "float",
+      "amp": 3,
+      "speed": 0.25,
+      "phase": 3.82,
+      "from": 9.73
+     }
     },
     {
      "type": "image",
@@ -3885,7 +3955,7 @@
      "polaroid": true,
      "aspect": 0.9937888198757764,
      "label": "الحركة",
-     "w": 250,
+     "w": 310,
      "x": 500,
      "y": 780,
      "z": 23,
@@ -3917,9 +3987,16 @@
       ],
       [
        12.37,
-       1.006
+       1.035
       ]
-     ]
+     ],
+     "idle": {
+      "type": "float",
+      "amp": 3,
+      "speed": 0.25,
+      "phase": 4.96,
+      "from": 10.08
+     }
     },
     {
      "type": "svg",
@@ -4016,9 +4093,9 @@
      "polaroid": true,
      "aspect": 0.8676789587852495,
      "label": "Royal Oak · Réf. 5402",
-     "w": 300,
-     "x": 545,
-     "y": 720,
+     "w": 330,
+     "x": 555,
+     "y": 740,
      "z": 59,
      "rot": [
       [
@@ -4045,25 +4122,32 @@
        19.53,
        1.04
       ]
-     ]
+     ],
+     "idle": {
+      "type": "float",
+      "amp": 3,
+      "speed": 0.25,
+      "phase": 0.1,
+      "from": 14.75
+     }
     },
     {
      "type": "svg",
      "w": 130,
-     "h": 294.6712,
-     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"130\" height=\"294\" viewBox=\"0 0 130 294\" style=\"overflow:visible;\"><defs><linearGradient id=\"gl35\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/><stop offset=\".5\" stop-color=\"#FFFAEB\" stop-opacity=\"0.42\"/><stop offset=\"1\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/></linearGradient></defs><polygon points=\"40.0,0.0 130.0,0.0 90.0,294.7 0.0,294.7\" fill=\"url(#gl35)\"/></svg>",
+     "h": 327.1717,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"130\" height=\"327\" viewBox=\"0 0 130 327\" style=\"overflow:visible;\"><defs><linearGradient id=\"gl35\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/><stop offset=\".5\" stop-color=\"#FFFAEB\" stop-opacity=\"0.42\"/><stop offset=\"1\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/></linearGradient></defs><polygon points=\"40.0,0.0 130.0,0.0 90.0,327.2 0.0,327.2\" fill=\"url(#gl35)\"/></svg>",
      "x": [
       [
        15.0,
-       474.0
+       469.0
       ],
       [
        15.7,
-       616.0,
+       641.0,
        "inOutCubic"
       ]
      ],
-     "y": 698,
+     "y": 718,
      "anchor": "c",
      "z": 60,
      "in": {
