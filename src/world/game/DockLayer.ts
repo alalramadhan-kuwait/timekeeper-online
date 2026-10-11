@@ -34,8 +34,9 @@ export const DOCK_AREAS = {
 export type DockArea = keyof typeof DOCK_AREAS;
 /* How far the camera may go round the dock, in world units: the paved ground and the roof. */
 export const DOCK_BOUNDS = (() => {
-  const a = P(-3, DEPTH + 2), b = P(W + 4, -1), c = P(-1, -1), d = P(W + 4, DEPTH + 2);
-  return { x: a.x, y: c.y - 300, w: b.x - a.x, h: d.y - (c.y - 300) };
+  // up to just above the roof's back corner: nothing beyond it is the dock
+  const a = P(-3, DEPTH + 2), b = P(W + 4, -1), top = P(-1.4, -1.4, 104).y - 24, d = P(W + 4, DEPTH + 2);
+  return { x: a.x, y: top, w: b.x - a.x, h: d.y - top };
 })();
 /* Where a sheet about a bay or a station keeps the camera pointed. */
 export const bayFocus = (b: { x: number; y: number }) => P(b.x + 1, b.y + 1, 40);
@@ -183,6 +184,13 @@ export class DockLayer {
     const back = s.add.graphics().setDepth(D(W, SOUTH, 0.5));
     prism(back, W - 0.1, SOUTH, 0.14, 0.14, 0, z, 0x3b4a68, 0x22304d, 0x1b2740, 1.4);
     prism(back, W - 0.1, SOUTH, 0.14, DEPTH - SOUTH, z, 26, 0xe5c06a, 0xcba454, 0xa8853f, 1.4);
+    // the yard's edge: bollards and planted palms, so the apron reads as a loading yard
+    for (let y = 0.5; y < DEPTH; y += 3) {
+      const g = s.add.graphics().setDepth(D(W + 4.15, y + 0.15));
+      prism(g, W + 4, y, 0.15, 0.15, 0, 34, 0xf1c84b, 0xd4a72c, 0xb08a22, 1.2);
+      prism(g, W + 4, y, 0.15, 0.15, 14, 8, 0x22304d, 0x1b2740, 0x141c2c, 1);
+    }
+    for (const y of [2.5, 9.5]) { const p = P(W + 5.6, y); s.fit(s.add.image(p.x, p.y, 'palm'), 'palm').setDepth(D(W + 5.6, y)); }
     // two trolleys parked out of the way
     this.trolley(W - 1.6, 2.9);
     this.trolley(9.2, DEPTH - 1.2);
@@ -338,7 +346,7 @@ export class DockLayer {
   /* The paved ground round the dock: asphalt with faint lines, the slab's edges and the yard's
      marked bay. Below the floor tiles. */
   private drawGroundCanvas() {
-    const k = 0.5, pts = [P(-2, -9), P(W + 5, -9), P(W + 5, DEPTH + 2), P(-2, DEPTH + 2)];
+    const k = 0.5, pts = [P(-2, -9), P(W + 8, -9), P(W + 8, DEPTH + 2), P(-2, DEPTH + 2)];
     const x0 = Math.min(...pts.map((p) => p.x)), x1 = Math.max(...pts.map((p) => p.x));
     const y0 = Math.min(...pts.map((p) => p.y)), y1 = Math.max(...pts.map((p) => p.y)) + 30;
     const c = this.s.textures.createCanvas('dock-ground', Math.ceil((x1 - x0) * k), Math.ceil((y1 - y0) * k))!, g = c.getContext();
@@ -346,13 +354,17 @@ export class DockLayer {
     const path = (ps: Pt[]) => { g.beginPath(); ps.forEach((p, i) => (i ? g.lineTo(p.x, p.y) : g.moveTo(p.x, p.y))); g.closePath(); };
     path(pts); g.fillStyle = '#424857'; g.fill();
     g.strokeStyle = '#4b5262'; g.lineWidth = 2;
-    for (let q = -1; q < W + 5; q += 2) { const a = P(q, -9), b = P(q, DEPTH + 2); g.beginPath(); g.moveTo(a.x, a.y); g.lineTo(b.x, b.y); g.stroke(); }
+    for (let q = -1; q < W + 8; q += 2) { const a = P(q, -9), b = P(q, DEPTH + 2); g.beginPath(); g.moveTo(a.x, a.y); g.lineTo(b.x, b.y); g.stroke(); }
     // the slab's two near edges
     path([P(0, DEPTH), P(W, DEPTH), P(W, DEPTH, -22), P(0, DEPTH, -22)]); g.fillStyle = '#8b8676'; g.fill(); g.strokeStyle = '#141c2c'; g.lineWidth = 2; g.stroke();
     path([P(W, 0), P(W, DEPTH), P(W, DEPTH, -22), P(W, 0, -22)]); g.fillStyle = '#6f6b5e'; g.fill(); g.stroke();
     // the yard: an empty, marked bay outside the door (a van is drawn only when a delivery is on record)
     path([P(W + 0.4, SOUTH + 0.3), P(W + 3.4, SOUTH + 0.3), P(W + 3.4, DEPTH - 0.3), P(W + 0.4, DEPTH - 0.3)]);
     g.setLineDash([22, 14]); g.strokeStyle = '#f1c84b'; g.lineWidth = 5; g.stroke(); g.setLineDash([]);
+    // a second, empty bay up the yard, and a kerb line along its outer edge
+    path([P(W + 0.4, MAIN - 4.7), P(W + 3.4, MAIN - 4.7), P(W + 3.4, MAIN + 0.7), P(W + 0.4, MAIN + 0.7)]);
+    g.setLineDash([22, 14]); g.strokeStyle = 'rgba(241,200,75,0.75)'; g.lineWidth = 5; g.stroke(); g.setLineDash([]);
+    path([P(W + 4.6, -1), P(W + 4.9, -1), P(W + 4.9, DEPTH + 1), P(W + 4.6, DEPTH + 1)]); g.fillStyle = '#5a6172'; g.fill();
     // the dock plate across the door
     path([P(W, SOUTH + 0.4), P(W + 0.7, SOUTH + 0.4), P(W + 0.7, DEPTH - 0.4), P(W, DEPTH - 0.4)]); g.fillStyle = '#9aa3b0'; g.fill(); g.strokeStyle = '#141c2c'; g.lineWidth = 1.5; g.stroke();
     c.refresh();
@@ -443,7 +455,8 @@ export class DockLayer {
       const half = t.w / 2;
       const x = Math.max(half + 6, Math.min(view.width - half - 6, ax));
       let r: R = { l: x - half, r: x + half, t: ay - 6 - t.h, b: ay - 6 };
-      if (ay < view.top || ay > view.bottom || ax < -half || ax > view.width + half) { t.c.setVisible(false); continue; }
+      // a rack just past the screen's edge keeps its tag at the edge, as a pointer to it
+      if (ay < view.top || ay > view.bottom || ax < -140 || ax > view.width + 140) { t.c.setVisible(false); continue; }
       let placed = !hits(r);
       for (const lift of [30, 60]) {
         if (placed) break;

@@ -18,7 +18,8 @@ import type { PoDetail, ReceiptEvent, Snapshot } from '../types';
 export const REVIEW = { paidPendingDays: 30, partialDays: 60 } as const;
 
 export interface DockLine { sku: string | null; name: string | null; brand: string | null; ordered: number; received: number; cost: number | null }
-export interface DockFlag { level: 'review' | 'note'; title: string; detail: string }
+/* A review point: a short title, one line on what to check, and the full reasoning behind a tap. */
+export interface DockFlag { level: 'review' | 'note'; title: string; action: string; detail: string }
 /* A receipt on record: Lightspeed's own time ('ls'), or when our sync first saw it ('det'). */
 export interface DockReceipt { at: string; basis: 'ls' | 'det'; part: boolean; po: string; poId: string | null; supplier: string | null }
 export type PayState = 'paid' | 'part' | 'unpaid';
@@ -96,20 +97,20 @@ function flagsOf(p: DockPo, issues: PoDetail['issues'], today: Date): DockFlag[]
   const f: DockFlag[] = [];
   const since = (d: string) => Math.floor((today.getTime() - new Date(`${d}T00:00:00+03:00`).getTime()) / 864e5);
   if (p.open && p.status === 'Pending Approval' && p.paid > 0) {
-    if (p.age > REVIEW.paidPendingDays) f.push({ level: 'review', title: 'Paid, still Pending Approval', detail: `Created ${p.age} days ago and paid (${kdW(p.paid)}), but Lightspeed still shows it as Pending Approval. Worth checking it was sent.` });
-    else f.push({ level: 'note', title: 'Paid before Lightspeed shows it as sent', detail: 'The status is kept as Lightspeed has it; the payment is shown separately.' });
+    if (p.age > REVIEW.paidPendingDays) f.push({ level: 'review', title: 'Paid, still Pending Approval', action: `Paid, ${p.age} days old. Check it was sent.`, detail: `Created ${p.age} days ago and paid (${kdW(p.paid)}), but Lightspeed still shows it as Pending Approval. Worth checking it was sent.` });
+    else f.push({ level: 'note', title: 'Paid before it was sent', action: 'Status kept as Lightspeed has it.', detail: 'The status is kept as Lightspeed has it; the payment is shown separately.' });
   }
   if (p.expected && p.received < p.ordered && since(p.expected) > 0) {
-    f.push({ level: 'review', title: 'Recorded expected date has passed', detail: `Expected ${kwDate(p.expected, false, today)} (${since(p.expected)} days ago); ${(p.ordered - p.received).toLocaleString('en-US')} pcs not yet received.` });
+    f.push({ level: 'review', title: 'Expected date passed', action: `Due ${kwDate(p.expected, false, today)} · ${(p.ordered - p.received).toLocaleString('en-US')} pcs not in. Ask the supplier.`, detail: `Expected ${kwDate(p.expected, false, today)} (${since(p.expected)} days ago); ${(p.ordered - p.received).toLocaleString('en-US')} pcs not yet received.` });
   }
   if (p.open && p.received > 0 && p.received < p.ordered && p.age > REVIEW.partialDays) {
     const left = `${(p.ordered - p.received).toLocaleString('en-US')} of ${p.ordered.toLocaleString('en-US')} pcs not received, ${p.age} days after the order.`;
-    f.push({ level: 'review', title: 'Part still open', detail: p.expected ? left : `${left} No arrival date is recorded, so this is a prompt to check, not a delay.` });
+    f.push({ level: 'review', title: 'Part still open', action: `${(p.ordered - p.received).toLocaleString('en-US')} pcs open after ${p.age} days. Chase the rest.`, detail: p.expected ? left : `${left} No arrival date is recorded, so this is a prompt to check, not a delay.` });
   }
-  if (p.lines.some((l) => !l.sku && !l.name)) f.push({ level: 'review', title: 'A line has no product details', detail: 'One line has a quantity and cost but no SKU or name.' });
-  if (/^others?$/i.test(shortName(p.supplier))) f.push({ level: 'note', title: 'Supplier recorded as “Others”', detail: 'The real supplier is not named on this order.' });
-  if (p.paidUnreliable) f.push({ level: 'review', title: 'Amount paid looks wrong', detail: 'Excluded from totals (paid far above cost).' });
-  for (const i of issues) f.push({ level: i.severity === 'info' ? 'note' : 'review', title: humanCode(i.code), detail: i.rule });
+  if (p.lines.some((l) => !l.sku && !l.name)) f.push({ level: 'review', title: 'Line without product', action: 'Add its SKU in Lightspeed.', detail: 'One line has a quantity and cost but no SKU or name.' });
+  if (/^others?$/i.test(shortName(p.supplier))) f.push({ level: 'note', title: 'Supplier “Others”', action: 'Name the supplier in Lightspeed.', detail: 'The real supplier is not named on this order.' });
+  if (p.paidUnreliable) f.push({ level: 'review', title: 'Amount paid looks wrong', action: 'Check the payment entry.', detail: 'Excluded from totals (paid far above cost).' });
+  for (const i of issues) f.push({ level: i.severity === 'info' ? 'note' : 'review', title: humanCode(i.code), action: i.severity === 'info' ? 'For information.' : 'Check the record.', detail: i.rule });
   return f;
 }
 

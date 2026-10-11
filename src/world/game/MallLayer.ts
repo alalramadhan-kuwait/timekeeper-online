@@ -39,7 +39,7 @@ const lighten = (c: number, k: number) => {
 };
 
 type Obj = Phaser.GameObjects.Image | Phaser.GameObjects.Text | Phaser.GameObjects.Graphics | Phaser.GameObjects.Rectangle | Phaser.GameObjects.Particles.ParticleEmitter;
-type Group = { items: Obj[]; prio: number; dy: number };
+type Group = { items: Obj[]; prio: number; dy: number; fixed?: boolean };   // fixed: part of the building, never slid
 
 export class MallLayer {
   private dyn: Obj[] = [];
@@ -265,14 +265,19 @@ export class MallLayer {
     const p = iso(x, y);
     // the brand's own logo where we have it; otherwise its name, painted
     const logo = BRAND_LOGOS[b.brand];
-    const { sign, items, r } = logo && s.textures.exists(logo.key)
-      ? this.logoSign(logo, b, p.x, p.y, g.side, sel)
+    const mounted = !!(logo && s.textures.exists(logo.key));
+    const { sign, items, r } = mounted
+      ? this.logoSign(logo!, b, p.x, p.y, g.side, sel, x, y)
       : this.nameSign(b, p.x, p.y - (g.side === 'n' ? 170 : 44), sel);
     if (b.featured) items.push(this.text(r.x + 6, r.y + 2, '★', { size: 16, colour: '#f2c230', depth: TOP - 11.8 }).setOrigin(0.5, 0.5));
-    this.signs.push({ items, prio: 3, dy: 0 });
+    this.signs.push({ items, prio: 3, dy: 0, fixed: mounted });
     if (rank) this.badge(rank, r.x + r.w + 4, r.y, sel, undefined, items);
     const mid = iso(...toWorld(g.x + g.w / 2, g.y + g.d / 2));
-    this.targets.set(b.brand, { obj: sign as Phaser.GameObjects.Image | Phaser.GameObjects.Rectangle, cell: toWorld(plan.pavilion[0], plan.pavilion[1]), boutique: true, centre: { x: mid.x, y: mid.y - 60 } });
+    // a boutique is framed by its floor, moved sideways towards the sign fixed to its front
+    const sb = mounted ? (sign as Phaser.GameObjects.Rectangle).getBounds() : null;
+    // (moved only as far as keeps the whole sign inside a phone's width at the boutique zoom, about 620 units)
+    const centre = { x: sb ? Phaser.Math.Clamp(mid.x, sb.right - 300, Math.max(sb.right - 300, sb.x + 300)) : mid.x, y: mid.y - 60 };
+    this.targets.set(b.brand, { obj: sign as Phaser.GameObjects.Image | Phaser.GameObjects.Rectangle, cell: toWorld(plan.pavilion[0], plan.pavilion[1]), boutique: true, centre });
   }
 
   /* The brand's name painted on a plaque, for a brand without a logo file. Sized by its writing
@@ -300,26 +305,40 @@ export class MallLayer {
     return { sign: sign as Obj, items: [sign, t, bar] as Obj[], r };
   }
 
-  /* The brand's own logo on a plaque in the colour that makes it stand out: navy behind a white
-     logo, cream behind a black one, in a gold frame. The logo is only scaled, evenly, to fit. The
-     plaque takes the logo's shape so the name reads at a section's zoom on a phone (about
-     7 CSS px a letter): a square plaque for a stacked logo, a long one for a word mark, and for a
-     logo that is one long line of small words, a band the width of the shop front. */
-  private logoSign(logo: BrandLogo, b: MallBrand, x: number, wallY: number, side: SlotGeo['side'], sel: { type: 'brand'; brand: string }) {
+  /* The brand's own logo on a plaque mounted on the shop: navy behind a white logo, cream behind a
+     black one, in a gold frame, hung from a brass rail by two brackets and casting a shadow on the
+     wall. In the back row it stands on the back wall's top edge, above whatever is in the shop; in
+     the front row it is a low fascia on the low front wall. The logo is only scaled, evenly, and the
+     plaque is just big enough for the brand's name to read at a section's zoom (about 8 CSS px a
+     letter on a phone): a logo whose name is a small part of it gets a taller plaque, a word mark a
+     slim one. It is part of the building, so it is drawn in the scene's depth order and never slid. */
+  private logoSign(logo: BrandLogo, b: MallBrand, x: number, wallY: number, side: SlotGeo['side'], sel: { type: 'brand'; brand: string }, wx: number, wy: number) {
     const s = this.scene;
-    const [w, h, fw, fh] = logo.aspect < 1.4 ? [148, 148, 0.8, 0.8] : logo.aspect <= 12.5 ? [264, 106, 0.85, 0.72] : [470, 56, 0.94, 0.74];
-    // the back row's hangs from the top of its wall; the front row's stands on the low front
-    // wall and rises into the shop, so it never reaches over the walkway
-    const cy = side === 'n' ? wallY - 196 + h / 2 : wallY - 17 - h / 2;
+    const band = logo.aspect > 12.5;                       // one long line of small words (West End)
+    const maxW = band ? 470 : side === 'n' ? 300 : 260;
+    let lh = Math.max(22, 13.3 / logo.nameShare), lw = lh * logo.aspect;
+    if (lw > maxW) { lw = maxW; lh = lw / logo.aspect; }
+    const padX = 14, padY = 10, w = lw + 2 * padX, h = lh + 2 * padY;
+    const cy = side === 'n' ? wallY - WALL_HEIGHT + 18 - h / 2 : wallY - 8 - h / 2;
+    // the front row's fascia is drawn after the whole low wall it is fixed to (each wall run sorts by its far end)
+    // a back-row sign stands on the wall's top edge, above the pavilion against that wall: it is drawn
+    // just in front of the back of the shop (pavilion included), behind anything nearer the front
+    const depth = side === 'n' ? depthAt(wx + 6, wy + 2, 0.5) : depthAt(wx + 9, wy, 1.5);
+    const top = cy - h / 2;
+    // the mounting: a shadow on the wall, a brass rail above the plaque and two brackets down to it
+    const shadow = this.keep(s.add.rectangle(x + 5, cy + 6, w, h, 0x000000, 0.22).setRounded(Math.min(10, h * 0.18)).setDepth(depth));
+    const mount = this.keep(s.add.graphics().setDepth(depth + 0.01));
+    mount.fillStyle(0xa8853f, 1).fillRoundedRect(x - w / 2 - 8, top - 10, w + 16, 4, 2);
+    for (const bx of [x - w / 2 + 16, x + w / 2 - 16]) mount.fillStyle(0xcba454, 1).fillRect(bx - 1.5, top - 7, 3, 8);
     const plate = this.keep(s.add.rectangle(x, cy, w, h, logo.plate === 'dark' ? 0x17233b : 0xf6f1e6)
-      .setStrokeStyle(5, 0xcba454).setRounded(Math.min(14, h * 0.18)).setDepth(TOP - 12));
-    const img = this.keep(s.add.image(x, cy, logo.key).setDepth(TOP - 11.99));
-    img.setScale(Math.min((w * fw) / img.width, (h * fh) / img.height));
+      .setStrokeStyle(3, 0xcba454).setRounded(Math.min(10, h * 0.18)).setDepth(depth + 0.02));
+    const img = this.keep(s.add.image(x, cy, logo.key).setDepth(depth + 0.03));
+    img.setScale(Math.min(lw / img.width, lh / img.height));
     plate.setInteractive({ useHandCursor: true }); s.tag(plate, sel, 0);
     const bd = plate.getBounds();
-    const bar = this.healthBar(b, bd.x + 10, bd.bottom + 3, bd.width - 20, 6, TOP - 11.9);
-    plate.setData('panel', new Phaser.Geom.Rectangle(bd.x, bd.y, bd.width, bd.height + 11));
-    return { sign: plate as Obj, items: [plate, img, bar] as Obj[], r: { x: bd.x + 4, y: bd.y + 4, w: bd.width - 8, h: bd.height - 8 } };
+    const bar = this.healthBar(b, bd.x + 10, bd.bottom + 3, bd.width - 20, 5, depth + 0.04);
+    plate.setData('panel', new Phaser.Geom.Rectangle(bd.x, top - 10, bd.width, bd.height + 20));
+    return { sign: plate as Obj, items: [plate, img, bar, shadow, mount] as Obj[], r: { x: bd.x + 4, y: bd.y + 4, w: bd.width - 8, h: bd.height - 8 } };
   }
 
   /* A display case: the base by ownership, watches by units, the glass over them. */
@@ -421,7 +440,18 @@ export class MallLayer {
       const panel = (gr.items[0] as Phaser.GameObjects.Image).getData?.('panel') as Phaser.Geom.Rectangle | undefined;
       if (panel) { panel.x += dx; panel.y += dy; }
     };
+    // the section signs are the way in from the whole mall: kept inside the screen's sides
+    for (let k = 0; k < this.sectionSigns.length; k += 2) {
+      const sign = this.sectionSigns[k] as Phaser.GameObjects.Image, t = this.sectionSigns[k + 1] as Phaser.GameObjects.Text;
+      const ox = (sign.getData('cx') as number | undefined) ?? 0;
+      if (ox) { sign.x -= ox; t.x -= ox; sign.setData('cx', 0); }
+      if (!sign.visible) continue;
+      const r = sign.getBounds();
+      const dx = r.x < view.x ? view.x - r.x : r.right > view.x + view.w ? view.x + view.w - r.right : 0;
+      if (dx) { sign.x += dx; t.x += dx; sign.setData('cx', dx); }
+    }
     for (const gr of [...this.signs, ...this.lists] as (Group & { cx?: number; cy?: number })[]) {
+      if (gr.fixed) continue;                  // a sign on a shop stays on the shop
       if (gr.cx || gr.cy) move(gr, -(gr.cx ?? 0), -(gr.cy ?? 0));
       gr.cx = 0; gr.cy = 0;
       if (!(gr.items[0] as Phaser.GameObjects.Image).visible) continue;

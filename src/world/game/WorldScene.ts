@@ -265,7 +265,12 @@ export class WorldScene extends Phaser.Scene {
     const vw = cam.width, vh = Math.max(cam.height - top - bottom, cam.height * 0.4);
     // a section view keeps one scale, set by SECTION_VIEW, centred on the section's walkway: the
     // section fills the screen, and its far ends are a short pan away
-    const r = i === null ? this.zone('floor') : { x: 0, y: 0, ...SECTION_VIEW };
+    // the whole mall: the mall itself, walls and all, across the screen; a section: one fixed scale
+    const r = i === null ? (() => {
+      const l = iso(MALL.x0, MALL.y0 + MALL.d).x - 24, rt = iso(MALL.x0 + MALL.w, MALL.y0).x + 24;
+      const t = iso(MALL.x0, MALL.y0).y - WALL_HEIGHT - 70, bt = iso(MALL.x0 + MALL.w, MALL.y0 + MALL.d).y + 24;
+      return { x: l, y: t, w: rt - l, h: bt - t };
+    })() : { x: 0, y: 0, ...SECTION_VIEW };
     let z = Math.min(vw / r.w, vh / r.h);
     if (i !== null && vw / vh < 0.8) z = Math.max(z, Math.min(vh / r.h, (vw / r.w) * 2.2));
     z = Phaser.Math.Clamp(z, this.minZoom(), this.maxZoom());
@@ -294,17 +299,21 @@ export class WorldScene extends Phaser.Scene {
     const pts = [pt(a.x0, a.y0, 200), pt(a.x1, a.y0), pt(a.x1, a.y1), pt(a.x0, a.y1)];
     const xs = pts.map((p) => p.x), ys = pts.map((p) => p.y);
     const fit = Math.min(vw / (Math.max(...xs) - Math.min(...xs) + 60), vh / (Math.max(...ys) - Math.min(...ys) + 60));
-    let zc = fitOnly ? fit : area === 'orders' ? Math.max(fit, 0.36) : Math.max(fit, 0.62);
+    let zc = fitOnly ? fit : area === 'orders' ? Math.max(fit, 0.48) : Math.max(fit, 0.62);
     zc = Phaser.Math.Clamp(zc, 0.18, 1.1);
     let cx = (Math.max(...xs) + Math.min(...xs)) / 2, cy = (Math.max(...ys) + Math.min(...ys)) / 2;
+    // the point sits in the middle of the part of the screen the bars leave free
+    let ccy = cy - (top - bottom) / 2 / zc;
     const tags = this.dock.tagPoints();
     if (area === 'orders' && !fitOnly && tags.length) {
-      cx = tags.reduce((n, q) => n + q.x, 0) / tags.length;
-      cy = tags.reduce((n, q) => n + q.y, 0) / tags.length + 40;
+      // the bays fill the screen: centred across the tags, the roof's edge just under the header, and
+      // the stations below; a bay at the very edge keeps its tag on screen as a pointer
+      const tx = tags.map((q) => q.x);
+      cx = (Math.min(...tx) + Math.max(...tx)) / 2;
+      const roofTop = pt(-1.4, -1.4, 104).y;
+      ccy = roofTop + (cam.height / px / 2 - (top + 4)) / zc;
     }
     const z = zc * px;
-    // the point sits in the middle of the part of the screen the bars leave free
-    const ccy = cy - (top - bottom) / 2 / zc;
     this.zoomTarget = z;
     if (animate && !this.reduced) {
       cam.pan(cx, ccy, 650, 'Sine.easeInOut', true);
@@ -848,8 +857,11 @@ export class WorldScene extends Phaser.Scene {
     const y0 = zn.y - this.insets.top * px, y1 = zn.y + zn.h + (this.insets.bottom + this.cover.bottom) * px;
     const vw = cam.width / cam.zoom, vh = cam.height / cam.zoom;
     const mx = cam.scrollX + cam.width / 2, my = cam.scrollY + cam.height / 2;
-    const tx = vw >= x1 - x0 ? (x0 + x1) / 2 : Phaser.Math.Clamp(mx, x0 + vw / 2, x1 - vw / 2);
-    const ty = vh >= y1 - y0 ? (y0 + y1) / 2 : Phaser.Math.Clamp(my, y0 + vh / 2, y1 - vh / 2);
+    // where the view is larger than the zone it sits in the middle; on the dock it may sit anywhere
+    // that still shows the whole zone, so a framing with the roof just under the header holds
+    const free = (m: number, v: number, a: number, b: number) => (this.room === 'dock' ? Phaser.Math.Clamp(m, b - v / 2, a + v / 2) : (a + b) / 2);
+    const tx = vw >= x1 - x0 ? free(mx, vw, x0, x1) : Phaser.Math.Clamp(mx, x0 + vw / 2, x1 - vw / 2);
+    const ty = vh >= y1 - y0 ? free(my, vh, y0, y1) : Phaser.Math.Clamp(my, y0 + vh / 2, y1 - vh / 2);
     if (Math.abs(tx - mx) < 0.5 && Math.abs(ty - my) < 0.5) return;
     if (this.input.activePointer.isDown) cam.centerOn(tx, ty);   // hold the edge firmly under a finger
     else {

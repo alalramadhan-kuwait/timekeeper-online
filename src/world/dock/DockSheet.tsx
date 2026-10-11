@@ -86,38 +86,40 @@ function TipBubble({ tip, onDone }: { tip: Tip; onDone: () => void }) {
 
 const Dot = () => <span className="inline-block h-2 w-2 shrink-0 rounded-full bg-[#e8962a] shadow-[0_0_0_2px_rgba(232,150,42,.3)]" title="To review" />;
 
-function Big({ items, className = 'mb-4' }: { items: [ReactNode, string][]; className?: string }) {
-  return (
-    <div className={`mt-0.5 flex gap-[26px] ${className}`}>
-      {items.map(([v, k], i) => (
-        <div key={i}>
-          <div className="text-[28px] font-extrabold leading-[1.05] tracking-[-0.01em] tabular-nums" style={{ color: NAVY }}>{v}</div>
-          <div className="mt-[3px] text-[12px] text-[#667085]">{k}</div>
-        </div>
-      ))}
-    </div>
-  );
-}
 
 function Bar({ p }: { p: DockPo }) {
   const pct = p.ordered ? Math.round((p.received / p.ordered) * 100) : 0;
   return <span className="h-1.5 flex-1 overflow-hidden rounded-[3px] bg-[#ebe5d8]"><i className="block h-full bg-[#b8893b]" style={{ width: `${pct}%` }} /></span>;
 }
 
-function PoRow({ p, amount, open, onTip }: { p: DockPo; amount: string; open: () => void; onTip: (t: Tip) => void }) {
+/* One order in a list: its number, a dot if something needs a look, the amount, and a thin bar for
+   how much has arrived. Its states and pieces are on the order itself. */
+function PoRow({ p, amount, open }: { p: DockPo; amount: string; open: () => void; onTip?: (t: Tip) => void }) {
   return (
     <div role="button" tabIndex={0} data-po={p.po} onClick={open} onKeyDown={(e) => { if (e.key === 'Enter') open(); }}
-      className="block w-full cursor-pointer border-t border-[#efe9dd] px-0.5 py-[13px] text-left first:border-t-0">
+      aria-label={`${p.po}, ${amount}, ${num(p.received)} of ${num(p.ordered)} pieces received${hasReview(p) ? ', to review' : ''}`}
+      className="flex min-h-[52px] w-full cursor-pointer flex-col justify-center gap-2 border-t border-[#efe9dd] px-0.5 py-2.5 text-left first:border-t-0">
       <div className="flex items-center gap-[7px]">
-        <span className="text-[15.5px] font-bold" style={{ color: NAVY }}>{p.po}</span>
+        <span className="text-[15px] font-bold" style={{ color: NAVY }}>{p.po}</span>
         {hasReview(p) && <Dot />}
-        <span className="ml-auto text-[16px] font-extrabold tabular-nums" style={{ color: NAVY }}>{amount}</span>
+        <span className="ml-auto text-[15.5px] font-extrabold tabular-nums" style={{ color: NAVY }}>{amount}</span>
+        <span className="text-[18px] leading-none text-[#c2b8a3]" aria-hidden>›</span>
       </div>
-      <div className="mt-2 flex items-center">
-        <Bar p={p} />
-        <span className="ml-2 min-w-[62px] text-right text-[12px] tabular-nums text-[#667085]">{num(p.received)}/{num(p.ordered)}</span>
-        <StatusIcons p={p} onTip={onTip} />
-      </div>
+      <div className="flex pr-4"><Bar p={p} /></div>
+    </div>
+  );
+}
+
+/* A sheet's two or three key figures on one line. */
+function Summary({ items }: { items: [ReactNode, string][] }) {
+  return (
+    <div className="mb-2 flex flex-wrap items-baseline gap-x-5 gap-y-1" data-summary>
+      {items.map(([v, k], i) => (
+        <span key={i} className="inline-flex items-baseline gap-1.5">
+          <span className="text-[22px] font-extrabold leading-none tabular-nums tracking-[-0.01em]" style={{ color: NAVY }}>{v}</span>
+          <span className="text-[13px] text-[#667085]">{k}</span>
+        </span>
+      ))}
     </div>
   );
 }
@@ -175,8 +177,8 @@ export function DockSheet({ view, dock, canGoBack, open, back, close, panelRef }
     if (sp) {
       title = shortName(sp.name);
       body = (<>
-        <Big items={[[sp.pos.length, `open order${sp.pos.length === 1 ? '' : 's'}`], [kdW(sp.value), 'still to come']]} />
-        <div>{sp.pos.map((p) => <PoRow key={p.id} p={p} amount={kdW(p.outstanding)} open={() => openPo(p)} onTip={setTip} />)}</div>
+        <Summary items={[[sp.pos.length, `order${sp.pos.length === 1 ? '' : 's'}`], [kdW(sp.value), 'to come']]} />
+        <div>{sp.pos.map((p) => <PoRow key={p.id} p={p} amount={kdW(p.outstanding)} open={() => openPo(p)} />)}</div>
       </>);
     } else if (bay) {
       title = `Bay ${String(bay.no).padStart(2, '0')}`;
@@ -206,7 +208,7 @@ function Frame({ title, sub, pin, body, full, canGoBack, back, close, panelRef, 
 }) {
   return (
     <aside ref={panelRef} role="dialog" aria-modal="false" aria-label={typeof title === 'string' ? title : undefined}
-      className={`tk-sheet-enter absolute inset-x-0 bottom-0 z-40 flex flex-col rounded-t-[22px] bg-[#fbf8f1] shadow-[0_-10px_30px_rgba(0,0,0,.22)] sm:inset-x-auto sm:bottom-3 sm:right-3 sm:top-3 sm:h-auto sm:max-h-none sm:w-[400px] sm:rounded-3xl ${full ? 'h-[90%]' : 'max-h-[56%]'}`}
+      className={`tk-sheet-enter absolute inset-x-0 bottom-0 z-40 flex flex-col rounded-t-[22px] bg-[#fbf8f1] shadow-[0_-10px_30px_rgba(0,0,0,.22)] sm:inset-x-auto sm:bottom-auto sm:right-3 sm:top-3 sm:h-auto sm:max-h-[calc(100%-1.5rem)] sm:w-[400px] sm:rounded-3xl ${full ? 'max-h-[86%]' : 'max-h-[56%]'}`}
       style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
       <div className="mx-auto mt-2 h-[5px] w-10 shrink-0 rounded-[3px] bg-[#d4cbb8] sm:hidden" />
       <div className="flex shrink-0 items-center gap-2 pb-2.5 pl-4 pr-3.5 pt-2">
@@ -230,66 +232,91 @@ function PoSheet({ p, dock, tab0, ...f }: SheetBase & { p: DockPo; dock: DockDat
   const [tab, setTab] = useState<PoTab>(tab0);
   const [tip, setTip] = useState<Tip>(null);
   const [all, setAll] = useState(false);
+  const [why, setWhy] = useState<number | null>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
   const reviews = p.flags.filter((x) => x.level === 'review'), notes = p.flags.filter((x) => x.level === 'note');
   const flags = [...reviews, ...notes];
   const pick = (t: PoTab) => { setTab(t); bodyRef.current?.scrollTo(0, 0); };
-  // the order's key figures, its progress, its three states, what to review and the tabs stay put
+  // what stays put while the tabs change: how much is still to come, how much has arrived, the three
+  // states, a one-line review summary and the tabs
   const pin = (<>
-    <Big className="mb-2.5" items={[[kdW(p.outstanding), 'still to come'], [<>{num(p.received)}<span className="text-[18px] font-bold text-[#667085]">/{num(p.ordered)}</span></>, 'pieces received']]} />
+    <div className="mb-2 flex items-baseline justify-between gap-3">
+      <span className="inline-flex items-baseline gap-1.5">
+        <span className="text-[26px] font-extrabold leading-none tabular-nums tracking-[-0.01em]" style={{ color: NAVY }}>{kdW(p.outstanding)}</span>
+        <span className="text-[13px] text-[#667085]">to come</span>
+      </span>
+      <span className="text-[13px] tabular-nums text-[#667085]"><b className="text-[17px]" style={{ color: NAVY }}>{num(p.received)}</b>/{num(p.ordered)} pcs</span>
+    </div>
     <div className="flex items-center"><Bar p={p} /><StatusIcons p={p} onTip={setTip} /></div>
     {flags.length > 0 && (
-      <details className="group mb-1 mt-3 overflow-hidden rounded-xl border border-[#f0d3a6] bg-[#fff3e2]" data-review>
-        <summary className="flex min-h-[44px] cursor-pointer list-none items-center gap-2 px-3 py-2.5 [&::-webkit-details-marker]:hidden">
-          <Dot /><span className="text-[14px] font-bold text-[#7a4510]">{reviews.length ? `${reviews.length} item${reviews.length === 1 ? '' : 's'} to review` : `${notes.length} note${notes.length === 1 ? '' : 's'}`}</span>
-          <span className="text-[18px] text-[#b5ab96] transition-transform group-open:rotate-90">›</span>
+      <details className="group mt-3 overflow-hidden rounded-xl border border-[#f0d3a6] bg-[#fff3e2]" data-review>
+        <summary className="flex min-h-[44px] cursor-pointer list-none items-center gap-2 px-3 py-2 [&::-webkit-details-marker]:hidden">
+          <Dot /><span className="text-[14px] font-bold text-[#7a4510]">{reviews.length ? `${reviews.length} to review` : `${notes.length} note${notes.length === 1 ? '' : 's'}`}</span>
+          <span className="ml-auto text-[18px] text-[#b5ab96] transition-transform group-open:rotate-90">›</span>
         </summary>
-        <div className="max-h-[26vh] overflow-y-auto">
-          {flags.map((x, i) => <div key={i} className="pb-2.5 pl-8 pr-3 text-[13px] leading-[1.4] text-[#5a3a12]"><b className="block text-[#7a4510]">{x.title}</b>{x.detail}</div>)}
+        <div className="max-h-[30vh] overflow-y-auto pb-1">
+          {flags.map((x, k) => (
+            <button key={k} type="button" onClick={() => setWhy(why === k ? null : k)} aria-expanded={why === k} data-flag
+              className="block min-h-[44px] w-full border-t border-[#f0dcbc] px-3 py-2 text-left">
+              <span className="flex items-baseline gap-2">
+                <b className={`text-[13.5px] ${x.level === 'review' ? 'text-[#7a4510]' : 'text-[#6b6150]'}`}>{x.title}</b>
+                <span className="ml-auto shrink-0 text-[12px] text-[#a08560]">{why === k ? 'Less' : 'Why'}</span>
+              </span>
+              <span className="block text-[13px] leading-[1.35] text-[#5a3a12]">{x.action}</span>
+              {why === k && <span className="mt-1 block text-[12.5px] leading-[1.4] text-[#7d6a4d]">{x.detail}</span>}
+            </button>
+          ))}
         </div>
       </details>
     )}
     <Tabs<PoTab> items={[['items', `Items ${p.lines.length}`], ['recv', 'Receiving'], ['pay', 'Payment']]} on={tab} set={pick} />
   </>);
-  const shown = all ? p.lines : p.lines.slice(0, 6);
+  const shown = all ? p.lines : p.lines.slice(0, 3);
   const supplierBrand = shortName(p.supplier);
-  const body = (<>
-    {tab === 'items' && (<>
-      <div>{shown.map((l, i) => {
-        const left = l.ordered - l.received;
-        return (
-          <div key={i} className="flex items-center gap-2.5 border-t border-[#efe9dd] px-0.5 py-[11px] first:border-t-0">
-            <div className="min-w-0">
-              <div className="text-[13.5px] font-semibold leading-[1.3]">{l.name ?? <i>No product details</i>}</div>
-              <div className="mt-0.5 text-[12px] tabular-nums text-[#667085]">{l.sku ?? 'No SKU'}{l.brand && l.brand !== supplierBrand ? ` · ${l.brand}` : ''} · {kdW(l.cost, 3)}</div>
+  // the three tabs share one cell, so the sheet is as tall as the longest of them and does not jump
+  const pane = (k: PoTab, html: ReactNode) => <div key={k} data-pane={k} aria-hidden={tab !== k} className={`[grid-area:1/1] ${tab === k ? '' : 'invisible'}`}>{html}</div>;
+  const body = (
+    <div className="grid">
+      {pane('items', (<>
+        {shown.map((l, i) => {
+          const left = l.ordered - l.received;
+          return (
+            <div key={i} className="flex items-center gap-3 border-t border-[#efe9dd] px-0.5 py-2.5 first:border-t-0">
+              <div className="min-w-0 flex-1">
+                <div className="line-clamp-2 text-[13.5px] font-semibold leading-[1.3]">{l.name ?? <i>No product details</i>}</div>
+                <div className="mt-0.5 truncate text-[12px] tabular-nums text-[#667085]">{l.sku ?? 'No SKU'}{l.brand && l.brand !== supplierBrand ? ` · ${l.brand}` : ''} · {kdW(l.cost, 3)}</div>
+              </div>
+              <div className="shrink-0 text-right text-[12px] tabular-nums text-[#667085]">
+                {left > 0 ? <b className="block text-[14px]" style={{ color: NAVY }}>{num(left)} to come</b> : <b className="block text-[14px] text-[#2f7a4a]">✓ In</b>}
+                {num(l.received)}/{num(l.ordered)}
+              </div>
             </div>
-            <div className="ml-auto whitespace-nowrap text-right text-[13px] tabular-nums text-[#667085]">
-              {left > 0 ? <b className="block text-[14px]" style={{ color: NAVY }}>{num(left)} to come</b> : <b className="block text-[14px] text-[#2f7a4a]">In</b>}
-              {num(l.received)}/{num(l.ordered)}
+          );
+        })}
+        {p.lines.length > 3 && (
+          <button type="button" onClick={() => setAll(!all)} className="mt-1 block min-h-[44px] w-full rounded-xl bg-[#f3eee3] text-[13.5px] font-semibold text-[#22304d]">
+            {all ? 'Show fewer' : `Show all ${p.lines.length}`}
+          </button>
+        )}
+      </>))}
+      {pane('recv', (<>
+        <KV rows={[['Shipment', p.shipment ?? 'Unknown', !p.shipment], ['Expected', p.expected ? kwDate(p.expected, false) : 'Not recorded', !p.expected]]} />
+        {p.history.length ? (<>
+          <Legend />
+          {p.history.map((h, i) => (
+            <div key={i} className="flex items-center gap-2.5 border-t border-[#efe9dd] px-0.5 py-2.5 first:border-t-0">
+              <Mark basis={h.basis} />
+              <div><div className="text-[13.5px] font-semibold">{h.part ? 'Received in part' : 'Received'}</div><div className="mt-0.5 text-[12px] tabular-nums text-[#667085]">{h.basis === 'ls' ? kwDate(h.at) : `by ${kwDate(h.at)}`}</div></div>
             </div>
-          </div>
-        );
-      })}</div>
-      {!all && p.lines.length > 6 && <button type="button" onClick={() => setAll(true)} className="block w-full border-t border-[#f0eadf] bg-white p-3 text-[13.5px] font-semibold text-[#22304d]">Show all {p.lines.length}</button>}
-    </>)}
-    {tab === 'recv' && (<>
-      <KV rows={[['Shipment', p.shipment ?? 'Unknown', !p.shipment], ['Expected', p.expected ? kwDate(p.expected, false) : 'Not recorded', !p.expected]]} />
-      {p.history.length ? (<>
-        <Legend />
-        {p.history.map((h, i) => (
-          <div key={i} className="flex items-center gap-2.5 border-t border-[#efe9dd] px-0.5 py-[11px] first:border-t-0">
-            <Mark basis={h.basis} />
-            <div><div className="text-[13.5px] font-semibold">{h.part ? 'Received in part' : 'Received'}</div><div className="mt-0.5 text-[12px] tabular-nums text-[#667085]">{h.basis === 'ls' ? kwDate(h.at) : `by ${kwDate(h.at)}`}</div></div>
-          </div>
-        ))}
-      </>) : <Tiny>{p.received > 0 ? `No receiving time on record (log began ${kwDate(dock.logStarted, false)}).` : 'Nothing received yet.'}</Tiny>}
-    </>)}
-    {tab === 'pay' && (
-      <KV rows={[['Total', kdW(p.cost, 3)], ['Paid', kdW(p.paid, 3)], ['Unpaid', kdW(p.unpaid, 3)],
-        ['Paid on', p.paidOn ? kwDate(p.paidOn, false) : '—', !p.paidOn], ['Method', p.method ?? '—', !p.method], ['Invoice', p.invoice ? 'Received' : p.invoice === false ? 'Not received' : '—', !p.invoice]]} />
-    )}
-    <Tiny>Data as of {kwDate(dock.asOf)}</Tiny>
-  </>);
+          ))}
+        </>) : <Tiny>{p.received > 0 ? `No receiving time on record (log began ${kwDate(dock.logStarted, false)}).` : 'Nothing received yet.'}</Tiny>}
+      </>))}
+      {pane('pay', (
+        <KV rows={[['Total', kdW(p.cost, 3)], ['Paid', kdW(p.paid, 3)], ['Unpaid', kdW(p.unpaid, 3)],
+          ['Paid on', p.paidOn ? kwDate(p.paidOn, false) : '—', !p.paidOn], ['Method', p.method ?? '—', !p.method], ['Invoice', p.invoice ? 'Received' : p.invoice === false ? 'Not received' : '—', !p.invoice]]} />
+      ))}
+    </div>
+  );
   return <Frame title={p.po} sub={shortName(p.supplier)} pin={pin} body={body} full bodyRef={bodyRef} tip={tip} setTip={setTip} {...f} />;
 }
 
@@ -298,7 +325,7 @@ function ReceivingSheet({ dock, tab0, openPo, ...f }: SheetBase & { dock: DockDa
   const [tip, setTip] = useState<Tip>(null);
   const byId = new Map(dock.pos.map((p) => [p.id, p]));
   const body = (<>
-    <Big items={[[dock.partial.length, 'partly received'], [kdW(sumOf(dock.partial, 'outstanding')), 'still to come']]} />
+    <Summary items={[[dock.partial.length, 'partly received'], [kdW(sumOf(dock.partial, 'outstanding')), 'to come']]} />
     <Tabs<'part' | 'hist'> items={[['part', 'Partly received'], ['hist', `History ${dock.history.length}`]]} on={tab} set={setTab} />
     {tab === 'part' && dock.partial.map((p) => <PoRow key={p.id} p={p} amount={kdW(p.outstanding)} open={() => openPo(p)} onTip={setTip} />)}
     {tab === 'hist' && (<>
@@ -324,14 +351,14 @@ function PaymentsSheet({ dock, tab0, openPo, ...f }: SheetBase & { dock: DockDat
   const [tab, setTab] = useState(tab0);
   const [tip, setTip] = useState<Tip>(null);
   const pane = (arr: DockPo[], key: 'unpaid' | 'paid', label: string) => (<>
-    <Big items={[[kdW(sumOf(arr, key)), label], [arr.length, 'orders']]} />
+    <div className="mt-2"><Summary items={[[kdW(sumOf(arr, key)), label], [arr.length, arr.length === 1 ? 'order' : 'orders']]} /></div>
     {arr.map((p) => <PoRow key={p.id} p={p} amount={kdW(p[key])} open={() => openPo(p)} onTip={setTip} />)}
   </>);
   const body = (<>
     <Tabs<'owed' | 'ahead' | 'due'> items={[['owed', 'Owed'], ['ahead', 'Paid ahead'], ['due', 'Unpaid']]} on={tab} set={setTab} />
-    {tab === 'owed' && pane(dock.owed, 'unpaid', 'owed for goods received')}
-    {tab === 'ahead' && pane(dock.ahead, 'paid', 'paid before receipt')}
-    {tab === 'due' && pane(dock.due, 'unpaid', 'unpaid, nothing received')}
+    {tab === 'owed' && pane(dock.owed, 'unpaid', 'in total')}
+    {tab === 'ahead' && pane(dock.ahead, 'paid', 'in total')}
+    {tab === 'due' && pane(dock.due, 'unpaid', 'in total')}
     <Tiny>As entered in Supplier Payments · data as of {kwDate(dock.asOf)}</Tiny>
   </>);
   return <Frame title="Payments" sub={null} pin={null} body={body} full={false} tip={tip} setTip={setTip} {...f} />;

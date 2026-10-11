@@ -57,7 +57,7 @@ export const CORRIDORS: Rect[] = [
 ];
 
 /* The road runs past the dock's yard. */
-export const ROAD = { x0: ROOMS.dock.x1 + 5, x1: ROOMS.dock.x1 + 8, y0: Math.min(-9, MALL.y0 - 6, ROOMS.dock.y0 - 7), y1: 27 };
+export const ROAD = { x0: ROOMS.dock.x1 + 9, x1: ROOMS.dock.x1 + 12, y0: Math.min(-9, MALL.y0 - 6, ROOMS.dock.y0 - 7), y1: 27 };
 export const BOUNDS = { x0: Math.min(-30, MALL.x0 - 5), y0: ROAD.y0, x1: ROAD.x1 + 3, y1: 27 };
 
 const REP_SLOTS: [number, number][] = [[1, 19], [2, 19], [4, 19], [5, 19], [7, 19], [8, 19]];
