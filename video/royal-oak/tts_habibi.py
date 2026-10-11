@@ -14,12 +14,12 @@ OUT = os.path.join(H, 'voice-habibi'); os.makedirs(os.path.join(OUT, 'clips'), e
 REF_TEXT = 'وين تو الناس متى تصحى ومتى تفطر وتغير يبيلك ساعة يعني بالله تروح الشغل الساعة عشره.'
 SPEED = 0.9            # a little slower than the model's natural pace: a documentary narrator, not a conversation
 # English and foreign words are written in Latin letters for the model only (the owner asked for brand names, people's
-# names and cities to be read in English); the captions keep the Arabic spelling.
+# names and cities to be read in English; people's names in their own French spelling); the captions keep the Arabic spelling.
 PRON = {
-    'جيرالد جنتا': 'Gerald Genta', 'جنتا': 'Genta', 'جيرالد': 'Gerald',
+    'جيرالد جنتا': 'Gérald Genta', 'جنتا': 'Genta', 'جيرالد': 'Gérald',
     'جورج غولاي': 'Georges Golay', 'غولاي': 'Golay',
     'كارلو دي ماركي': 'Carlo de Marchi', 'شارل بوتي': 'Charles Bauty', 'شارل دورو': 'Charles Dorot',
-    'يونيفرسال جنيف': 'Universal Geneve', 'جنيف': 'Geneva', 'بازل': 'Basel', 'تورينو': 'Torino', 'لوزان': 'Lausanne', 'باريس': 'Paris',
+    'يونيفرسال جنيف': 'Universal Genève', 'جنيف': 'Geneva', 'بازل': 'Basel', 'تورينو': 'Torino', 'لوزان': 'Lausanne', 'باريس': 'Paris',
     'إس إيه إس': 'S.A.S', 'البولروتر': 'Polerouter', 'أوميغا': 'Omega', 'الكونستليشن': 'Constellation',
     'أوديمار بيغيه': 'Audemars Piguet', 'الرويال أوك': 'Royal Oak', 'سيكو': 'Seiko', 'الكوارتز': 'quartz', 'كوارتز': 'quartz',
     'ملم': 'ملي',
