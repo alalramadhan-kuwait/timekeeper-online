@@ -6,7 +6,9 @@ letters (tts_habibi.PRON), the captions keep the Arabic spelling.
 Rules from the owner: never create, replace, edit or delete a voice (this script only reads voices); nothing that costs
 characters runs without --yes, and without it every generating command only prints what it would send.
 
-  ELEVENLABS_API_KEY comes from the environment settings (never from the chat or the repo).
+  The key is a network secret on the cloud environment: the agent proxy adds it to requests for api.elevenlabs.io as
+  the xi-api-key header (Bearer is refused by ElevenLabs), so the session never sees it. An ELEVENLABS_API_KEY
+  environment variable, if one is set, is sent as xi-api-key instead. Never from the chat or the repo.
   python3 tts_eleven.py --check                          is the key accepted; plan and characters left
   python3 tts_eleven.py --mine                           the voices in the account (ids, type, languages, models)
   python3 tts_eleven.py --models [VOICE_ID]              text-to-speech models that speak Arabic (and, given a voice, which it is tuned on)
@@ -34,10 +36,10 @@ ALI = re.compile(r'ali|alyousifi|yousifi|علي|اليوسفي', re.I)
 
 
 def call(path, body=None, query=None):
-    if not os.environ.get('ELEVENLABS_API_KEY'): sys.exit('ELEVENLABS_API_KEY is not in this session (add it in the environment settings, then open a new session)')
     url = API + path + ('?' + urllib.parse.urlencode(query) if query else '')
-    req = urllib.request.Request(url, data=None if body is None else json.dumps(body).encode('utf-8'), method='GET' if body is None else 'POST',
-                                 headers={'xi-api-key': os.environ['ELEVENLABS_API_KEY'], 'Content-Type': 'application/json'})
+    headers = {'Content-Type': 'application/json'}
+    if os.environ.get('ELEVENLABS_API_KEY'): headers['xi-api-key'] = os.environ['ELEVENLABS_API_KEY']   # else the agent proxy adds it (network secret)
+    req = urllib.request.Request(url, data=None if body is None else json.dumps(body).encode('utf-8'), method='GET' if body is None else 'POST', headers=headers)
     try:
         with urllib.request.urlopen(req, timeout=120) as r: return r.read()
     except urllib.error.HTTPError as e:
