@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Score for the two Arabic parts (part1.json, part2.json), synthesised like score.py: electric piano, round bass,
+"""Score for the three Arabic parts (part1.json, part2.json, part3.json), synthesised like score.py: electric piano, round bass,
 brushed drums, string pad, celesta. Each scene gets a mood from MOODS, cut to its exact start and length.
 
    python3 score_parts.py part1.json music1.wav      (or part2.json)"""
@@ -122,11 +122,14 @@ def segment(chords, t0, t1):
     d = (t1 - t0) / len(chords); return [(c, t0 + i * d, t0 + (i + 1) * d) for i, c in enumerate(chords)]
 
 
-part = 1 if 'part1' in sys.argv[1] else 2
+part = 1 if 'part1' in sys.argv[1] else 3 if 'part3' in sys.argv[1] else 2
 MOODS = {1: [('pad', ['Dm9', 'Fmaj9']), ('rewind', ['Dmaj9']), ('groove_light', ['Fmaj9', 'C7']), ('hit', ['Dmaj9']), ('groove_light', ['Am7', 'Gmaj7']),
-             ('groove', ['Gm9', 'C7']), ('groove', ['Bbmaj7', 'A7']), ('pad', ['Dm9', 'G13']), ('groove_light', ['Fmaj9', 'Bbmaj7']), ('tension', ['Dm'])],
-         2: [('pad', ['Dm9', 'Bbmaj7']), ('groove', ['Dm9', 'G13']), ('groove', ['Gm9', 'C7']), ('pad', ['Dm9', 'Bbmaj7', 'Gm9', 'A7']), ('groove', ['Dm9', 'G13']), ('celesta', ['Bbmaj7', 'Am7']), ('strings', ['Dm', 'Bb', 'F', 'C']),
-             ('pad', ['Fmaj9']), ('groove', ['Gm9', 'C7', 'Fmaj9', 'A7']), ('hit', ['Dmaj9', 'Gmaj7']), ('final', ['Bbmaj7', 'Dmaj9'])]}[part]
+             ('groove', ['Gm9', 'C7']), ('groove', ['Fmaj9', 'C7']), ('groove', ['Bbmaj7', 'A7']), ('pad', ['Dm9', 'G13']), ('pad', ['Gm9', 'C7']),
+             ('groove_light', ['Fmaj9', 'Bbmaj7']), ('tension', ['Dm'])],
+         2: [('pad', ['Dm9', 'Bbmaj7']), ('pad', ['Dm9', 'Bbmaj7', 'Gm9', 'A7']), ('groove', ['Dm9', 'G13']), ('groove', ['Gm9', 'C7']), ('groove', ['Dm9', 'G13']),
+             ('celesta', ['Bbmaj7', 'Am7']), ('celesta', ['Gm9', 'A7']), ('strings', ['Dm', 'Bb', 'F', 'C']), ('tension', ['Dm'])],
+         3: [('pad', ['Fmaj9', 'C7']), ('groove', ['Gm9', 'C7', 'Fmaj9', 'A7']), ('groove', ['Dm9', 'G13']), ('celesta', ['Bbmaj7', 'Am7']),
+             ('hit', ['Dmaj9', 'Gmaj7']), ('groove', ['Gm9', 'C7']), ('groove_light', ['Fmaj9', 'Bbmaj7']), ('final', ['Bbmaj7', 'Dmaj9'])]}[part]
 for i, (mood, chords) in enumerate(MOODS):
     a, b = float(starts[i]), float(starts[i] + durs[i])
     segs = segment(chords, a, b)

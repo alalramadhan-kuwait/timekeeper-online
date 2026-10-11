@@ -20,8 +20,10 @@ PRON = {
     'جورج غولاي': 'Georges Golay', 'غولاي': 'Golay',
     'كارلو دي ماركي': 'Carlo de Marchi', 'شارل بوتي': 'Charles Bauty', 'شارل دورو': 'Charles Dorot',
     'يونيفرسال جنيف': 'Universal Genève', 'جنيف': 'Geneva', 'بازل': 'Basel', 'تورينو': 'Torino', 'لوزان': 'Lausanne', 'باريس': 'Paris',
-    'إس إيه إس': 'S.A.S', 'البولروتر': 'Polerouter', 'أوميغا': 'Omega', 'الكونستليشن': 'Constellation',
-    'أوديمار بيغيه': 'Audemars Piguet', 'الرويال أوك': 'Royal Oak', 'سيكو': 'Seiko', 'الكوارتز': 'quartz', 'كوارتز': 'quartz',
+    'إس إيه إس': 'S.A.S', 'البولروتر': 'Polerouter', 'بولروتر': 'Polerouter', 'بولاراوتر': 'Polarouter', 'أوميغا': 'Omega', 'الكونستليشن': 'Constellation',
+    'أوديمار بيغيه': 'Audemars Piguet', 'الرويال أوك': 'Royal Oak', 'سيكو': 'Seiko', 'الكوارتز': 'Quartz', 'كوارتز': 'Quartz', 'الستيل': 'Steel', 'ستيل': 'Steel', 'الذهب الأبيض': 'White Gold', 'الذهب': 'Gold',
+    'فافر-بيريه': 'Favre-Perret', 'غاي فرير': 'Gay Frères', 'سفاري': 'Safari', 'إكسكاليبر': 'Excalibur', 'تشارلز الثاني': 'Charles II',
+    'دي ماركي': 'de Marchi', 'بوتي': 'Bauty', 'العيار ألفان ومئة وواحد وعشرون': 'Calibre 2121',
     'ملم': 'ملي',
 }
 DIAC = re.compile('[\u064B-\u0652]')
