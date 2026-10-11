@@ -1,0 +1,28 @@
+[
+ {
+  "file": "01_abu_salem_eleven_multilingual_v2.mp3",
+  "voice_id": "G1QUjBCuRBbLbAmYlTgl",
+  "model": "eleven_multilingual_v2",
+  "settings": {
+   "stability": 0.5,
+   "similarity_boost": 0.75,
+   "style": 0,
+   "use_speaker_boost": true,
+   "speed": 0.92
+  },
+  "text": "Basel، ألف وتسعمية واثنين وسبعين. Royal Oak، الموديل خمسة أربعة صفر اثنين، بقطر تسعة وثلاثين ملي… ضخمة بمقاييس وقتها."
+ },
+ {
+  "file": "02_abu_salem_eleven_v3.mp3",
+  "voice_id": "G1QUjBCuRBbLbAmYlTgl",
+  "model": "eleven_v3",
+  "settings": {
+   "stability": 0.5,
+   "similarity_boost": 0.75,
+   "style": 0,
+   "use_speaker_boost": true,
+   "speed": 0.92
+  },
+  "text": "Basel، ألف وتسعمية واثنين وسبعين. Royal Oak، الموديل خمسة أربعة صفر اثنين، بقطر تسعة وثلاثين ملي… ضخمة بمقاييس وقتها."
+ }
+]
