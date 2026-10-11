@@ -30,7 +30,8 @@ try: import imageio_ffmpeg; FF = os.environ.get('FFMPEG', imageio_ffmpeg.get_ffm
 except ImportError: FF = os.environ.get('FFMPEG', 'ffmpeg')
 VOICE = os.environ.get('ELEVEN_VOICE', '')
 MODEL = os.environ.get('ELEVEN_MODEL', 'eleven_multilingual_v2')
-SETTINGS = {'stability': .5, 'similarity_boost': .75, 'style': 0, 'use_speaker_boost': True, 'speed': .92}   # a little slower: a documentary narrator
+SETTINGS = {'stability': .5, 'similarity_boost': .75, 'style': 0, 'use_speaker_boost': True,
+            'speed': float(os.environ.get('ELEVEN_SPEED', .92))}   # a little slower: a documentary narrator
 SEED = 1234
 ALI = re.compile(r'\bali\b|alyousifi|yousifi|علي|اليوسفي', re.I)
 
