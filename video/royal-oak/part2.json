@@ -531,7 +531,7 @@
       "type": "float",
       "amp": 3,
       "speed": 0.25,
-      "phase": 4.11,
+      "phase": 4.93,
       "from": 8.67
      }
     },
@@ -722,7 +722,7 @@
       "type": "float",
       "amp": 3,
       "speed": 0.25,
-      "phase": 6.01,
+      "phase": 4.42,
       "from": 12.68
      }
     },
@@ -1513,7 +1513,7 @@
       "type": "float",
       "amp": 3,
       "speed": 0.25,
-      "phase": 2.14,
+      "phase": 5.73,
       "from": 5.46
      }
     },
@@ -1801,7 +1801,7 @@
       "type": "float",
       "amp": 3,
       "speed": 0.25,
-      "phase": 1.88,
+      "phase": 3.9,
       "from": 12.98
      }
     }
@@ -4287,7 +4287,7 @@
       "type": "float",
       "amp": 3,
       "speed": 0.25,
-      "phase": 4.46,
+      "phase": 1.48,
       "from": 6.95
      }
     },
@@ -5021,7 +5021,7 @@
       "type": "float",
       "amp": 3,
       "speed": 0.25,
-      "phase": 6.12,
+      "phase": 0.91,
       "from": 6.41
      }
     },
@@ -5520,7 +5520,7 @@
      "gain": -12
     },
     {
-     "at": 3.6,
+     "at": 2.3,
      "name": "tick_pair",
      "gain": -8
     }

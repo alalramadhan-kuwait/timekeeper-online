@@ -600,7 +600,7 @@
       "type": "float",
       "amp": 3,
       "speed": 0.25,
-      "phase": 4.46,
+      "phase": 1.48,
       "from": 0.62
      }
     },
@@ -789,7 +789,7 @@
       "type": "float",
       "amp": 3,
       "speed": 0.25,
-      "phase": 3.82,
+      "phase": 4.24,
       "from": 7.06
      }
     },
@@ -1117,7 +1117,7 @@
       "type": "float",
       "amp": 3,
       "speed": 0.25,
-      "phase": 4.96,
+      "phase": 1.94,
       "from": 10.91
      }
     },
@@ -1475,7 +1475,7 @@
       "type": "float",
       "amp": 3,
       "speed": 0.25,
-      "phase": 3.82,
+      "phase": 3.08,
       "from": 4.37
      }
     },
@@ -2409,7 +2409,7 @@
       "type": "float",
       "amp": 3,
       "speed": 0.25,
-      "phase": 5.05,
+      "phase": 2.84,
       "from": 11.71
      }
     },
@@ -3149,7 +3149,7 @@
       "type": "float",
       "amp": 3,
       "speed": 0.25,
-      "phase": 1.85,
+      "phase": 2.21,
       "from": 8.75
      }
     },
@@ -3540,7 +3540,7 @@
       "type": "float",
       "amp": 3,
       "speed": 0.25,
-      "phase": 4.04,
+      "phase": 0.76,
       "from": 2.29
      }
     }
@@ -3847,7 +3847,7 @@
       "type": "float",
       "amp": 3,
       "speed": 0.25,
-      "phase": 1.52,
+      "phase": 0.25,
       "from": 9.03
      }
     },
@@ -3896,7 +3896,7 @@
       "type": "float",
       "amp": 3,
       "speed": 0.25,
-      "phase": 4.2,
+      "phase": 5.63,
       "from": 9.38
      }
     },
@@ -3945,7 +3945,7 @@
       "type": "float",
       "amp": 3,
       "speed": 0.25,
-      "phase": 3.82,
+      "phase": 4.24,
       "from": 9.73
      }
     },
@@ -3994,7 +3994,7 @@
       "type": "float",
       "amp": 3,
       "speed": 0.25,
-      "phase": 4.96,
+      "phase": 1.94,
       "from": 10.08
      }
     },
@@ -4127,7 +4127,7 @@
       "type": "float",
       "amp": 3,
       "speed": 0.25,
-      "phase": 0.1,
+      "phase": 4.36,
       "from": 14.75
      }
     },
@@ -4717,7 +4717,7 @@
      "gain": -12
     },
     {
-     "at": 3.6,
+     "at": 2.3,
      "name": "tick_pair",
      "gain": -8
     }
