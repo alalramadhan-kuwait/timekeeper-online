@@ -66,3 +66,5 @@ The run finished in 21 minutes on CPU. 22 clips trained and 2 were held out.
 - Validation loss fell by step 150, so the model is learning.
 - By step 300 it rose again, a sign of memorising 22 clips.
 - Loss is a diagnostic only: the user's ear picks the step.
+
+Checkpoint pick (artifact TooE9ASa11KYApy9XWkip3): step 300 won both sentences (u06, t01), so the comparison uses step 300 (artifact DN4rC4LDrdYt16Vr4dQRfi).
