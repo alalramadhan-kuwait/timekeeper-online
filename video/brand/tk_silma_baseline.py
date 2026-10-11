@@ -23,7 +23,7 @@ _orig = cfm.list_str_to_idx
 def logged(text, vocab):
     seen.extend(text); return _orig(text, vocab)
 cfm.list_str_to_idx = logged
-ROOT = Path("/home/user/timekeeper-online"); OUT = ROOT / "voice-src/silma-baseline"
+import os; ROOT = Path("/home/user/timekeeper-online"); OUT = Path(os.environ.get("TK_OUT", ROOT / "voice-src/silma-baseline"))
 cfg = OmegaConf.load("/root/silma-check/config.yaml")
 model = U.load_model(get_class(f"silma_tts.model.{cfg.model.backbone}"), cfg.model.arch, "/root/silma-check/model.pt",
                      "vocos", "/root/silma-check/vocab.txt", "euler", False, "cpu")
