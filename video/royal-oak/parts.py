@@ -280,8 +280,8 @@ P1.S('p1-h', 'ro-paper', C, els, transition='cut',
 
 # 0  The famous Genta (the watch on his wrist first), then back to 1954
 use('p1-0')
-C = 'هذا جيرالد جنتا… | من أَشْهَرِ | مصممي الساعات | في التاريخ. | لكن قبل أن | يصبح اسمه | أسطورة… | لنعد إلى البداية.'
-t_back = at('p1-0', C, 'لنعد'); t_leg = at('p1-0', C, 'أسطورة…')
+C = 'هذا جيرالد جنتا… | من أَشْهَرِ | مصممي الساعات | في التاريخ. | لكن قبل أن | يصبح اسمه | أسطورة… | لنعود إلى البداية.'
+t_back = at('p1-0', C, 'لنعود'); t_leg = at('p1-0', C, 'أسطورة…')
 portrait = polaroid('assets/src/genta', 360, 600, 500, 0, label='Gérald Genta', z=18, kind='none', until=V(1.55), fixed=True)
 pw = 472; ph = pw / portrait['aspect']; wrist = (360 - pw / 2 + .37 * pw, 600 - 22 - ph / 2 + .77 * ph)
 els = [svg(760, 1320, curtain(), [[0, 360], [t_back, 360], [V(7.7), 320, 'inOutCubic']], 640, z=0, kind=None, shadow=False, depth=.6, still=True),
