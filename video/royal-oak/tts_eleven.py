@@ -122,7 +122,8 @@ if __name__ == '__main__':
     if cmd == '--mine': mine(); sys.exit()
     if cmd == '--models': models(args[1] if len(args) > 1 else None); sys.exit()
     if cmd == '--library': library(args[1] if len(args) > 1 else None); sys.exit()
-    src = json.load(open(os.path.join(H, 'voice-habibi', 'clips.json')))
+    script = os.environ.get('ELEVEN_SCRIPT', 'script-kw.json')                       # the approved wording, key -> text
+    src = {k: {'text': v} for k, v in json.load(open(os.path.join(H, script))).items() if not k.startswith('_')}
     if cmd == '--test':
         items = [('test', T.spoken(args[1]))]
         if not yes: plan(items, [SETTINGS]); sys.exit()
