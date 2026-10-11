@@ -531,7 +531,7 @@
       "type": "float",
       "amp": 3,
       "speed": 0.25,
-      "phase": 3.45,
+      "phase": 6.06,
       "from": 8.67
      }
     },
@@ -722,7 +722,7 @@
       "type": "float",
       "amp": 3,
       "speed": 0.25,
-      "phase": 1.23,
+      "phase": 0.73,
       "from": 12.68
      }
     },
@@ -1513,7 +1513,7 @@
       "type": "float",
       "amp": 3,
       "speed": 0.25,
-      "phase": 4.45,
+      "phase": 2.63,
       "from": 5.46
      }
     },
@@ -1562,7 +1562,7 @@
       "type": "float",
       "amp": 3,
       "speed": 0.25,
-      "phase": 4.75,
+      "phase": 5.98,
       "from": 9.29
      }
     },
@@ -1611,7 +1611,7 @@
       "type": "float",
       "amp": 3,
       "speed": 0.25,
-      "phase": 0.0,
+      "phase": 2.71,
       "from": 12.78
      }
     },
@@ -1683,7 +1683,7 @@
       "type": "float",
       "amp": 3,
       "speed": 0.25,
-      "phase": 4.06,
+      "phase": 2.78,
       "from": 14.99
      }
     },
@@ -2364,7 +2364,7 @@
       "type": "float",
       "amp": 3,
       "speed": 0.25,
-      "phase": 0.0,
+      "phase": 2.71,
       "from": 10.16
      }
     },
@@ -2408,7 +2408,7 @@
       "type": "float",
       "amp": 3,
       "speed": 0.25,
-      "phase": 4.06,
+      "phase": 2.78,
       "from": 10.36
      }
     },
@@ -4421,7 +4421,7 @@
       "type": "float",
       "amp": 3,
       "speed": 0.25,
-      "phase": 0.5,
+      "phase": 4.88,
       "from": 6.95
      }
     },
@@ -5155,7 +5155,7 @@
       "type": "float",
       "amp": 3,
       "speed": 0.25,
-      "phase": 0.63,
+      "phase": 5.29,
       "from": 6.41
      }
     },

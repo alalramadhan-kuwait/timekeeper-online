@@ -20,7 +20,7 @@ settle, the camera never holds still for long, figures stand on something, one l
 in groups of three words or fewer, and nothing sits in the caption band (y 960-1070) while captions are on."""
 import json, os, random
 from art import *
-import difflib
+import difflib, zlib
 
 H = os.path.dirname(os.path.abspath(__file__))
 ST = json.load(open(os.path.join(H, 'ro-style.json')))
@@ -78,7 +78,7 @@ def life(e, dur):
         r = e.get('rot', 0); end = e['out']['at'] if 'out' in e else dur
         if end - t_in > .6: e['rot'] = [[round(t_in, 2), r], [round(end, 2), r + (1.2 if r >= 0 else -1.2)]]
         if 'scale' not in e and end - t_in > .6: e['scale'] = [[round(t_in, 2), 1], [round(end, 2), 1.035]]
-        if 'idle' not in e: e['idle'] = {"type": "float", "amp": 3, "speed": .25, "phase": round(abs(hash(str(e.get('src') or e.get('asset')))) % 628 / 100, 2), "from": round(t_in, 2)}
+        if 'idle' not in e: e['idle'] = {"type": "float", "amp": 3, "speed": .25, "phase": round(zlib.crc32(str(e.get('src') or e.get('asset')).encode()) % 628 / 100, 2), "from": round(t_in, 2)}
     e.pop('fixed', None)
 
 
