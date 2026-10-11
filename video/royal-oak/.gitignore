@@ -7,3 +7,4 @@ renders/
 *.mp3
 __pycache__/
 *.m4a
+voice-eleven/**/*.mp3
