@@ -265,7 +265,7 @@ P1 = Part()
 # H  The hook (a question, chosen by the user): "How did a 23-year-old end up behind the world's most famous watches?"
 #    Frame 1 already carries the question; the film answers it.
 use('p1-h')
-C = 'شلون شاب | عمره ثلاثة وعشرين… | صار ورا | أشهر ساعات العالم؟'
+C = 'كيف شاب | عمره ثلاثة وعشرين… | صار ورا | أشهر ساعات العالم؟'
 t_famous = at('p1-h', C, 'أشهر ساعات')
 hk = polaroid('assets/ap/ro5402_hero', 180, 340, 220, t_famous - .1, label='Royal Oak', z=30, rot=-6, kind='pop')
 els = [svg(760, 520, floor_band('#8A7458', '#A48D6E', 520), 360, 1030, z=1, kind=None, depth=.9, shadow=False),
@@ -280,7 +280,7 @@ P1.S('p1-h', 'ro-paper', C, els, transition='cut',
 
 # 0  The famous Genta (the watch on his wrist first), then back to 1954
 use('p1-0')
-C = 'هذا جيرالد جنتا… | الرجّال اللي | رسم الرويال أوك | بليلة وحدة. | بس قبل لا | يصير اسمه | أسطورة… | خلونا نرد للبداية.'
+C = 'هذا جيرالد جنتا… | من أشهر | مصممي الساعات | بالتاريخ. | بس قبل لا | يصير اسمه | أسطورة… | خلونا نرجع للبداية.'
 t_back = at('p1-0', C, 'خلونا'); t_leg = at('p1-0', C, 'أسطورة…')
 portrait = polaroid('assets/src/genta', 360, 600, 500, 0, label='Gérald Genta', z=18, kind='none', until=V(1.55), fixed=True)
 pw = 472; ph = pw / portrait['aspect']; wrist = (360 - pw / 2 + .37 * pw, 600 - 22 - ph / 2 + .77 * ph)
@@ -309,7 +309,7 @@ P1.S('p1-0', 'ro-black', C, els,
 
 # 1  Geneva 1954: a young man of 23, a watch for SAS flights over the North Pole
 use('p1-1')
-C = 'جنيف، | سنة أربعة وخمسين. | شاب | عمره ثلاثة وعشرين | سنة بس، | يصمم لشركة | يونيفرسال جنيف | ساعة لرحلات | إس إيه إس | فوق القطب الشمالي.'
+C = 'جنيف، | سنة ألف وتسعمية | وأربعة وخمسين. | شاب | عمره ثلاثة وعشرين | سنة بس، | يصمم لشركة | يونيفرسال جنيف | ساعة لرحلات طيران | إس إيه إس | فوق القطب الشمالي.'
 CPH = dict(id='cph', lon=12.57, lat=55.68, label='كوبنهاغن'); LAX = dict(id='lax', lon=-118.24, lat=34.05, label='لوس أنجلوس')
 t_23, t_map, t_pole = at('p1-1', C, 'شاب'), V(7.3), at('p1-1', C, 'فوق القطب')
 cal = calendar([[0, 160], [.6, 560, 'inOutCubic']], [[0, 330], [.6, 250, 'inOutCubic']], '1954', at=0, z=10, scale=[[0, .62], [.6, .6]], depth=.9)
@@ -341,7 +341,7 @@ P1.S('p1-1', 'ro-alpine', C, els, transition='cut',
 
 # 2  The Polerouter (first named Polarouter): it made his name known to the watch companies
 use('p1-2')
-C = 'اسمها البولروتر… | وهي اللي خلّت | اسمه ينعرف | عند شركات الساعات.'
+C = 'اسمها البولروتر… | وهي اللي خلت | اسمه ينعرف | عند شركات الساعات.'
 t_known = at('p1-2', C, 'اسمه ينعرف')
 pol = polaroid('assets/early/polerouter', 360, 600, 520, .0, label='Universal Genève Polerouter', z=20, kind='rise')
 els = [svg(760, 360, aurora(), [[0, 340], [5.3, 380]], 230, z=1, kind='fade', at=0, dur=.6, depth=.5, shadow=False, idle={"type": "sway", "amp": 1, "speed": .2}),
@@ -359,7 +359,7 @@ P1.S('p1-2', 'ro-night', C, els, transition='fade',
 
 # 3  Omega asks him to refresh the Constellation (the photo is a 1958 piece, before his refresh)
 use('p1-3')
-C = 'عقب جات أوميغا، | وطلبت منه يجدد | مجموعة الكونستليشن.'
+C = 'بعدها جات أوميغا، | وطلبت منه يجدد | مجموعة الكونستليشن.'
 t_lift, t_con = V(1.3), at('p1-3', C, 'مجموعة')
 con = polaroid('assets/early/constellation', 290, 600, 380, V(1.4), label='Omega Constellation 1958', z=20, rot=-2, kind='rise')
 els = [svg(760, 360, aurora(), 360, 230, z=1, kind=None, depth=.5, shadow=False, opacity=.35),
@@ -383,9 +383,9 @@ P1.S('p1-3', 'ro-night', C, els, transition='slide',
 
 # 4  The early 1960s at Audemars Piguet: his name in the archives; 5179 (circle and square), 5182 (asymmetric)
 use('p1-4')
-C = 'ومع بداية الستينات، | يطلع اسمه | في أرشيف | أوديمار بيغيه… | وتنحسب له | ساعات مثل: | ساعة تجمع | الدائرة والمربع، | وساعة مو متناظرة…'
-t_name, t_cs, t_asym = at('p1-4', C, 'يطلع اسمه'), at('p1-4', C, 'الدائرة والمربع،'), at('p1-4', C, 'مو متناظرة…')
-t_79, t_82 = at('p1-4', C, 'ساعة تجمع') - .2, at('p1-4', C, 'وساعة مو') - .2
+C = 'ومع بداية الستينات، | يظهر اسمه | في أرشيف | أوديمار بيغيه: | ساعة تجمع | الدائرة والمربع، | وساعة غير متناظرة…'
+t_name, t_cs, t_asym = at('p1-4', C, 'يظهر اسمه'), at('p1-4', C, 'الدائرة والمربع،'), at('p1-4', C, 'غير متناظرة…')
+t_79, t_82 = at('p1-4', C, 'ساعة تجمع') - .2, at('p1-4', C, 'وساعة غير') - .2
 JOUX = svg(760, 240, spruce_band(), 360, 1280, anchor='b', z=2, kind=None, depth=.85, shadow=False)
 els = flips(['1955', '1958', '1960'], 170, 260, .05, .22, z=10, scale=.55, depth=.85) + [
        JOUX,
@@ -405,8 +405,8 @@ P1.S('p1-4', 'ro-paper', C, els, transition='slide',
 
 # 5  1967: a handbag watch of his design gets an honourable mention at the Prix de la Ville de Genève
 use('p1-5')
-C = 'وفي سنة | سبعة وستين، | ساعة للشنطة | من تصميمه | تاخذ تنويه خاص | في جائزة | مدينة جنيف.'
-t_bag, t_his, t_prize = at('p1-5', C, 'ساعة للشنطة'), at('p1-5', C, 'من تصميمه'), at('p1-5', C, 'تاخذ تنويه')
+C = 'وفي سنة | سبعة وستين، | ساعة شنطة | من تصميمه | تاخذ تنويه | في جائزة | مدينة جنيف.'
+t_bag, t_his, t_prize = at('p1-5', C, 'ساعة شنطة'), at('p1-5', C, 'من تصميمه'), at('p1-5', C, 'تاخذ تنويه')
 catp = polaroid('assets/crop/m8311_catalogue', 480, 560, 300, t_bag - .1, label='Ref. 8311 · Handbag watch', z=14, rot=3, labelSize=20)
 els = flips(['1962', '1964', '1966', '1967'], 170, 260, 0, .16, z=10, scale=.55, depth=.85) + [
        JOUX, catp, glint_on(catp, t_bag + .7),
@@ -422,8 +422,8 @@ P1.S('p1-5', 'ro-paper', C, els, transition='cut',
 
 # 6  Georges Golay: managing director, the first from outside the founding families
 use('p1-6')
-C = 'وفي أوديمار بيغيه | كان شريكه: | جورج غولاي… | صار المدير العام | سنة سبعة وستين، | وأول واحد | يدير الشركة | من برّا | العايلتين المؤسستين.'
-t_first, t_out = at('p1-6', C, 'وأول واحد'), at('p1-6', C, 'من برّا')
+C = 'وهناك لقى شريكه: | جورج غولاي، | المدير العام… | وأول واحد | يدير الشركة | من برا | العائلتين المؤسستين.'
+t_first, t_out = at('p1-6', C, 'وأول واحد'), at('p1-6', C, 'من برا')
 GOLAY = dict(x=540, y=1250, h=500)
 els = [polaroid('assets/ap/lebrassus1969', 360, 340, 460, .1, label='Audemars Piguet · Le Brassus · 1969', z=5, rot=-1, kind='fade',
                 opacity=[[t_first - .2, 1], [t_first + .4, .3]]),
@@ -446,7 +446,7 @@ P1.S('p1-6', 'ro-alpine', C, els, transition='slide',
 
 # 7  "We were like a tandem": if one of us wasn't convinced, we didn't make the model; both wore the 5233
 use('p1-7')
-C = 'جنتا يقول: | كنا مثل السيكل | اللي يسوقونه اثنين… | إذا واحد منا | مو مقتنع، | ما نسوي الموديل. | وحتى كانوا يلبسون | نفس الساعة.'
+C = 'جنتا يقول: | كنا مثل الدراجة | اللي يسوقها اثنين… | إذا واحد منا | مو مقتنع، | ما نسوي الموديل. | وحتى كانوا يلبسون | نفس الساعة.'
 t_ride, t_stop, t_same = V(1.0), at('p1-7', C, 'ما نسوي'), at('p1-7', C, 'وحتى كانوا')
 t_watch = at('p1-7', C, 'نفس الساعة.')
 BX = [[t_ride, -300], [t_stop, 420, 'outCubic']]; BY = 363
@@ -473,8 +473,8 @@ P1.S('p1-7', 'ro-paper', C, els, transition='fade',
 
 # 8  April 1970: 38 years old, 16 years of designs behind him; on the 10th at 4 pm, the phone rings
 use('p1-8')
-C = 'أبريل، | سنة سبعين. | جنتا عمره | ثمانية وثلاثين، | ووراه ستطعش سنة | من أيام البولروتر. | وفي يوم عشرة، | الساعة أربع العصر… | تلفونه يرن.'
-t_g, t_board, t_day, t_four = at('p1-8', C, 'جنتا عمره'), at('p1-8', C, 'ووراه ستطعش'), at('p1-8', C, 'وفي يوم'), at('p1-8', C, 'الساعة أربع')
+C = 'أبريل | ألف وتسعمية وسبعين. | جنتا عمره | ثمانية وثلاثين، | ووراه ستطعش سنة | من التصاميم. | وفي يوم عشرة، | الساعة أربعة العصر… | تلفونه يرن.'
+t_g, t_board, t_day, t_four = at('p1-8', C, 'جنتا عمره'), at('p1-8', C, 'ووراه ستطعش'), at('p1-8', C, 'وفي يوم'), at('p1-8', C, 'الساعة أربعة')
 r1, r2 = (V(10.6), V(11.6)), (V(12.3), V(13.3))
 board = [('assets/early/polerouter', 200, 245), ('assets/ap/m5179', 360, 245), ('assets/ap/m5182', 520, 245), ('assets/crop/m8311_open', 280, 385), ('assets/ap/m5233', 440, 385)]
 els = flips(['1968', '1969', '1970'], 170, 250, .05, .2, z=10, scale=.55, last_out=t_board - .2) + [
@@ -527,8 +527,8 @@ P2.S('p2-h', 'ro-night', C, els, transition='cut',
 
 # 0  Basel, 10 April 1970: Golay and the three agents (the day before the fair opened)
 use('p2-0')
-C = 'بازل، | عشرة أبريل | سنة سبعين. | قبل لا يفتح | معرض الساعات، | جورج غولاي يجتمع | ويا ثلاثة وكلاء: | كارلو دي ماركي | من تورينو، | وشارل بوتي | من لوزان، | وشارل دورو | من باريس.'
-t_hall, t_three = V(3.0), at('p2-0', C, 'ويا ثلاثة')
+C = 'بازل، | عشرة أبريل | ألف وتسعمية وسبعين. | قبل لا يفتح | معرض الساعات، | جورج غولاي يجتمع | مع ثلاثة | من الوكلاء: | كارلو دي ماركي | من تورينو، | وشارل بوتي | من لوزان، | وشارل دورو | من باريس.'
+t_hall, t_three = V(3.0), at('p2-0', C, 'مع ثلاثة')
 t_trn, t_lsn, t_par = at('p2-0', C, 'من تورينو،'), at('p2-0', C, 'من لوزان،'), at('p2-0', C, 'من باريس.')
 hero0 = polaroid('assets/ap/ro5402_hero', 360, 600, 380, 0, label='Royal Oak', z=45, kind='none', fixed=True, out={"type": "slideR", "at": V(1.5), "dur": .35})
 els = [{"type": "map", "x": 360, "y": 640, "w": 720, "h": 1280, "z": 1, "view": [[0, {"lon": 7.6, "lat": 47.0, "span": 11}], [V(1.6), {"lon": 7.6, "lat": 47.0, "span": 9}],
@@ -567,9 +567,9 @@ P2.S('p2-0', 'ro-hall', C, els,
 
 # 1  The brief: gold alone is not enough; a steel watch, sporty and elegant, for the new way of life. The Three Musketeers.
 use('p2-1')
-C = 'طلبهم واضح: | الذهب بروحه | ما يكفي. | يبون ساعة ستيل، | رياضية وأنيقة، | تمشي ويا | أسلوب الحياة الجديد. | وانعرفوا بلقب: | الفرسان الثلاثة.'
-t_gold, t_steel, t_life, t_mus = at('p2-1', C, 'الذهب بروحه'), at('p2-1', C, 'يبون ساعة'), at('p2-1', C, 'تمشي ويا'), at('p2-1', C, 'الفرسان الثلاثة.')
-t_ag = at('p2-1', C, 'وانعرفوا بلقب:')
+C = 'طلبهم واضح: | الذهب بروحه | ما يكفي. | يبون ساعة ستيل، | رياضية وأنيقة، | تناسب | أسلوب الحياة الجديد. | أوديمار بيغيه تسميهم: | الفرسان الثلاثة.'
+t_gold, t_steel, t_life, t_mus = at('p2-1', C, 'الذهب بروحه'), at('p2-1', C, 'يبون ساعة'), at('p2-1', C, 'تناسب'), at('p2-1', C, 'الفرسان الثلاثة.')
+t_ag = at('p2-1', C, 'أوديمار بيغيه')
 els = [polaroid('assets/ap/m5182', [[t_gold, 230], [t_gold + 1.4, 130, 'inOutCubic']], 700, 320, .1, label='ذهب · Ref. 5182', z=10, kind='rise', labelSize=20,
                 opacity=[[t_gold, 1], [t_gold + 1.4, .35]], rot=[[t_gold, 0], [t_gold + 1.4, -10]]),
        svg(300, 190, steel_plate(300, 190), 450, 640, z=12, kind='drop', at=t_steel - .3, dur=.5, rot=-6),
@@ -597,8 +597,8 @@ P2.S('p2-1', 'ro-steel', C, els, transition='slide',
 #     (AP Chronicles, "Birth of an Icon": "Some people saw the quartz watch as the future of luxury watchmaking and others
 #     as the death knell of mechanical watchmaking ... Within such a context, it was worth taking a gamble.")
 use('p2-q')
-C = 'والتوقيت كان حساس: | قبلها بشهور، | سيكو نزّلت أول | ساعة يد كوارتز. | ناس شافوها | المستقبل… | وناس شافوها | نهاية الميكانيك. | كانت بداية | أزمة الكوارتز… | وغولاي قرر يخاطر.'
-t_seiko, t_fut, t_end_m = at('p2-q', C, 'سيكو نزّلت أول'), at('p2-q', C, 'المستقبل…'), at('p2-q', C, 'وناس شافوها')
+C = 'والتوقيت كان حساس: | قبلها بأشهر، | سيكو طرحت أول | ساعة يد كوارتز. | ناس شافوها | المستقبل… | وناس شافوها | نهاية الميكانيك. | كانت بداية | أزمة الكوارتز… | وغولاي قرر يخاطر.'
+t_seiko, t_fut, t_end_m = at('p2-q', C, 'سيكو طرحت أول'), at('p2-q', C, 'المستقبل…'), at('p2-q', C, 'وناس شافوها')
 t_crisis, t_gamble = at('p2-q', C, 'كانت بداية'), at('p2-q', C, 'وغولاي قرر يخاطر.')
 END_Q = round(VO_AT + VO['p2-q']['seconds'] + TAIL, 2)
 dim = lambda t: {"opacity": [[t, 1], [t + .5, .25]]}
@@ -630,8 +630,8 @@ P2.S('p2-q', 'ro-night', C, els, transition='fade',
 
 # 2  4 pm (as Genta remembered it): Golay calls Genta. "I need the sketch tomorrow morning."
 use('p2-2')
-C = 'حسب ما يتذكر | جنتا، | الساعة أربع العصر، | غولاي يتصل فيه: | نبي ساعة رياضية | من الستيل، | ما انسوت | مثلها قبل… | والرسمة أبيها | باچر الصبح.'
-t_we, t_never, t_draw = at('p2-2', C, 'نبي ساعة'), at('p2-2', C, 'ما انسوت'), at('p2-2', C, 'والرسمة أبيها')
+C = 'الساعة أربعة العصر، | غولاي يتصل بجنتا: | نبي ساعة رياضية | من الستيل، | ما انسوت | مثلها قبل… | والرسم أبيه | باچر الصبح.'
+t_we, t_never, t_draw = at('p2-2', C, 'نبي ساعة'), at('p2-2', C, 'ما انسوت'), at('p2-2', C, 'والرسم أبيه')
 t_ring = V(2.3)
 TOPWALL, BOTWALL = '#D9D2C2', '#CDBFA6'
 neutral = '<rect width="240" height="180" fill="#A9B9C6"/>' + '<g transform="translate(30 40) scale(.6)">%s</g><g transform="translate(130 90) scale(.45)">%s</g>' % (cloud_paper(), cloud_paper())
@@ -668,8 +668,8 @@ P2.S('p2-2', 'ro-alpine', C, els, transition='slide',
 
 # 3  The night: the diver he saw as a boy, the helmet held by bolts over a seal
 use('p2-3')
-C = 'وطول الليل، | جنتا يتذكر | غوّاص شافه | وهو صغير | على جسر بجنيف: | خوذة مشدودة | بالبراغي، | وتحتها حلقة مطاط | تحميه من الماي.'
-t_bolts = at('p2-3', C, 'بالبراغي،')
+C = 'وطول الليل، | جنتا يتذكر | خوذة الغواص: | نافذة دائرية، | مثبتة بالبراغي.'
+t_bolts = at('p2-3', C, 'مثبتة بالبراغي.')
 els = [svg(260, 220, window(260, 220, lake(260, 220, night=True) + stars(260, 110, 8, 3)), 520, 300, z=3, kind=None, depth=.7)]
 els += wall_clock(160, 270, 11, 0, z=5, spin=(0.1, V(6.4), 2.4), depth=.75)
 els += [svg(240, 300, desk_lamp(), 95, 660, z=8, kind=None, depth=1.05),
@@ -694,7 +694,7 @@ P2.S('p2-3', 'ro-night', C, els, transition='fade',
 
 # 4  The porthole becomes an octagon: the sketch draws itself under the lamp
 use('p2-4')
-C = 'ثمان براغي | لازم لها مكان | بالإطار… | فصار الإطار ثماني. | سوار يطلع | من قلب الهيكل… | وكله ستيل.'
+C = 'النافذة تصير | شكل ثماني. | ثمان براغي واضحة. | سوار يطلع | من قلب الهيكل… | وكلها ستيل.'
 t_eight = at('p2-4', C, 'ثمان براغي')
 P_, T_ = ro_sketch(k=1.05 * R_[0])
 P_[2]['at'] = 0.0; P_[2]['dur'] = 0.01                                          # the porthole circle is there from the cut
@@ -711,7 +711,7 @@ P2.S('p2-4', 'ro-night', C, els, transition='fade', transitionDur=.3,
 
 # 5  "And this is his original drawing" (gouache and pencil, the night of 10-11 April 1970; signed)
 use('p2-5')
-C = 'وهذي رسمته الأصلية… | من ليلة عشرة | على إحدعش أبريل.'
+C = 'وهذا رسمه الأصلي… | من ليلة عشرة | على إحدعش أبريل.'
 els = [macro('assets/ap/genta_gouache', .05, V(4.6), z=10, pos='62% 50%', scale=[[.05, 1.4], [V(2.4), 1.04, 'inOutCubic'], [V(4.6), 1.02]]),
        svg(380, 1400, glint_band(1400, 260, 120, peak=.12), [[V(2.6), -100], [V(4.0), 820, 'inOutCubic']], 640, z=12, kind='none', at=V(2.6), shadow=False, depth=0, still=True),
        tag('الرسم الأصلي، ليلة 10 على 11 أبريل 1970', 360, 170, V(1.2), size=28, z=20, depth=0),
@@ -721,8 +721,8 @@ P2.S('p2-5', 'ro-black', C, els, transition='fade', transitionDur=.7, sfx=[E('pa
 
 # 6  Steel was for tools; finished like a precious watch; 3,300 francs, "the costliest steel watch in the world" (the 1972 ad)
 use('p2-6')
-C = 'الستيل كان | للساعات العملية. | بس هذي | اشتغلوا عليها | مثل الساعات الثمينة، | ونزلت بثلاثة آلاف | وثلاثمية فرنك… | أغلى من | ساعة ذهب | من نفس الشركة. | وإعلانها قالها صريحة: | أغلى ساعة ستيل | في العالم.'
-t_mac = V(2.1); t_ad = V(5.5); t_price = at('p2-6', C, 'ونزلت بثلاثة')
+C = 'الستيل كان | للساعات العملية. | بس هذي انشغلت | مثل الساعات الثمينة، | وانطرحت بثلاثة آلاف | وثلاثمية فرنك… | أغلى ساعة ستيل | في العالم.'
+t_mac = V(2.1); t_ad = V(5.5); t_price = at('p2-6', C, 'وانطرحت بثلاثة')
 ad = polaroid('assets/crop/ad1972b', 360, 560, 420, t_ad, label='Audemars Piguet · 1972', z=20, rot=-2, kind='fade')
 peg_out = {"type": "fade", "at": t_mac + .3, "dur": .1}
 els = [svg(620, 520, pegboard(), 360, 600, z=3, kind=None, out=peg_out),
@@ -743,10 +743,9 @@ P2.S('p2-6', 'ro-steel', C, els, transition='slide',
      sfx=[E('clasp', .2, -12), E('clasp', .5, -13), E('whoosh', t_mac, -14), E('shutter', t_mac + .1, -16), E('paper_place', t_ad, -10), E('stamp', t_price + .2, -8),
           E('tick', V(7.2), -16)])
 
-# 7  Basel 1972: the Royal Oak, Ref. 5402ST, 39 mm, huge for its time. Genta was at the same fair with the first watch under his own name
-#    (said in the voice; he is not shown at AP's stand).
+# 7  Basel 1972: the Royal Oak, Ref. 5402ST, 39 mm, huge for its time. (Genta was there too, but on his own stand: he is not shown at AP's.)
 use('p2-7')
-C = 'بازل، | سنة اثنين وسبعين. | الرويال أوك، | الموديل | خمسة أربعة | صفر اثنين، | بقطر | تسعة وثلاثين ملي… | ضخمة بمقاييس وقتها. | وجنتا؟ | كان بنفس المعرض… | يقدّم أول ساعة | باسمه هو.'
+C = 'بازل، | ألف وتسعمية | واثنين وسبعين. | الرويال أوك، | الموديل | خمسة أربعة | صفر اثنين، | بقطر | تسعة وثلاثين ملم… | ضخمة بمقاييس وقتها.'
 t_ro, t_39, t_big = at('p2-7', C, 'الرويال أوك،'), at('p2-7', C, 'تسعة وثلاثين'), at('p2-7', C, 'ضخمة بمقاييس')
 WX = 360
 front = polaroid('assets/ap/ro5402_front', WX, 650, 340, 0, label='Royal Oak · Réf. 5402ST', z=10, kind='none', depth=1.0, fixed=True)
@@ -785,10 +784,9 @@ P2.S('p2-7', 'ro-hall', C, els, transition='slide',
 
 # 8  The doubters; the Shah of Iran ordered the first in white gold; time proved them wrong; the famous Genta again, and the icon
 use('p2-8')
-C = 'وايد ناس | شكّوا فيها… | بس شاه إيران | طلب أول وحدة | من الذهب الأبيض. | وبنفس السنة | انباعت أربعمية | وتسعين ساعة، | رقم قياسي | للشركة. | والزمن | أثبت كل شي:'
+C = 'كثيرين شكّوا فيها… | بس شاه إيران | طلب النموذج الأول | من الذهب الأبيض. | والزمن | أثبت كل شي:'
 TEH = dict(id='teh', lon=51.39, lat=35.69, label='طهران')
-t_shah, t_first_wg, t_time = at('p2-8', C, 'بس شاه'), at('p2-8', C, 'طلب أول'), at('p2-8', C, 'والزمن')
-t_490 = at('p2-8', C, 'وبنفس السنة')
+t_shah, t_first_wg, t_time = at('p2-8', C, 'بس شاه'), at('p2-8', C, 'طلب النموذج'), at('p2-8', C, 'والزمن')
 sk_t = V(8.0); END = round(VO_AT + VO['p2-8']['seconds'] + 2.6, 2); t_dim = V(12.9)
 els = [cutout('assets/gen/crowd_doubt_cut', 360, 1150, 520, .05, z=10, kind='fade', desc=PEND, aspect=1.78, until=V(1.6), person=True),
        {"type": "map", "x": 360, "y": 640, "w": 720, "h": 1280, "z": 15,
@@ -797,8 +795,7 @@ els = [cutout('assets/gen/crowd_doubt_cut', 360, 1150, 520, .05, z=10, kind='fad
         "sea": "#CCC6B7", "land": "#F4F1E8", "pins": [dict(BSL, at=V(1.9)), dict(TEH, at=V(4.5))], "routes": [{"from": "bsl", "to": "teh", "at": V(3.2), "dur": 1.6, "plane": True, "keep": True}],
         "highlight": [{"n": "Iran", "at": V(4.6), "color": "#D9C08A"}], "unfold": {"at": V(1.6), "dur": .6}, "in": {"type": "none", "at": V(1.6)},
         "out": {"type": "fade", "at": V(6.2), "dur": .3}, "depth": 0},
-       tag('النموذج الأول، ذهب أبيض', 360, 200, t_first_wg, size=30, z=30, until=t_490 - .1, depth=0),
-       tag('490 ساعة في 1972، رقم قياسي', 360, 200, t_490 + .1, size=30, z=30, until=V(6.2), depth=0)]
+       tag('النموذج الأول، ذهب أبيض', 360, 200, t_first_wg, size=30, z=30, until=V(6.2), depth=0)]
 els += flips(['1972', '1982', '1992', '2002', '2012', '2026'], 360, 520, V(6.3), .26, z=40, last_out=V(8.0))
 els += wall_clock(360, 820, 10, 10, z=40, d=170, at=V(6.3), spin=(V(6.3), V(8.0), 6), out={"type": "fade", "at": V(8.0), "dur": .2})
 GS = dict(x=200, y=1290, h=780)

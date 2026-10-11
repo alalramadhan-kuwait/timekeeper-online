@@ -24,7 +24,7 @@ import json, os, re, subprocess, sys, urllib.error, urllib.parse, urllib.request
 import numpy as np
 H = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, H); import tts_habibi as T
-OUT = os.path.join(H, 'voice-eleven')
+OUT = os.path.join(H, os.environ.get('ELEVEN_OUT', 'voice-eleven'))                 # one folder per narrator, e.g. voice-abdullah
 API = 'https://api.elevenlabs.io'
 try: import imageio_ffmpeg; FF = os.environ.get('FFMPEG', imageio_ffmpeg.get_ffmpeg_exe())
 except ImportError: FF = os.environ.get('FFMPEG', 'ffmpeg')
