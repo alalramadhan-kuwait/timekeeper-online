@@ -220,7 +220,7 @@
       "type": "float",
       "amp": 3,
       "speed": 0.25,
-      "phase": 4.36,
+      "phase": 0.47,
       "from": 4.36
      }
     },
@@ -1500,7 +1500,7 @@
       "type": "float",
       "amp": 3,
       "speed": 0.25,
-      "phase": 3.37,
+      "phase": 4.44,
       "from": 15.29
      }
     }
@@ -1716,7 +1716,7 @@
       "type": "float",
       "amp": 3,
       "speed": 0.25,
-      "phase": 2.79,
+      "phase": 1.27,
       "from": 0.45
      }
     },
@@ -2358,7 +2358,7 @@
       "type": "float",
       "amp": 3,
       "speed": 0.25,
-      "phase": 5.73,
+      "phase": 4.99,
       "from": 3.28
      }
     },
@@ -2829,7 +2829,7 @@
       "type": "float",
       "amp": 3,
       "speed": 0.25,
-      "phase": 2.7,
+      "phase": 5.35,
       "from": 7.82
      }
     },
@@ -2873,7 +2873,7 @@
       "type": "float",
       "amp": 3,
       "speed": 0.25,
-      "phase": 3.64,
+      "phase": 2.18,
       "from": 10.4
      }
     },
@@ -3171,7 +3171,7 @@
       "type": "float",
       "amp": 3,
       "speed": 0.25,
-      "phase": 2.7,
+      "phase": 5.35,
       "from": 0.8
      }
     },
@@ -3220,7 +3220,7 @@
       "type": "float",
       "amp": 3,
       "speed": 0.25,
-      "phase": 3.64,
+      "phase": 2.18,
       "from": 1.25
      }
     },
@@ -3290,7 +3290,7 @@
       "type": "float",
       "amp": 3,
       "speed": 0.25,
-      "phase": 5.24,
+      "phase": 1.18,
       "from": 6.27
      }
     }
@@ -3534,7 +3534,7 @@
       "type": "float",
       "amp": 3,
       "speed": 0.25,
-      "phase": 5.65,
+      "phase": 3.34,
       "from": 2.92
      }
     },
@@ -3628,7 +3628,7 @@
       "type": "float",
       "amp": 3,
       "speed": 0.25,
-      "phase": 0.31,
+      "phase": 0.11,
       "from": 4.25
      }
     },
@@ -3843,7 +3843,7 @@
       "type": "float",
       "amp": 3,
       "speed": 0.25,
-      "phase": 5.11,
+      "phase": 6.0,
       "from": 0.55
      }
     },
@@ -3887,7 +3887,7 @@
       "type": "float",
       "amp": 3,
       "speed": 0.25,
-      "phase": 5.12,
+      "phase": 1.17,
       "from": 2.35
      }
     },
@@ -4262,7 +4262,7 @@
       "type": "float",
       "amp": 3,
       "speed": 0.25,
-      "phase": 5.12,
+      "phase": 1.17,
       "from": 0.65
      }
     },
@@ -4426,7 +4426,7 @@
       "type": "float",
       "amp": 3,
       "speed": 0.25,
-      "phase": 2.06,
+      "phase": 1.19,
       "from": 4.11
      }
     },
@@ -4848,7 +4848,7 @@
       "type": "float",
       "amp": 3,
       "speed": 0.25,
-      "phase": 2.06,
+      "phase": 1.19,
       "from": 9.47
      }
     },
@@ -4892,7 +4892,7 @@
       "type": "float",
       "amp": 3,
       "speed": 0.25,
-      "phase": 2.06,
+      "phase": 1.19,
       "from": 9.72
      }
     },
@@ -5209,7 +5209,7 @@
       "type": "float",
       "amp": 3,
       "speed": 0.25,
-      "phase": 2.79,
+      "phase": 1.27,
       "from": 7.48
      }
     },
@@ -5281,7 +5281,7 @@
       "type": "float",
       "amp": 3,
       "speed": 0.25,
-      "phase": 2.7,
+      "phase": 5.35,
       "from": 7.63
      }
     },
@@ -5353,7 +5353,7 @@
       "type": "float",
       "amp": 3,
       "speed": 0.25,
-      "phase": 3.64,
+      "phase": 2.18,
       "from": 7.78
      }
     },
@@ -5425,7 +5425,7 @@
       "type": "float",
       "amp": 3,
       "speed": 0.25,
-      "phase": 5.24,
+      "phase": 1.18,
       "from": 7.93
      }
     },
@@ -5497,7 +5497,7 @@
       "type": "float",
       "amp": 3,
       "speed": 0.25,
-      "phase": 2.06,
+      "phase": 1.19,
       "from": 8.08
      }
     },

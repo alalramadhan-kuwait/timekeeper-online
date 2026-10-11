@@ -627,10 +627,15 @@ for k, lx in enumerate((150, 360, 570)):
     els.append(svg(120, 110, pendant_lamp(), lx, 225, anchor='t', z=4, kind='fade', at=t_hall, dur=.4, depth=.65, idle={"type": "sway", "amp": .6, "speed": .25, "phase": k}))
 els += [tag('معرض بازل 1970', 200, 300, t_hall + .2, size=28, z=5, rot=-1, depth=.7, until=t_trn - .3, idle={"type": "sway", "amp": .6, "speed": .3}),
         polaroid('assets/ap/basel1970', 360, 470, 520, V(3.2), label='Audemars Piguet · Basel 1970', z=8, rot=-2, until=V(6.0))]
-for i, (rel, x, t, city) in enumerate([('assets/gen/golay_stand_cut', 130, V(6.1), None), ('assets/gen/demarchi_back_cut', 300, t_trn - .3, 'تورينو'),
-                                       ('assets/gen/bauty_back_cut', 460, t_lsn - .3, 'لوزان'), ('assets/gen/dorot_back_cut', 615, t_par - .3, 'باريس')]):
-    els.append(cutout(rel, x, 1240, 560, t, z=20 + i, kind='rise', dur=.45, desc=PEND, aspect=.42))
-    if city: els.append(tag(city, x, 640, t + .2, size=28, z=40, rot=(-3, 2, -2)[i - 1]))
+END0 = round(VO_AT + VO['p2-0']['seconds'] + TAIL, 2)
+for i, (rel, t, t_out, label, city) in enumerate([('assets/ap/golay1966', V(6.1), t_trn - .3, 'جورج غولاي، 1966', None),
+                                                  ('assets/ap/demarchi1940s', t_trn - .3, t_lsn - .3, 'كارلو دي ماركي، الأربعينات', 'تورينو'),
+                                                  ('assets/crop/bauty1976_right', t_lsn - .3, t_par - .3, 'شارل بوتي، باريس 1976', 'لوزان')]):
+    els.append(polaroid(rel, 200, 640, 330, t, label=label, z=20 + i, rot=(-3, 2, -2)[i], kind='rise', labelSize=19, until=t_out))
+    if city: els.append(tag(city, 440, 770, t + .2, size=34, z=40, rot=2, until=t_out))
+els += [svg(330, 165, name_card('CHARLES DOROT', 330, 165, 28), 200, 620, z=24, kind='drop', at=t_par - .3, dur=.4, rot=-2),
+        tag('لا توجد صورة موثّقة', 200, 740, t_par + .1, size=20, z=41, rot=1),
+        tag('باريس', 440, 770, t_par + .1, size=34, z=40, rot=2)]
 els += [svg(306, 306, '<rect width="306" height="306" rx="4" fill="#EFE8D6"/>', 545, 330, z=40, kind='drop', at=t_three, dur=.45, depth=0, rot=3),
         {"type": "map", "x": 545, "y": 330, "w": 284, "h": 284, "z": 41, "view": {"lon": 5.0, "lat": 47.0, "span": 7.5}, "sea": "#CCC6B7", "land": "#F4F1E8",
          "highlight": [{"n": "Switzerland", "at": 0, "color": "#E3CF9E"}, {"n": "Italy", "at": 0, "color": "#E8DCC0"}],
@@ -639,7 +644,7 @@ els += [svg(306, 306, '<rect width="306" height="306" rx="4" fill="#EFE8D6"/>', 
                     {"from": "par", "to": "bsl", "at": t_par + .1, "dur": .8, "keep": True}],
          "in": {"type": "drop", "at": t_three, "dur": .45}, "rot": 3, "depth": 0},
         svg(84, 30, '<rect width="84" height="30" fill="rgb(214,190,128)" opacity=".9"/>', 545, 180, z=42, kind='drop', at=t_three, dur=.45, depth=0, rot=-2, shadow=False),
-        polaroid('assets/ap/demarchi1940s', 165, 430, 190, t_trn - .1, label='كارلو دي ماركي، الأربعينات', z=42, rot=-5, until=t_lsn - .3, labelSize=17)]
+        ]
 P2.S('p2-0', 'ro-hall', C, els,
      camera=cam((0, 1.0, 360, 640, None), (t_hall, 1.0, 360, 640, None), (V(6.0), 1.03, 350, 660, 'inOutCubic'), (t_trn, 1.05, 330, 700, 'inOutCubic'),
                 (t_lsn, 1.07, 380, 720, 'inOutCubic'), (t_par, 1.08, 420, 740, 'inOutCubic'), (14.94, 1.06, 380, 760, 'inOutCubic')),
@@ -661,13 +666,14 @@ for k, (body, w, h, x, y) in enumerate([(icon_yacht(), 150, 160, 130, 330), (ico
                                         (icon_sunglasses(), 140, 55, 190, 890), (icon_car(), 200, 92, 540, 885)]):
     els.append(svg(w, h, body, x, y, z=14, kind='pop', at=t_life + k * .3, dur=.35, out={"type": "fade", "at": t_ag - .1, "dur": .3},
                    idle={"type": "float", "amp": 5, "speed": .5, "phase": k}))
-for i, (rel, x) in enumerate([('assets/gen/demarchi_back_cut', 170), ('assets/gen/bauty_back_cut', 360), ('assets/gen/dorot_back_cut', 550)]):
-    els.append(cutout(rel, x, 1300, 600, t_ag - .1, z=30 + i, kind='rise', dur=.45, desc=PEND, aspect=.42))
+for i, (rel, x, label) in enumerate([('assets/ap/demarchi1940s', 160, 'دي ماركي'), ('assets/crop/bauty1976_right', 360, 'بوتي')]):
+    els.append(polaroid(rel, x, 760, 280, t_ag - .1 + i * .2, label=label, z=30 + i, rot=(-5, 3)[i], kind='rise', labelSize=20))
+els.append(svg(280, 150, name_card('DOROT', 280, 150, 30), 565, 740, z=32, kind='rise', at=t_ag + .3, dur=.45, rot=-3))
 for k, r in enumerate((-35, 35, 0)):
-    els.append(svg(60, 300, rapier('rp%d' % k), 360, 470, z=40 + k, kind='grow', at=t_mus - .2 + (.2 if k == 2 else 0), dur=.35,
+    els.append(svg(60, 300, rapier('rp%d' % k), 360, 310, z=40 + k, kind='grow', at=t_mus - .2 + (.2 if k == 2 else 0), dur=.35,
                    rot=[[t_mus - .2, 0], [t_mus + .15, r, 'outBack']] if r else 0))
-els += [svg(220, 100, cavalier_hat(), 360, 300, z=44, kind='drop', at=t_mus + .25, dur=.4),
-        tag('الفرسان الثلاثة', 360, 170, t_mus, size=40, z=45)]
+els += [svg(220, 100, cavalier_hat(), 360, 145, z=44, kind='drop', at=t_mus + .25, dur=.4),
+        tag('الفرسان الثلاثة', 360, 70, t_mus, size=40, z=45)]
 P2.S('p2-1', 'ro-steel', C, els, transition='slide',
      camera=cam((0, 1.0, 360, 640, None), (t_life, 1.04, 420, 640, 'inOutCubic'), (t_ag - .2, 1.06, 380, 620, 'inOutCubic'), (t_mus - .3, 1.0, 360, 620, 'inOutCubic'),
                 (11.93, 1.06, 360, 520, 'inOutCubic')),
@@ -920,8 +926,7 @@ els = [svg(900, 1100, hall(), 360, 560, z=1, kind=None, depth=.55, shadow=False)
            {"d": 'M 279 460 L 279 480 M 443 460 L 443 480', "at": t_39 + .4, "dur": .15, "stroke": "#EFE8D6", "width": 3, "opacity": 1}],
           z=20, depth=1.0, texts=[{"text": "39 mm", "x": 240, "y": 477, "size": 20, "at": t_39 + .3, "dur": .4, "anchor": "middle", "color": "#EFE8D6", "font": "var(--f-banner)"}]),
        tag('وسماكتها 7 ملم فقط', 360, 1130, t_big + .6, size=26, z=46, rot=1, depth=0),
-       polaroid('assets/ap/firstpub1972', 165, 640, 280, t_big, label='أول ظهور، فبراير 1972', z=24, rot=-5, labelSize=16),
-       cutout('assets/gen/crowd_back_cut', 360, 1300, 380, .3, z=40, kind='rise', dur=.6, desc=PEND, aspect=1.78, depth=1.3)]
+       polaroid('assets/ap/firstpub1972', 165, 640, 280, t_big, label='أول ظهور، فبراير 1972', z=24, rot=-5, labelSize=16)]
 els += motes(cone_points(WX, 9, 11, y0=380, y1=1000, spread=.35), at=t_ro, z=8, depth=.95)
 for fx, fy, t, s_ in [(640, 820, t_ro + .2, 1), (680, 560, t_ro + .45, 1), (330, 470, t_ro + .75, 1), (60, 520, V(9.4), .6)]:
     els.append(svg(240, 240, flash(), fx, fy, z=45, kind='pop', at=t, dur=.08, shadow=False, depth=1.2, scale=s_, out={"type": "fade", "at": t + .18, "dur": .15}))

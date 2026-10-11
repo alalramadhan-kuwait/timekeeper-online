@@ -531,7 +531,7 @@
       "type": "float",
       "amp": 3,
       "speed": 0.25,
-      "phase": 4.93,
+      "phase": 4.0,
       "from": 8.67
      }
     },
@@ -722,7 +722,7 @@
       "type": "float",
       "amp": 3,
       "speed": 0.25,
-      "phase": 4.42,
+      "phase": 3.43,
       "from": 12.68
      }
     },
@@ -1513,83 +1513,187 @@
       "type": "float",
       "amp": 3,
       "speed": 0.25,
-      "phase": 5.73,
+      "phase": 0.83,
       "from": 5.46
      }
     },
     {
-     "type": "cutout",
-     "x": 130,
-     "y": 1240,
-     "h": 560,
-     "aspect": 0.42,
-     "edge": 0,
+     "type": "image",
+     "src": "assets/ap/golay1966.jpg",
+     "polaroid": true,
+     "aspect": 1.3179571663920921,
+     "label": "جورج غولاي، 1966",
+     "w": 330,
+     "x": 200,
+     "y": 640,
      "z": 20,
+     "rot": [
+      [
+       9.29,
+       -3
+      ],
+      [
+       12.33,
+       -4.2
+      ]
+     ],
      "in": {
       "type": "rise",
       "at": 8.84,
       "dur": 0.45
      },
-     "asset": "gen/golay_stand_cut",
-     "desc": "paper character, waiting for Higgsfield credits"
+     "labelSize": 19,
+     "out": {
+      "type": "fade",
+      "at": 12.33,
+      "dur": 0.25
+     },
+     "scale": [
+      [
+       9.29,
+       1
+      ],
+      [
+       12.33,
+       1.035
+      ]
+     ],
+     "idle": {
+      "type": "float",
+      "amp": 3,
+      "speed": 0.25,
+      "phase": 1.17,
+      "from": 9.29
+     }
     },
     {
-     "type": "cutout",
-     "x": 300,
-     "y": 1240,
-     "h": 560,
-     "aspect": 0.42,
-     "edge": 0,
+     "type": "image",
+     "src": "assets/ap/demarchi1940s.jpg",
+     "polaroid": true,
+     "aspect": 0.7142857142857143,
+     "label": "كارلو دي ماركي، الأربعينات",
+     "w": 330,
+     "x": 200,
+     "y": 640,
      "z": 21,
+     "rot": [
+      [
+       12.78,
+       2
+      ],
+      [
+       14.54,
+       3.2
+      ]
+     ],
      "in": {
       "type": "rise",
       "at": 12.33,
       "dur": 0.45
      },
-     "asset": "gen/demarchi_back_cut",
-     "desc": "paper character, waiting for Higgsfield credits"
+     "labelSize": 19,
+     "out": {
+      "type": "fade",
+      "at": 14.54,
+      "dur": 0.25
+     },
+     "scale": [
+      [
+       12.78,
+       1
+      ],
+      [
+       14.54,
+       1.035
+      ]
+     ],
+     "idle": {
+      "type": "float",
+      "amp": 3,
+      "speed": 0.25,
+      "phase": 0.34,
+      "from": 12.78
+     }
     },
     {
      "type": "text",
      "text": "تورينو",
-     "x": 300,
-     "y": 640,
+     "x": 440,
+     "y": 770,
      "font": "banner",
-     "size": 28,
+     "size": 34,
      "color": "#16181D",
      "paper": "#EFE8D6",
      "upper": false,
      "z": 40,
-     "rot": -3,
+     "rot": 2,
      "in": {
       "type": "pop",
       "at": 12.53,
       "dur": 0.35
+     },
+     "out": {
+      "type": "fade",
+      "at": 14.54,
+      "dur": 0.2
      }
     },
     {
-     "type": "cutout",
-     "x": 460,
-     "y": 1240,
-     "h": 560,
-     "aspect": 0.42,
-     "edge": 0,
+     "type": "image",
+     "src": "assets/crop/bauty1976_right.jpg",
+     "polaroid": true,
+     "aspect": 0.5626702997275205,
+     "label": "شارل بوتي، باريس 1976",
+     "w": 330,
+     "x": 200,
+     "y": 640,
      "z": 22,
+     "rot": [
+      [
+       14.99,
+       -2
+      ],
+      [
+       16.68,
+       -3.2
+      ]
+     ],
      "in": {
       "type": "rise",
       "at": 14.54,
       "dur": 0.45
      },
-     "asset": "gen/bauty_back_cut",
-     "desc": "paper character, waiting for Higgsfield credits"
+     "labelSize": 19,
+     "out": {
+      "type": "fade",
+      "at": 16.68,
+      "dur": 0.25
+     },
+     "scale": [
+      [
+       14.99,
+       1
+      ],
+      [
+       16.68,
+       1.035
+      ]
+     ],
+     "idle": {
+      "type": "float",
+      "amp": 3,
+      "speed": 0.25,
+      "phase": 2.03,
+      "from": 14.99
+     }
     },
     {
      "type": "text",
      "text": "لوزان",
-     "x": 460,
-     "y": 640,
+     "x": 440,
+     "y": 770,
      "font": "banner",
-     "size": 28,
+     "size": 34,
      "color": "#16181D",
      "paper": "#EFE8D6",
      "upper": false,
@@ -1599,39 +1703,62 @@
       "type": "pop",
       "at": 14.739999999999998,
       "dur": 0.35
+     },
+     "out": {
+      "type": "fade",
+      "at": 16.68,
+      "dur": 0.2
      }
     },
     {
-     "type": "cutout",
-     "x": 615,
-     "y": 1240,
-     "h": 560,
-     "aspect": 0.42,
-     "edge": 0,
-     "z": 23,
+     "type": "svg",
+     "w": 330,
+     "h": 165,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"330\" height=\"165\" viewBox=\"0 0 330 165\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><rect width=\"330\" height=\"165\" rx=\"3\" fill=\"#F6F1E3\"/><rect x=\"0\" y=\"30\" width=\"330\" height=\"3\" fill=\"#B23A2E\"/><rect x=\"18\" y=\"125\" width=\"294\" height=\"1.5\" fill=\"#B9B2A2\"/><rect x=\"18\" y=\"147\" width=\"294\" height=\"1.5\" fill=\"#B9B2A2\"/><text x=\"165\" y=\"90\" font-family=\"var(--f-mono)\" font-size=\"28\" font-weight=\"700\" fill=\"#16181D\" text-anchor=\"middle\">CHARLES DOROT</text></svg>",
+     "x": 200,
+     "y": 620,
+     "anchor": "c",
+     "z": 24,
      "in": {
-      "type": "rise",
+      "type": "drop",
       "at": 16.68,
-      "dur": 0.45
+      "dur": 0.4
      },
-     "asset": "gen/dorot_back_cut",
-     "desc": "paper character, waiting for Higgsfield credits"
+     "rot": -2
+    },
+    {
+     "type": "text",
+     "text": "لا توجد صورة موثّقة",
+     "x": 200,
+     "y": 740,
+     "font": "banner",
+     "size": 20,
+     "color": "#16181D",
+     "paper": "#EFE8D6",
+     "upper": false,
+     "z": 41,
+     "rot": 1,
+     "in": {
+      "type": "pop",
+      "at": 17.080000000000002,
+      "dur": 0.35
+     }
     },
     {
      "type": "text",
      "text": "باريس",
-     "x": 615,
-     "y": 640,
+     "x": 440,
+     "y": 770,
      "font": "banner",
-     "size": 28,
+     "size": 34,
      "color": "#16181D",
      "paper": "#EFE8D6",
      "upper": false,
      "z": 40,
-     "rot": -2,
+     "rot": 2,
      "in": {
       "type": "pop",
-      "at": 16.88,
+      "at": 17.080000000000002,
       "dur": 0.35
      }
     },
@@ -1755,55 +1882,6 @@
      },
      "depth": 0,
      "rot": -2
-    },
-    {
-     "type": "image",
-     "src": "assets/ap/demarchi1940s.jpg",
-     "polaroid": true,
-     "aspect": 0.7142857142857143,
-     "label": "كارلو دي ماركي، الأربعينات",
-     "w": 280,
-     "x": 165,
-     "y": 430,
-     "z": 42,
-     "rot": [
-      [
-       12.98,
-       -5
-      ],
-      [
-       14.54,
-       -6.2
-      ]
-     ],
-     "in": {
-      "type": "drop",
-      "at": 12.530000000000001,
-      "dur": 0.45
-     },
-     "labelSize": 17,
-     "out": {
-      "type": "fade",
-      "at": 14.54,
-      "dur": 0.25
-     },
-     "scale": [
-      [
-       12.98,
-       1
-      ],
-      [
-       14.54,
-       1.035
-      ]
-     ],
-     "idle": {
-      "type": "float",
-      "amp": 3,
-      "speed": 0.25,
-      "phase": 3.9,
-      "from": 12.98
-     }
     }
    ],
    "dur": 18.2,
@@ -2247,52 +2325,108 @@
      }
     },
     {
-     "type": "cutout",
-     "x": 170,
-     "y": 1300,
-     "h": 600,
-     "aspect": 0.42,
-     "edge": 0,
+     "type": "image",
+     "src": "assets/ap/demarchi1940s.jpg",
+     "polaroid": true,
+     "aspect": 0.7142857142857143,
+     "label": "دي ماركي",
+     "w": 280,
+     "x": 160,
+     "y": 760,
      "z": 30,
+     "rot": [
+      [
+       10.25,
+       -5
+      ],
+      [
+       15.09,
+       -6.2
+      ]
+     ],
      "in": {
       "type": "rise",
       "at": 9.8,
       "dur": 0.45
      },
-     "asset": "gen/demarchi_back_cut",
-     "desc": "paper character, waiting for Higgsfield credits"
+     "labelSize": 20,
+     "scale": [
+      [
+       10.25,
+       1
+      ],
+      [
+       15.09,
+       1.035
+      ]
+     ],
+     "idle": {
+      "type": "float",
+      "amp": 3,
+      "speed": 0.25,
+      "phase": 0.34,
+      "from": 10.25
+     }
     },
     {
-     "type": "cutout",
+     "type": "image",
+     "src": "assets/crop/bauty1976_right.jpg",
+     "polaroid": true,
+     "aspect": 0.5626702997275205,
+     "label": "بوتي",
+     "w": 280,
      "x": 360,
-     "y": 1300,
-     "h": 600,
-     "aspect": 0.42,
-     "edge": 0,
+     "y": 760,
      "z": 31,
+     "rot": [
+      [
+       10.45,
+       3
+      ],
+      [
+       15.09,
+       4.2
+      ]
+     ],
      "in": {
       "type": "rise",
-      "at": 9.8,
+      "at": 10.0,
       "dur": 0.45
      },
-     "asset": "gen/bauty_back_cut",
-     "desc": "paper character, waiting for Higgsfield credits"
+     "labelSize": 20,
+     "scale": [
+      [
+       10.45,
+       1
+      ],
+      [
+       15.09,
+       1.035
+      ]
+     ],
+     "idle": {
+      "type": "float",
+      "amp": 3,
+      "speed": 0.25,
+      "phase": 2.03,
+      "from": 10.45
+     }
     },
     {
-     "type": "cutout",
-     "x": 550,
-     "y": 1300,
-     "h": 600,
-     "aspect": 0.42,
-     "edge": 0,
+     "type": "svg",
+     "w": 280,
+     "h": 150,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"280\" height=\"150\" viewBox=\"0 0 280 150\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><rect width=\"280\" height=\"150\" rx=\"3\" fill=\"#F6F1E3\"/><rect x=\"0\" y=\"30\" width=\"280\" height=\"3\" fill=\"#B23A2E\"/><rect x=\"18\" y=\"110\" width=\"244\" height=\"1.5\" fill=\"#B9B2A2\"/><rect x=\"18\" y=\"132\" width=\"244\" height=\"1.5\" fill=\"#B9B2A2\"/><text x=\"140\" y=\"83\" font-family=\"var(--f-mono)\" font-size=\"30\" font-weight=\"700\" fill=\"#16181D\" text-anchor=\"middle\">DOROT</text></svg>",
+     "x": 565,
+     "y": 740,
+     "anchor": "c",
      "z": 32,
      "in": {
       "type": "rise",
-      "at": 9.8,
+      "at": 10.200000000000001,
       "dur": 0.45
      },
-     "asset": "gen/dorot_back_cut",
-     "desc": "paper character, waiting for Higgsfield credits"
+     "rot": -3
     },
     {
      "type": "svg",
@@ -2300,7 +2434,7 @@
      "h": 300,
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"60\" height=\"300\" viewBox=\"0 0 60 300\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><defs><linearGradient id=\"rp0\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#E4E8EC\"/><stop offset=\"1\" stop-color=\"#9EA5AD\"/></linearGradient></defs><path d=\"M 27 0 L 33 0 L 34 220 L 26 220 Z\" fill=\"url(#rp0)\"/><path d=\"M 30 4 L 30 218\" stroke=\"#FFFFFF66\" stroke-width=\"1.5\"/><path d=\"M 4 222 Q 30 196 56 222 Q 30 250 4 222 Z\" fill=\"#9C7B3F\"/><path d=\"M 8 220 Q 30 200 52 220 Q 30 244 8 220 Z\" fill=\"#C9A35F\"/><rect x=\"25\" y=\"236\" width=\"10\" height=\"44\" rx=\"4\" fill=\"#5A3A22\"/><circle cx=\"30\" cy=\"284\" r=\"7\" fill=\"#C9A35F\"/></svg>",
      "x": 360,
-     "y": 470,
+     "y": 310,
      "anchor": "c",
      "z": 40,
      "in": {
@@ -2326,7 +2460,7 @@
      "h": 300,
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"60\" height=\"300\" viewBox=\"0 0 60 300\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><defs><linearGradient id=\"rp1\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#E4E8EC\"/><stop offset=\"1\" stop-color=\"#9EA5AD\"/></linearGradient></defs><path d=\"M 27 0 L 33 0 L 34 220 L 26 220 Z\" fill=\"url(#rp1)\"/><path d=\"M 30 4 L 30 218\" stroke=\"#FFFFFF66\" stroke-width=\"1.5\"/><path d=\"M 4 222 Q 30 196 56 222 Q 30 250 4 222 Z\" fill=\"#9C7B3F\"/><path d=\"M 8 220 Q 30 200 52 220 Q 30 244 8 220 Z\" fill=\"#C9A35F\"/><rect x=\"25\" y=\"236\" width=\"10\" height=\"44\" rx=\"4\" fill=\"#5A3A22\"/><circle cx=\"30\" cy=\"284\" r=\"7\" fill=\"#C9A35F\"/></svg>",
      "x": 360,
-     "y": 470,
+     "y": 310,
      "anchor": "c",
      "z": 41,
      "in": {
@@ -2352,7 +2486,7 @@
      "h": 300,
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"60\" height=\"300\" viewBox=\"0 0 60 300\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><defs><linearGradient id=\"rp2\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#E4E8EC\"/><stop offset=\"1\" stop-color=\"#9EA5AD\"/></linearGradient></defs><path d=\"M 27 0 L 33 0 L 34 220 L 26 220 Z\" fill=\"url(#rp2)\"/><path d=\"M 30 4 L 30 218\" stroke=\"#FFFFFF66\" stroke-width=\"1.5\"/><path d=\"M 4 222 Q 30 196 56 222 Q 30 250 4 222 Z\" fill=\"#9C7B3F\"/><path d=\"M 8 220 Q 30 200 52 220 Q 30 244 8 220 Z\" fill=\"#C9A35F\"/><rect x=\"25\" y=\"236\" width=\"10\" height=\"44\" rx=\"4\" fill=\"#5A3A22\"/><circle cx=\"30\" cy=\"284\" r=\"7\" fill=\"#C9A35F\"/></svg>",
      "x": 360,
-     "y": 470,
+     "y": 310,
      "anchor": "c",
      "z": 42,
      "in": {
@@ -2368,7 +2502,7 @@
      "h": 100,
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"220\" height=\"100\" viewBox=\"0 0 220 100\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><ellipse cx=\"110\" cy=\"70\" rx=\"110\" ry=\"22\" fill=\"#16181D\"/><path d=\"M 50 70 Q 54 14 110 12 Q 166 14 170 70 Z\" fill=\"#16181D\"/><rect x=\"52\" y=\"54\" width=\"116\" height=\"12\" fill=\"#B23A2E\"/><path d=\"M 150 56 Q 180 10 214 30\" stroke=\"#EFE8D6\" stroke-width=\"7\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M 150 56 Q 186 6 208 40\" stroke=\"#EFE8D6\" stroke-width=\"7\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M 150 56 Q 192 2 202 50\" stroke=\"#EFE8D6\" stroke-width=\"7\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M 150 56 Q 198 -2 196 60\" stroke=\"#EFE8D6\" stroke-width=\"7\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M 150 56 Q 204 -6 190 70\" stroke=\"#EFE8D6\" stroke-width=\"7\" fill=\"none\" stroke-linecap=\"round\"/></svg>",
      "x": 360,
-     "y": 300,
+     "y": 145,
      "anchor": "c",
      "z": 44,
      "in": {
@@ -2381,7 +2515,7 @@
      "type": "text",
      "text": "الفرسان الثلاثة",
      "x": 360,
-     "y": 170,
+     "y": 70,
      "font": "banner",
      "size": 40,
      "color": "#16181D",
@@ -4287,7 +4421,7 @@
       "type": "float",
       "amp": 3,
       "speed": 0.25,
-      "phase": 1.48,
+      "phase": 4.93,
       "from": 6.95
      }
     },
@@ -5021,7 +5155,7 @@
       "type": "float",
       "amp": 3,
       "speed": 0.25,
-      "phase": 0.91,
+      "phase": 1.1,
       "from": 6.41
      }
     },
