@@ -1,0 +1,39 @@
+{
+ "voice_id": "XdoLPWNt7ytn6BtU4FBf",
+ "text": "Gérald Genta يصمّم لـ Universal Genève ساعة Polerouter… ثم يتصل به Georges Golay من Audemars Piguet. علبةٌ من Favre-Perret، وسوارٌ من Gay Frères… وتولد Royal Oak في Basel، مع Carlo de Marchi و Charles Bauty.",
+ "files": [
+  {
+   "file": "01_eleven_multilingual_v2.mp3",
+   "model": "eleven_multilingual_v2",
+   "settings": {
+    "stability": 0.5,
+    "similarity_boost": 0.75,
+    "style": 0,
+    "use_speaker_boost": true,
+    "speed": 1.0
+   }
+  },
+  {
+   "file": "02_eleven_v3.mp3",
+   "model": "eleven_v3",
+   "settings": {
+    "stability": 0.5,
+    "similarity_boost": 0.75,
+    "style": 0,
+    "use_speaker_boost": true,
+    "speed": 1.0
+   }
+  },
+  {
+   "file": "03_eleven_turbo_v2_5.mp3",
+   "model": "eleven_turbo_v2_5",
+   "settings": {
+    "stability": 0.5,
+    "similarity_boost": 0.75,
+    "style": 0,
+    "use_speaker_boost": true,
+    "speed": 1.0
+   }
+  }
+ ]
+}
