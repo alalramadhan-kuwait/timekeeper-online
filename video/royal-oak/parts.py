@@ -265,8 +265,8 @@ P1 = Part()
 # H  The hook (a question, chosen by the user): "How did a 23-year-old end up behind the world's most famous watches?"
 #    Frame 1 already carries the question; the film answers it.
 use('p1-h')
-C = 'كيف أصبح | شابٌّ في الثالثة والعشرين… | وراء | أشهر ساعات العالم؟'
-t_famous = at('p1-h', C, 'أشهر ساعات')
+C = 'كيف أصبح | شابٌّ في الثالثة والعشرين… | وراء | أَشْهَرِ ساعات العالم؟'
+t_famous = at('p1-h', C, 'أَشْهَرِ ساعات')
 hk = polaroid('assets/ap/ro5402_hero', 180, 340, 220, t_famous - .1, label='Royal Oak', z=30, rot=-6, kind='pop')
 els = [svg(760, 520, floor_band('#8A7458', '#A48D6E', 520), 360, 1030, z=1, kind=None, depth=.9, shadow=False),
        svg(760, 1320, light_beam([(760, 0), (520, 0), (60, 1320), (520, 1320)], amt=.10), 360, 640, z=2, kind=None, shadow=False, depth=.9, still=True),
@@ -280,7 +280,7 @@ P1.S('p1-h', 'ro-paper', C, els, transition='cut',
 
 # 0  The famous Genta (the watch on his wrist first), then back to 1954
 use('p1-0')
-C = 'هذا جيرالد جنتا… | من أشهر | مصممي الساعات | في التاريخ. | لكن قبل أن | يصبح اسمه | أسطورة… | لنعد إلى البداية.'
+C = 'هذا جيرالد جنتا… | من أَشْهَرِ | مصممي الساعات | في التاريخ. | لكن قبل أن | يصبح اسمه | أسطورة… | لنعد إلى البداية.'
 t_back = at('p1-0', C, 'لنعد'); t_leg = at('p1-0', C, 'أسطورة…')
 portrait = polaroid('assets/src/genta', 360, 600, 500, 0, label='Gérald Genta', z=18, kind='none', until=V(1.55), fixed=True)
 pw = 472; ph = pw / portrait['aspect']; wrist = (360 - pw / 2 + .37 * pw, 600 - 22 - ph / 2 + .77 * ph)
