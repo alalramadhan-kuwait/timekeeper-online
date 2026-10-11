@@ -32,7 +32,7 @@ VOICE = os.environ.get('ELEVEN_VOICE', '')
 MODEL = os.environ.get('ELEVEN_MODEL', 'eleven_multilingual_v2')
 SETTINGS = {'stability': .5, 'similarity_boost': .75, 'style': 0, 'use_speaker_boost': True, 'speed': .92}   # a little slower: a documentary narrator
 SEED = 1234
-ALI = re.compile(r'ali|alyousifi|yousifi|علي|اليوسفي', re.I)
+ALI = re.compile(r'\bali\b|alyousifi|yousifi|علي|اليوسفي', re.I)
 
 
 def call(path, body=None, query=None):
@@ -54,16 +54,12 @@ def check():
                                                                          s.get('next_character_count_reset_unix')))
     except SystemExit as e:
         if 'missing_permissions' not in str(e) and '401' not in str(e): raise
-        json.loads(call('/v2/voices', query={'page_size': 1}))          # a key limited to voices still proves the connection
+        json.loads(call('/v1/voices'))          # a key limited to voices still proves the connection
         print('connected (this key cannot read the plan; voices are readable)')
 
 
 def mine():
-    voices, token = [], None
-    while True:
-        q = {'page_size': 100, **({'next_page_token': token} if token else {})}
-        r = json.loads(call('/v2/voices', query=q)); voices += r['voices']; token = r.get('next_page_token')
-        if not r.get('has_more'): break
+    voices = json.loads(call('/v1/voices'))['voices']          # /v1: the agent proxy adds the key to /v1 paths
     for v in sorted(voices, key=lambda v: (v.get('category') == 'premade', v['name'])):
         langs = ', '.join(sorted({l.get('language', '') + ('/' + l['accent'] if l.get('accent') else '') for l in v.get('verified_languages') or []}))
         tuned = ', '.join(m for m, s in ((v.get('fine_tuning') or {}).get('state') or {}).items() if s == 'fine_tuned')
