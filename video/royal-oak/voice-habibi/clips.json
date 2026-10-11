@@ -1,87 +1,115 @@
 {
  "p1-h": {
   "file": "clips/p1-h.wav",
-  "seconds": 3.74,
+  "seconds": 4.19,
   "text": "كيف شاب عمره ثلاثة وعشرين… صار ورا أشهر ساعات العالم؟",
-  "voice": "Habibi-TTS SAU, Gulf.wav prompt"
+  "voice": "Habibi-TTS SAU, Gulf.wav prompt",
+  "spoken": "كيف شاب عمره ثلاثة وعشرين… صار ورا أشهر ساعات العالم؟",
+  "speed": 0.9
  },
  "p2-q": {
   "file": "clips/p2-q.wav",
-  "seconds": 10.87,
+  "seconds": 11.19,
   "text": "والتوقيت كان حساس: قبلها بأشهر، سيكو طرحت أول ساعة يد كوارتز. ناس شافوها المستقبل… وناس شافوها نهاية الميكانيك. كانت بداية أزمة الكوارتز… وغولاي قرر يخاطر.",
-  "voice": "Habibi-TTS SAU, Gulf.wav prompt"
+  "voice": "Habibi-TTS SAU, Gulf.wav prompt",
+  "spoken": "والتوقيت كان حساس: قبلها بأشهر، Seiko طرحت أول ساعة يد quartz. ناس شافوها المستقبل… وناس شافوها نهاية الميكانيك. كانت بداية أزمة quartz… و Golay قرر يخاطر.",
+  "speed": 0.9
  },
  "p1-0": {
   "file": "clips/p1-0.wav",
-  "seconds": 6.73,
+  "seconds": 7.16,
   "text": "هذا جيرالد جنتا… من أشهر مصممي الساعات بالتاريخ. بس قبل لا يصير اسمه أسطورة… خلونا نرجع للبداية.",
-  "voice": "Habibi-TTS SAU, Gulf.wav prompt"
+  "voice": "Habibi-TTS SAU, Gulf.wav prompt",
+  "spoken": "هذا Gerald Genta… من أشهر مصممي الساعات بالتاريخ. بس قبل لا يصير اسمه أسطورة… خلونا نرجع للبداية.",
+  "speed": 0.9
  },
  "p1-1": {
   "file": "clips/p1-1.wav",
-  "seconds": 9.64,
+  "seconds": 9.77,
   "text": "جنيف، سنة ألف وتسعمية وأربعة وخمسين. شاب عمره ثلاثة وعشرين سنة بس، يصمم لشركة يونيفرسال جنيف ساعة لرحلات طيران إس إيه إس فوق القطب الشمالي.",
-  "voice": "Habibi-TTS SAU, Gulf.wav prompt"
+  "voice": "Habibi-TTS SAU, Gulf.wav prompt",
+  "spoken": "Geneva، سنة ألف وتسعمية وأربعة وخمسين. شاب عمره ثلاثة وعشرين سنة بس، يصمم لشركة Universal Geneve ساعة لرحلات طيران S.A.S فوق القطب الشمالي.",
+  "speed": 0.9
  },
  "p1-2": {
   "file": "clips/p1-2.wav",
-  "seconds": 4.16,
+  "seconds": 4.32,
   "text": "اسمها البولروتر… وهي اللي خلت اسمه ينعرف عند شركات الساعات.",
-  "voice": "Habibi-TTS SAU, Gulf.wav prompt"
+  "voice": "Habibi-TTS SAU, Gulf.wav prompt",
+  "spoken": "اسمها Polerouter… وهي اللي خلت اسمه ينعرف عند شركات الساعات.",
+  "speed": 0.9
  },
  "p1-3": {
   "file": "clips/p1-3.wav",
-  "seconds": 3.66,
+  "seconds": 3.42,
   "text": "بعدها جات أوميغا، وطلبت منه يجدد مجموعة الكونستليشن.",
-  "voice": "Habibi-TTS SAU, Gulf.wav prompt"
+  "voice": "Habibi-TTS SAU, Gulf.wav prompt",
+  "spoken": "بعدها جات Omega، وطلبت منه يجدد مجموعة Constellation.",
+  "speed": 0.9
  },
  "p1-4": {
   "file": "clips/p1-4.wav",
-  "seconds": 7.0,
+  "seconds": 7.41,
   "text": "ومع بداية الستينات، يظهر اسمه في أرشيف أوديمار بيغيه: ساعة تجمع الدائرة والمربع، وساعة غير متناظرة…",
-  "voice": "Habibi-TTS SAU, Gulf.wav prompt"
+  "voice": "Habibi-TTS SAU, Gulf.wav prompt",
+  "spoken": "ومع بداية الستينات، يظهر اسمه في أرشيف Audemars Piguet: ساعة تجمع الدائرة والمربع، وساعة غير متناظرة…",
+  "speed": 0.9
  },
  "p1-5": {
   "file": "clips/p1-5.wav",
-  "seconds": 4.89,
+  "seconds": 5.4,
   "text": "وفي سنة سبعة وستين، ساعة شنطة من تصميمه تاخذ تنويه في جائزة مدينة جنيف.",
-  "voice": "Habibi-TTS SAU, Gulf.wav prompt"
+  "voice": "Habibi-TTS SAU, Gulf.wav prompt",
+  "spoken": "وفي سنة سبعة وستين، ساعة شنطة من تصميمه تاخذ تنويه في جائزة مدينة Geneva.",
+  "speed": 0.9
  },
  "p1-6": {
   "file": "clips/p1-6.wav",
-  "seconds": 6.46,
+  "seconds": 6.99,
   "text": "وهناك لقى شريكه: جورج غولاي، المدير العام… وأول واحد يدير الشركة من برا العائلتين المؤسستين.",
-  "voice": "Habibi-TTS SAU, Gulf.wav prompt"
+  "voice": "Habibi-TTS SAU, Gulf.wav prompt",
+  "spoken": "وهناك لقى شريكه: Georges Golay، المدير العام… وأول واحد يدير الشركة من برا العائلتين المؤسستين.",
+  "speed": 0.9
  },
  "p1-7": {
   "file": "clips/p1-7.wav",
-  "seconds": 7.96,
+  "seconds": 8.79,
   "text": "جنتا يقول: كنا مثل الدراجة اللي يسوقها اثنين… إذا واحد منا مو مقتنع، ما نسوي الموديل. وحتى كانوا يلبسون نفس الساعة.",
-  "voice": "Habibi-TTS SAU, Gulf.wav prompt"
+  "voice": "Habibi-TTS SAU, Gulf.wav prompt",
+  "spoken": "Genta يقول: كنا مثل الدراجة اللي يسوقها اثنين… إذا واحد منا مو مقتنع، ما نسوي الموديل. وحتى كانوا يلبسون نفس الساعة.",
+  "speed": 0.9
  },
  "p1-8": {
   "file": "clips/p1-8.wav",
-  "seconds": 8.8,
+  "seconds": 9.73,
   "text": "أبريل ألف وتسعمية وسبعين. جنتا عمره ثمانية وثلاثين، ووراه ستطعش سنة من التصاميم. وفي يوم عشرة، الساعة أربعة العصر… تلفونه يرن.",
-  "voice": "Habibi-TTS SAU, Gulf.wav prompt"
+  "voice": "Habibi-TTS SAU, Gulf.wav prompt",
+  "spoken": "أبريل ألف وتسعمية وسبعين. Genta عمره ثمانية وثلاثين، ووراه ستطعش سنة من التصاميم. وفي يوم عشرة، الساعة أربعة العصر… تلفونه يرن.",
+  "speed": 0.9
  },
  "p2-h": {
   "file": "clips/p2-h.wav",
-  "seconds": 4.74,
+  "seconds": 4.49,
   "text": "سنة سبعين… الكوارتز جاي ياخذ كل شي. وأوديمار بيغيه راهنت على الستيل.",
-  "voice": "Habibi-TTS SAU, Gulf.wav prompt"
+  "voice": "Habibi-TTS SAU, Gulf.wav prompt",
+  "spoken": "سنة سبعين… quartz جاي ياخذ كل شي. و Audemars Piguet راهنت على الستيل.",
+  "speed": 0.9
  },
  "p2-0": {
   "file": "clips/p2-0.wav",
-  "seconds": 11.59,
+  "seconds": 11.32,
   "text": "بازل، عشرة أبريل ألف وتسعمية وسبعين. قبل لا يفتح معرض الساعات، جورج غولاي يجتمع مع ثلاثة من الوكلاء: كارلو دي ماركي من تورينو، وشارل بوتي من لوزان، وشارل دورو من باريس.",
-  "voice": "Habibi-TTS SAU, Gulf.wav prompt"
+  "voice": "Habibi-TTS SAU, Gulf.wav prompt",
+  "spoken": "Basel، عشرة أبريل ألف وتسعمية وسبعين. قبل لا يفتح معرض الساعات، Georges Golay يجتمع مع ثلاثة من الوكلاء: Carlo de Marchi من Torino، و Charles Bauty من Lausanne، و Charles Dorot من Paris.",
+  "speed": 0.9
  },
  "p2-1": {
   "file": "clips/p2-1.wav",
-  "seconds": 8.95,
+  "seconds": 9.6,
   "text": "طلبهم واضح: الذهب بروحه ما يكفي. يبون ساعة ستيل، رياضية وأنيقة، تناسب أسلوب الحياة الجديد. أوديمار بيغيه تسميهم: الفرسان الثلاثة.",
-  "voice": "Habibi-TTS SAU, Gulf.wav prompt"
+  "voice": "Habibi-TTS SAU, Gulf.wav prompt",
+  "spoken": "طلبهم واضح: الذهب بروحه ما يكفي. يبون ساعة ستيل، رياضية وأنيقة، تناسب أسلوب الحياة الجديد. Audemars Piguet تسميهم: الفرسان الثلاثة.",
+  "speed": 0.9
  },
  "p2-2": {
   "file": "clips/p2-2.wav",
@@ -115,9 +143,12 @@
  },
  "p2-7": {
   "file": "clips/p2-7.wav",
-  "seconds": 8.3,
+  "seconds": 9.01,
   "text": "بازل، ألف وتسعمية واثنين وسبعين. الرويال أوك، الموديل خمسة أربعة صفر اثنين، بقطر تسعة وثلاثين ملم… ضخمة بمقاييس وقتها.",
-  "voice": "Habibi-TTS SAU, Gulf.wav prompt"
+  "voice": "Habibi-TTS SAU, Gulf.wav prompt",
+  "spoken": "Basel، ألف وتسعمية واثنين وسبعين. Royal Oak، الموديل خمسة أربعة صفر اثنين، بقطر تسعة وثلاثين ملي… ضخمة بمقاييس وقتها.",
+  "speed": 0.9,
+  "method": "splice"
  },
  "p2-8": {
   "file": "clips/p2-8.wav",
