@@ -1,12 +1,13 @@
 import { supabase } from '../../lib/supabase';
-import { loadPo } from '../api';
+import { loadPo, loadStatusLog, type StatusChange } from '../api';
 import type { PoDetail, ReceiptEvent, Snapshot } from '../types';
 
 /* The Loading Dock's records: every open purchase order and every one with a recorded unpaid
    balance, each with its lines, receipts and payment. Read through the same owner-only
    function the rest of the World uses (world_po_detail), plus two tables the back office's
    Purchase Orders page already reads: the line names (purchase_order_items_view) and the
-   payment method (purchase_orders). Nothing here is written, and nothing is recalculated
+   payment method (purchase_orders), and the receiving-status changes the PO sync logged
+   (world_po_status_log, owners only). Nothing here is written, and nothing is recalculated
    beyond counting and adding up what the records say.
 
    Lightspeed's status is shown as Lightspeed has it. Payment, receiving and shipment are
@@ -44,6 +45,7 @@ export interface DockRaw {
   details: PoDetail[];
   lines: { po_id: string; sku: string | null; name: string | null; brand: string | null; ordered_qty: number | null; received_qty: number | null; cost: number | null }[] | null;
   methods: Record<string, string | null>;
+  statusLog: StatusChange[];
 }
 
 /* ── the plan: four rows of four bays ─────────────────────────────────── */
@@ -59,16 +61,18 @@ export const DOCK_PLAN = (() => {
 
 export async function loadDock(s: Snapshot): Promise<DockRaw> {
   const ids = [...new Set([...s.commitments.list.map((p) => p.po_id), ...s.payments.list.map((p) => p.po_id)])];
-  if (!ids.length) return { details: [], lines: [], methods: {} };
-  const [details, lines, methods] = await Promise.all([
+  if (!ids.length) return { details: [], lines: [], methods: {}, statusLog: await loadStatusLog().catch(() => []) };
+  const [details, lines, methods, statusLog] = await Promise.all([
     Promise.all(ids.map((id) => loadPo(id))),
     // the names come from the same view the Purchase Orders page uses; without it the lines still show
     supabase.from('purchase_order_items_view').select('po_id, sku, name, brand, ordered_qty, received_qty, cost').in('po_id', ids)
       .then(({ data, error }) => (error ? null : (data as DockRaw['lines']))),
     supabase.from('purchase_orders').select('id, payment_method').in('id', ids)
       .then(({ data, error }) => Object.fromEntries(error ? [] : ((data ?? []) as { id: string; payment_method: string | null }[]).map((r) => [r.id, r.payment_method]))),
+    // without the log the history keeps Lightspeed's times and the receiving log's
+    loadStatusLog().catch(() => [] as StatusChange[]),
   ]);
-  return { details, lines, methods };
+  return { details, lines, methods, statusLog };
 }
 
 /* ── words ───────────────────────────────────────────────────────────── */
@@ -138,6 +142,10 @@ export function buildDock(s: Snapshot, raw: DockRaw): DockData {
     const seen = new Set<string>();
     const add = (h: DockReceipt) => { const k = `${h.basis}|${h.at}`; if (!seen.has(k)) { seen.add(k); p.history.push(h); } };
     if (r.ls_received_at) add({ at: r.ls_received_at, basis: 'ls', part: p.received < p.ordered, po: p.po, poId: p.id, supplier: p.supplier });
+    for (const c of raw.statusLog) {
+      if (c.po_id !== r.id) continue;
+      add({ at: c.at, basis: 'det', part: c.status === 'Partially Received', po: p.po, poId: p.id, supplier: p.supplier });
+    }
     for (const e of d.receipt_events) {
       if (e.line_id || e.event === 'po_source_time_recorded') continue;
       add({ at: e.at, basis: e.timestamp_basis === 'source' ? 'ls' : 'det', part: e.new_status === 'Partially Received', po: p.po, poId: p.id, supplier: p.supplier });
@@ -166,6 +174,12 @@ export function buildDock(s: Snapshot, raw: DockRaw): DockData {
 
   const history = pos.flatMap((p) => p.history);
   const known = new Set(history.map((h) => `${h.po}|${h.at}`));
+  // status changes the sync logged on orders that are neither open nor unpaid any more
+  for (const c of raw.statusLog) {
+    if (known.has(`${c.po_number}|${c.at}`)) continue;
+    known.add(`${c.po_number}|${c.at}`);
+    history.push({ at: c.at, basis: 'det', part: c.status === 'Partially Received', po: c.po_number, poId: c.po_id, supplier: c.supplier });
+  }
   // receipts the log saw on orders that are neither open nor unpaid any more
   for (const e of s.receipts.log.recent as ReceiptEvent[]) {
     if (!e.po_number || e.event === 'po_source_time_recorded' || e.event.startsWith('line_') || known.has(`${e.po_number}|${e.at}`)) continue;

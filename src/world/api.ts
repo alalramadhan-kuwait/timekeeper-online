@@ -25,6 +25,10 @@ export const searchPos = (q: {
 
 export const loadPo = (id: string) => call<PoDetail>('world_po_detail', { p_po_id: id });
 
+/* Receiving-status changes the PO sync recorded (first-detected times), newest first. */
+export interface StatusChange { po_id: string; po_number: string; supplier: string | null; brand: string | null; status: string; at: string; timestamp_basis: 'first_detected' }
+export const loadStatusLog = () => call<StatusChange[]>('world_po_status_log');
+
 export const missionHistory = (key: string) => call<MissionEvent[]>('world_mission_history', { p_mission_key: key });
 
 export const actOnMission = (a: {
