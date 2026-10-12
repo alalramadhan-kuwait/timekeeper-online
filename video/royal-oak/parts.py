@@ -1034,25 +1034,25 @@ els = [{"type": "map", "x": 360, "y": 640, "w": 720, "h": 1280, "z": 15,
 for k, (rel, x, y, r, lab) in enumerate([('assets/ap/watchmaker1972', 220, 420, -4, 'الحرفيون'), ('assets/ap/bracelet1972', 500, 440, 3, 'السوار'),
                                           ('assets/ap/dial5402', 220, 760, 3, 'الميناء'), ('assets/ap/cal2121_1971', 500, 780, -3, 'الحركة')]):
     els.append(polaroid(rel, x, y, 310, t_team2 + .2 + k * .35, label=lab, z=20 + k, rot=r, kind='pop', labelSize=20, until=sk_t - .1))
-GS = dict(x=200, y=1290, h=780)
+GS = dict(x=270, y=1290, h=780)
 gw = GS['h'] * ASP.get('genta_sheet', .43)
 sheet = dict(x=GS['x'] - gw / 2 + gw * .502, y=GS['y'] - GS['h'] + GS['h'] * .427, w=gw * .84, h=GS['h'] * .31)
-hero = polaroid('assets/ap/ro5402_hero', 555, 740, 330, t_two + .3, label='Royal Oak · Réf. 5402', z=59, kind='fade', rot=3, scale=[[t_two + .3, 1.0], [END, 1.04]])
+hero = polaroid('assets/ap/ro5402_hero', 550, 860, 300, t_two + .3, label='Royal Oak · Réf. 5402', z=59, kind='fade', rot=3, scale=[[t_two + .3, 1.0], [END, 1.04]])
 els += [svg(760, 1320, curtain(), 360, 640, z=44, kind='fade', at=sk_t - .3, dur=.6, shadow=False, depth=.6, still=True),
-        svg(520, 1000, spotlight_cone(), 300, 0, anchor='t', z=45, kind='fade', at=sk_t, dur=.5, shadow=False, depth=.8),
-        svg(*soft_ellipse(260, 40, '#FFF1CF', .18, 10)[:2], soft_ellipse(260, 40, '#FFF1CF', .18, 10)[2], 300, 1190, z=46, kind='fade', at=sk_t, dur=.5, shadow=False, depth=.95),
+        svg(520, 1000, spotlight_cone(), 330, 0, anchor='t', z=45, kind='fade', at=sk_t, dur=.5, shadow=False, depth=.8),
+        svg(*soft_ellipse(260, 40, '#FFF1CF', .18, 10)[:2], soft_ellipse(260, 40, '#FFF1CF', .18, 10)[2], 330, 1190, z=46, kind='fade', at=sk_t, dur=.5, shadow=False, depth=.95),
         cutout('assets/gen/genta_sheet_cut', GS['x'], GS['y'], GS['h'], sk_t, z=48, kind='rise', dur=.45, person=True),
         {"type": "image", "src": pic('assets/crop/gouache_head'), "x": round(sheet['x'], 1), "y": round(sheet['y'], 1), "w": round(sheet['w']), "h": round(sheet['h']),
          "frame": False, "fit": "cover", "pos": "50% 45%", "z": 49, "in": {"type": "fade", "at": sk_t + .5, "dur": .6}},
         hero, glint_on(hero, t_two + 1.0),
-        {"type": "sparkles", "x": 530, "y": 640, "count": 7, "radius": 26, "life": .8, "color": "#FFF6DD", "at": t_two + 1.3, "z": 61},
+        {"type": "sparkles", "x": 525, "y": 760, "count": 7, "radius": 26, "life": .8, "color": "#FFF6DD", "at": t_two + 1.3, "z": 61},
         svg(760, 1320, '<rect width="760" height="1320" fill="#000"/>', 360, 640, z=58, kind=None, shadow=False, depth=0, still=True, opacity=[[t_dim, 0], [END, .75]]),
         {"type": "text", "text": "رسمٌ في ليلة…", "x": 360, "y": 160, "font": "banner", "size": 46, "color": "#EFE8D6", "upper": False, "z": 60, "depth": 0, "in": {"type": "fade", "at": t_night, "dur": .5}},
         {"type": "text", "text": "وسنتان من العمل، وفريقٌ كامل", "x": 360, "y": 230, "font": "banner", "size": 40, "color": "#EFE8D6", "upper": False, "z": 60, "depth": 0, "in": {"type": "fade", "at": t_two, "dur": .5}},
         credits(CREDITS2, t_dim + .1, y=1150)]
-els += motes(cone_points(300, 9, 21, y0=300, y1=1000, spread=.35), at=sk_t, z=47, depth=.95)
+els += motes(cone_points(330, 9, 21, y0=300, y1=1000, spread=.35), at=sk_t, z=47, depth=.95)
 P3.S('p2-8', 'ro-black', C, els, tail=2.6, transition='fade', captionEnd=t_night - .05, captionClear=t_night,
-     camera=cam((0, 1.0, 360, 640, None), (sk_t, 1.0, 360, 640, None), (t_two + .3, 1.04, 380, 660, 'inOutCubic'), (END, 1.1, 440, 700, 'inOutCubic')),
+     camera=cam((0, 1.0, 360, 640, None), (sk_t, 1.0, 360, 640, None), (t_two + .3, 1.03, 385, 660, 'inOutCubic'), (END, 1.05, 390, 680, 'inOutCubic')),
      sfx=[E('paper_slide', .1, -12), E('plane', t_shah, -16), E('stamp', t_101 + .2, -10)] + [E('shutter', t_team2 + .2 + k * .35, -14) for k in range(4)] +
          [E('pencil', sk_t + .5, -12), E('tick', t_two + .3, -12), E('tick', t_two + 1.0, -18)])
 

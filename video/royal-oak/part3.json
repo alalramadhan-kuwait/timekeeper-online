@@ -4323,7 +4323,7 @@
      "w": 520,
      "h": 1000,
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"520\" height=\"1000\" viewBox=\"0 0 520 1000\" style=\"overflow:visible;\"><defs><linearGradient id=\"sc\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#FFF1CF\" stop-opacity=\".55\"/><stop offset=\"1\" stop-color=\"#FFF1CF\" stop-opacity=\".05\"/></linearGradient></defs><polygon points=\"228.8,0.0 291.2,0.0 520.0,900.0 0.0,900.0\" fill=\"url(#sc)\"/></svg>",
-     "x": 300,
+     "x": 330,
      "y": 0,
      "anchor": "t",
      "z": 45,
@@ -4339,7 +4339,7 @@
      "w": 600,
      "h": 160,
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"600\" height=\"160\" viewBox=\"0 0 600 160\" style=\"overflow:visible;\"><defs><filter id=\"se36\" x=\"-50%\" y=\"-50%\" width=\"200%\" height=\"200%\"><feGaussianBlur stdDeviation=\"10\"/></filter></defs><ellipse cx=\"300\" cy=\"80\" rx=\"260\" ry=\"40\" fill=\"#FFF1CF\" opacity=\"0.18\" filter=\"url(#se36)\"/></svg>",
-     "x": 300,
+     "x": 330,
      "y": 1190,
      "anchor": "c",
      "z": 46,
@@ -4352,7 +4352,7 @@
     },
     {
      "type": "cutout",
-     "x": 200,
+     "x": 270,
      "y": 1290,
      "h": 780,
      "aspect": 0.4309,
@@ -4376,7 +4376,7 @@
     {
      "type": "image",
      "src": "assets/crop/gouache_head.jpg",
-     "x": 200.7,
+     "x": 270.7,
      "y": 843.1,
      "w": 282,
      "h": 242,
@@ -4396,9 +4396,9 @@
      "polaroid": true,
      "aspect": 0.8676789587852495,
      "label": "Royal Oak · Réf. 5402",
-     "w": 330,
-     "x": 555,
-     "y": 740,
+     "w": 300,
+     "x": 550,
+     "y": 860,
      "z": 59,
      "rot": [
       [
@@ -4437,20 +4437,20 @@
     {
      "type": "svg",
      "w": 130,
-     "h": 327.1717,
-     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"130\" height=\"327\" viewBox=\"0 0 130 327\" style=\"overflow:visible;\"><defs><linearGradient id=\"gl37\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/><stop offset=\".5\" stop-color=\"#FFFAEB\" stop-opacity=\"0.42\"/><stop offset=\"1\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/></linearGradient></defs><polygon points=\"40.0,0.0 130.0,0.0 90.0,327.2 0.0,327.2\" fill=\"url(#gl37)\"/></svg>",
+     "h": 294.6712,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"130\" height=\"294\" viewBox=\"0 0 130 294\" style=\"overflow:visible;\"><defs><linearGradient id=\"gl37\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/><stop offset=\".5\" stop-color=\"#FFFAEB\" stop-opacity=\"0.42\"/><stop offset=\"1\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/></linearGradient></defs><polygon points=\"40.0,0.0 130.0,0.0 90.0,294.7 0.0,294.7\" fill=\"url(#gl37)\"/></svg>",
      "x": [
       [
        15.0,
-       469.0
+       479.0
       ],
       [
        15.7,
-       641.0,
+       621.0,
        "inOutCubic"
       ]
      ],
-     "y": 718,
+     "y": 838,
      "anchor": "c",
      "z": 60,
      "in": {
@@ -4486,8 +4486,8 @@
     },
     {
      "type": "sparkles",
-     "x": 530,
-     "y": 640,
+     "x": 525,
+     "y": 760,
      "count": 7,
      "radius": 26,
      "life": 0.8,
@@ -4574,7 +4574,7 @@
      "w": 8,
      "h": 8,
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"8\" height=\"8\" viewBox=\"0 0 8 8\" style=\"overflow:visible;\"><circle cx=\"1.7\" cy=\"1.7\" r=\"1.7\" fill=\"#FFF1CF\"/></svg>",
-     "x": 338,
+     "x": 368,
      "y": 415,
      "anchor": "c",
      "z": 47,
@@ -4598,7 +4598,7 @@
      "w": 8,
      "h": 8,
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"8\" height=\"8\" viewBox=\"0 0 8 8\" style=\"overflow:visible;\"><circle cx=\"2.2\" cy=\"2.2\" r=\"2.2\" fill=\"#FFF1CF\"/></svg>",
-     "x": 294,
+     "x": 324,
      "y": 744,
      "anchor": "c",
      "z": 47,
@@ -4622,7 +4622,7 @@
      "w": 8,
      "h": 8,
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"8\" height=\"8\" viewBox=\"0 0 8 8\" style=\"overflow:visible;\"><circle cx=\"1.6\" cy=\"1.6\" r=\"1.6\" fill=\"#FFF1CF\"/></svg>",
-     "x": 362,
+     "x": 392,
      "y": 451,
      "anchor": "c",
      "z": 47,
@@ -4646,7 +4646,7 @@
      "w": 8,
      "h": 8,
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"8\" height=\"8\" viewBox=\"0 0 8 8\" style=\"overflow:visible;\"><circle cx=\"2.6\" cy=\"2.6\" r=\"2.6\" fill=\"#FFF1CF\"/></svg>",
-     "x": 304,
+     "x": 334,
      "y": 865,
      "anchor": "c",
      "z": 47,
@@ -4670,7 +4670,7 @@
      "w": 8,
      "h": 8,
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"8\" height=\"8\" viewBox=\"0 0 8 8\" style=\"overflow:visible;\"><circle cx=\"1.8\" cy=\"1.8\" r=\"1.8\" fill=\"#FFF1CF\"/></svg>",
-     "x": 226,
+     "x": 256,
      "y": 654,
      "anchor": "c",
      "z": 47,
@@ -4694,7 +4694,7 @@
      "w": 8,
      "h": 8,
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"8\" height=\"8\" viewBox=\"0 0 8 8\" style=\"overflow:visible;\"><circle cx=\"1.5\" cy=\"1.5\" r=\"1.5\" fill=\"#FFF1CF\"/></svg>",
-     "x": 279,
+     "x": 309,
      "y": 302,
      "anchor": "c",
      "z": 47,
@@ -4718,7 +4718,7 @@
      "w": 8,
      "h": 8,
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"8\" height=\"8\" viewBox=\"0 0 8 8\" style=\"overflow:visible;\"><circle cx=\"1.8\" cy=\"1.8\" r=\"1.8\" fill=\"#FFF1CF\"/></svg>",
-     "x": 171,
+     "x": 201,
      "y": 710,
      "anchor": "c",
      "z": 47,
@@ -4742,7 +4742,7 @@
      "w": 8,
      "h": 8,
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"8\" height=\"8\" viewBox=\"0 0 8 8\" style=\"overflow:visible;\"><circle cx=\"2.2\" cy=\"2.2\" r=\"2.2\" fill=\"#FFF1CF\"/></svg>",
-     "x": 207,
+     "x": 237,
      "y": 856,
      "anchor": "c",
      "z": 47,
@@ -4766,7 +4766,7 @@
      "w": 8,
      "h": 8,
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"8\" height=\"8\" viewBox=\"0 0 8 8\" style=\"overflow:visible;\"><circle cx=\"1.8\" cy=\"1.8\" r=\"1.8\" fill=\"#FFF1CF\"/></svg>",
-     "x": 201,
+     "x": 231,
      "y": 463,
      "anchor": "c",
      "z": 47,
@@ -4807,12 +4807,12 @@
      ],
      [
       14.3,
-      1.04,
+      1.03,
       "inOutCubic"
      ],
      [
       19.53,
-      1.1,
+      1.05,
       "inOutCubic"
      ]
     ],
@@ -4827,12 +4827,12 @@
      ],
      [
       14.3,
-      380,
+      385,
       "inOutCubic"
      ],
      [
       19.53,
-      440,
+      390,
       "inOutCubic"
      ]
     ],
@@ -4852,7 +4852,7 @@
      ],
      [
       19.53,
-      700,
+      680,
       "inOutCubic"
      ]
     ]
