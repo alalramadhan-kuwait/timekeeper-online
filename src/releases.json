@@ -1,7 +1,7 @@
 [
   {
     "version": "3.8.0",
-    "date": "2026-10-10",
+    "date": "2026-10-12",
     "title": "A new Loading Dock",
     "changes": [
       "The Loading Dock in Time Keeper World is rebuilt: one bay per supplier with open orders, the largest amount still to come first, each with a small number tag. Tap a bay to see the supplier's orders.",
