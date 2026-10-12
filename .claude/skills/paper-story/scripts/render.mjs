@@ -196,12 +196,24 @@ if (opt.check) {
   // every 0.2 s: is any face covered by a banner, caption card, bubble or picture? (elements marked "person": true)
   const hits = [];
   for (let t = 0.05; t < duration; t += 0.2) hits.push(...(await first.page.evaluate((tt) => window.PM.headClashes(tt), t)));
-  await browser.close();
   const seen = new Map();
   for (const h of hits) { const k = h.scene + '|' + h.person + '|' + h.by; const e = seen.get(k); if (!e) seen.set(k, { ...h, from: h.t, to: h.t }); else { e.to = h.t; e.covered = Math.max(e.covered, h.covered); } }
   for (const e of seen.values()) console.log(`scene ${e.scene + 1}  ${e.from.toFixed(1)}-${e.to.toFixed(1)}s  ` + (e.under ? `${e.by} is ${e.covered}% under the banner` : `${e.by} covers ${e.covered}% of the head of ${e.person}`));
   console.log(seen.size ? seen.size + ' clash(es)' : 'no face covered, nothing under the banner');
-  process.exit(seen.size ? 1 : 0);
+  // and nothing cut by the frame: a photo or caption card partly outside the picture at any moment
+  const offs = [];
+  for (const p of (await (async () => { const pg = await newPage(); const r = []; for (let t = 0.05; t < duration; t += 0.2) r.push(...(await pg.page.evaluate((tt) => window.PM.offFrame(tt), t))); return r; })())) offs.push(p);
+  await browser.close();
+  // runs of consecutive samples; a run shorter than 0.6 s is an entrance or exit (a drop, a slide), not a framing fault
+  const runs = [], open = new Map();
+  for (const h of offs) {
+    const k = h.scene + '|' + h.what, e = open.get(k);
+    if (e && h.t - e.to < 0.25) { e.to = h.t; e.n++; e.cut = Math.max(e.cut, h.cut); } else { const r = { ...h, from: h.t, to: h.t, n: 1 }; runs.push(r); open.set(k, r); }
+  }
+  const cut = runs.filter((e) => e.n >= 3);
+  for (const e of cut) console.log(`scene ${e.scene + 1}  ${e.from.toFixed(1)}-${e.to.toFixed(1)}s  ${e.what} is ${e.cut}% outside the frame` + (process.env.PM_DEBUG ? '  ' + JSON.stringify(e.r) : ''));
+  console.log(cut.length ? cut.length + ' cut by the frame' : 'nothing cut by the frame');
+  process.exit(seen.size || cut.length ? 1 : 0);
 }
 
 if (opt.still || opt.sheet) {

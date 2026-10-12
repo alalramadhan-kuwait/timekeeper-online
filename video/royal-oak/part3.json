@@ -1405,6 +1405,11 @@
       "type": "fade",
       "at": 2.86,
       "dur": 0.5
+     },
+     "out": {
+      "type": "fade",
+      "at": 3.92,
+      "dur": 0.3
      }
     },
     {
@@ -1482,10 +1487,10 @@
     {
      "type": "text",
      "text": "400 · دي ماركي",
-     "x": 220,
-     "y": 720,
+     "x": 200,
+     "y": 790,
      "font": "banner",
-     "size": 40,
+     "size": 36,
      "color": "#16181D",
      "paper": "#EFE8D6",
      "upper": false,
@@ -1500,10 +1505,10 @@
     {
      "type": "text",
      "text": "400 · بوتي",
-     "x": 500,
-     "y": 720,
+     "x": 520,
+     "y": 870,
      "font": "banner",
-     "size": 40,
+     "size": 36,
      "color": "#16181D",
      "paper": "#EFE8D6",
      "upper": false,
@@ -2376,7 +2381,7 @@
      "aspect": 0.7615421227986673,
      "label": "أول ظهور، فبراير 1972",
      "w": 280,
-     "x": 165,
+     "x": 185,
      "y": 640,
      "z": 24,
      "rot": [
@@ -3196,7 +3201,7 @@
      "pencil": false,
      "paths": [
       {
-       "d": "M 585 832 Q 560 860 444 878",
+       "d": "M 448 296 Q 420 270 392 252",
        "at": 10.450000000000001,
        "dur": 0.3,
        "stroke": "#B23A2E",
@@ -3211,8 +3216,8 @@
      "w": 230,
      "h": 112,
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"230\" height=\"112\" viewBox=\"0 0 230 112\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><rect width=\"230\" height=\"112\" rx=\"9\" fill=\"#F6F1E3\"/><rect x=\"2\" y=\"2\" width=\"226\" height=\"108\" rx=\"8\" fill=\"none\" stroke=\"#D9CFB8\" stroke-width=\"2\"/><circle cx=\"24\" cy=\"56\" r=\"8\" fill=\"#3B4048\"/><rect x=\"50\" y=\"34\" width=\"156\" height=\"2\" fill=\"#C9A35F\"/><text x=\"127\" y=\"84\" font-family=\"var(--f-cap)\" font-weight=\"700\" font-size=\"38\" fill=\"#16181D\" text-anchor=\"middle\">3,300 CHF</text></svg>",
-     "x": 540,
-     "y": 885,
+     "x": 555,
+     "y": 300,
      "anchor": "c",
      "z": 30,
      "in": {
@@ -3491,7 +3496,7 @@
      "label": "Royal Oak · 1972",
      "w": 360,
      "x": 360,
-     "y": 320,
+     "y": 345,
      "z": 12,
      "rot": [
       [
@@ -3554,12 +3559,12 @@
      ],
      [
       11.41,
-      1.06,
+      1.04,
       "inOutCubic"
      ],
      [
       17.27,
-      1.06
+      1.04
      ]
     ],
     "x": [
@@ -3604,12 +3609,12 @@
      ],
      [
       11.41,
-      780,
+      700,
       "inOutCubic"
      ],
      [
       17.27,
-      760
+      700
      ]
     ]
    },

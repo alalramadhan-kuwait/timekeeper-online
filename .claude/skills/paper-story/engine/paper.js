@@ -636,6 +636,25 @@
     return out;
   };
 
+  // every photo and caption card must stay inside the frame (the camera's zoom and drift included); full-screen plates excepted
+  PM.offFrame = function (t) {
+    PM.setTime(t);
+    const out = [], area = S.width * S.height;
+    const shown = (el) => el && el.style.display !== 'none' && +(el.style.opacity || 1) > 0.15;
+    scenes.forEach((sc, si) => {
+      const lt = t - sc.start, trd = sc.spec.transitionDur || 0.45;
+      if (lt < trd + 0.05 || lt > sc.spec.dur - 0.05 || sc.root.style.display === 'none') return;
+      sc.items.filter((it) => (it.spec.type === 'image' || it.spec.type === 'photo' || (it.spec.type === 'text' && it.spec.paper)) && shown(it.el)
+                              && it.built.w * it.built.h < area * 0.5 && it.spec.fit !== 'cover').forEach((it) => {
+        const r = it.el.firstChild.getBoundingClientRect(), a = r.width * r.height;
+        if (a <= 0) return;
+        const vis = Math.max(0, Math.min(r.right, S.width) - Math.max(r.left, 0)) * Math.max(0, Math.min(r.bottom, S.height) - Math.max(r.top, 0)) / a;
+        if (vis < 0.97) out.push({ scene: si, t: +t.toFixed(2), what: it.spec.type + ' "' + (it.spec.label || it.spec.text || it.spec.src || '') + '"', cut: Math.round((1 - vis) * 100), r: [r.left, r.top, r.right, r.bottom].map(Math.round) });
+      });
+    });
+    return out;
+  };
+
   PM.setTime = function (t) {
     t = clamp(t, 0, S.duration - 1e-6);
     scenes.forEach((sc, si) => {

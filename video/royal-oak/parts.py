@@ -280,7 +280,7 @@ P1 = Part()
 use('p1-h')
 C = 'كيف صار | شابٌّ في الثالثة والعشرين | مصمّمًا لبعض | أَشْهَرِ ساعات العالم؟'
 t_famous = at('p1-h', C, 'أَشْهَرِ ساعات')
-hk = polaroid('assets/ap/ro5402_hero', 560, 300, 280, t_famous - .1, label='Royal Oak', z=30, rot=-6, kind='pop')
+hk = polaroid('assets/ap/ro5402_hero', 510, 300, 280, t_famous - .1, label='Royal Oak', z=30, rot=-6, kind='pop')
 els = [svg(760, 520, floor_band('#8A7458', '#A48D6E', 520), 360, 1030, z=1, kind=None, depth=.9, shadow=False),
        svg(760, 1320, light_beam([(760, 0), (520, 0), (60, 1320), (520, 1320)], amt=.10), 360, 640, z=2, kind=None, shadow=False, depth=.9, still=True),
        shadow(330, 1180, 520, 0, z=19, kind=None),
@@ -337,7 +337,7 @@ els = [svg(720, 760, geneva_sky(), 360, 380, z=1, kind=None, depth=.4, shadow=Fa
        cal,
        shadow(330, 1180, 520, .2, z=19),
        cutout('assets/gen/genta23_desk_cut', 330, 1180, 700, .2, z=20, kind='rise', dur=.5, person=True, until=V(7.6)),
-       tag('جيرالد جنتا', 430, 860, t_name1, size=40, z=31, rot=-3, until=t_map - .1),
+       tag('جيرالد جنتا', 300, 820, t_name1, size=40, z=31, rot=-3, until=t_map - .1),
        {"type": "map", "x": 360, "y": 600, "w": 720, "h": 1180, "z": 40,
         "view": [[t_map, {"lon": 10, "lat": 58, "span": 120}], [V(8.8), {"lon": 0, "lat": 62, "span": 120}], [V(11.0), {"lon": -95, "lat": 58, "span": 130}, "inOutCubic"],
                  [V(13.9), {"lon": -40, "lat": 64, "span": 190}, "inOutCubic"]],
@@ -366,7 +366,7 @@ for k, (ex, ey, fx, fy, r) in enumerate([(140, 880, -200, 880, -10), (590, 880, 
     els.append(svg(150, 96, envelope(), [[t_known + k * .3, fx], [t_known + k * .3 + .5, ex, 'outCubic']], [[t_known + k * .3, fy], [t_known + k * .3 + .5, ey, 'outCubic']],
                    z=15, kind='none', at=t_known + k * .3, rot=r))
 P1.S('p1-2', 'ro-night', C, els, transition='fade',
-     camera=cam((0, 1.9, 360, 560, None), (V(1.6), 1.0, 360, 620, 'inOutCubic'), (5.3, 1.08, 360, 600, 'inOutCubic')),
+     camera=cam((0, 1.25, 360, 580, None), (V(1.6), 1.0, 360, 620, 'inOutCubic'), (5.3, 1.05, 360, 610, 'inOutCubic')),
      sfx=[E('shutter', .2, -12), E('tick', V(1.8), -16)] + [E('paper_slide', t_known + k * .3, -16) for k in range(3)])
 
 # 3  Omega asks him to refresh the Constellation (the photo is a 1958 piece, before his refresh)
@@ -382,7 +382,7 @@ els = [svg(760, 360, aurora(), 360, 230, z=1, kind=None, depth=.5, shadow=False,
            rot=[[t_lift, 0], [t_lift + .3, -18]], idle={"type": "shake", "amp": 3, "speed": 9, "from": .2, "until": t_lift}),
        svg(260, 80, ring_lines('#EFE8D6'), 560, 270, z=12, kind='pop', at=.2, dur=.2, scale=.6, idle={"type": "pulse", "amp": .08, "speed": 6},
            out={"type": "fade", "at": t_lift, "dur": .1}),
-       tag('أوميغا', 560, 160, V(.3), size=34),
+       tag('أوميغا', 470, 210, V(.3), size=34),
        con, glint_on(con, t_con + .2),
        tag('Constellation · 1958', 290, 262, t_con, size=24, z=25, rot=-3)]
 for k in range(8):
@@ -431,7 +431,7 @@ els = [svg(640, 960, drafting_sheet(paper='#F3EDDF'), 360, 620, z=2, kind='fade'
        svg(300, 260, HANDBAG, 360, 700, z=14, kind='drop', at=t_bag2 - .2, dur=.45, rot=-3),
        polaroid('assets/crop/m8311_open', 360, [[t_bag2 + .3, 700], [t_bag2 + 1.0, 560, 'outCubic']], 460, t_bag2 + .3, label='Ref. 8311 · 1967', z=16, rot=3, kind='pop')]
 P1.S('p1-a', 'ro-paper', C, els, transition='slide',
-     camera=cam((0, 1.0, 360, 620, None), (t_odd, 1.06, 360, 560, 'inOutCubic'), (t_bag2, 1.12, 360, 640, 'inOutCubic'), (END_A, 1.18, 360, 600, 'inOutCubic')),
+     camera=cam((0, 1.0, 360, 620, None), (t_odd, 1.06, 360, 560, 'inOutCubic'), (t_bag2, 1.06, 360, 640, 'inOutCubic'), (END_A, 1.08, 360, 620, 'inOutCubic')),
      sfx=[E('paper_slide', 0, -13), E('shutter', .35, -14), E('shutter', .8, -14), E('paper_place', t_bag2 - .2, -11), E('clasp', t_bag2 + .3, -9)])
 
 # 5  1967: a handbag watch of his design gets an honourable mention at the Prix de la Ville de Genève
@@ -446,7 +446,7 @@ els = flips(['1962', '1964', '1966', '1967'], 170, 260, 0, .16, z=10, scale=.55,
            idle={"type": "sway", "amp": 2, "speed": .45, "from": t_prize + .45}),
        {"type": "sparkles", "x": 190, "y": 900, "count": 6, "radius": 40, "life": .7, "color": "#EFE8D6", "at": t_prize + .4, "z": 21}]
 P1.S('p1-5', 'ro-paper', C, els, transition='cut',
-     camera=cam((0, 1.06, 360, 700, None), (t_bag, 1.0, 380, 640, 'inOutCubic'), (t_his + .6, 1.3, 480, 690, 'inOutCubic'), (t_prize - .1, 1.25, 460, 680, None),
+     camera=cam((0, 1.06, 360, 700, None), (t_bag, 1.0, 380, 640, 'inOutCubic'), (t_his + .6, 1.08, 360, 660, 'inOutCubic'), (t_prize - .1, 1.1, 320, 700, 'inOutCubic'),
                 (7.37, 1.05, 330, 680, 'inOutCubic')),
      sfx=[E('paper_tear', 0, -15), E('paper_tear', .16, -16), E('paper_tear', .32, -15), E('paper_tear', .48, -16),
           E('paper_place', t_bag - .1, -10), E('paper_place', t_his, -10), E('stamp', t_prize, -10)])
@@ -471,7 +471,7 @@ els = [polaroid('assets/ap/lebrassus1969', 360, 340, 460, .1, label='Audemars Pi
        sk([{"d": dashed(560, 500, 300, 640, 8), "at": t_out + .3, "dur": .6, "stroke": "#B23A2E", "width": 4, "opacity": .95}], z=29)]
 P1.S('p1-6', 'ro-alpine', C, els, transition='slide',
      camera=cam((0, 1.0, 360, 520, None), (V(1.6), 1.0, 360, 620, 'inOutCubic'), (t_first, 1.02, 360, 600, None), (t_first + .4, 1.04, 360, 480, 'inOutCubic'),
-                (t_out + .2, 1.04, 400, 540, 'inOutCubic'), (8.91, 1.1, 420, 820, 'inOutCubic')),
+                (t_out + .2, 1.04, 380, 560, 'inOutCubic'), (8.91, 1.04, 370, 620, 'inOutCubic')),
      sfx=[E('paper_place', V(1.75), -10), E('pin', V(3.0), -14), E('pin', t_first + .1, -14), E('pin', t_first + .3, -14), E('pencil', t_first + .4, -12),
           E('stamp', t_out, -12)])
 
@@ -536,7 +536,7 @@ for i, (rel, gx, gy) in enumerate(board):
 els += [sk([{"d": 'M 200 175 L 360 175 L 520 175 L 280 315 L 440 315', "at": t_board + 1.3, "dur": 1.0, "stroke": "#B23A2E", "width": 2, "opacity": .9}], z=14, depth=.85) | {"out": {"type": "fade", "at": t_day, "dur": .4}},
         shadow(360, 1180, 260, t_g, z=19),
         cutout('assets/gen/young_think_cut', 360, [[0, 1180], [r1[0] + .05, 1180], [r1[0] + .2, 1172], [r1[0] + .4, 1180]], 700, t_g, z=20, person=True, kind='rise', dur=.5),
-        tag('10 أبريل', 170, 250, t_day, size=34, until=V(11.4)),
+        tag('10 أبريل', 230, 260, t_day, size=34, until=V(11.4)),
         *wall_clock(590, 520, 3, 50, z=11, d=150, at=t_four - .3, spin=(t_four, V(10.4), 1 / 6)),
         *ringing_phone(580, 980, [r1, (r2[0], None)], z=59, scale=.75, at=V(10.3)),
         svg(760, 1320, '<rect width="760" height="1320" fill="#000"/>', 360, 640, z=58, kind=None, shadow=False, depth=0, still=True, opacity=[[V(11.7), 0], [V(12.4), .55]]),
@@ -561,8 +561,8 @@ use('p2-h')
 C = 'عام سبعين… | الكوارتز | في الأفق. | وأوديمار بيغيه | تراهن على الستيل.'
 t_bet = at('p2-h', C, 'وأوديمار بيغيه')
 END_H = round(VO_AT + VO['p2-h']['seconds'] + TAIL, 2)
-ast = polaroid('assets/early/astron1969', [[t_bet - .1, 360], [t_bet + .5, 150, 'inOutCubic']], 600, 420, 0, label='Seiko Quartz Astron · 1969', z=20, rot=-3,
-               kind='none', fixed=True, opacity=[[t_bet - .1, 1], [t_bet + .5, .3]], scale=[[0, 1.0], [t_bet, 1.04]])
+ast = polaroid('assets/early/astron1969', [[t_bet - .1, 360], [t_bet + .5, 230, 'inOutCubic']], 600, 420, 0, label='Seiko Quartz Astron · 1969', z=20, rot=-3,
+               kind='none', fixed=True, opacity=[[t_bet - .1, 1], [t_bet + .5, .3]], scale=[[0, 1.0], [t_bet, 1.04], [t_bet + .5, .8, 'inOutCubic']])
 els = [sk([{"d": sine_path(0, 720, 1100, 22, 7), "at": 0, "dur": 1.6, "stroke": "#7FD3F0", "width": 3, "opacity": .8}], z=5, depth=0),
        ast, glint(360, 578, 392, 392 / ast['aspect'] * .94, .5, rot=-3, z=21),
        tag('الكوارتز في الأفق', 360, 160, 0, size=34, z=40, depth=0, rot=-1.5, until=t_bet, **{"in": {"type": "none", "at": 0}}),
@@ -582,17 +582,17 @@ C = 'قبل تلك المكالمة | بأشهر… | ظهرت ساعةٌ | ست
 t_seiko, t_fut, t_end_m = at('p2-q', C, 'طرحت سيكو أول'), at('p2-q', C, 'المستقبل…'), at('p2-q', C, 'ورآها آخرون')
 t_crisis = at('p2-q', C, 'لكن الأزمة'); t_gamble = round(VO_AT + VO['p2-q']['seconds'] + .1, 2)
 END_Q = round(VO_AT + VO['p2-q']['seconds'] + TAIL, 2)
-dim = lambda t: {"opacity": [[t, 1], [t + .5, .25]]}
-astron = polaroid('assets/early/astron1969', 470, 560, 380, t_seiko - .1, label='Seiko Quartz Astron · 1969', z=20, rot=3, kind='rise', until=t_gamble - .2, **dim(t_end_m))
+dim = lambda t: {"opacity": [[t, 1], [t + .5, .85]]}
+astron = polaroid('assets/early/astron1969', 485, 560, 380, t_seiko - .1, label='Seiko Quartz Astron · 1969', z=20, rot=3, kind='rise', until=t_gamble - .2, **dim(t_end_m))
 els = flips(['1969'], 170, 250, .05, .3, z=10, scale=.55, last_out=t_crisis) + [
-       tag('طوكيو، ديسمبر 1969', 190, 400, t_seiko + .3, size=26, z=22, rot=-3, until=t_crisis),
+       tag('طوكيو، ديسمبر 1969', 230, 400, t_seiko + .3, size=26, z=22, rot=-3, until=t_crisis),
        astron, glint_on(astron, t_seiko + .6),
        *wall_clock(500, 560, 3, 0, z=12, d=200, at=.2, spin=(.3, t_seiko, 2), out={"type": "fade", "at": t_seiko - .2, "dur": .3}),
-       polaroid('assets/early/astron_35a', 210, 720, 240, t_fut - .5, label='Cal. 35A · 8,192 Hz', z=24, rot=-5, kind='pop', labelSize=18,
+       polaroid('assets/early/astron_35a', 180, 760, 240, t_fut - .5, label='Cal. 35A · 8,192 Hz', z=24, rot=-5, kind='pop', labelSize=18,
                 until=t_gamble - .2, **dim(t_end_m)),
        sk([{"d": sine_path(40, 680, 160, 18, 9), "at": t_fut - .3, "dur": 1.0, "stroke": "#7FD3F0", "width": 3, "opacity": .9}], z=8, depth=0) |
        {"out": {"type": "fade", "at": t_end_m + .3, "dur": .4}}]
-for k, (gx, gy, r, n, turns) in enumerate([(300, 600, 110, 16, 1), (468, 700, 70, 10, -1.6), (440, 470, 52, 8, -2.1)]):
+for k, (gx, gy, r, n, turns) in enumerate([(560, 185, 85, 14, 1), (430, 160, 48, 8, -1.6), (645, 290, 42, 7, -2.1)]):
     els.append(svg(2 * r + 20, 2 * r + 20, gear(r, n), gx, gy, z=30 + k, kind='pop', at=t_end_m + k * .12, dur=.3, still=True,
                    rot=[[t_end_m, 0], [t_crisis + .3, 300 * turns, 'outCubic']],
                    opacity=[[t_crisis, 1], [t_crisis + .6, .55]], out={"type": "fade", "at": t_gamble - .1, "dur": .3}))
@@ -602,8 +602,8 @@ els += [sk([{"d": 'M 180 420 L 260 520 L 230 560 L 330 690 L 300 730 L 400 860',
         tag('الجزء الثاني: الرهان', 360, 150, 0.05, size=34, z=50, until=t_seiko - .4, depth=0),
         tag('قبل المكالمة بأشهر', 360, 1130, .3, size=26, z=50, until=t_seiko - .4, depth=0, rot=1.5)]
 P2.S('p2-q', 'ro-night', C, els, transition='fade',
-     camera=cam((0, 1.0, 360, 640, None), (t_seiko, 1.0, 420, 600, 'inOutCubic'), (t_fut, 1.06, 330, 660, 'inOutCubic'), (t_end_m, 1.0, 360, 640, 'inOutCubic'),
-                (t_crisis + .3, 1.04, 360, 520, 'inOutCubic'), (t_gamble, 1.0, 400, 760, 'inOutCubic'), (END_Q, 1.06, 440, 840, 'inOutCubic')),
+     camera=cam((0, 1.0, 360, 640, None), (t_seiko, 1.0, 420, 600, 'inOutCubic'), (t_fut, 1.04, 370, 660, 'inOutCubic'), (t_end_m, 1.0, 360, 640, 'inOutCubic'),
+                (t_crisis + .3, 1.04, 360, 520, 'inOutCubic'), (t_gamble, 1.0, 360, 760, 'inOutCubic'), (END_Q, 1.03, 365, 800, 'inOutCubic')),
      sfx=[E('paper_tear', .05, -15), E('shutter', t_seiko - .1, -12), E('tick', t_seiko + .6, -16), E('click', t_fut - .5, -12)] +
          [E('tick', t_fut + k * .25, -18) for k in range(6)] + [E('crown_wind', t_end_m, -12), E('paper_tear', t_crisis + .1, -10), E('stamp', t_crisis + .35, -8),
           ])
@@ -631,23 +631,23 @@ END0 = round(VO_AT + VO['p2-0']['seconds'] + TAIL, 2)
 for i, (rel, t, t_out, label, city) in enumerate([('assets/ap/golay1966', V(6.1), t_trn - .3, 'جورج غولاي، 1966', None),
                                                   ('assets/ap/demarchi1940s', t_trn - .3, t_lsn - .3, 'كارلو دي ماركي، الأربعينات', 'تورينو'),
                                                   ('assets/crop/bauty1976_right', t_lsn - .3, t_par - .3, 'شارل بوتي، باريس 1976', 'لوزان')]):
-    els.append(polaroid(rel, 200, 640, 330, t, label=label, z=20 + i, rot=(-3, 2, -2)[i], kind='rise', labelSize=19, until=t_out))
+    els.append(polaroid(rel, 225, 640, 330, t, label=label, z=20 + i, rot=(-3, 2, -2)[i], kind='rise', labelSize=19, until=t_out))
     if city: els.append(tag(city, 440, 770, t + .2, size=34, z=40, rot=2, until=t_out))
-els += [svg(330, 165, name_card('CHARLES DOROT', 330, 165, 28), 200, 620, z=24, kind='drop', at=t_par - .3, dur=.4, rot=-2),
+els += [svg(330, 165, name_card('CHARLES DOROT', 330, 165, 28), 225, 620, z=24, kind='drop', at=t_par - .3, dur=.4, rot=-2),
         tag('لا توجد صورة موثّقة', 200, 740, t_par + .1, size=20, z=41, rot=1),
         tag('باريس', 440, 770, t_par + .1, size=34, z=40, rot=2)]
-els += [svg(306, 306, '<rect width="306" height="306" rx="4" fill="#EFE8D6"/>', 545, 330, z=40, kind='drop', at=t_three, dur=.45, depth=0, rot=3),
-        {"type": "map", "x": 545, "y": 330, "w": 284, "h": 284, "z": 41, "view": {"lon": 5.0, "lat": 47.0, "span": 7.5}, "sea": "#CCC6B7", "land": "#F4F1E8",
+els += [svg(306, 306, '<rect width="306" height="306" rx="4" fill="#EFE8D6"/>', 515, 330, z=40, kind='drop', at=t_three, dur=.45, depth=0, rot=3),
+        {"type": "map", "x": 515, "y": 330, "w": 284, "h": 284, "z": 41, "view": {"lon": 5.0, "lat": 47.0, "span": 7.5}, "sea": "#CCC6B7", "land": "#F4F1E8",
          "highlight": [{"n": "Switzerland", "at": 0, "color": "#E3CF9E"}, {"n": "Italy", "at": 0, "color": "#E8DCC0"}],
          "pins": [dict(BSL, at=t_three + .3), dict(TRN, at=t_trn), dict(LSN, at=t_lsn), dict(PAR, at=t_par)],
          "routes": [{"from": "trn", "to": "bsl", "at": t_trn + .1, "dur": .8, "keep": True}, {"from": "lsn", "to": "bsl", "at": t_lsn + .1, "dur": .8, "keep": True},
                     {"from": "par", "to": "bsl", "at": t_par + .1, "dur": .8, "keep": True}],
          "in": {"type": "drop", "at": t_three, "dur": .45}, "rot": 3, "depth": 0},
-        svg(84, 30, '<rect width="84" height="30" fill="rgb(214,190,128)" opacity=".9"/>', 545, 180, z=42, kind='drop', at=t_three, dur=.45, depth=0, rot=-2, shadow=False),
+        svg(84, 30, '<rect width="84" height="30" fill="rgb(214,190,128)" opacity=".9"/>', 515, 180, z=42, kind='drop', at=t_three, dur=.45, depth=0, rot=-2, shadow=False),
         ]
 P2.S('p2-0', 'ro-hall', C, els,
-     camera=cam((0, 1.0, 360, 640, None), (t_hall, 1.0, 360, 640, None), (V(6.0), 1.03, 350, 660, 'inOutCubic'), (t_trn, 1.05, 330, 700, 'inOutCubic'),
-                (t_lsn, 1.07, 380, 720, 'inOutCubic'), (t_par, 1.08, 420, 740, 'inOutCubic'), (14.94, 1.06, 380, 760, 'inOutCubic')),
+     camera=cam((0, 1.0, 360, 640, None), (t_hall, 1.0, 360, 640, None), (V(6.0), 1.02, 360, 650, 'inOutCubic'), (t_trn, 1.03, 360, 660, 'inOutCubic'),
+                (t_lsn, 1.03, 360, 670, 'inOutCubic'), (t_par, 1.04, 360, 680, 'inOutCubic'), (14.94, 1.03, 360, 680, 'inOutCubic')),
      sfx=[E('shutter', .1, -14), E('whoosh', V(1.5), -16), E('paper_place', V(3.2), -11), E('crowd', t_hall, -26), E('paper_place', t_three, -12)] +
          [E('paper_slide', t, -14) for t in (V(6.1), t_trn - .3, t_lsn - .3, t_par - .3)],
      beds=[{"name": "crowd", "from": t_hall, "to": 15, "gain": -28}])
@@ -657,26 +657,26 @@ use('p2-1')
 C = 'طلبهم واضح: | ساعات الذهب وحدها | لم تعد تكفي. | يريدون ساعةً من الستيل، | رياضيةً وأنيقة، | تناسب | أسلوب الحياة الجديد. | وعُرف الوكلاء الثلاثة | لاحقًا بلقب: | الفرسان الثلاثة.'
 t_gold, t_steel, t_life, t_mus = at('p2-1', C, 'ساعات الذهب'), at('p2-1', C, 'يريدون ساعةً'), at('p2-1', C, 'تناسب'), at('p2-1', C, 'الفرسان الثلاثة.')
 t_ag = at('p2-1', C, 'وعُرف الوكلاء')
-els = [polaroid('assets/ap/m5182', [[t_gold, 230], [t_gold + 1.4, 130, 'inOutCubic']], 700, 320, .1, label='ذهب · Ref. 5182', z=10, kind='rise', labelSize=20,
-                opacity=[[t_gold, 1], [t_gold + 1.4, .35]], rot=[[t_gold, 0], [t_gold + 1.4, -10]]),
-       svg(300, 190, steel_plate(300, 190), 450, 640, z=12, kind='drop', at=t_steel - .3, dur=.5, rot=-6),
+els = [polaroid('assets/ap/m5182', [[t_gold, 240], [t_gold + 1.4, 200, 'inOutCubic']], 700, 320, .1, label='ذهب · Ref. 5182', z=10, kind='rise', labelSize=20,
+                opacity=[[t_gold, 1], [t_gold + 1.4, .75]], rot=[[t_gold, 0], [t_gold + 1.4, -8]], scale=[[t_gold, 1], [t_gold + 1.4, .8, 'inOutCubic']], out={"type": "fade", "at": t_ag - .3, "dur": .3}),
+       svg(300, 190, steel_plate(300, 190), 450, 640, z=12, kind='drop', at=t_steel - .3, dur=.5, rot=-6, out={"type": "fade", "at": t_ag - .3, "dur": .3}),
        glint(450, 640, 290, 180, t_steel + .4, rot=-6, z=13),
        tag('ستيل', 450, 470, t_steel - .2, size=40, until=t_ag - .2)]
 for k, (body, w, h, x, y) in enumerate([(icon_yacht(), 150, 160, 130, 330), (icon_skis(), 120, 175, 330, 300), (icon_racket(), 130, 170, 590, 330),
                                         (icon_sunglasses(), 140, 55, 190, 890), (icon_car(), 200, 92, 540, 885)]):
     els.append(svg(w, h, body, x, y, z=14, kind='pop', at=t_life + k * .3, dur=.35, out={"type": "fade", "at": t_ag - .1, "dur": .3},
                    idle={"type": "float", "amp": 5, "speed": .5, "phase": k}))
-for i, (rel, x, label) in enumerate([('assets/ap/demarchi1940s', 160, 'دي ماركي'), ('assets/crop/bauty1976_right', 360, 'بوتي')]):
-    els.append(polaroid(rel, x, 760, 280, t_ag - .1 + i * .2, label=label, z=30 + i, rot=(-5, 3)[i], kind='rise', labelSize=20))
-els.append(svg(280, 150, name_card('DOROT', 280, 150, 30), 565, 740, z=32, kind='rise', at=t_ag + .3, dur=.45, rot=-3))
+for i, (rel, x, y, label) in enumerate([('assets/ap/demarchi1940s', 185, 590, 'دي ماركي'), ('assets/crop/bauty1976_right', 510, 690, 'بوتي')]):
+    els.append(polaroid(rel, x, y, 280, t_ag - .1 + i * .2, label=label, z=30 + i, rot=(-5, 3)[i], kind='rise', labelSize=20))
+els.append(svg(220, 118, name_card('DOROT', 220, 118, 26), 175, 935, z=32, kind='rise', at=t_ag + .3, dur=.45, rot=-3))
 for k, r in enumerate((-35, 35, 0)):
     els.append(svg(60, 300, rapier('rp%d' % k), 360, 310, z=40 + k, kind='grow', at=t_mus - .2 + (.2 if k == 2 else 0), dur=.35,
                    rot=[[t_mus - .2, 0], [t_mus + .15, r, 'outBack']] if r else 0))
 els += [svg(220, 100, cavalier_hat(), 360, 145, z=44, kind='drop', at=t_mus + .25, dur=.4),
         tag('الفرسان الثلاثة', 360, 70, t_mus, size=40, z=45)]
 P2.S('p2-1', 'ro-steel', C, els, transition='slide',
-     camera=cam((0, 1.0, 360, 640, None), (t_life, 1.04, 420, 640, 'inOutCubic'), (t_ag - .2, 1.06, 380, 620, 'inOutCubic'), (t_mus - .3, 1.0, 360, 620, 'inOutCubic'),
-                (11.93, 1.06, 360, 520, 'inOutCubic')),
+     camera=cam((0, 1.0, 360, 640, None), (t_life, 1.03, 380, 640, 'inOutCubic'), (t_ag - .2, 1.02, 360, 640, 'inOutCubic'), (t_mus - .3, 1.0, 360, 640, 'inOutCubic'),
+                (11.93, 1.03, 360, 620, 'inOutCubic')),
      sfx=[E('paper_place', .1, -12), E('whoosh', t_gold, -16), E('stamp', t_steel - .3, -10), E('tick', t_steel + .4, -16)] +
          [E('pin', t_life + k * .3, -16) for k in range(5)] + [E('whoosh', t_ag - .1, -14), E('clasp', t_mus + .1, -8), E('paper_place', t_mus + .3, -12)])
 
@@ -774,11 +774,11 @@ els = [svg(640, 960, drafting_sheet(paper='#F6EEDC'), 360, 600, z=3, kind=None),
        svg(300, 20, pencil(), [[round(0 * R_[0], 2), 700], [round(0.25 * R_[0], 2), 500], [round(1.05 * R_[0], 2), 485], [round(2.0 * R_[0], 2), 440], [round(3.0 * R_[0], 2), 500], [round(3.5 * R_[0], 2), 520], [round(4.1 * R_[0], 2), 470], [round(4.8 * R_[0], 2), 450], [round(5.6 * R_[0], 2), 420], [round(6.3 * R_[0], 2), 160], [round(7.6 * R_[0], 2), 170]],
            [[round(0 * R_[0], 2), 760], [round(0.25 * R_[0], 2), 560], [round(1.05 * R_[0], 2), 410], [round(2.0 * R_[0], 2), 300], [round(3.0 * R_[0], 2), 380], [round(3.5 * R_[0], 2), 690], [round(4.1 * R_[0], 2), 210], [round(4.8 * R_[0], 2), 960], [round(5.6 * R_[0], 2), 560], [round(6.3 * R_[0], 2), 640], [round(7.6 * R_[0], 2), 650]],
            anchor='l', z=20, kind=None, rot=-38, depth=1.15, idle={"type": "wiggle", "amp": 2, "speed": 5}),
-       polaroid('assets/ap/ro5402_black', 545, 245, 180, t_eight + .3, label='Réf. 5402', z=22, rot=6, labelSize=18),
+       polaroid('assets/ap/ro5402_black', 520, 265, 180, V(5.9), label='Réf. 5402', z=22, rot=6, labelSize=18),
        svg(760, 1320, radial_light(760, 1320, 200, 300, 760, amt=.2) + vignette(color='#14203A', amt=.5), 360, 640, z=30, kind=None, shadow=False, depth=0, still=True)]
 P2.S('p2-4', 'ro-night', C, els, transition='fade', transitionDur=.3,
      camera=cam((0, 1.5, 360, 560, None), (V(1.5), 1.4, 360, 570, 'inOutCubic'), (V(3.8), 1.3, 380, 560, 'inOutCubic'), (V(6.0), 1.06, 360, 600, 'inOutCubic'), (V(7.6), 1.1, 360, 600, None)),
-     sfx=[E('pencil', .15, -8), E('pencil', V(1.0), -8)] + [E('click', V(2.1 + j * .12), -14) for j in range(8)] + [E('paper_place', t_eight + .3, -12), E('pencil', V(3.5), -9), E('pencil', V(4.2), -9), E('crown_wind', V(6.3), -14)])
+     sfx=[E('pencil', .15, -8), E('pencil', V(1.0), -8)] + [E('click', V(2.1 + j * .12), -14) for j in range(8)] + [E('paper_place', V(5.9), -12), E('pencil', V(3.5), -9), E('pencil', V(4.2), -9), E('crown_wind', V(6.3), -14)])
 
 # 5  "And this is his original drawing" (gouache and pencil, the night of 10-11 April 1970; signed)
 use('p2-5')
@@ -861,11 +861,11 @@ END_G = round(VO_AT + VO['p3-g']['seconds'] + TAIL, 2)
 els = [svg(900, 1100, hall(), 360, 560, z=1, kind=None, depth=.55, shadow=False),
        svg(760, 300, carpet(), 360, 1180, z=2, kind=None, depth=.9, shadow=False),
        tag('بازل 1971', 360, 170, .15, size=40, z=40, depth=0),
-       svg(300, 300, OCT, 360, 560, z=10, kind='fade', at=t_proto, dur=.5),
+       svg(300, 300, OCT, 360, 560, z=10, kind='fade', at=t_proto, dur=.5, out={"type": "fade", "at": t_dm - .2, "dur": .3}),
        tag('النموذج (إعادة بناء)', 360, 760, t_proto + .3, size=24, z=12, rot=2, until=t_dm),
        polaroid('assets/ap/demarchi_bauty1992', 360, 450, 420, t_dm - .2, label='دي ماركي وبوتي (صورة 1992)', z=20, rot=-3, labelSize=17, until=t_gl),
-       tag('400 · دي ماركي', 220, 720, t_dm + .4, size=40, z=30, rot=-4),
-       tag('400 · بوتي', 500, 720, t_bt + .3, size=40, z=30, rot=3),
+       tag('400 · دي ماركي', 200, 790, t_dm + .4, size=36, z=30, rot=-4),
+       tag('400 · بوتي', 520, 870, t_bt + .3, size=36, z=30, rot=3),
        tag('1,000 · قرار غولاي', 360, 560, t_gl + .3, size=52, z=35, ink='#EFE8D6', paper='#2C4A6E', **{"in": {"type": "slam", "at": t_gl + .3, "dur": .3}})]
 P3.S('p3-g', 'ro-hall', C, els, transition='slide',
      camera=cam((0, 1.0, 360, 600, None), (t_proto, 1.1, 360, 560, 'inOutCubic'), (t_dm, 1.0, 360, 620, 'inOutCubic'), (t_gl, 1.06, 360, 600, 'inOutCubic'), (END_G, 1.1, 360, 580, None)),
@@ -926,7 +926,7 @@ els = [svg(900, 1100, hall(), 360, 560, z=1, kind=None, depth=.55, shadow=False)
            {"d": 'M 279 460 L 279 480 M 443 460 L 443 480', "at": t_39 + .4, "dur": .15, "stroke": "#EFE8D6", "width": 3, "opacity": 1}],
           z=20, depth=1.0, texts=[{"text": "39 mm", "x": 240, "y": 477, "size": 20, "at": t_39 + .3, "dur": .4, "anchor": "middle", "color": "#EFE8D6", "font": "var(--f-banner)"}]),
        tag('وسماكتها 7 ملم فقط', 360, 1130, t_big + .6, size=26, z=46, rot=1, depth=0),
-       polaroid('assets/ap/firstpub1972', 165, 640, 280, t_big, label='أول ظهور، فبراير 1972', z=24, rot=-5, labelSize=16)]
+       polaroid('assets/ap/firstpub1972', 185, 640, 280, t_big, label='أول ظهور، فبراير 1972', z=24, rot=-5, labelSize=16)]
 els += motes(cone_points(WX, 9, 11, y0=380, y1=1000, spread=.35), at=t_ro, z=8, depth=.95)
 for fx, fy, t, s_ in [(640, 820, t_ro + .2, 1), (680, 560, t_ro + .45, 1), (330, 470, t_ro + .75, 1), (60, 520, V(9.4), .6)]:
     els.append(svg(240, 240, flash(), fx, fy, z=45, kind='pop', at=t, dur=.08, shadow=False, depth=1.2, scale=s_, out={"type": "fade", "at": t + .18, "dur": .15}))
@@ -951,8 +951,8 @@ els = [svg(620, 520, pegboard(), 360, 600, z=3, kind=None, out=peg_out),
        macro('assets/ap/cal2121_1971', V(4.3), V(5.6), zoom=(1.15, 1.0)),
        tag('Calibre 2121 · 1971', 360, 200, V(4.45), size=28, z=55, depth=0, until=V(5.5)),
        ad, glint_on(ad, V(7.2)),
-       sk([{"d": 'M 585 832 Q 560 860 444 878', "at": t_price + .05, "dur": .3, "stroke": "#B23A2E", "width": 2.5, "opacity": 1}], z=29),
-       svg(230, 112, swing_tag(), 540, 885, z=30, kind='pop', at=t_price + .2, dur=.4, rot=-6, idle={"type": "sway", "amp": 1.5, "speed": .4},
+       sk([{"d": 'M 448 296 Q 420 270 392 252', "at": t_price + .05, "dur": .3, "stroke": "#B23A2E", "width": 2.5, "opacity": 1}], z=29),
+       svg(230, 112, swing_tag(), 555, 300, z=30, kind='pop', at=t_price + .2, dur=.4, rot=-6, idle={"type": "sway", "amp": 1.5, "speed": .4},
            out={"type": "fade", "at": V(9.2), "dur": .3}),
        tag('إعلان 1972: «أغلى ساعة من الستيل»', 360, 190, V(9.6), size=30, z=40, depth=0)]
 P3.S('p2-6', 'ro-steel', C, els, transition='slide',
@@ -972,9 +972,9 @@ els = [svg(640, 960, drafting_sheet(paper='#F3EDDF'), 360, 620, z=2, kind=None, 
        tag('1972 · 490', 250, 560, t_72 + .5, size=52, z=22, rot=-3),
        tag('1973 · 543', 470, 700, t_73 + .3, size=52, z=22, rot=3),
        tag('أرقام تسليم من الدار، لا مبيعات نهائية', 360, 900, t_note, size=24, z=30, rot=0, depth=0),
-       polaroid('assets/ap/ro5402_period', 360, 320, 360, t_72, label='Royal Oak · 1972', z=12, rot=4, labelSize=18)]
+       polaroid('assets/ap/ro5402_period', 360, 345, 360, t_72, label='Royal Oak · 1972', z=12, rot=4, labelSize=18)]
 P3.S('p3-i', 'ro-paper', C, els, transition='slide',
-     camera=cam((0, 1.08, 360, 480, None), (t_72, 1.0, 360, 600, 'inOutCubic'), (t_73, 1.04, 400, 660, 'inOutCubic'), (t_note, 1.06, 360, 780, 'inOutCubic'), (END_I, 1.06, 360, 760, None)),
+     camera=cam((0, 1.08, 360, 480, None), (t_72, 1.0, 360, 600, 'inOutCubic'), (t_73, 1.04, 400, 660, 'inOutCubic'), (t_note, 1.04, 360, 700, 'inOutCubic'), (END_I, 1.04, 360, 700, None)),
      sfx=[E('paper_tear', t_fail + .1, -12), E('stamp', t_fail + .2, -8), E('stamp', t_72 + .5, -10), E('stamp', t_73 + .3, -10), E('paper_place', t_note, -12)])
 
 # 21  The Shah: AP's records say he had the first white-gold piece, No. 101 (not the first prototype). But no single client made the
