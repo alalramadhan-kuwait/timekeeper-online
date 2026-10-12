@@ -265,6 +265,25 @@ PEND = 'paper character, waiting for Higgsfield credits'
 credits = lambda text, t, y=1150: {"type": "text", "text": text, "x": 360, "y": y, "font": "ui", "size": 17, "color": "#CFC8B8", "upper": False, "w": 640,
                                     "z": 70, "depth": 0, "in": {"type": "fade", "at": t, "dur": .4}}
 
+def silhouette_print(w, label, note='لا توجد صورة موثّقة', size=20):
+    """A print with no photograph in it: a plain grey silhouette, for a person with no documented picture (Dorot).
+    Same frame as polaroid() at width w (photo w-28 wide, 4:5); returns (w, h, svg body)."""
+    pw = w - 28; ph = round(pw / .8); h = 14 + ph + 56
+    cx = w / 2; top = 14
+    body = ('<defs><linearGradient id="sil%d" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#565C64"/><stop offset="1" stop-color="#33383E"/></linearGradient>'
+            '<clipPath id="silc%d"><rect x="14" y="%d" width="%d" height="%d"/></clipPath></defs>' % (w, w, top, pw, ph) +
+            '<rect width="%d" height="%d" rx="3" fill="#F3EEE2"/>' % (w, h) +
+            '<rect x="14" y="%d" width="%d" height="%d" fill="url(#sil%d)"/>' % (top, pw, ph, w) +
+            '<g clip-path="url(#silc%d)" fill="#8B929B">' % w +
+            '<circle cx="%.1f" cy="%.1f" r="%.1f"/>' % (cx, top + ph * .36, pw * .17) +
+            '<rect x="%.1f" y="%.1f" width="%.1f" height="%.1f" rx="6"/>' % (cx - pw * .07, top + ph * .46, pw * .14, ph * .1) +
+            '<ellipse cx="%.1f" cy="%.1f" rx="%.1f" ry="%.1f"/></g>' % (cx, top + ph * 1.0, pw * .42, ph * .38) +
+            '<text x="%.1f" y="%.1f" font-family="var(--f-ui)" font-size="15" font-weight="600" fill="#E9E4D8" text-anchor="middle">%s</text>' % (cx, top + 26, note) +
+            '<text x="%.1f" y="%.1f" font-family="var(--f-cap)" font-size="%d" font-weight="700" fill="#2A2C31" text-anchor="middle">%s</text>' % (cx, top + ph + 36, size, label) +
+            '<rect x="%.1f" y="-12" width="84" height="30" fill="rgb(214,190,128)" opacity=".9" transform="rotate(-2 %.1f 3)"/>' % (cx - 42, cx))
+    return w, h, body
+
+
 def name_card(text, w=300, h=150, size=26):
     """A plain typed card: a red rule and one name, nothing else."""
     return ('<rect width="%d" height="%d" rx="3" fill="#F6F1E3"/><rect x="0" y="30" width="%d" height="3" fill="#B23A2E"/>' % (w, h, w) +
@@ -650,8 +669,8 @@ for i, (rel, t, t_out, label, city) in enumerate([('assets/ap/golay1966', V(6.1)
                                                   ('assets/crop/bauty1976_face', t_lsn - .3, t_par - .3, 'شارل بوتي، باريس 1976', 'لوزان')]):
     els.append(polaroid(rel, 225, 640, 330, t, label=label, z=20 + i, rot=(-3, 2, -2)[i], kind='rise', labelSize=19, until=t_out))
     if city: els.append(tag(city, 440, 770, t + .2, size=34, z=40, rot=2, until=t_out))
-els += [svg(330, 165, name_card('CHARLES DOROT', 330, 165, 28), 225, 620, z=24, kind='drop', at=t_par - .3, dur=.4, rot=-2),
-        tag('لا توجد صورة موثّقة', 200, 740, t_par + .1, size=20, z=41, rot=1),
+els += [svg(*silhouette_print(330, 'شارل دورو، باريس', size=19), 225, 640, z=24, kind='rise', at=t_par - .3, dur=.45, rot=-2,
+            idle={"type": "float", "amp": 3, "speed": .25, "phase": 1.3, "from": round(t_par + .2, 2)}),
         tag('باريس', 440, 770, t_par + .1, size=34, z=40, rot=2)]
 els += [svg(306, 306, '<rect width="306" height="306" rx="4" fill="#EFE8D6"/>', 515, 330, z=40, kind='drop', at=t_three, dur=.45, depth=0, rot=3),
         {"type": "map", "x": 515, "y": 330, "w": 284, "h": 284, "z": 41, "view": {"lon": 5.0, "lat": 47.0, "span": 7.5}, "sea": "#CCC6B7", "land": "#F4F1E8",
@@ -683,9 +702,10 @@ for k, (body, w, h, x, y) in enumerate([(icon_yacht(), 150, 160, 130, 330), (ico
                                         (icon_sunglasses(), 140, 55, 190, 890), (icon_car(), 200, 92, 540, 885)]):
     els.append(svg(w, h, body, x, y, z=14, kind='pop', at=t_life + k * .3, dur=.35, out={"type": "fade", "at": t_ag - .1, "dur": .3},
                    idle={"type": "float", "amp": 5, "speed": .5, "phase": k}))
-for i, (rel, x, y, label) in enumerate([('assets/ap/demarchi1940s', 185, 590, 'دي ماركي'), ('assets/crop/bauty1976_face', 510, 690, 'بوتي')]):
-    els.append(polaroid(rel, x, y, 280, t_ag - .1 + i * .2, label=label, z=30 + i, rot=(-5, 3)[i], kind='rise', labelSize=20))
-els.append(svg(220, 118, name_card('DOROT', 220, 118, 26), 175, 935, z=32, kind='rise', at=t_ag + .3, dur=.45, rot=-3))
+for i, (rel, x, y, label) in enumerate([('assets/ap/demarchi1940s', 172, 400, 'دي ماركي'), ('assets/crop/bauty1976_face', 545, 430, 'بوتي')]):
+    els.append(polaroid(rel, x, y, 280, t_ag - .1 + i * .2, label=label, z=30 + i, rot=(-5, 4)[i], kind='rise', labelSize=20))
+els.append(svg(*silhouette_print(280, 'دورو'), 360, 770, z=32, kind='rise', at=t_ag + .3, dur=.45, rot=-2,      # the third agent: no documented photo
+               idle={"type": "float", "amp": 3, "speed": .25, "phase": 2.1, "from": round(t_ag + .8, 2)}))
 for k, r in enumerate((-35, 35, 0)):
     els.append(svg(60, 300, rapier('rp%d' % k), 360, 310, z=40 + k, kind='grow', at=t_mus - .2 + (.2 if k == 2 else 0), dur=.35,
                    rot=[[t_mus - .2, 0], [t_mus + .15, r, 'outBack']] if r else 0))
