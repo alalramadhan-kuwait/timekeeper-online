@@ -96,6 +96,7 @@ def plan(items, settings_list):
     n = 0
     for name, text in items: print('  %-8s %3d chars | %s' % (name, len(text), text)); n += len(text) * len(settings_list)
     print('total about %d characters. Nothing was sent: add --yes once the voice, model and text are confirmed.' % n)
+    print('Has the owner approved this wording from the free draft read? (paper-story/scripts/draft-voice.py)')
 
 
 def tts(text, mp3_path, settings):

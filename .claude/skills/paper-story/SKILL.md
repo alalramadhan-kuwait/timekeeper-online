@@ -26,9 +26,10 @@ Every film opens with a hook the user has chosen: see `references/hooks.md`. Mak
    node .claude/skills/paper-story/scripts/render.mjs story.json --still 1.5,6 --scale 1.5 -o stills/
    ```
    Open the PNGs and check the QA list below. Fix, re-run, repeat.
-5. **Add audio** (see Audio), then check it before rendering: `scripts/voice-check.py clips.json` transcribes each clip on this machine and lists words not heard as written (a name in Latin letters drops the Arabic article), and `scripts/audio-check.py clips/*.wav` lists clicks, cuts and clipping.
-6. **Render.** `node .claude/skills/paper-story/scripts/render.mjs story.json -o out.mp4 --scale 1.5` gives 1080x1920. About 25 seconds of video takes about a minute at 720p on 4 workers.
-7. **Verify and deliver.** Check duration, size and streams with `ffmpeg -i out.mp4`, run `scripts/audio-check.py out.mp4`, view a few frames, and send the file to the user. Say plainly if audio was not added. Share the copy made by `scripts/deliver.py film.mp4 cover.jpg film-share.mp4`: it opens on the cover (messaging apps use the first frame as the thumbnail), attaches it, and fits the 30 MiB send limit. Send the cover JPG too.
+5. **Review the words with a free draft read first.** Before any paid voice records anything, run `scripts/draft-voice.py script.json [lines]`: a free voice (gTTS) reads the script, writes `voice-draft/read-<part>.mp3` and prints the characters a paid recording would cost. Send the read to the user and change the wording until they approve it; only then propose the paid recording (voice, settings, cost) and wait for their go-ahead. The draft clips also render a draft film for timing.
+6. **Add audio** (see Audio), then check it before rendering: `scripts/voice-check.py clips.json` transcribes each clip on this machine and lists words not heard as written (a name in Latin letters drops the Arabic article), and `scripts/audio-check.py clips/*.wav` lists clicks, cuts and clipping.
+7. **Render.** `node .claude/skills/paper-story/scripts/render.mjs story.json -o out.mp4 --scale 1.5` gives 1080x1920. About 25 seconds of video takes about a minute at 720p on 4 workers.
+8. **Verify and deliver.** Check duration, size and streams with `ffmpeg -i out.mp4`, run `scripts/audio-check.py out.mp4`, view a few frames, and send the file to the user. Say plainly if audio was not added. Share the copy made by `scripts/deliver.py film.mp4 cover.jpg film-share.mp4`: it opens on the cover (messaging apps use the first frame as the thumbnail), attaches it, and fits the 30 MiB send limit. Send the cover JPG too.
 
 ## Storyboard
 

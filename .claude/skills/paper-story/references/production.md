@@ -70,6 +70,11 @@ The stage point `y` appears on screen at `640 + (y - camY) * zoom` (the same for
   transcribes on this machine (free, faster-whisper) and lists written words that were not heard and terms said
   without their article. Then `scripts/audio-check.py voice/clips/*.wav` for clicks, cuts, clipping and words cut at
   the edge of a clip. Report both to the user in one line; a clip that fails is fixed before any render.
+- **A free draft read comes first.** `scripts/draft-voice.py script.json` reads every changed line with a free
+  voice (gTTS, no key, no credits) into `voice-draft/` and one `read-<part>.mp3` per part. The user reviews the
+  wording by ear (a wrong word such as «أشهر» meaning "months", a sentence too long for its scene) before a single
+  paid character is spent. It reads names the Arabic way; how the paid voice says them is checked after recording.
+  Microsoft's free Edge voices were refused (403) from the cloud environment; gTTS works through the proxy.
 - **Paid voices:** record nothing until the user approves the exact text, voice, model and settings, and say the
   cost first (characters). Record only the lines that changed, keep the previous take (`prev/`), and run one TTS
   process at a time. With ElevenLabs behind the agent proxy the key is injected as the `xi-api-key` header on `/v1`
