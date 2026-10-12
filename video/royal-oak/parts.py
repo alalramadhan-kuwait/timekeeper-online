@@ -141,10 +141,10 @@ def cutout(rel, x, y, h, at, z=20, kind='fade', dur=.3, until=None, person=False
     d.update(kw); return d
 
 
-def polaroid(rel, x, y, w, at, label='', z=30, rot=0, until=None, kind='drop', desc='', aspect=None, **kw):
+def polaroid(rel, x, y, w, at, label='', z=30, rot=0, until=None, kind='drop', desc='', aspect=None, small=False, **kw):
     """A real photograph on a taped paper print, anchored at its centre. The photo is (w-28) wide, its centre 22 px above y.
     Prints are never small on a phone: anything under 280 px wide (except pin-board thumbnails, under 150) is raised to 280."""
-    if 150 <= w < 280: w = 280
+    if 150 <= w < 280 and not small: w = 280       # small=True: three or more prints that share the frame
     f = pic(rel)
     if f:
         from PIL import Image
@@ -265,23 +265,13 @@ PEND = 'paper character, waiting for Higgsfield credits'
 credits = lambda text, t, y=1150: {"type": "text", "text": text, "x": 360, "y": y, "font": "ui", "size": 17, "color": "#CFC8B8", "upper": False, "w": 640,
                                     "z": 70, "depth": 0, "in": {"type": "fade", "at": t, "dur": .4}}
 
-def silhouette_print(w, label, note='لا توجد صورة موثّقة', size=20):
-    """A print with no photograph in it: a plain grey silhouette, for a person with no documented picture (Dorot).
-    Same frame as polaroid() at width w (photo w-28 wide, 4:5); returns (w, h, svg body)."""
-    pw = w - 28; ph = round(pw / .8); h = 14 + ph + 56
-    cx = w / 2; top = 14
-    body = ('<defs><linearGradient id="sil%d" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#565C64"/><stop offset="1" stop-color="#33383E"/></linearGradient>'
-            '<clipPath id="silc%d"><rect x="14" y="%d" width="%d" height="%d"/></clipPath></defs>' % (w, w, top, pw, ph) +
-            '<rect width="%d" height="%d" rx="3" fill="#F3EEE2"/>' % (w, h) +
-            '<rect x="14" y="%d" width="%d" height="%d" fill="url(#sil%d)"/>' % (top, pw, ph, w) +
-            '<g clip-path="url(#silc%d)" fill="#8B929B">' % w +
-            '<circle cx="%.1f" cy="%.1f" r="%.1f"/>' % (cx, top + ph * .36, pw * .17) +
-            '<rect x="%.1f" y="%.1f" width="%.1f" height="%.1f" rx="6"/>' % (cx - pw * .07, top + ph * .46, pw * .14, ph * .1) +
-            '<ellipse cx="%.1f" cy="%.1f" rx="%.1f" ry="%.1f"/></g>' % (cx, top + ph * 1.0, pw * .42, ph * .38) +
-            '<text x="%.1f" y="%.1f" font-family="var(--f-ui)" font-size="15" font-weight="600" fill="#E9E4D8" text-anchor="middle">%s</text>' % (cx, top + 26, note) +
-            '<text x="%.1f" y="%.1f" font-family="var(--f-cap)" font-size="%d" font-weight="700" fill="#2A2C31" text-anchor="middle">%s</text>' % (cx, top + ph + 36, size, label) +
-            '<rect x="%.1f" y="-12" width="84" height="30" fill="rgb(214,190,128)" opacity=".9" transform="rotate(-2 %.1f 3)"/>' % (cx - 42, cx))
-    return w, h, body
+def silhouette(x, y, w, at, label, **kw):
+    """A print for a person with no documented photograph: the engine's grey silhouette and «لا توجد صورة موثّقة»,
+    the same frame and size as polaroid(), never an invented face (Charles Dorot)."""
+    d = {"type": "image", "polaroid": True, "silhouette": True, "aspect": .8, "w": w, "label": label, "labelSize": kw.pop('labelSize', 20),
+         "x": x, "y": y, "z": kw.pop('z', 30), "rot": kw.pop('rot', 0), "in": {"type": kw.pop('kind', 'rise'), "at": at, "dur": .45}}
+    d.update(kw)
+    return d
 
 
 def name_card(text, w=300, h=150, size=26):
@@ -669,8 +659,7 @@ for i, (rel, t, t_out, label, city) in enumerate([('assets/ap/golay1966', V(6.1)
                                                   ('assets/crop/bauty1976_face', t_lsn - .3, t_par - .3, 'شارل بوتي، باريس 1976', 'لوزان')]):
     els.append(polaroid(rel, 225, 640, 330, t, label=label, z=20 + i, rot=(-3, 2, -2)[i], kind='rise', labelSize=19, until=t_out))
     if city: els.append(tag(city, 440, 770, t + .2, size=34, z=40, rot=2, until=t_out))
-els += [svg(*silhouette_print(330, 'شارل دورو، باريس', size=19), 225, 640, z=24, kind='rise', at=t_par - .3, dur=.45, rot=-2,
-            idle={"type": "float", "amp": 3, "speed": .25, "phase": 1.3, "from": round(t_par + .2, 2)}),
+els += [silhouette(225, 640, 330, t_par - .3, 'شارل دورو، باريس', z=24, rot=-2, labelSize=19),
         tag('باريس', 440, 770, t_par + .1, size=34, z=40, rot=2)]
 els += [svg(306, 306, '<rect width="306" height="306" rx="4" fill="#EFE8D6"/>', 515, 330, z=40, kind='drop', at=t_three, dur=.45, depth=0, rot=3),
         {"type": "map", "x": 515, "y": 330, "w": 284, "h": 284, "z": 41, "view": {"lon": 5.0, "lat": 47.0, "span": 7.5}, "sea": "#CCC6B7", "land": "#F4F1E8",
@@ -702,10 +691,9 @@ for k, (body, w, h, x, y) in enumerate([(icon_yacht(), 150, 160, 130, 330), (ico
                                         (icon_sunglasses(), 140, 55, 190, 890), (icon_car(), 200, 92, 540, 885)]):
     els.append(svg(w, h, body, x, y, z=14, kind='pop', at=t_life + k * .3, dur=.35, out={"type": "fade", "at": t_ag - .1, "dur": .3},
                    idle={"type": "float", "amp": 5, "speed": .5, "phase": k}))
-for i, (rel, x, y, label) in enumerate([('assets/ap/demarchi1940s', 172, 400, 'دي ماركي'), ('assets/crop/bauty1976_face', 545, 430, 'بوتي')]):
-    els.append(polaroid(rel, x, y, 280, t_ag - .1 + i * .2, label=label, z=30 + i, rot=(-5, 4)[i], kind='rise', labelSize=20))
-els.append(svg(*silhouette_print(280, 'دورو'), 360, 770, z=32, kind='rise', at=t_ag + .3, dur=.45, rot=-2,      # the third agent: no documented photo
-               idle={"type": "float", "amp": 3, "speed": .25, "phase": 2.1, "from": round(t_ag + .8, 2)}))
+for i, (rel, x, y, label) in enumerate([('assets/ap/demarchi1940s', 172, 370, 'دي ماركي'), ('assets/crop/bauty1976_face', 548, 400, 'بوتي')]):
+    els.append(polaroid(rel, x, y, 250, t_ag - .1 + i * .2, small=True, label=label, z=30 + i, rot=(-5, 4)[i], kind='rise', labelSize=20))
+els.append(silhouette(360, 765, 250, t_ag + .3, 'دورو', z=32, rot=-2))      # the third agent: no documented photo
 for k, r in enumerate((-35, 35, 0)):
     els.append(svg(60, 300, rapier('rp%d' % k), 360, 310, z=40 + k, kind='grow', at=t_mus - .2 + (.2 if k == 2 else 0), dur=.35,
                    rot=[[t_mus - .2, 0], [t_mus + .15, r, 'outBack']] if r else 0))
@@ -846,9 +834,9 @@ use('p3-h')
 C = 'ساعةٌ من الستيل… | بسعرٍ أعلى | من ساعاتٍ كثيرة | من الذهب. | كيف؟'
 t_hi, t_gold3, t_how = at('p3-h', C, 'بسعرٍ أعلى'), at('p3-h', C, 'من الذهب.'), at('p3-h', C, 'كيف؟')
 END_3H = round(VO_AT + VO['p3-h']['seconds'] + TAIL, 2)
-st = polaroid('assets/ap/ro5402_hero', 230, [[0, 600], [t_hi, 600], [t_hi + .6, 520, 'outBack']], 330, 0, label='Royal Oak · ستيل', z=22, rot=-4, kind='none', fixed=True,
+st = polaroid('assets/ap/ro5402_hero', 215, [[0, 600], [t_hi, 600], [t_hi + .6, 520, 'outBack']], 330, 0, label='Royal Oak · ستيل', z=22, rot=-4, kind='none', fixed=True,
               idle={"type": "float", "amp": 3, "speed": .3, "from": 0})
-gd = polaroid('assets/ap/m5182', 500, [[0, 620], [t_hi, 620], [t_hi + .6, 720, 'outBack']], 300, .15, label='ذهب · Ref. 5182', z=20, rot=5, kind='slideL', labelSize=20,
+gd = polaroid('assets/ap/m5182', 518, [[0, 620], [t_hi, 620], [t_hi + .6, 720, 'outBack']], 300, .15, label='ذهب · Ref. 5182', z=20, rot=5, kind='slideL', labelSize=20,
               fixed=True, idle={"type": "float", "amp": 3, "speed": .27, "phase": 2, "from": 0})
 els = [tag('ستيل… أغلى من ساعات ذهب', 360, 140, 0, size=38, z=40, depth=0, rot=-1.5, **{"in": {"type": "none", "at": 0}}),
        st, glint(230, 578, 302, 302 / st['aspect'] * .94, .3, rot=-4, z=23), gd,
@@ -948,9 +936,9 @@ els = [svg(300, 150, name_card('SAFARI'), 220, 380, z=10, kind='drop', at=t_saf 
        svg(360, 180, name_card('ROYAL OAK', 360, 180, 34), 360, 420, z=20, kind='drop', at=t_ro_n + .5, dur=.45, rot=-2),
        tag('اقتراح دي ماركي', 360, 560, t_ro_n + .9, size=26, z=21, rot=2),
        svg(220, 280, OAK, 190, 860, z=15, kind='grow', at=t_tree, dur=.6),
-       tag('تشارلز الثاني، 1651', 190, 1150, t_tree + .4, size=22, z=16, rot=-2),
+       tag('تشارلز الثاني، 1651', 190, 690, t_tree + .4, size=22, z=16, rot=-2),
        svg(240, 200, SHIP, 520, 870, z=15, kind='rise', at=t_ship, dur=.5, idle={"type": "bob", "amp": 2, "speed": .6}),
-       tag('سفن بريطانية', 520, 1150, t_ship + .3, size=22, z=16, rot=2),
+       tag('سفن بريطانية', 520, 735, t_ship + .3, size=22, z=16, rot=2),
        tag('حكاية الاسم ≠ مصدر التصميم', 360, 170, t_ship + 1.0, size=28, z=40, depth=0)]
 P3.S('p3-n', 'ro-paper', C, els, transition='slide',
      camera=cam((0, 1.0, 360, 520, None), (t_ro_n, 1.04, 360, 480, 'inOutCubic'), (t_tree, 1.0, 300, 720, 'inOutCubic'), (t_ship, 1.0, 420, 720, 'inOutCubic'), (END_N, 1.0, 360, 640, 'inOutCubic')),
@@ -967,7 +955,7 @@ els = [svg(900, 1100, hall(), 360, 560, z=1, kind=None, depth=.55, shadow=False)
        svg(760, 300, carpet(), 360, 1180, z=2, kind=None, depth=.9, shadow=False),
        tag('معرض بازل 1972', 360, 280, .15, size=46, z=30, rot=-1.5, depth=.7),
        svg(520, 420, booth(name='AUDEMARS PIGUET'), 360, 640, z=3, kind=None, depth=.8),
-       polaroid('assets/ap/ro5402_showcase', 360, 690, 400, 0, z=4, kind='none', depth=.8, opacity=.4, fixed=True, frame=True),
+       polaroid('assets/ap/ro5402_showcase', 360, 690, 400, 0, z=4, kind='none', depth=.8, opacity=.4, fixed=True, frame=True, stack=True),   # the dim display behind the hero
        svg(520, 900, spotlight_cone(), WX, 320, anchor='t', z=5, kind='fade', at=t_ro - .05, dur=.12, shadow=False, depth=.9,
            opacity=[[t_ro + .2, 1], [t_ro + 2, .94], [t_ro + 4, 1], [10.5, .95]]),
        svg(260, 300, pedestal(), WX, 1160, anchor='b', z=6, kind=None, depth=1.0),
@@ -983,7 +971,8 @@ els = [svg(900, 1100, hall(), 360, 560, z=1, kind=None, depth=.55, shadow=False)
            {"d": 'M 279 460 L 279 480 M 443 460 L 443 480', "at": t_39 + .4, "dur": .15, "stroke": "#EFE8D6", "width": 3, "opacity": 1}],
           z=20, depth=1.0, texts=[{"text": "39 mm", "x": 240, "y": 477, "size": 20, "at": t_39 + .3, "dur": .4, "anchor": "middle", "color": "#EFE8D6", "font": "var(--f-banner)"}]),
        tag('وسماكتها 7 ملم فقط', 360, 1130, t_big + .6, size=26, z=46, rot=1, depth=0),
-       polaroid('assets/ap/firstpub1972', 185, 640, 280, t_big, label='أول ظهور، فبراير 1972', z=24, rot=-5, labelSize=16)]
+       polaroid('assets/ap/firstpub1972', 190, 640, 280, .4, label='أول ظهور، فبراير 1972', z=24, rot=-5, labelSize=16, until=t_ro - .1,
+                stack=True)]    # shown while the drape still hides the watch, gone at the reveal
 els += motes(cone_points(WX, 9, 11, y0=380, y1=1000, spread=.35), at=t_ro, z=8, depth=.95)
 for fx, fy, t, s_ in [(640, 820, t_ro + .2, 1), (680, 560, t_ro + .45, 1), (330, 470, t_ro + .75, 1), (60, 520, V(9.4), .6)]:
     els.append(svg(240, 240, flash(), fx, fy, z=45, kind='pop', at=t, dur=.08, shadow=False, depth=1.2, scale=s_, out={"type": "fade", "at": t + .18, "dur": .15}))
@@ -998,7 +987,7 @@ P3.S('p2-7', 'ro-hall', C, els, transition='slide',
 use('p2-6')
 C = 'كان الستيل يرتبط | غالبًا بالساعات العملية. | لكن أوديمار بيغيه | أرادت ساعةً رياضية | بتشطيبٍ فاخر | وسعرٍ مرتفع: | ثلاثة آلافٍ | وثلاثمئة فرنك… | وقدّمتها بوصفها | أغلى ساعة | من الستيل | في العالم.'
 t_mac = V(2.1); t_ad = V(5.5); t_price = at('p2-6', C, 'ثلاثة آلافٍ')
-ad = polaroid('assets/crop/ad1972b', 360, 560, 420, t_ad, label='Audemars Piguet · 1972', z=20, rot=-2, kind='fade')
+ad = polaroid('assets/crop/ad1972b', 360, 540, 400, t_ad, label='Audemars Piguet · 1972', z=20, rot=-2, kind='fade')
 peg_out = {"type": "fade", "at": t_mac + .3, "dur": .1}
 els = [svg(620, 520, pegboard(), 360, 600, z=3, kind=None, out=peg_out),
        svg(300, 70, wrench(), 260, 470, z=5, kind='drop', at=0.15, dur=.4, out=peg_out, rot=[[.55, -12], [.9, -6], [1.3, -12, 'outBack']]),
@@ -1051,8 +1040,8 @@ els = [{"type": "map", "x": 360, "y": 640, "w": 720, "h": 1280, "z": 15,
         "out": {"type": "fade", "at": t_team2, "dur": .3}, "depth": 0},
        tag('سجلات الدار', 360, 150, .2, size=30, z=30, until=t_101, depth=0),
        tag('أول نسخة ذهب أبيض · رقم 101', 360, 200, t_101 + .2, size=30, z=30, until=t_team2, depth=0)]
-for k, (rel, x, y, r, lab) in enumerate([('assets/ap/watchmaker1972', 220, 420, -4, 'الحرفيون'), ('assets/ap/bracelet1972', 500, 440, 3, 'السوار'),
-                                          ('assets/ap/dial5402', 220, 760, 3, 'الميناء'), ('assets/ap/cal2121_1971', 500, 780, -3, 'الحركة')]):
+for k, (rel, x, y, r, lab) in enumerate([('assets/ap/watchmaker1972', 200, 385, -4, 'الحرفيون'), ('assets/ap/bracelet1972', 520, 400, 3, 'السوار'),
+                                          ('assets/ap/dial5402', 200, 800, 3, 'الميناء'), ('assets/ap/cal2121_1971', 520, 805, -3, 'الحركة')]):
     els.append(polaroid(rel, x, y, 310, t_team2 + .2 + k * .35, label=lab, z=20 + k, rot=r, kind='pop', labelSize=20, until=sk_t - .1))
 GS = dict(x=270, y=1290, h=780)
 gw = GS['h'] * ASP.get('genta_sheet', .43)

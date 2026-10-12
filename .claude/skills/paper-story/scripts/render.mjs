@@ -200,20 +200,26 @@ if (opt.check) {
   for (const h of hits) { const k = h.scene + '|' + h.person + '|' + h.by; const e = seen.get(k); if (!e) seen.set(k, { ...h, from: h.t, to: h.t }); else { e.to = h.t; e.covered = Math.max(e.covered, h.covered); } }
   for (const e of seen.values()) console.log(`scene ${e.scene + 1}  ${e.from.toFixed(1)}-${e.to.toFixed(1)}s  ` + (e.under ? `${e.by} is ${e.covered}% under the banner` : `${e.by} covers ${e.covered}% of the head of ${e.person}`));
   console.log(seen.size ? seen.size + ' clash(es)' : 'no face covered, nothing under the banner');
-  // and nothing cut by the frame: a photo or caption card partly outside the picture at any moment
-  const offs = [];
-  for (const p of (await (async () => { const pg = await newPage(); const r = []; for (let t = 0.05; t < duration; t += 0.2) r.push(...(await pg.page.evaluate((tt) => window.PM.offFrame(tt), t))); return r; })())) offs.push(p);
+  // layout: cut by the frame, prints over prints, things on the captions, pictures shown bigger than their file
+  const lays = [];
+  { const pg = await newPage(); for (let t = 0.05; t < duration; t += 0.2) lays.push(...(await pg.page.evaluate(([tt, k]) => window.PM.layout(tt, k), [t, opt.scale > 1 ? opt.scale : 1.5]))); }
   await browser.close();
-  // runs of consecutive samples; a run shorter than 0.6 s is an entrance or exit (a drop, a slide), not a framing fault
+  // runs of consecutive samples; a run shorter than 0.6 s is an entrance or exit (a drop, a slide), not a fault
   const runs = [], open = new Map();
-  for (const h of offs) {
-    const k = h.scene + '|' + h.what, e = open.get(k);
-    if (e && h.t - e.to < 0.25) { e.to = h.t; e.n++; e.cut = Math.max(e.cut, h.cut); } else { const r = { ...h, from: h.t, to: h.t, n: 1 }; runs.push(r); open.set(k, r); }
+  for (const h of lays) {
+    const k = h.kind + '|' + h.scene + '|' + h.what, e = open.get(k);
+    if (e && h.t - e.to < 0.25) { e.to = h.t; e.n++; e.pct = Math.max(e.pct, h.pct); } else { const r = { ...h, from: h.t, to: h.t, n: 1 }; runs.push(r); open.set(k, r); }
   }
-  const cut = runs.filter((e) => e.n >= 3);
-  for (const e of cut) console.log(`scene ${e.scene + 1}  ${e.from.toFixed(1)}-${e.to.toFixed(1)}s  ${e.what} is ${e.cut}% outside the frame` + (process.env.PM_DEBUG ? '  ' + JSON.stringify(e.r) : ''));
-  console.log(cut.length ? cut.length + ' cut by the frame' : 'nothing cut by the frame');
-  process.exit(seen.size || cut.length ? 1 : 0);
+  const SAY = { cut: (e) => `${e.what} is ${e.pct}% outside the frame`, overlap: (e) => `${e.what} (${e.pct}%)`,
+                caption: (e) => `${e.what} sits on the captions (${e.pct}% of a word)`, soft: (e) => `${e.what} is shown at ${e.pct}% of its file (${e.file}px wide): it will look soft` };
+  const faults = runs.filter((e) => e.n >= 3 && e.kind !== 'soft');
+  const soft = [...new Map(runs.filter((e) => e.kind === 'soft').map((e) => [e.what, e])).values()];
+  for (const e of faults) console.log(`scene ${e.scene + 1}  ${e.from.toFixed(1)}-${e.to.toFixed(1)}s  ` + SAY[e.kind](e) + (process.env.PM_DEBUG && e.r ? '  ' + JSON.stringify(e.r) : ''));
+  const cuts = faults.filter((e) => e.kind === 'cut').length;
+  console.log(cuts ? cuts + ' cut by the frame' : 'nothing cut by the frame');
+  console.log(faults.length - cuts ? (faults.length - cuts) + ' overlap(s) or picture(s) on the captions' : 'no print over another, nothing on the captions');
+  for (const e of soft) console.log(`note: scene ${e.scene + 1}  ` + SAY.soft(e));
+  process.exit(seen.size || faults.length ? 1 : 0);
 }
 
 if (opt.still || opt.sheet) {
