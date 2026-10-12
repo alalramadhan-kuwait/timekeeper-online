@@ -234,3 +234,22 @@ apart:
   flagged for review after 45 days. Their recorded unpaid balance is always
   shown next to them.
 - **The van** pulls in only when the receiving log has seen a delivery.
+
+## Brand logos on the boutiques (TK Online 3.7.1)
+
+`brands/` holds the seven boutique brands' own logos, each taken from the brand's
+official website; `brands/brands.json` records the page, the file's URL and the
+original's sha256. Each file is the original with its empty margin trimmed (2 px
+kept for the edge's smoothing) and, if wider than 1024 px, scaled down evenly. Nothing
+is redrawn, recoloured, cropped into or stretched. `brandLogos.ts` loads them; a
+boutique whose brand has no file keeps its painted name.
+
+The plaque is drawn by the game (a gold-framed rounded rectangle, so it stays sharp
+at every zoom): navy `#17233B` behind a white logo (15.7:1), cream `#F6F1E6` behind a
+black one (18.6:1). Its shape follows the logo: square (148 × 148) for a stacked
+logo, 264 × 106 for a word mark, and a 470 × 56 band for a logo that is one long line
+(West End). Measured on an iPhone 15, the brand name's letters at normal zoom: Gerald
+Charles 8.7 px, Dennison 11.9, Delugs 21.1, Nivada Grenchen 10.7, Time Keeper 10.5,
+Behrens 13.3, West End 5.8 (11.6 close up; its only official logo is one long line,
+so it reads only when zoomed in). In the whole-mall view shop signs stay hidden: at
+that zoom a logo would be 1-3 px tall.
