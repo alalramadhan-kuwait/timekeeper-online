@@ -142,7 +142,7 @@
       const el = box(node, { left: '0', top: '0', width: '0', height: '0', zIndex: 5 });
       box(el, { left: '-1px', top: '-30px', width: '2px', height: '30px', background: ink });
       box(el, { left: '-9px', top: '-46px', width: '18px', height: '18px', borderRadius: '50%', background: pn.color || ink, boxShadow: '1px 3px 3px rgba(0,0,0,.4), inset -3px -3px 0 rgba(0,0,0,.25)' });
-      const lab = put(el, { w: 10 + (pn.label || '').length * 11, h: 30, x: 14, y: -64, color: '#F6F2E8', j: .8, bevel: false });
+      const lab = put(el, { w: 10 + (pn.label || '').length * 11, h: 30, x: pn.left ? -24 - (pn.label || '').length * 11 : 14, y: -64, color: '#F6F2E8', j: .8, bevel: false });
       text(lab, pn.label || '', { font: 'banner', size: 15, w: 10 + (pn.label || '').length * 11, h: 30, center: true, ls: .04 });
       return { pn, el };
     });

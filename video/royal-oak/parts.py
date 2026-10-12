@@ -647,7 +647,7 @@ els += [tag('معرض بازل 1970', 200, 300, t_hall + .2, size=28, z=5, rot=-
 END0 = round(VO_AT + VO['p2-0']['seconds'] + TAIL, 2)
 for i, (rel, t, t_out, label, city) in enumerate([('assets/ap/golay1966', V(6.1), t_trn - .3, 'جورج غولاي، 1966', None),
                                                   ('assets/ap/demarchi1940s', t_trn - .3, t_lsn - .3, 'كارلو دي ماركي، الأربعينات', 'تورينو'),
-                                                  ('assets/crop/bauty1976_right', t_lsn - .3, t_par - .3, 'شارل بوتي، باريس 1976', 'لوزان')]):
+                                                  ('assets/crop/bauty1976_face', t_lsn - .3, t_par - .3, 'شارل بوتي، باريس 1976', 'لوزان')]):
     els.append(polaroid(rel, 225, 640, 330, t, label=label, z=20 + i, rot=(-3, 2, -2)[i], kind='rise', labelSize=19, until=t_out))
     if city: els.append(tag(city, 440, 770, t + .2, size=34, z=40, rot=2, until=t_out))
 els += [svg(330, 165, name_card('CHARLES DOROT', 330, 165, 28), 225, 620, z=24, kind='drop', at=t_par - .3, dur=.4, rot=-2),
@@ -656,11 +656,11 @@ els += [svg(330, 165, name_card('CHARLES DOROT', 330, 165, 28), 225, 620, z=24, 
 els += [svg(306, 306, '<rect width="306" height="306" rx="4" fill="#EFE8D6"/>', 515, 330, z=40, kind='drop', at=t_three, dur=.45, depth=0, rot=3),
         {"type": "map", "x": 515, "y": 330, "w": 284, "h": 284, "z": 41, "view": {"lon": 5.0, "lat": 47.0, "span": 7.5}, "sea": "#CCC6B7", "land": "#F4F1E8",
          "highlight": [{"n": "Switzerland", "at": 0, "color": "#E3CF9E"}, {"n": "Italy", "at": 0, "color": "#E8DCC0"}],
-         "pins": [dict(BSL, at=t_three + .3), dict(TRN, at=t_trn), dict(LSN, at=t_lsn), dict(PAR, at=t_par)],
+         "pins": [dict(BSL, at=t_three + .3), dict(TRN, at=t_trn), dict(LSN, at=t_lsn, left=True), dict(PAR, at=t_par)],
          "routes": [{"from": "trn", "to": "bsl", "at": t_trn + .1, "dur": .8, "keep": True}, {"from": "lsn", "to": "bsl", "at": t_lsn + .1, "dur": .8, "keep": True},
                     {"from": "par", "to": "bsl", "at": t_par + .1, "dur": .8, "keep": True}],
          "in": {"type": "drop", "at": t_three, "dur": .45}, "rot": 3, "depth": 0},
-        svg(84, 30, '<rect width="84" height="30" fill="rgb(214,190,128)" opacity=".9"/>', 515, 180, z=42, kind='drop', at=t_three, dur=.45, depth=0, rot=-2, shadow=False),
+        svg(84, 30, '<rect width="84" height="30" fill="rgb(214,190,128)" opacity=".9"/>', 595, 182, z=42, kind='drop', at=t_three, dur=.45, depth=0, rot=-2, shadow=False),
         ]
 P2.S('p2-0', 'ro-hall', C, els,
      camera=cam((0, 1.0, 360, 640, None), (t_hall, 1.0, 360, 640, None), (V(6.0), 1.02, 360, 650, 'inOutCubic'), (t_trn, 1.03, 360, 660, 'inOutCubic'),
@@ -683,7 +683,7 @@ for k, (body, w, h, x, y) in enumerate([(icon_yacht(), 150, 160, 130, 330), (ico
                                         (icon_sunglasses(), 140, 55, 190, 890), (icon_car(), 200, 92, 540, 885)]):
     els.append(svg(w, h, body, x, y, z=14, kind='pop', at=t_life + k * .3, dur=.35, out={"type": "fade", "at": t_ag - .1, "dur": .3},
                    idle={"type": "float", "amp": 5, "speed": .5, "phase": k}))
-for i, (rel, x, y, label) in enumerate([('assets/ap/demarchi1940s', 185, 590, 'دي ماركي'), ('assets/crop/bauty1976_right', 510, 690, 'بوتي')]):
+for i, (rel, x, y, label) in enumerate([('assets/ap/demarchi1940s', 185, 590, 'دي ماركي'), ('assets/crop/bauty1976_face', 510, 690, 'بوتي')]):
     els.append(polaroid(rel, x, y, 280, t_ag - .1 + i * .2, label=label, z=30 + i, rot=(-5, 3)[i], kind='rise', labelSize=20))
 els.append(svg(220, 118, name_card('DOROT', 220, 118, 26), 175, 935, z=32, kind='rise', at=t_ag + .3, dur=.45, rot=-3))
 for k, r in enumerate((-35, 35, 0)):
