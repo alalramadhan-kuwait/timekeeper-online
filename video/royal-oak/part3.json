@@ -165,7 +165,7 @@
      "type": "svg",
      "w": 130,
      "h": 327.1717,
-     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"130\" height=\"327\" viewBox=\"0 0 130 327\" style=\"overflow:visible;\"><defs><linearGradient id=\"gl28\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/><stop offset=\".5\" stop-color=\"#FFFAEB\" stop-opacity=\"0.42\"/><stop offset=\"1\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/></linearGradient></defs><polygon points=\"40.0,0.0 130.0,0.0 90.0,327.2 0.0,327.2\" fill=\"url(#gl28)\"/></svg>",
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"130\" height=\"327\" viewBox=\"0 0 130 327\" style=\"overflow:visible;\"><defs><linearGradient id=\"gl29\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/><stop offset=\".5\" stop-color=\"#FFFAEB\" stop-opacity=\"0.42\"/><stop offset=\"1\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/></linearGradient></defs><polygon points=\"40.0,0.0 130.0,0.0 90.0,327.2 0.0,327.2\" fill=\"url(#gl29)\"/></svg>",
      "x": [
       [
        0.3,
@@ -591,7 +591,7 @@
      "type": "svg",
      "w": 130,
      "h": 180,
-     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"130\" height=\"180\" viewBox=\"0 0 130 180\" style=\"overflow:visible;\"><defs><linearGradient id=\"gl29\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/><stop offset=\".5\" stop-color=\"#FFFAEB\" stop-opacity=\"0.42\"/><stop offset=\"1\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/></linearGradient></defs><polygon points=\"40.0,0.0 130.0,0.0 90.0,180.0 0.0,180.0\" fill=\"url(#gl29)\"/></svg>",
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"130\" height=\"180\" viewBox=\"0 0 130 180\" style=\"overflow:visible;\"><defs><linearGradient id=\"gl30\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/><stop offset=\".5\" stop-color=\"#FFFAEB\" stop-opacity=\"0.42\"/><stop offset=\"1\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/></linearGradient></defs><polygon points=\"40.0,0.0 130.0,0.0 90.0,180.0 0.0,180.0\" fill=\"url(#gl30)\"/></svg>",
      "x": [
       [
        5.35,
@@ -675,7 +675,7 @@
      "type": "svg",
      "w": 130,
      "h": 180,
-     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"130\" height=\"180\" viewBox=\"0 0 130 180\" style=\"overflow:visible;\"><defs><linearGradient id=\"gl30\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/><stop offset=\".5\" stop-color=\"#FFFAEB\" stop-opacity=\"0.42\"/><stop offset=\"1\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/></linearGradient></defs><polygon points=\"40.0,0.0 130.0,0.0 90.0,180.0 0.0,180.0\" fill=\"url(#gl30)\"/></svg>",
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"130\" height=\"180\" viewBox=\"0 0 130 180\" style=\"overflow:visible;\"><defs><linearGradient id=\"gl31\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/><stop offset=\".5\" stop-color=\"#FFFAEB\" stop-opacity=\"0.42\"/><stop offset=\"1\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/></linearGradient></defs><polygon points=\"40.0,0.0 130.0,0.0 90.0,180.0 0.0,180.0\" fill=\"url(#gl31)\"/></svg>",
      "x": [
       [
        9.72,
@@ -2500,7 +2500,7 @@
      "type": "svg",
      "w": 380,
      "h": 470,
-     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"380\" height=\"470\" viewBox=\"0 0 380 470\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><defs><linearGradient id=\"dr31\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#3A161B\"/><stop offset=\".2\" stop-color=\"#4A1F25\"/><stop offset=\".35\" stop-color=\"#5E2A31\"/><stop offset=\".5\" stop-color=\"#3A161B\"/><stop offset=\".68\" stop-color=\"#5E2A31\"/><stop offset=\".85\" stop-color=\"#4A1F25\"/><stop offset=\"1\" stop-color=\"#3A161B\"/></linearGradient></defs><path d=\"M 20 0 Q 190 -14 360 0 L 380 460 Q 285 478 190 460 Q 95 478 0 460 Z\" fill=\"url(#dr31)\"/></svg>",
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"380\" height=\"470\" viewBox=\"0 0 380 470\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><defs><linearGradient id=\"dr32\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#3A161B\"/><stop offset=\".2\" stop-color=\"#4A1F25\"/><stop offset=\".35\" stop-color=\"#5E2A31\"/><stop offset=\".5\" stop-color=\"#3A161B\"/><stop offset=\".68\" stop-color=\"#5E2A31\"/><stop offset=\".85\" stop-color=\"#4A1F25\"/><stop offset=\"1\" stop-color=\"#3A161B\"/></linearGradient></defs><path d=\"M 20 0 Q 190 -14 360 0 L 380 460 Q 285 478 190 460 Q 95 478 0 460 Z\" fill=\"url(#dr32)\"/></svg>",
      "x": 360,
      "y": [
       [
@@ -2540,7 +2540,7 @@
      "type": "svg",
      "w": 130,
      "h": 338.00519999999995,
-     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"130\" height=\"338\" viewBox=\"0 0 130 338\" style=\"overflow:visible;\"><defs><linearGradient id=\"gl32\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/><stop offset=\".5\" stop-color=\"#FFFAEB\" stop-opacity=\"0.35\"/><stop offset=\"1\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/></linearGradient></defs><polygon points=\"40.0,0.0 130.0,0.0 90.0,338.0 0.0,338.0\" fill=\"url(#gl32)\"/></svg>",
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"130\" height=\"338\" viewBox=\"0 0 130 338\" style=\"overflow:visible;\"><defs><linearGradient id=\"gl33\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/><stop offset=\".5\" stop-color=\"#FFFAEB\" stop-opacity=\"0.35\"/><stop offset=\"1\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/></linearGradient></defs><polygon points=\"40.0,0.0 130.0,0.0 90.0,338.0 0.0,338.0\" fill=\"url(#gl33)\"/></svg>",
      "x": [
       [
        4.699999999999999,
@@ -3460,7 +3460,7 @@
      "type": "svg",
      "w": 130,
      "h": 550.1839028340081,
-     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"130\" height=\"550\" viewBox=\"0 0 130 550\" style=\"overflow:visible;\"><defs><linearGradient id=\"gl33\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/><stop offset=\".5\" stop-color=\"#FFFAEB\" stop-opacity=\"0.42\"/><stop offset=\"1\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/></linearGradient></defs><polygon points=\"40.0,0.0 130.0,0.0 90.0,550.2 0.0,550.2\" fill=\"url(#gl33)\"/></svg>",
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"130\" height=\"550\" viewBox=\"0 0 130 550\" style=\"overflow:visible;\"><defs><linearGradient id=\"gl34\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/><stop offset=\".5\" stop-color=\"#FFFAEB\" stop-opacity=\"0.42\"/><stop offset=\"1\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/></linearGradient></defs><polygon points=\"40.0,0.0 130.0,0.0 90.0,550.2 0.0,550.2\" fill=\"url(#gl34)\"/></svg>",
      "x": [
       [
        10.66,
@@ -4338,7 +4338,7 @@
      "type": "svg",
      "w": 600,
      "h": 160,
-     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"600\" height=\"160\" viewBox=\"0 0 600 160\" style=\"overflow:visible;\"><defs><filter id=\"se35\" x=\"-50%\" y=\"-50%\" width=\"200%\" height=\"200%\"><feGaussianBlur stdDeviation=\"10\"/></filter></defs><ellipse cx=\"300\" cy=\"80\" rx=\"260\" ry=\"40\" fill=\"#FFF1CF\" opacity=\"0.18\" filter=\"url(#se35)\"/></svg>",
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"600\" height=\"160\" viewBox=\"0 0 600 160\" style=\"overflow:visible;\"><defs><filter id=\"se36\" x=\"-50%\" y=\"-50%\" width=\"200%\" height=\"200%\"><feGaussianBlur stdDeviation=\"10\"/></filter></defs><ellipse cx=\"300\" cy=\"80\" rx=\"260\" ry=\"40\" fill=\"#FFF1CF\" opacity=\"0.18\" filter=\"url(#se36)\"/></svg>",
      "x": 300,
      "y": 1190,
      "anchor": "c",
@@ -4438,7 +4438,7 @@
      "type": "svg",
      "w": 130,
      "h": 327.1717,
-     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"130\" height=\"327\" viewBox=\"0 0 130 327\" style=\"overflow:visible;\"><defs><linearGradient id=\"gl36\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/><stop offset=\".5\" stop-color=\"#FFFAEB\" stop-opacity=\"0.42\"/><stop offset=\"1\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/></linearGradient></defs><polygon points=\"40.0,0.0 130.0,0.0 90.0,327.2 0.0,327.2\" fill=\"url(#gl36)\"/></svg>",
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"130\" height=\"327\" viewBox=\"0 0 130 327\" style=\"overflow:visible;\"><defs><linearGradient id=\"gl37\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/><stop offset=\".5\" stop-color=\"#FFFAEB\" stop-opacity=\"0.42\"/><stop offset=\"1\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/></linearGradient></defs><polygon points=\"40.0,0.0 130.0,0.0 90.0,327.2 0.0,327.2\" fill=\"url(#gl37)\"/></svg>",
      "x": [
       [
        15.0,

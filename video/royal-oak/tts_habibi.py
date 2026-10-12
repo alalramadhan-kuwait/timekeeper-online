@@ -29,8 +29,10 @@ PRON = {
 DIAC = re.compile('[\u064B-\u0652]')
 
 
-def spoken(t):
+def spoken(t, keep=()):
+    """The text the voice receives: names and terms in PRON go in Latin letters, except those in `keep` (stay Arabic)."""
     for a in sorted(PRON, key=len, reverse=True):
+        if a in keep: continue
         t = re.sub(r'(?<![\u0621-\u064A])([وبلف]?)' + re.escape(a) + r'(?![\u0621-\u064A])', lambda m: m.group(1) + (' ' if m.group(1) and PRON[a][:1].isascii() else '') + PRON[a], t)
     return t
 

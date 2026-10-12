@@ -124,14 +124,16 @@ if __name__ == '__main__':
     if cmd == '--models': models(args[1] if len(args) > 1 else None); sys.exit()
     if cmd == '--library': library(args[1] if len(args) > 1 else None); sys.exit()
     script = os.environ.get('ELEVEN_SCRIPT', 'script-kw.json')                       # the approved wording, key -> text
-    src = {k: {'text': v} for k, v in json.load(open(os.path.join(H, script))).items() if not k.startswith('_')}
+    raw = json.load(open(os.path.join(H, script)))
+    src = {k: {'text': v} for k, v in raw.items() if not k.startswith('_')}
+    KEEP = raw.get('_arabic', {})          # per line: terms the voice reads in Arabic (e.g. «الكوارتز» with its article)
     if cmd == '--test':
         items = [('test', T.spoken(args[1]))]
         if not yes: plan(items, [SETTINGS]); sys.exit()
         tts(items[0][1], os.path.join(OUT, 'test.mp3'), SETTINGS); print('wrote voice-eleven/test.mp3'); sys.exit()
     if cmd == '--compare':
         key, variants = args[1], json.load(open(os.path.join(H, args[2])))
-        items = [(key, T.spoken(src[key]['text']))]
+        items = [(key, T.spoken(src[key]['text'], KEEP.get(key, ())))]
         sets = [{**SETTINGS, **v} for v in variants]
         if not yes: plan(items, sets); sys.exit()
         log = []
@@ -142,7 +144,7 @@ if __name__ == '__main__':
                   open(os.path.join(OUT, 'compare', key + '.json'), 'w'), ensure_ascii=False, indent=1)
         sys.exit()
     keys = args or list(src)
-    items = [(k, T.spoken(src[k]['text'])) for k in keys]
+    items = [(k, T.spoken(src[k]['text'], KEEP.get(k, ()))) for k in keys]
     if not yes: plan(items, [SETTINGS]); sys.exit()
     f_json = os.path.join(OUT, 'clips.json')
     done = json.load(open(f_json)) if os.path.exists(f_json) else {}

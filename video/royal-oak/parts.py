@@ -560,12 +560,13 @@ P1.S('p1-8', 'ro-night', C, els, tail=2.6, transition='fade', captionClear=V(11.
 P2 = Part()
 BSL = dict(id='bsl', lon=7.59, lat=47.56, label='بازل'); TRN = dict(id='trn', lon=7.69, lat=45.07, label='تورينو')
 LSN = dict(id='lsn', lon=6.63, lat=46.52, label='لوزان'); PAR = dict(id='par', lon=2.35, lat=48.86, label='باريس')
-# H  The hook (#6 stakes, chosen by the user): "1970: quartz threatened the mechanical watch... and AP bet on steel."
+# H  The hook (#6 stakes, wording by the user): "1970: quartz watches threatened mechanical watches... and AP bet on a steel
+#    watch with a luxury finish." «الكوارتز» and «الستيل» are voiced in Arabic, with the article (script '_arabic').
 #    Frame 1: the real Seiko Astron under its own frequency; the mechanical cogs crack; the steel Royal Oak answers.
 #    The quartz scene (1b) and the brief (1) pay it off.
 use('p2-h')
-C = 'عام سبعين، | هدّد الكوارتز | الساعة الميكانيكية… | وراهنت أوديمار بيغيه | على الستيل.'
-t_q, t_mech, t_bet = at('p2-h', C, 'هدّد الكوارتز'), at('p2-h', C, 'الساعة الميكانيكية…'), at('p2-h', C, 'وراهنت أوديمار')
+C = 'عام سبعين، | هدّدت ساعاتُ الكوارتز | الساعاتِ الميكانيكية… | وراهنت أوديمار بيغيه | على ساعةٍ من الستيل | بتشطيبٍ فاخر.'
+t_mech, t_bet, t_fin = at('p2-h', C, 'الساعاتِ الميكانيكية…'), at('p2-h', C, 'وراهنت أوديمار'), at('p2-h', C, 'بتشطيبٍ فاخر.')
 END_H = round(VO_AT + VO['p2-h']['seconds'] + TAIL, 2)
 ast = polaroid('assets/early/astron1969', [[0, 360], [t_bet - .1, 360], [t_bet + .5, 205, 'inOutCubic']], [[0, 540], [t_bet - .1, 540], [t_bet + .5, 470, 'inOutCubic']], 420, 0,
                label='Seiko Quartz Astron · 1969', z=20, rot=[[0, -3], [t_bet + .5, -6]], kind='none', fixed=True,
@@ -574,19 +575,20 @@ ro = polaroid('assets/ap/ro5402_hero', 470, 690, 360, t_bet, label='Royal Oak ·
 els = [sk([{"d": sine_path(0, 1000, 720, 26, 8), "at": 0, "dur": 1.2, "stroke": "#7FD3F0", "width": 3, "opacity": .85}], z=5, depth=0) |
        {"out": {"type": "fade", "at": t_bet, "dur": .3}},
        ast, glint(360, 518, 392, 392 / ast['aspect'] * .94, .3, rot=-3, z=21),
-       tag('الكوارتز قادم… والرهان: الستيل', 360, 140, 0, size=36, z=40, depth=0, rot=-1.5, **{"in": {"type": "none", "at": 0}}),
+       tag('الكوارتز قادم… والرهان: ستيل فاخر', 360, 140, 0, size=36, z=40, depth=0, rot=-1.5, **{"in": {"type": "none", "at": 0}}),
        tag('الرويال أوك · الجزء الثاني', 360, 215, 0, size=22, z=40, depth=0, rot=1, until=t_bet, **{"in": {"type": "none", "at": 0}})]
 for k, (gx, gy, r, n, turns) in enumerate([(640, 600, 62, 11, 1), (630, 760, 42, 8, -1.6), (85, 700, 52, 9, 1.3)]):
     els.append(svg(2 * r + 20, 2 * r + 20, gear(r, n), gx, gy, z=24 + k, kind='pop', at=t_mech + k * .1, dur=.3, still=True,
                    rot=[[t_mech, 0], [t_bet, 60 * turns, 'outCubic']], opacity=[[t_bet - .2, 1], [t_bet + .3, 0]]))
 els += [sk([{"d": 'M 590 520 L 660 600 L 625 630 L 690 700 L 650 730 L 700 820', "at": t_mech + .45, "dur": .35, "stroke": "#B23A2E", "width": 5, "opacity": 1}], z=30) |
         {"out": {"type": "fade", "at": t_bet, "dur": .3}},
-        ro, glint_on(ro, t_bet + .8),
-        tag('ستيل', 560, 470, t_bet + .3, size=44, z=40, rot=3)]
+        ro, glint_on(ro, t_bet + .8), glint_on(ro, t_fin + .1),
+        tag('ستيل', 560, 470, t_bet + .3, size=44, z=40, rot=3),
+        tag('تشطيب فاخر', 195, 800, t_fin, size=34, z=40, rot=-2, paper='#2C4A6E', ink='#EFE8D6')]
 P2.S('p2-h', 'ro-night', C, els, transition='cut',
      camera=cam((0, 1.1, 360, 560, None), (t_mech, 1.0, 360, 660, 'inOutCubic'), (t_bet, 1.0, 360, 640, 'inOutCubic'), (END_H, 1.04, 380, 620, 'inOutCubic')),
      sfx=[E('tick', .05, -12)] + [E('tick', .05 + k * .25, -19) for k in range(1, 8)] + [E('crown_wind', t_mech, -12), E('paper_tear', t_mech + .45, -10),
-          E('paper_place', t_bet, -10), E('stamp', t_bet + .3, -10), E('tick', t_bet + .8, -16)])
+          E('paper_place', t_bet, -10), E('stamp', t_bet + .3, -10), E('tick', t_bet + .8, -16), E('stamp', t_fin, -11), E('tick', t_fin + .1, -16)])
 
 # 1b  The quartz shock: months earlier Seiko sold the first quartz wristwatch (Tokyo, Christmas 1969). Some saw the
 #     future in it, others the end of mechanical watches: the start of the quartz crisis. Golay decided to gamble.
