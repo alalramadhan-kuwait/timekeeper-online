@@ -19,6 +19,15 @@ support, write each one out (spoken line, on-screen text, first frame), recommen
 - **Name what the audience already knows** (the product, the icon) within the first 2 seconds; the unknown
   (the founder, the backstory) can follow.
 - **Brands:** a hook may not add a name or logo the brand rules do not allow.
+- **Every part of a series opens on its own hook.** A part that opened straight into the story ("انتهى الرسم في
+  ليلة") had none, and that was the note. A "Part 2" title is not a hook.
+- **When the spoken line does not name the icon, frame 1 does:** the icon's photo with its label, or a small series
+  line under the hook text («الرويال أوك · الجزء الثاني»).
+- **The user's wording wins.** If they rewrite a hook past 14 words, say what it costs in seconds once, then build
+  theirs. Check its grammar (agreement: «هدّدت ساعاتُ الكوارتز», not «هدّد الكوارتز» for the watches) and that it
+  states the source's relation (context, not cause: «وراهنت», not «فراهنت», unless the source says so).
+- **Listen to it before building on it.** A term sent to the voice in Latin letters loses its Arabic article: the
+  hook said «هدّد كوارتز». Run `scripts/voice-check.py` on every new hook line (see production.md, Voice).
 
 ## The types
 

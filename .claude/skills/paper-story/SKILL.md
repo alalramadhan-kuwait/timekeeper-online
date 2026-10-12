@@ -20,15 +20,15 @@ Every film opens with a hook the user has chosen: see `references/hooks.md`. Mak
 1. **Break the script into beats.** One idea per scene, 2 to 6 seconds each, 5 to 12 scenes. Write the banner first: a takeaway of 6 words or fewer, uppercase renders best. Then the spoken line.
 2. **Pick a visual metaphor per beat** from the element library (dial for levels, stopwatch for time, books for output, skyline for scale, meter for usage, stamp for a verdict, list for a recap). Keep the mascot present in most scenes and change its outfit and face to show progress or mood. For real people, use their cut-outs and generated poses instead of the mascot, and plan a visible change every 2 to 3 seconds.
 3. **Write `storyboard.json`.** Start by copying `examples/demo.json`. Times inside a scene are scene-local seconds.
-4. **Preview before rendering.** Run `--check` first: it lists every face a banner, card, bubble or picture covers (elements marked `"person": true`) and every bubble or word hidden under the banner, at every 0.2 s. Fix until it prints none. Then stills and a contact sheet take seconds.
+4. **Preview before rendering.** Run `--check` first. Every 0.2 s it lists: a face a banner, card, bubble or picture covers (elements marked `"person": true`); a bubble or word under the banner; a print, card or figure cut by the frame; a print over another print or over its label; a print, tag or small drawing on the captions; and, as notes, pictures shown more than 1.5x bigger than their file. Fix until it prints none (mark deliberate exceptions with `stack`, `crop` or `underCaptions`). Then stills and a contact sheet take seconds; look at every person at full scale.
    ```bash
    node .claude/skills/paper-story/scripts/render.mjs story.json --sheet --every 2 -o sheet.png
    node .claude/skills/paper-story/scripts/render.mjs story.json --still 1.5,6 --scale 1.5 -o stills/
    ```
    Open the PNGs and check the QA list below. Fix, re-run, repeat.
-5. **Add audio** (optional, see Audio).
+5. **Add audio** (see Audio), then check it before rendering: `scripts/voice-check.py clips.json` transcribes each clip on this machine and lists words not heard as written (a name in Latin letters drops the Arabic article), and `scripts/audio-check.py clips/*.wav` lists clicks, cuts and clipping.
 6. **Render.** `node .claude/skills/paper-story/scripts/render.mjs story.json -o out.mp4 --scale 1.5` gives 1080x1920. About 25 seconds of video takes about a minute at 720p on 4 workers.
-7. **Verify and deliver.** Check duration, size and streams with `ffmpeg -i out.mp4`, view a few frames, and send the file to the user. Say plainly if audio was not added. Share the copy made by `scripts/deliver.py film.mp4 cover.jpg film-share.mp4`: it opens on the cover (messaging apps use the first frame as the thumbnail), attaches it, and fits the 30 MiB send limit. Send the cover JPG too.
+7. **Verify and deliver.** Check duration, size and streams with `ffmpeg -i out.mp4`, run `scripts/audio-check.py out.mp4`, view a few frames, and send the file to the user. Say plainly if audio was not added. Share the copy made by `scripts/deliver.py film.mp4 cover.jpg film-share.mp4`: it opens on the cover (messaging apps use the first frame as the thumbnail), attaches it, and fits the 30 MiB send limit. Send the cover JPG too.
 
 ## Storyboard
 
@@ -91,7 +91,9 @@ The engine does not synthesise speech. Bring the audio:
 - Captions match the voice words. Groups are 1 to 3 words.
 - Contrast: cream or white text on dark paper, near-black on light paper.
 - Neighbouring scenes use different themes so the slide transition reads.
-- `--check` prints no clashes. Mark every person and pose `"person": true` (`"headBand"` overrides how much of the top is head) so it can see them.
+- `--check` prints no clashes, nothing cut, no print over another or its label, nothing on the captions. Mark every person and pose `"person": true` (`"headBand"` overrides how much of the top is head) so it can see them.
+- Everyone the narration names or counts is on screen; a person with no documented photo gets a `silhouette` print, never an invented face.
+- Every new voice line passed `voice-check.py`; the final film passed `audio-check.py`.
 - Real people: faces match their photos, nobody is under the banner or behind a prop, the person speaking is big, and expressions fit the brand (composed for luxury).
 - Hero products are real photos, sized so they read on a phone.
 

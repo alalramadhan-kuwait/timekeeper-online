@@ -1,7 +1,7 @@
 # Production notes: camera, sound, review and delivery
 
 These notes come from the Time Keeper success story (`video/success-story/`, 21 scenes, 2 minutes, 14 versions) and the
-two-part Royal Oak documentary (`video/royal-oak/parts.py`, Gulf Arabic, three review rounds).
+three-part Royal Oak documentary (`video/royal-oak/parts.py`, Arabic, many review rounds with the owner).
 
 ## Keep it moving
 
@@ -61,6 +61,19 @@ The stage point `y` appears on screen at `640 + (y - camY) * zoom` (the same for
 - Make one clip per line (`voice` per scene, scene length follows the clip), all in the same voice.
 - When a line is re-recorded, level it to the others by mean volume before use (`video/success-story/voice/cut-andre.py`).
 - The script stays in the user's dialect and wording; send the full script for review before rendering.
+- **Names and terms in Latin letters, the article in Arabic.** Sending a foreign name to the voice in Latin letters
+  (a pronunciation map, `tts_habibi.PRON` in the Royal Oak project) fixes how it is said, but an Arabic article in
+  front of it is lost: «الكوارتز» → "Quartz" was heard as «هدّد كوارتز», «من الستيل» as «من ستيل». Where the article
+  matters, keep that word Arabic for that line (the script's `_arabic: {line: [words]}` in `tts_eleven.py`), and
+  check the result.
+- **Check every new clip before rendering:** `scripts/voice-check.py voice/clips.json [lines] --terms الكوارتز,الستيل`
+  transcribes on this machine (free, faster-whisper) and lists written words that were not heard and terms said
+  without their article. Then `scripts/audio-check.py voice/clips/*.wav` for clicks, cuts, clipping and words cut at
+  the edge of a clip. Report both to the user in one line; a clip that fails is fixed before any render.
+- **Paid voices:** record nothing until the user approves the exact text, voice, model and settings, and say the
+  cost first (characters). Record only the lines that changed, keep the previous take (`prev/`), and run one TTS
+  process at a time. With ElevenLabs behind the agent proxy the key is injected as the `xi-api-key` header on `/v1`
+  paths only; never ask for the key in chat.
 
 ## Music under narration (`video/success-story/mix-music.py`)
 
@@ -120,6 +133,43 @@ user tops up.
   or the film mixes old and new. (It now waits for every image to decode before the first frame; before that, large
   cut-outs were missing from the opening frames.)
 - Name each render with a new version number. Delete partial renders so an old file is never sent by mistake.
+- **`--check` before every render, on every part.** Besides faces it now lists anything cut by the frame, a print over
+  another print or over its label, a print, tag or small drawing on the captions, and pictures shown bigger than
+  their file. On the Royal Oak films it found faults in a part that had already passed review by eye (a tag under the
+  captions, a document over the hero's label, team prints hiding each other's names). Fix until it is clean; mark
+  the deliberate exceptions (`stack`, `crop`, `underCaptions`) rather than ignoring the output.
+- **Look at every person at full size** (`--still t --scale 1.5`), not on a contact sheet: a crop that showed only an
+  ear and glasses looked fine at thumbnail size.
+- **Check the final mix:** `scripts/audio-check.py film.mp4` (clipping on each channel, gaps, clicks in silence,
+  loudness and true peak).
+- **A note about one scene is a note about every scene like it.** "This print is cut off" meant: check all of them.
+  Run the check over all parts and fix the whole class, then say what else was found.
+
+## Prints on screen
+
+- Prints are at least 280 px wide on a 720 px frame. When three or more must share the frame (three agents), 250 px
+  each (`small=True` in parts.py), two above and one centred below, so no print covers another's label.
+- Tags and labels never sit on a photograph or on the caption band; a tag belongs next to what it names (a year
+  above the tree, not under the captions).
+- The tape on an inset map must not hide a pin's label; put a crowded pin's label on its other side (`left: true`).
+- A document that shares the stage with the hero appears while the hero is hidden (behind the drape) and leaves at
+  the reveal, rather than covering the hero's label.
+
+## A film in several parts
+
+- Each part opens on its own hook, ends on "يتبع…" with the next part's title, and has its own cover.
+- Adding or removing a scene shifts everything indexed by scene: the score's mood list (`score_parts.py` gives
+  moods by scene index; add one for a new opening scene), the stills you check, and the times in your notes.
+- Once a part is published, every later fix to it is a new version the user must choose to re-upload: say which
+  fixes are in it and keep the published file's version number in the message.
+
+## Pipeline gotchas
+
+- The mix and delivery scripts need ffmpeg: set `FFMPEG` (the imageio-ffmpeg binary) in the build script, or the
+  render finishes and the mix fails.
+- Run one renderer per storyboard at a time; two `--still` runs started together left one folder empty.
+- Never `pkill -f` a pattern that also appears in your own command line: it kills your own shell.
+- A sound-only change (music, a re-levelled clip) does not need a re-render: re-mix the `-nomusic` file.
 
 ## The Time Keeper end card
 
