@@ -21,6 +21,7 @@ Main source: Audemars Piguet's own archive article, AP Chronicles, "Birth of an 
 | 2 / 6 | CHF 3,300 in 1972 (other sources: 3,650 at launch, 3,750 in 1975); "the costliest steel watch in the world" is the 1972 advertising slogan, credited as such on screen. Calibre 2121 shown in AP's 1971 archive photo | AP Chronicles |
 | 2 / 7 | Basel, 15 April 1972, reference 5402ST, 39 mm across the case (not the crown), about 7 mm thick (case sheet: 38.7 × 48 × 7.3 mm). Genta is not shown at AP's stand: he left AP that year and presented his own brand at the same fair | AP Chronicles (5402 page, case sheet `ro5402_fiche.jpg`, first trade publication *The Swiss Watch* 2/1972) |
 | 2 / 8 | Initial scepticism; the Shah of Iran ordered the first in white gold (and steel ones for his entourage). Not a flop: 490 delivered in 1972, a record for AP | AP Chronicles |
+| 3 / H | Hook: a steel watch priced above many gold watches. The 1972 price (CHF 3,300, row 2 / 6) "exceeded the price of many gold Swiss wristwatches"; the gold print is AP's own Model 5182 (1962), shown as an example of a gold watch, not as a price comparison of that model | Time+Tide, "The Royal Oak pricing strategy in 1972"; Everywatch 5402ST listing (FACTS.md row 5); AP Chronicles |
 
 Pictures
 - Watches are only real photographs: AP's archive (AP Chronicles, © Audemars Piguet, used at the user's direction and

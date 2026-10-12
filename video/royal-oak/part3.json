@@ -107,6 +107,321 @@
    "elements": [
     {
      "type": "text",
+     "text": "ستيل… أغلى من ساعات ذهب",
+     "x": 360,
+     "y": 140,
+     "font": "banner",
+     "size": 38,
+     "color": "#16181D",
+     "paper": "#EFE8D6",
+     "upper": false,
+     "z": 40,
+     "rot": -1.5,
+     "in": {
+      "type": "none",
+      "at": 0
+     },
+     "depth": 0
+    },
+    {
+     "type": "image",
+     "src": "assets/ap/ro5402_hero.jpg",
+     "polaroid": true,
+     "aspect": 0.8676789587852495,
+     "label": "Royal Oak · ستيل",
+     "w": 330,
+     "x": 230,
+     "y": [
+      [
+       0,
+       600
+      ],
+      [
+       1.79,
+       600
+      ],
+      [
+       2.39,
+       520,
+       "outBack"
+      ]
+     ],
+     "z": 22,
+     "rot": -4,
+     "in": {
+      "type": "none",
+      "at": 0,
+      "dur": 0.45
+     },
+     "labelSize": 22,
+     "idle": {
+      "type": "float",
+      "amp": 3,
+      "speed": 0.3,
+      "from": 0
+     }
+    },
+    {
+     "type": "svg",
+     "w": 130,
+     "h": 327.1717,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"130\" height=\"327\" viewBox=\"0 0 130 327\" style=\"overflow:visible;\"><defs><linearGradient id=\"gl28\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/><stop offset=\".5\" stop-color=\"#FFFAEB\" stop-opacity=\"0.42\"/><stop offset=\"1\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/></linearGradient></defs><polygon points=\"40.0,0.0 130.0,0.0 90.0,327.2 0.0,327.2\" fill=\"url(#gl28)\"/></svg>",
+     "x": [
+      [
+       0.3,
+       144.0
+      ],
+      [
+       1.0,
+       316.0,
+       "inOutCubic"
+      ]
+     ],
+     "y": 578,
+     "anchor": "c",
+     "z": 23,
+     "in": {
+      "type": "none",
+      "at": 0.3,
+      "dur": 0.5
+     },
+     "rot": -4,
+     "still": true,
+     "opacity": [
+      [
+       0.3,
+       0
+      ],
+      [
+       0.42,
+       1
+      ],
+      [
+       0.88,
+       1
+      ],
+      [
+       1.0,
+       0
+      ]
+     ],
+     "out": {
+      "type": "fade",
+      "at": 1.0,
+      "dur": 0.01
+     }
+    },
+    {
+     "type": "image",
+     "src": "assets/ap/m5182.jpg",
+     "polaroid": true,
+     "aspect": 0.8676789587852495,
+     "label": "ذهب · Ref. 5182",
+     "w": 300,
+     "x": 500,
+     "y": [
+      [
+       0,
+       620
+      ],
+      [
+       1.79,
+       620
+      ],
+      [
+       2.39,
+       720,
+       "outBack"
+      ]
+     ],
+     "z": 20,
+     "rot": 5,
+     "in": {
+      "type": "slideL",
+      "at": 0.15,
+      "dur": 0.45
+     },
+     "labelSize": 20,
+     "idle": {
+      "type": "float",
+      "amp": 3,
+      "speed": 0.27,
+      "phase": 2,
+      "from": 0
+     }
+    },
+    {
+     "type": "sketch",
+     "x": 360,
+     "y": 640,
+     "w": 720,
+     "h": 1280,
+     "z": 29,
+     "pencil": false,
+     "paths": [
+      {
+       "d": "M 150 300 Q 190 270 228 300",
+       "at": 2.34,
+       "dur": 0.25,
+       "stroke": "#B23A2E",
+       "width": 2.5,
+       "opacity": 1
+      }
+     ],
+     "texts": []
+    },
+    {
+     "type": "svg",
+     "w": 230,
+     "h": 112,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"230\" height=\"112\" viewBox=\"0 0 230 112\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><rect width=\"230\" height=\"112\" rx=\"9\" fill=\"#F6F1E3\"/><rect x=\"2\" y=\"2\" width=\"226\" height=\"108\" rx=\"8\" fill=\"none\" stroke=\"#D9CFB8\" stroke-width=\"2\"/><circle cx=\"24\" cy=\"56\" r=\"8\" fill=\"#3B4048\"/><rect x=\"50\" y=\"34\" width=\"156\" height=\"2\" fill=\"#C9A35F\"/><text x=\"127\" y=\"84\" font-family=\"var(--f-cap)\" font-weight=\"700\" font-size=\"38\" fill=\"#16181D\" text-anchor=\"middle\">3,300 CHF</text></svg>",
+     "x": 230,
+     "y": 255,
+     "anchor": "c",
+     "z": 30,
+     "in": {
+      "type": "pop",
+      "at": 2.39,
+      "dur": 0.4
+     },
+     "rot": -6,
+     "idle": {
+      "type": "sway",
+      "amp": 1.5,
+      "speed": 0.4
+     }
+    },
+    {
+     "type": "text",
+     "text": "؟",
+     "x": 560,
+     "y": 430,
+     "font": "banner",
+     "size": 90,
+     "color": "#EFE8D6",
+     "paper": "#B23A2E",
+     "upper": false,
+     "z": 42,
+     "rot": 6,
+     "in": {
+      "type": "slam",
+      "at": 5.34,
+      "dur": 0.3
+     }
+    }
+   ],
+   "dur": 6.03,
+   "silent": true,
+   "captions": "ساعةٌ من الستيل… | بسعرٍ أعلى | من ساعاتٍ كثيرة | من الذهب. | كيف؟",
+   "captionStart": 0.16999999999999998,
+   "captionEnd": 5.83,
+   "voice": "voice-abdullah/clips/p3-h.wav",
+   "voiceAt": 0.12,
+   "transition": "cut",
+   "camera": {
+    "zoom": [
+     [
+      0,
+      1.08
+     ],
+     [
+      1.79,
+      1.0,
+      "inOutCubic"
+     ],
+     [
+      5.34,
+      1.03,
+      "inOutCubic"
+     ],
+     [
+      6.03,
+      1.05,
+      "inOutCubic"
+     ]
+    ],
+    "x": [
+     [
+      0,
+      360
+     ],
+     [
+      1.79,
+      360,
+      "inOutCubic"
+     ],
+     [
+      5.34,
+      380,
+      "inOutCubic"
+     ],
+     [
+      6.03,
+      380,
+      "inOutCubic"
+     ]
+    ],
+    "y": [
+     [
+      0,
+      600
+     ],
+     [
+      1.79,
+      620,
+      "inOutCubic"
+     ],
+     [
+      5.34,
+      600,
+      "inOutCubic"
+     ],
+     [
+      6.03,
+      590,
+      "inOutCubic"
+     ]
+    ]
+   },
+   "sfx": [
+    {
+     "at": 0.05,
+     "name": "shutter",
+     "gain": -13
+    },
+    {
+     "at": 0.15,
+     "name": "paper_slide",
+     "gain": -14
+    },
+    {
+     "at": 0.3,
+     "name": "tick",
+     "gain": -17
+    },
+    {
+     "at": 1.79,
+     "name": "whoosh",
+     "gain": -15
+    },
+    {
+     "at": 2.39,
+     "name": "stamp",
+     "gain": -9
+    },
+    {
+     "at": 5.34,
+     "name": "stamp",
+     "gain": -8
+    }
+   ]
+  },
+  {
+   "theme": "ro-steel",
+   "floor": false,
+   "elements": [
+    {
+     "type": "text",
      "text": "الجزء الثالث: كيف صُنعت",
      "x": 360,
      "y": 150,
@@ -276,7 +591,7 @@
      "type": "svg",
      "w": 130,
      "h": 180,
-     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"130\" height=\"180\" viewBox=\"0 0 130 180\" style=\"overflow:visible;\"><defs><linearGradient id=\"gl28\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/><stop offset=\".5\" stop-color=\"#FFFAEB\" stop-opacity=\"0.42\"/><stop offset=\"1\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/></linearGradient></defs><polygon points=\"40.0,0.0 130.0,0.0 90.0,180.0 0.0,180.0\" fill=\"url(#gl28)\"/></svg>",
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"130\" height=\"180\" viewBox=\"0 0 130 180\" style=\"overflow:visible;\"><defs><linearGradient id=\"gl29\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/><stop offset=\".5\" stop-color=\"#FFFAEB\" stop-opacity=\"0.42\"/><stop offset=\"1\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/></linearGradient></defs><polygon points=\"40.0,0.0 130.0,0.0 90.0,180.0 0.0,180.0\" fill=\"url(#gl29)\"/></svg>",
      "x": [
       [
        5.35,
@@ -360,7 +675,7 @@
      "type": "svg",
      "w": 130,
      "h": 180,
-     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"130\" height=\"180\" viewBox=\"0 0 130 180\" style=\"overflow:visible;\"><defs><linearGradient id=\"gl29\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/><stop offset=\".5\" stop-color=\"#FFFAEB\" stop-opacity=\"0.42\"/><stop offset=\"1\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/></linearGradient></defs><polygon points=\"40.0,0.0 130.0,0.0 90.0,180.0 0.0,180.0\" fill=\"url(#gl29)\"/></svg>",
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"130\" height=\"180\" viewBox=\"0 0 130 180\" style=\"overflow:visible;\"><defs><linearGradient id=\"gl30\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/><stop offset=\".5\" stop-color=\"#FFFAEB\" stop-opacity=\"0.42\"/><stop offset=\"1\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/></linearGradient></defs><polygon points=\"40.0,0.0 130.0,0.0 90.0,180.0 0.0,180.0\" fill=\"url(#gl30)\"/></svg>",
      "x": [
       [
        9.72,
@@ -432,7 +747,7 @@
    "captionEnd": 11.45,
    "voice": "voice-abdullah/clips/p3-e.wav",
    "voiceAt": 0.12,
-   "transition": "cut",
+   "transition": "slide",
    "camera": {
     "zoom": [
      [
@@ -2185,7 +2500,7 @@
      "type": "svg",
      "w": 380,
      "h": 470,
-     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"380\" height=\"470\" viewBox=\"0 0 380 470\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><defs><linearGradient id=\"dr30\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#3A161B\"/><stop offset=\".2\" stop-color=\"#4A1F25\"/><stop offset=\".35\" stop-color=\"#5E2A31\"/><stop offset=\".5\" stop-color=\"#3A161B\"/><stop offset=\".68\" stop-color=\"#5E2A31\"/><stop offset=\".85\" stop-color=\"#4A1F25\"/><stop offset=\"1\" stop-color=\"#3A161B\"/></linearGradient></defs><path d=\"M 20 0 Q 190 -14 360 0 L 380 460 Q 285 478 190 460 Q 95 478 0 460 Z\" fill=\"url(#dr30)\"/></svg>",
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"380\" height=\"470\" viewBox=\"0 0 380 470\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><defs><linearGradient id=\"dr31\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#3A161B\"/><stop offset=\".2\" stop-color=\"#4A1F25\"/><stop offset=\".35\" stop-color=\"#5E2A31\"/><stop offset=\".5\" stop-color=\"#3A161B\"/><stop offset=\".68\" stop-color=\"#5E2A31\"/><stop offset=\".85\" stop-color=\"#4A1F25\"/><stop offset=\"1\" stop-color=\"#3A161B\"/></linearGradient></defs><path d=\"M 20 0 Q 190 -14 360 0 L 380 460 Q 285 478 190 460 Q 95 478 0 460 Z\" fill=\"url(#dr31)\"/></svg>",
      "x": 360,
      "y": [
       [
@@ -2225,7 +2540,7 @@
      "type": "svg",
      "w": 130,
      "h": 338.00519999999995,
-     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"130\" height=\"338\" viewBox=\"0 0 130 338\" style=\"overflow:visible;\"><defs><linearGradient id=\"gl31\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/><stop offset=\".5\" stop-color=\"#FFFAEB\" stop-opacity=\"0.35\"/><stop offset=\"1\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/></linearGradient></defs><polygon points=\"40.0,0.0 130.0,0.0 90.0,338.0 0.0,338.0\" fill=\"url(#gl31)\"/></svg>",
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"130\" height=\"338\" viewBox=\"0 0 130 338\" style=\"overflow:visible;\"><defs><linearGradient id=\"gl32\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/><stop offset=\".5\" stop-color=\"#FFFAEB\" stop-opacity=\"0.35\"/><stop offset=\"1\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/></linearGradient></defs><polygon points=\"40.0,0.0 130.0,0.0 90.0,338.0 0.0,338.0\" fill=\"url(#gl32)\"/></svg>",
      "x": [
       [
        4.699999999999999,
@@ -3145,7 +3460,7 @@
      "type": "svg",
      "w": 130,
      "h": 550.1839028340081,
-     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"130\" height=\"550\" viewBox=\"0 0 130 550\" style=\"overflow:visible;\"><defs><linearGradient id=\"gl32\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/><stop offset=\".5\" stop-color=\"#FFFAEB\" stop-opacity=\"0.42\"/><stop offset=\"1\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/></linearGradient></defs><polygon points=\"40.0,0.0 130.0,0.0 90.0,550.2 0.0,550.2\" fill=\"url(#gl32)\"/></svg>",
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"130\" height=\"550\" viewBox=\"0 0 130 550\" style=\"overflow:visible;\"><defs><linearGradient id=\"gl33\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/><stop offset=\".5\" stop-color=\"#FFFAEB\" stop-opacity=\"0.42\"/><stop offset=\"1\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/></linearGradient></defs><polygon points=\"40.0,0.0 130.0,0.0 90.0,550.2 0.0,550.2\" fill=\"url(#gl33)\"/></svg>",
      "x": [
       [
        10.66,
@@ -4023,7 +4338,7 @@
      "type": "svg",
      "w": 600,
      "h": 160,
-     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"600\" height=\"160\" viewBox=\"0 0 600 160\" style=\"overflow:visible;\"><defs><filter id=\"se34\" x=\"-50%\" y=\"-50%\" width=\"200%\" height=\"200%\"><feGaussianBlur stdDeviation=\"10\"/></filter></defs><ellipse cx=\"300\" cy=\"80\" rx=\"260\" ry=\"40\" fill=\"#FFF1CF\" opacity=\"0.18\" filter=\"url(#se34)\"/></svg>",
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"600\" height=\"160\" viewBox=\"0 0 600 160\" style=\"overflow:visible;\"><defs><filter id=\"se35\" x=\"-50%\" y=\"-50%\" width=\"200%\" height=\"200%\"><feGaussianBlur stdDeviation=\"10\"/></filter></defs><ellipse cx=\"300\" cy=\"80\" rx=\"260\" ry=\"40\" fill=\"#FFF1CF\" opacity=\"0.18\" filter=\"url(#se35)\"/></svg>",
      "x": 300,
      "y": 1190,
      "anchor": "c",
@@ -4123,7 +4438,7 @@
      "type": "svg",
      "w": 130,
      "h": 327.1717,
-     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"130\" height=\"327\" viewBox=\"0 0 130 327\" style=\"overflow:visible;\"><defs><linearGradient id=\"gl35\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/><stop offset=\".5\" stop-color=\"#FFFAEB\" stop-opacity=\"0.42\"/><stop offset=\"1\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/></linearGradient></defs><polygon points=\"40.0,0.0 130.0,0.0 90.0,327.2 0.0,327.2\" fill=\"url(#gl35)\"/></svg>",
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"130\" height=\"327\" viewBox=\"0 0 130 327\" style=\"overflow:visible;\"><defs><linearGradient id=\"gl36\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/><stop offset=\".5\" stop-color=\"#FFFAEB\" stop-opacity=\"0.42\"/><stop offset=\"1\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/></linearGradient></defs><polygon points=\"40.0,0.0 130.0,0.0 90.0,327.2 0.0,327.2\" fill=\"url(#gl36)\"/></svg>",
      "x": [
       [
        15.0,

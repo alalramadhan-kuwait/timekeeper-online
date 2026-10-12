@@ -133,24 +133,29 @@
      "w": 484,
      "h": 76,
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"484\" height=\"76\" viewBox=\"0 0 484 76\" style=\"overflow:visible;\"><defs><filter id=\"se2\" x=\"-50%\" y=\"-50%\" width=\"200%\" height=\"200%\"><feGaussianBlur stdDeviation=\"6\"/></filter></defs><ellipse cx=\"242\" cy=\"38\" rx=\"218\" ry=\"14\" fill=\"#000\" opacity=\"0.32\" filter=\"url(#se2)\"/></svg>",
-     "x": 330,
+     "x": 280,
      "y": 1174,
      "anchor": "c",
      "z": 19,
+     "in": {
+      "type": "fade",
+      "at": 3.25,
+      "dur": 0.5
+     },
      "still": true
     },
     {
      "type": "cutout",
-     "x": 330,
+     "x": 280,
      "y": 1180,
      "h": 700,
      "aspect": 0.6977,
      "edge": 0,
      "z": 20,
      "in": {
-      "type": "none",
-      "at": 0,
-      "dur": 0.3
+      "type": "fade",
+      "at": 3.25,
+      "dur": 0.35
      },
      "src": "assets/gen/genta23_desk_cut.png",
      "person": true,
@@ -159,16 +164,16 @@
       "type": "pulse",
       "amp": 0.005,
       "speed": 0.22,
-      "from": 0.3
+      "from": 3.6
      }
     },
     {
      "type": "text",
-     "text": "كيف صار مصمّمًا لأشهر ساعات العالم؟",
+     "text": "تعرفونها… فمن رسمها؟",
      "x": 360,
-     "y": 150,
+     "y": 140,
      "font": "banner",
-     "size": 32,
+     "size": 40,
      "color": "#16181D",
      "paper": "#EFE8D6",
      "upper": false,
@@ -185,101 +190,138 @@
      "src": "assets/ap/ro5402_hero.jpg",
      "polaroid": true,
      "aspect": 0.8676789587852495,
-     "label": "Royal Oak",
-     "w": 280,
-     "x": 510,
-     "y": 300,
+     "label": "Royal Oak · 1972",
+     "w": 480,
+     "x": [
+      [
+       0,
+       360
+      ],
+      [
+       2.85,
+       360
+      ],
+      [
+       3.45,
+       530,
+       "inOutCubic"
+      ]
+     ],
+     "y": [
+      [
+       0,
+       600
+      ],
+      [
+       2.85,
+       600
+      ],
+      [
+       3.45,
+       340,
+       "inOutCubic"
+      ]
+     ],
      "z": 30,
      "rot": [
       [
-       4.36,
-       -6
+       0,
+       -1
       ],
       [
-       6.03,
-       -7.2
+       2.85,
+       1
+      ],
+      [
+       3.45,
+       -5,
+       "inOutCubic"
       ]
      ],
      "in": {
-      "type": "pop",
-      "at": 3.9099999999999997,
+      "type": "none",
+      "at": 0,
       "dur": 0.45
      },
      "labelSize": 22,
      "scale": [
       [
-       4.36,
-       1
+       0,
+       1.0
       ],
       [
-       6.03,
-       1.035
+       2.85,
+       1.05
+      ],
+      [
+       3.45,
+       0.55,
+       "inOutCubic"
       ]
      ],
      "idle": {
       "type": "float",
       "amp": 3,
-      "speed": 0.25,
-      "phase": 2.27,
-      "from": 4.36
+      "speed": 0.3,
+      "from": 0
      }
     },
     {
      "type": "svg",
      "w": 130,
-     "h": 273.00419999999997,
-     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"130\" height=\"273\" viewBox=\"0 0 130 273\" style=\"overflow:visible;\"><defs><linearGradient id=\"gl3\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/><stop offset=\".5\" stop-color=\"#FFFAEB\" stop-opacity=\"0.42\"/><stop offset=\"1\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/></linearGradient></defs><polygon points=\"40.0,0.0 130.0,0.0 90.0,273.0 0.0,273.0\" fill=\"url(#gl3)\"/></svg>",
+     "h": 489.6741999999999,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"130\" height=\"489\" viewBox=\"0 0 130 489\" style=\"overflow:visible;\"><defs><linearGradient id=\"gl3\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/><stop offset=\".5\" stop-color=\"#FFFAEB\" stop-opacity=\"0.42\"/><stop offset=\"1\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/></linearGradient></defs><polygon points=\"40.0,0.0 130.0,0.0 90.0,489.7 0.0,489.7\" fill=\"url(#gl3)\"/></svg>",
      "x": [
       [
-       4.41,
-       449.0
+       0.35,
+       199.0
       ],
       [
-       5.11,
-       571.0,
+       1.0499999999999998,
+       521.0,
        "inOutCubic"
       ]
      ],
-     "y": 278,
+     "y": 578,
      "anchor": "c",
      "z": 31,
      "in": {
       "type": "none",
-      "at": 4.41,
+      "at": 0.35,
       "dur": 0.5
      },
-     "rot": -6,
+     "rot": -1,
      "still": true,
      "opacity": [
       [
-       4.41,
+       0.35,
        0
       ],
       [
-       4.53,
+       0.47,
        1
       ],
       [
-       4.99,
+       0.9299999999999998,
        1
       ],
       [
-       5.11,
+       1.0499999999999998,
        0
       ]
      ],
      "out": {
       "type": "fade",
-      "at": 5.11,
+      "at": 1.0499999999999998,
       "dur": 0.01
      }
     }
    ],
-   "dur": 6.03,
+   "dur": 4.69,
    "silent": true,
-   "captions": "كيف صار | شابٌّ في الثالثة والعشرين | مصمّمًا لبعض | أَشْهَرِ ساعات العالم؟",
+   "captions": "تعرفون | الرويال أوك… | لكن هل تعرفون | الرجل الذي رسمها؟",
    "captionStart": 0.16999999999999998,
-   "captionEnd": 5.83,
+   "captionEnd": 4.49,
    "voice": "voice-abdullah/clips/p1-h.wav",
    "voiceAt": 0.12,
    "transition": "cut",
@@ -287,15 +329,15 @@
     "zoom": [
      [
       0,
-      1.18
+      1.1
      ],
      [
-      3.8099999999999996,
+      2.85,
       1.0,
       "inOutCubic"
      ],
      [
-      6.03,
+      4.69,
       1.03,
       "inOutCubic"
      ]
@@ -303,51 +345,56 @@
     "x": [
      [
       0,
-      340
+      360
      ],
      [
-      3.8099999999999996,
+      2.85,
       360,
       "inOutCubic"
      ],
      [
-      6.03,
-      330,
+      4.69,
+      340,
       "inOutCubic"
      ]
     ],
     "y": [
      [
       0,
-      820
+      600
      ],
      [
-      3.8099999999999996,
-      640,
+      2.85,
+      620,
       "inOutCubic"
      ],
      [
-      6.03,
-      620,
+      4.69,
+      640,
       "inOutCubic"
      ]
     ]
    },
    "sfx": [
     {
-     "at": 0.1,
-     "name": "pencil",
+     "at": 0.05,
+     "name": "shutter",
      "gain": -12
     },
     {
-     "at": 3.91,
-     "name": "click",
-     "gain": -10
-    },
-    {
-     "at": 4.41,
+     "at": 0.35,
      "name": "tick",
      "gain": -16
+    },
+    {
+     "at": 2.9,
+     "name": "whoosh",
+     "gain": -14
+    },
+    {
+     "at": 3.3,
+     "name": "pencil",
+     "gain": -12
     }
    ]
   },

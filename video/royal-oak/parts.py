@@ -275,21 +275,26 @@ def name_card(text, w=300, h=150, size=26):
 # =================================================================================================================
 # PART 1  Before the Royal Oak
 P1 = Part()
-# H  The hook (a question, chosen by the user): "How did a 23-year-old end up behind the world's most famous watches?"
-#    Frame 1 already carries the question; the film answers it.
+# H  The hook (#7 flash-forward, chosen by the user): "You know the Royal Oak... but do you know the man who drew it?"
+#    Frame 1 is the icon itself with the question on it; at «الرجل» it steps aside for the young Genta, unnamed until
+#    scene 1, and Part 1 answers who he was.
 use('p1-h')
-C = 'كيف صار | شابٌّ في الثالثة والعشرين | مصمّمًا لبعض | أَشْهَرِ ساعات العالم؟'
-t_famous = at('p1-h', C, 'أَشْهَرِ ساعات')
-hk = polaroid('assets/ap/ro5402_hero', 510, 300, 280, t_famous - .1, label='Royal Oak', z=30, rot=-6, kind='pop')
+C = 'تعرفون | الرويال أوك… | لكن هل تعرفون | الرجل الذي رسمها؟'
+t_man = at('p1-h', C, 'الرجل الذي')
+END_1H = round(VO_AT + VO['p1-h']['seconds'] + TAIL, 2)
+hk = polaroid('assets/ap/ro5402_hero', [[0, 360], [t_man - .15, 360], [t_man + .45, 530, 'inOutCubic']], [[0, 600], [t_man - .15, 600], [t_man + .45, 340, 'inOutCubic']],
+              480, 0, label='Royal Oak · 1972', z=30, kind='none', fixed=True,
+              rot=[[0, -1], [t_man - .15, 1], [t_man + .45, -5, 'inOutCubic']], scale=[[0, 1.0], [t_man - .15, 1.05], [t_man + .45, .55, 'inOutCubic']],
+              idle={"type": "float", "amp": 3, "speed": .3, "from": 0})
 els = [svg(760, 520, floor_band('#8A7458', '#A48D6E', 520), 360, 1030, z=1, kind=None, depth=.9, shadow=False),
        svg(760, 1320, light_beam([(760, 0), (520, 0), (60, 1320), (520, 1320)], amt=.10), 360, 640, z=2, kind=None, shadow=False, depth=.9, still=True),
-       shadow(330, 1180, 520, 0, z=19, kind=None),
-       cutout('assets/gen/genta23_desk_cut', 330, 1180, 700, 0, z=20, kind='none', person=True),
-       tag('كيف صار مصمّمًا لأشهر ساعات العالم؟', 360, 150, 0, size=32, z=40, depth=0, rot=-1.5, **{"in": {"type": "none", "at": 0}}),
-       hk, glint_on(hk, t_famous + .4)]
+       shadow(280, 1180, 520, t_man + .25, z=19),
+       cutout('assets/gen/genta23_desk_cut', 280, 1180, 700, t_man + .25, z=20, kind='fade', dur=.35, person=True),
+       tag('تعرفونها… فمن رسمها؟', 360, 140, 0, size=40, z=40, depth=0, rot=-1.5, **{"in": {"type": "none", "at": 0}}),
+       hk, glint(360, 578, 452, 452 / hk['aspect'] * .94, .35, rot=-1, z=31)]
 P1.S('p1-h', 'ro-paper', C, els, transition='cut',
-     camera=cam((0, 1.18, 340, 820, None), (t_famous - .2, 1.0, 360, 640, 'inOutCubic'), (round(VO_AT + VO['p1-h']['seconds'] + TAIL, 2), 1.03, 330, 620, 'inOutCubic')),
-     sfx=[E('pencil', .1, -12), E('click', t_famous - .1, -10), E('tick', t_famous + .4, -16)])
+     camera=cam((0, 1.1, 360, 600, None), (t_man - .15, 1.0, 360, 620, 'inOutCubic'), (END_1H, 1.03, 340, 640, 'inOutCubic')),
+     sfx=[E('shutter', .05, -12), E('tick', .35, -16), E('whoosh', t_man - .1, -14), E('pencil', t_man + .3, -12)])
 
 # 0  The famous Genta (the watch on his wrist first), then back to 1954
 use('p1-0')
@@ -555,23 +560,33 @@ P1.S('p1-8', 'ro-night', C, els, tail=2.6, transition='fade', captionClear=V(11.
 P2 = Part()
 BSL = dict(id='bsl', lon=7.59, lat=47.56, label='بازل'); TRN = dict(id='trn', lon=7.69, lat=45.07, label='تورينو')
 LSN = dict(id='lsn', lon=6.63, lat=46.52, label='لوزان'); PAR = dict(id='par', lon=2.35, lat=48.86, label='باريس')
-# H  The hook (stakes, chosen by the user): "1970... quartz is coming to take everything. And AP bet on steel."
-#    The quartz scene (1b) pays it off.
+# H  The hook (#6 stakes, chosen by the user): "1970: quartz threatened the mechanical watch... and AP bet on steel."
+#    Frame 1: the real Seiko Astron under its own frequency; the mechanical cogs crack; the steel Royal Oak answers.
+#    The quartz scene (1b) and the brief (1) pay it off.
 use('p2-h')
-C = 'عام سبعين… | الكوارتز | في الأفق. | وأوديمار بيغيه | تراهن على الستيل.'
-t_bet = at('p2-h', C, 'وأوديمار بيغيه')
+C = 'عام سبعين، | هدّد الكوارتز | الساعة الميكانيكية… | وراهنت أوديمار بيغيه | على الستيل.'
+t_q, t_mech, t_bet = at('p2-h', C, 'هدّد الكوارتز'), at('p2-h', C, 'الساعة الميكانيكية…'), at('p2-h', C, 'وراهنت أوديمار')
 END_H = round(VO_AT + VO['p2-h']['seconds'] + TAIL, 2)
-ast = polaroid('assets/early/astron1969', [[t_bet - .1, 360], [t_bet + .5, 230, 'inOutCubic']], 600, 420, 0, label='Seiko Quartz Astron · 1969', z=20, rot=-3,
-               kind='none', fixed=True, opacity=[[t_bet - .1, 1], [t_bet + .5, .3]], scale=[[0, 1.0], [t_bet, 1.04], [t_bet + .5, .8, 'inOutCubic']])
-els = [sk([{"d": sine_path(0, 720, 1100, 22, 7), "at": 0, "dur": 1.6, "stroke": "#7FD3F0", "width": 3, "opacity": .8}], z=5, depth=0),
-       ast, glint(360, 578, 392, 392 / ast['aspect'] * .94, .5, rot=-3, z=21),
-       tag('الكوارتز في الأفق', 360, 160, 0, size=34, z=40, depth=0, rot=-1.5, until=t_bet, **{"in": {"type": "none", "at": 0}}),
-       svg(320, 200, steel_plate(320, 200), 420, 640, z=25, kind='drop', at=t_bet, dur=.5, rot=-5),
-       glint(420, 640, 310, 190, t_bet + .6, rot=-5, z=26),
-       tag('ستيل', 420, 470, t_bet + .2, size=44, z=30)]
+ast = polaroid('assets/early/astron1969', [[0, 360], [t_bet - .1, 360], [t_bet + .5, 205, 'inOutCubic']], [[0, 540], [t_bet - .1, 540], [t_bet + .5, 470, 'inOutCubic']], 420, 0,
+               label='Seiko Quartz Astron · 1969', z=20, rot=[[0, -3], [t_bet + .5, -6]], kind='none', fixed=True,
+               opacity=[[t_bet - .1, 1], [t_bet + .5, .8]], scale=[[0, 1.0], [t_bet - .1, 1.05], [t_bet + .5, .66, 'inOutCubic']])
+ro = polaroid('assets/ap/ro5402_hero', 470, 690, 360, t_bet, label='Royal Oak · 1972', z=26, rot=4, kind='drop')
+els = [sk([{"d": sine_path(0, 1000, 720, 26, 8), "at": 0, "dur": 1.2, "stroke": "#7FD3F0", "width": 3, "opacity": .85}], z=5, depth=0) |
+       {"out": {"type": "fade", "at": t_bet, "dur": .3}},
+       ast, glint(360, 518, 392, 392 / ast['aspect'] * .94, .3, rot=-3, z=21),
+       tag('الكوارتز قادم… والرهان: الستيل', 360, 140, 0, size=36, z=40, depth=0, rot=-1.5, **{"in": {"type": "none", "at": 0}}),
+       tag('الرويال أوك · الجزء الثاني', 360, 215, 0, size=22, z=40, depth=0, rot=1, until=t_bet, **{"in": {"type": "none", "at": 0}})]
+for k, (gx, gy, r, n, turns) in enumerate([(640, 600, 62, 11, 1), (630, 760, 42, 8, -1.6), (85, 700, 52, 9, 1.3)]):
+    els.append(svg(2 * r + 20, 2 * r + 20, gear(r, n), gx, gy, z=24 + k, kind='pop', at=t_mech + k * .1, dur=.3, still=True,
+                   rot=[[t_mech, 0], [t_bet, 60 * turns, 'outCubic']], opacity=[[t_bet - .2, 1], [t_bet + .3, 0]]))
+els += [sk([{"d": 'M 590 520 L 660 600 L 625 630 L 690 700 L 650 730 L 700 820', "at": t_mech + .45, "dur": .35, "stroke": "#B23A2E", "width": 5, "opacity": 1}], z=30) |
+        {"out": {"type": "fade", "at": t_bet, "dur": .3}},
+        ro, glint_on(ro, t_bet + .8),
+        tag('ستيل', 560, 470, t_bet + .3, size=44, z=40, rot=3)]
 P2.S('p2-h', 'ro-night', C, els, transition='cut',
-     camera=cam((0, 1.12, 360, 560, None), (t_bet, 1.0, 360, 620, 'inOutCubic'), (END_H, 1.05, 400, 640, 'inOutCubic')),
-     sfx=[E('tick', .1, -12)] + [E('tick', .1 + k * .5, -18) for k in range(1, 5)] + [E('stamp', t_bet, -9), E('tick', t_bet + .6, -16)])
+     camera=cam((0, 1.1, 360, 560, None), (t_mech, 1.0, 360, 660, 'inOutCubic'), (t_bet, 1.0, 360, 640, 'inOutCubic'), (END_H, 1.04, 380, 620, 'inOutCubic')),
+     sfx=[E('tick', .05, -12)] + [E('tick', .05 + k * .25, -19) for k in range(1, 8)] + [E('crown_wind', t_mech, -12), E('paper_tear', t_mech + .45, -10),
+          E('paper_place', t_bet, -10), E('stamp', t_bet + .3, -10), E('tick', t_bet + .8, -16)])
 
 # 1b  The quartz shock: months earlier Seiko sold the first quartz wristwatch (Tokyo, Christmas 1969). Some saw the
 #     future in it, others the end of mechanical watches: the start of the quartz crisis. Golay decided to gamble.
@@ -802,6 +817,26 @@ WG_PLATE = ('<defs><linearGradient id="wg" x1="0" y1="0" x2="1" y2="1"><stop off
             '<stop offset="1" stop-color="#EFEAE0"/></linearGradient></defs><rect width="300" height="190" rx="10" fill="url(#wg)"/>')
 OCT = '<polygon points="%s" fill="none" stroke="#EFE8D6" stroke-width="10" stroke-dasharray="18 10"/>' % pts([(150 + 120 * math.cos(math.radians(22.5 + 45 * k)), 150 + 120 * math.sin(math.radians(22.5 + 45 * k))) for k in range(8)])
 
+# H  The hook (#1 paradox, chosen by the user): "A steel watch... priced above many gold watches. How?"
+#    Steel and gold side by side; at «أعلى» the steel one rises like a scale, the price tag swings; the price scene (6)
+#    pays it off. (Time+Tide; Everywatch 5402ST: "exceeded the price of many gold Swiss wristwatches"; AP: CHF 3,300 in 1972.)
+use('p3-h')
+C = 'ساعةٌ من الستيل… | بسعرٍ أعلى | من ساعاتٍ كثيرة | من الذهب. | كيف؟'
+t_hi, t_gold3, t_how = at('p3-h', C, 'بسعرٍ أعلى'), at('p3-h', C, 'من الذهب.'), at('p3-h', C, 'كيف؟')
+END_3H = round(VO_AT + VO['p3-h']['seconds'] + TAIL, 2)
+st = polaroid('assets/ap/ro5402_hero', 230, [[0, 600], [t_hi, 600], [t_hi + .6, 520, 'outBack']], 330, 0, label='Royal Oak · ستيل', z=22, rot=-4, kind='none', fixed=True,
+              idle={"type": "float", "amp": 3, "speed": .3, "from": 0})
+gd = polaroid('assets/ap/m5182', 500, [[0, 620], [t_hi, 620], [t_hi + .6, 720, 'outBack']], 300, .15, label='ذهب · Ref. 5182', z=20, rot=5, kind='slideL', labelSize=20,
+              fixed=True, idle={"type": "float", "amp": 3, "speed": .27, "phase": 2, "from": 0})
+els = [tag('ستيل… أغلى من ساعات ذهب', 360, 140, 0, size=38, z=40, depth=0, rot=-1.5, **{"in": {"type": "none", "at": 0}}),
+       st, glint(230, 578, 302, 302 / st['aspect'] * .94, .3, rot=-4, z=23), gd,
+       sk([{"d": 'M 150 300 Q 190 270 228 300', "at": t_hi + .55, "dur": .25, "stroke": "#B23A2E", "width": 2.5, "opacity": 1}], z=29),
+       svg(230, 112, swing_tag(), 230, 255, z=30, kind='pop', at=t_hi + .6, dur=.4, rot=-6, idle={"type": "sway", "amp": 1.5, "speed": .4}),
+       tag('؟', 560, 430, t_how, size=90, z=42, rot=6, ink='#EFE8D6', paper='#B23A2E', **{"in": {"type": "slam", "at": t_how, "dur": .3}})]
+P3.S('p3-h', 'ro-steel', C, els, transition='cut',
+     camera=cam((0, 1.08, 360, 600, None), (t_hi, 1.0, 360, 620, 'inOutCubic'), (t_how, 1.03, 380, 600, 'inOutCubic'), (END_3H, 1.05, 380, 590, 'inOutCubic')),
+     sfx=[E('shutter', .05, -13), E('paper_slide', .15, -14), E('tick', .3, -17), E('whoosh', t_hi, -15), E('stamp', t_hi + .6, -9), E('stamp', t_how, -8)])
+
 # E  The drawing took a night; the watch took a team and trials. The first prototypes in white gold, then the real challenge: steel.
 use('p3-e')
 C = 'انتهى الرسم | في ليلة. | لكن الساعة | احتاجت فريقًا وتجارب. | صُنعت النماذج الأولى | من الذهب الأبيض… | قبل أن يبدأ | التحدي الحقيقي | مع الستيل.'
@@ -818,7 +853,7 @@ els += [svg(300, 190, WG_PLATE, 260, 560, z=12, kind='drop', at=t_wg, dur=.5, ro
         svg(300, 190, steel_plate(300, 190), 470, 760, z=14, kind='drop', at=t_st, dur=.5, rot=6),
         glint(470, 760, 290, 180, t_st + .5, rot=6, z=15),
         tag('الستيل', 470, 620, t_st + .2, size=32, z=20)]
-P3.S('p3-e', 'ro-steel', C, els, transition='cut',
+P3.S('p3-e', 'ro-steel', C, els, transition='slide',
      camera=cam((0, 1.1, 360, 600, None), (t_team, 1.0, 360, 560, 'inOutCubic'), (t_wg, 1.06, 300, 600, 'inOutCubic'), (t_st, 1.06, 420, 700, 'inOutCubic'), (END_E, 1.0, 360, 640, 'inOutCubic')),
      sfx=[E('paper_slide', .05, -12)] + [E('paper_place', t_team + .7 + i * .3, -15) for i in range(3)] + [E('clasp', t_wg, -10), E('tick', t_wg + .5, -16), E('clasp', t_st, -9)])
 

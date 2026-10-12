@@ -128,7 +128,7 @@ MOODS = {1: [('pad', ['Dm9', 'Fmaj9']), ('rewind', ['Dmaj9']), ('groove_light', 
              ('groove_light', ['Fmaj9', 'Bbmaj7']), ('tension', ['Dm'])],
          2: [('pad', ['Dm9', 'Bbmaj7']), ('pad', ['Dm9', 'Bbmaj7', 'Gm9', 'A7']), ('groove', ['Dm9', 'G13']), ('groove', ['Gm9', 'C7']), ('groove', ['Dm9', 'G13']),
              ('celesta', ['Bbmaj7', 'Am7']), ('celesta', ['Gm9', 'A7']), ('strings', ['Dm', 'Bb', 'F', 'C']), ('tension', ['Dm'])],
-         3: [('pad', ['Fmaj9', 'C7']), ('groove', ['Gm9', 'C7', 'Fmaj9', 'A7']), ('groove', ['Dm9', 'G13']), ('celesta', ['Bbmaj7', 'Am7']),
+         3: [('pad', ['Dm9', 'Bbmaj7']), ('pad', ['Fmaj9', 'C7']), ('groove', ['Gm9', 'C7', 'Fmaj9', 'A7']), ('groove', ['Dm9', 'G13']), ('celesta', ['Bbmaj7', 'Am7']),
              ('hit', ['Dmaj9', 'Gmaj7']), ('groove', ['Gm9', 'C7']), ('groove_light', ['Fmaj9', 'Bbmaj7']), ('final', ['Bbmaj7', 'Dmaj9'])]}[part]
 for i, (mood, chords) in enumerate(MOODS):
     a, b = float(starts[i]), float(starts[i] + durs[i])

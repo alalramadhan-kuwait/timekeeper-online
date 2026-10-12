@@ -69,3 +69,6 @@ types here with the date and where the idea came from.
 | 2026-10-05 | Royal Oak, Part 1 | Used #2 curiosity question | "كيف شاب عمره ثلاثة وعشرين… صار ورا أشهر ساعات العالم؟" over the 23-year-old at his board |
 | 2026-10-05 | Royal Oak, Part 2 | Used #6 stakes | "سنة سبعين… الكوارتز جاي ياخذ كل شي" over the real Seiko Quartz Astron |
 | 2026-10-05 | (library) | Added #13 to #21 | From experience on this project |
+| 2026-10-12 | Royal Oak, Part 1 (v17) | Used #7 flash-forward (replaces #2) | "تعرفون الرويال أوك… لكن هل تعرفون الرجل الذي رسمها؟" over the Royal Oak from frame 1, then the unnamed young Genta. The question hook named the icon only at second 3 and the owner found it weak |
+| 2026-10-12 | Royal Oak, Part 2 (v19) | Used #6 stakes, sharper | "عام سبعين، هدّد الكوارتز الساعة الميكانيكية… وراهنت أوديمار بيغيه على الستيل." On screen «الكوارتز قادم… والرهان: الستيل» plus the series name, so the icon is named in frame 1 |
+| 2026-10-12 | Royal Oak, Part 3 (v18) | Used #1 paradox | "ساعةٌ من الستيل… بسعرٍ أعلى من ساعاتٍ كثيرة من الذهب. كيف؟" Steel and gold prints side by side, the steel one rises like a scale; the price scene pays it off. A part without a hook is the first thing to fix |
