@@ -870,7 +870,7 @@ P3.S('p3-e', 'ro-steel', C, els, transition='slide',
 # F  Case by Favre-Perret, bracelet by Gay Frères, each link fitted by hand; the dial pattern chosen from 13 samples (dial by Stern);
 #    inside, calibre 2121: automatic, very thin, the movement 3.05 mm (the movement, not the case)
 use('p3-f')
-C = 'علبةٌ من | فافر-بيريه، | وسوارٌ من | غاي فرير… | وملاءمةٌ يدوية | لكل وصلة. | واختير نقش الميناء | من ثلاث عشرة | عيّنة. | وفي الداخل، | العيار ألفان ومئة | وواحد وعشرون: | حركةٌ أوتوماتيكية | نحيفة جدًا، | سماكتها ثلاثة فاصلة | صفر خمسة مليمتر.'
+C = 'علبةٌ من | فافر-بيريه، | وسوارٌ من | غاي فرير… | وملاءمةٌ يدوية | لكل وصلة. | واختير نقش المينا | من ثلاث عشرة | عيّنة. | وفي الداخل، | العيار ألفان ومئة | وواحد وعشرون: | حركةٌ أوتوماتيكية | نحيفة جدًا، | سماكتها ثلاثة فاصلة | صفر خمسة مليمتر.'
 t_case, t_brac, t_hand = at('p3-f', C, 'علبةٌ من'), at('p3-f', C, 'وسوارٌ من'), at('p3-f', C, 'وملاءمةٌ يدوية')
 t_dial, t_cal, t_thin = at('p3-f', C, 'واختير نقش'), at('p3-f', C, 'وفي الداخل،'), at('p3-f', C, 'سماكتها ثلاثة')
 END_F = round(VO_AT + VO['p3-f']['seconds'] + TAIL, 2)
@@ -900,8 +900,8 @@ P3.S('p3-f', 'ro-steel', C, els, transition='slide',
 # G  Basel 1971: the prototype was shown; de Marchi committed to 400, Bauty to 400 more; Golay decided to make 1,000.
 #    No prototype photo: an outline marked as a reconstruction. No invented order book.
 use('p3-g')
-C = 'في بازل، | عام واحدٍ وسبعين، | ظهر النموذج. | التزم دي ماركي | بأربعمئة ساعة، | وبوتي | بأربعمئة أخرى. | وقرّر غولاي | إنتاج ألف.'
-t_proto, t_dm, t_bt, t_gl = at('p3-g', C, 'ظهر النموذج.'), at('p3-g', C, 'التزم دي'), at('p3-g', C, 'وبوتي'), at('p3-g', C, 'وقرّر غولاي')
+C = 'في بازل، | عام واحدٍ وسبعين، | ظَهَرَ النموذج. | التزم دي ماركي | بأربعمئة ساعة، | وبوتي | بأربعمئة أخرى. | وقرّر غولاي | إنتاج ألف.'
+t_proto, t_dm, t_bt, t_gl = at('p3-g', C, 'ظَهَرَ النموذج.'), at('p3-g', C, 'التزم دي'), at('p3-g', C, 'وبوتي'), at('p3-g', C, 'وقرّر غولاي')
 END_G = round(VO_AT + VO['p3-g']['seconds'] + TAIL, 2)
 els = [svg(900, 1100, hall(), 360, 560, z=1, kind=None, depth=.55, shadow=False),
        svg(760, 300, carpet(), 360, 1180, z=2, kind=None, depth=.9, shadow=False),
@@ -985,7 +985,7 @@ P3.S('p2-7', 'ro-hall', C, els, transition='slide',
 
 # 6  Steel was for tools; finished like a precious watch; 3,300 francs, "the costliest steel watch in the world" (the 1972 ad)
 use('p2-6')
-C = 'كان الستيل يرتبط | غالبًا بالساعات العملية. | لكن أوديمار بيغيه | أرادت ساعةً رياضية | بتشطيبٍ فاخر | وسعرٍ مرتفع: | ثلاثة آلافٍ | وثلاثمئة فرنك… | وقدّمتها بوصفها | أغلى ساعة | من الستيل | في العالم.'
+C = 'كان الستيل يرتبط | غالبًا بالساعات العملية. | لكن أوديمار بيغيه | أرادت ساعةً رياضية | بتشطيبٍ فاخر | وسعرٍ مرتفعٍ: | ثلاثة آلافٍ | وثلاثمئة فرنك… | وقدّمتها بوصفها | أغلى ساعة | من الستيل | في العالم.'
 t_mac = V(2.1); t_ad = V(5.5); t_price = at('p2-6', C, 'ثلاثة آلافٍ')
 ad = polaroid('assets/crop/ad1972b', 360, 540, 400, t_ad, label='Audemars Piguet · 1972', z=20, rot=-2, kind='fade')
 peg_out = {"type": "fade", "at": t_mac + .3, "dur": .1}
