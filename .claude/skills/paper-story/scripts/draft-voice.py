@@ -85,7 +85,7 @@ def main(argv):
         gap = np.zeros(int(.7 * SR))
         a = np.concatenate([np.concatenate([decode(os.path.join(out, done[k]['file'])), gap]) for k in pk])
         wav = os.path.join(out, 'read-%s.wav' % name); write_wav(a, wav)
-        subprocess.run([ffmpeg(), '-v', 'error', '-y', '-i', wav, '-c:a', 'libmp3lame', '-b:a', '96k', wav[:-4] + '.mp3'], check=True); os.remove(wav)
+        subprocess.run([ffmpeg(), '-v', 'error', '-y', '-i', wav, '-af', 'loudnorm=I=-14:TP=-1:LRA=7', '-ar', '44100', '-c:a', 'libmp3lame', '-b:a', '128k', wav[:-4] + '.mp3']   # loud enough on a phone speaker, check=True); os.remove(wav)
         print('read-%s.mp3  %.0fs, %d lines' % (name, len(a) / SR, len(pk)))
     print('%d characters in these lines: what a paid voice would charge to record them' % chars)
 
