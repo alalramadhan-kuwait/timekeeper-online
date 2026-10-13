@@ -920,9 +920,9 @@ P3.S('p3-g', 'ro-hall', C, els, transition='slide',
 # H  The name: Safari, and (as told) Excalibur; then de Marchi proposed Royal Oak: the oak that hid Charles II, a name British ships carried.
 #    The story of the name is not where the design came from: the octagon stays apart from the tree and the ship.
 use('p3-n')
-C = 'ظهرت أسماء أخرى: | سفاري… | وقيل إكسكاليبر. | ثم اقترح دي ماركي | اسم الرويال أوك… | شجرةً احتمى بها | تشارلز الثاني، | واسمًا حملته | سفن بريطانية.'
+C = 'ظهرت أسماء أخرى: | سفاري… | وقيل إكسكاليبر. | ثم اقترح دي ماركي | اسم الرويال أوك… | أي «شجرة البلوط | الملكية»: | شجرةٌ اختبأ فيها | الملك تشارلز الثاني | من جنود كرومويل، | بعد هزيمته | في الحرب الأهلية | الإنجليزية، | ثم حملت اسمَها | سفنٌ حربيةٌ بريطانية.'
 t_saf, t_exc, t_ro_n, t_tree, t_ship = (at('p3-n', C, 'سفاري…'), at('p3-n', C, 'وقيل إكسكاليبر.'), at('p3-n', C, 'ثم اقترح'),
-                                       at('p3-n', C, 'شجرةً احتمى'), at('p3-n', C, 'واسمًا حملته'))
+                                       at('p3-n', C, 'شجرةٌ اختبأ'), at('p3-n', C, 'ثم حملت'))
 END_N = round(VO_AT + VO['p3-n']['seconds'] + TAIL, 2)
 OAK = ('<rect x="92" y="170" width="36" height="110" fill="#6B4A2B"/>' +
        ''.join('<circle cx="%d" cy="%d" r="%d" fill="%s"/>' % c for c in [(110, 110, 70, '#5E7A3A'), (60, 140, 48, '#6E8A45'), (160, 140, 48, '#6E8A45'), (110, 60, 46, '#7A9650'), (70, 80, 36, '#7A9650'), (150, 80, 36, '#7A9650')]))
