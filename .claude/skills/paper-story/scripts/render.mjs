@@ -203,7 +203,6 @@ if (opt.check) {
   // layout: cut by the frame, prints over prints, things on the captions, pictures shown bigger than their file
   const lays = [];
   { const pg = await newPage(); for (let t = 0.05; t < duration; t += 0.2) lays.push(...(await pg.page.evaluate(([tt, k]) => window.PM.layout(tt, k), [t, opt.scale > 1 ? opt.scale : 1.5]))); }
-  await browser.close();
   // runs of consecutive samples; a run shorter than 0.6 s is an entrance or exit (a drop, a slide), not a fault
   const runs = [], open = new Map();
   for (const h of lays) {
@@ -219,6 +218,19 @@ if (opt.check) {
   console.log(cuts ? cuts + ' cut by the frame' : 'nothing cut by the frame');
   console.log(faults.length - cuts ? (faults.length - cuts) + ' overlap(s) or picture(s) on the captions' : 'no print over another, nothing on the captions');
   for (const e of soft) console.log(`note: scene ${e.scene + 1}  ` + SAY.soft(e));
+  // sparse stretches: 2 s or more with under a quarter of the frame used, or two things or fewer using under a third (a note)
+  { const pg = await newPage(); const ds = [];
+    for (let t = 0.05; t < duration; t += 0.25) { const d = await pg.page.evaluate((tt) => { const g = []; const r = window.PM.density(tt, g); return r && Object.assign(r, { dbg: g }); }, t); if (process.env.PM_DEBUG_T && Math.abs(t - +process.env.PM_DEBUG_T) < 0.13) console.log(JSON.stringify(d)); if (d && !sb.scenes[d.scene].endcard) ds.push(d); }
+    let run = null; const sparse = [];
+    const med = (a) => [...a].sort((x, y) => x - y)[a.length >> 1];
+    const close = () => { if (run && run.to - run.from >= 2) sparse.push({ ...run, n: med(run.ns), cover: med(run.cs) }); run = null; };
+    for (const d of ds) { const thin = d.cover < 0.25 || (d.n <= 2 && d.cover < 0.35);
+      if (thin && run && run.scene === d.scene && d.t - run.to < 0.3) { run.to = d.t; run.ns.push(d.n); run.cs.push(d.cover); }
+      else { close(); if (thin) run = { scene: d.scene, from: d.t, to: d.t, ns: [d.n], cs: [d.cover] }; } }
+    close();
+    for (const e of sparse) console.log(`note: scene ${e.scene + 1}  ${e.from.toFixed(1)}-${e.to.toFixed(1)}s  looks empty (${e.n} thing(s) on screen, ${Math.round(e.cover * 100)}% of the frame)`);
+    if (!sparse.length) console.log('no empty-looking stretch'); }
+  await browser.close().catch(() => {});
   process.exit(seen.size || faults.length ? 1 : 0);
 }
 

@@ -694,6 +694,32 @@
     });
     return out;
   };
+  // How full the frame is at t: the things a viewer looks at (prints, figures, cards, tags, drawings smaller than half
+  // the frame; not walls, floors, plates or overlays) and the share of the frame they cover, union by a coarse grid.
+  PM.density = function (t, dbg) {
+    PM.setTime(t);
+    const area = S.width * S.height, G = 24, cols = Math.ceil(S.width / G), rowsN = Math.ceil(S.height / G);
+    const shown = (el) => el && el.style.display !== 'none' && +(el.style.opacity || 1) > 0.15;
+    let best = null;
+    scenes.forEach((sc, si) => {
+      const lt = t - sc.start;
+      if (lt < 0 || lt > sc.spec.dur || sc.root.style.display === 'none') return;
+      const grid = new Uint8Array(cols * rowsN); let n = 0;
+      // a full-frame photograph (a macro close-up) or map fills the frame on its own; the first second is entrances
+      if (lt < 1.0 || sc.items.some((it) => shown(it.el) && (it.spec.fit === 'cover' || it.spec.type === 'map') && it.built.w * it.built.h >= area * 0.5)) { if (!best || si > best.scene) best = { scene: si, t: +t.toFixed(2), n: 9, cover: 1 }; return; }
+      sc.items.forEach((it) => {
+        const sp = it.spec, ty = sp.type;
+        if (!shown(it.el) || sp.still || sp.depth === 0 && ty === 'svg' || it.built.w * it.built.h >= area * 0.5 || sp.fit === 'cover' || ty === 'sketch' || ty === 'sparkles' || ty === 'motes') return;
+        const r = it.el.firstChild.getBoundingClientRect(); if (dbg) dbg.push([si, ty, sp.label || sp.text || '', Math.round(r.width), Math.round(r.height)]); if (r.width * r.height < 900) return;
+        n++;
+        for (let y = Math.max(0, Math.floor(r.top / G)); y < Math.min(rowsN, Math.ceil(r.bottom / G)); y++)
+          for (let x = Math.max(0, Math.floor(r.left / G)); x < Math.min(cols, Math.ceil(r.right / G)); x++) grid[y * cols + x] = 1;
+      });
+      const cover = grid.reduce((a, v) => a + v, 0) / grid.length;
+      if (!best || si > best.scene) best = { scene: si, t: +t.toFixed(2), n, cover: +cover.toFixed(2) };
+    });
+    return best;
+  };
   PM.offFrame = (t) => PM.layout(t).filter((x) => x.kind === 'cut');      // older callers
 
   PM.setTime = function (t) {

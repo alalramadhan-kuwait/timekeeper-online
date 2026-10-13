@@ -825,6 +825,7 @@ P2.S('p2-5', 'ro-black', C, els, tail=2.6, transition='fade', transitionDur=.7, 
 P3 = Part()
 WG_PLATE = ('<defs><linearGradient id="wg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F2EEE6"/><stop offset=".5" stop-color="#D9D3C7"/>'
             '<stop offset="1" stop-color="#EFEAE0"/></linearGradient></defs><rect width="300" height="190" rx="10" fill="url(#wg)"/>')
+CROWN = '<path d="M5 65 L5 20 L30 42 L55 5 L80 42 L105 20 L105 65 Z" fill="#C9A35F"/><rect x="5" y="58" width="100" height="10" fill="#A8843F"/>'
 OCT = '<polygon points="%s" fill="none" stroke="#EFE8D6" stroke-width="10" stroke-dasharray="18 10"/>' % pts([(150 + 120 * math.cos(math.radians(22.5 + 45 * k)), 150 + 120 * math.sin(math.radians(22.5 + 45 * k))) for k in range(8)])
 
 # H  The hook (#1 paradox, chosen by the user): "A steel watch... priced above many gold watches. How?"
@@ -862,7 +863,10 @@ els += [svg(300, 190, WG_PLATE, 260, 560, z=12, kind='drop', at=t_wg, dur=.5, ro
         tag('الذهب الأبيض', 260, 420, t_wg + .2, size=32, z=20),
         svg(300, 190, steel_plate(300, 190), 470, 760, z=14, kind='drop', at=t_st, dur=.5, rot=6),
         glint(470, 760, 290, 180, t_st + .5, rot=6, z=15),
-        tag('الستيل', 470, 620, t_st + .2, size=32, z=20)]
+        tag('الستيل', 470, 620, t_st + .2, size=32, z=20),
+        svg(620, 360, pegboard(620, 360), 360, 930, z=3, kind='fade', at=t_team + .2, dur=.5, depth=.75),      # the workshop: a team and trials
+        svg(300, 70, wrench(), 230, 860, z=5, kind='drop', at=t_team + .5, dur=.4, depth=.75, rot=-10),
+        svg(270, 58, screwdriver(), 500, 905, z=5, kind='drop', at=t_team + .8, dur=.4, depth=.75, rot=8)]
 P3.S('p3-e', 'ro-steel', C, els, transition='slide',
      camera=cam((0, 1.1, 360, 600, None), (t_team, 1.0, 360, 560, 'inOutCubic'), (t_wg, 1.06, 300, 600, 'inOutCubic'), (t_st, 1.06, 420, 700, 'inOutCubic'), (END_E, 1.0, 360, 640, 'inOutCubic')),
      sfx=[E('paper_slide', .05, -12)] + [E('paper_place', t_team + .7 + i * .3, -15) for i in range(3)] + [E('clasp', t_wg, -10), E('tick', t_wg + .5, -16), E('clasp', t_st, -9)])
@@ -906,6 +910,8 @@ END_G = round(VO_AT + VO['p3-g']['seconds'] + TAIL, 2)
 els = [svg(900, 1100, hall(), 360, 560, z=1, kind=None, depth=.55, shadow=False),
        svg(760, 300, carpet(), 360, 1180, z=2, kind=None, depth=.9, shadow=False),
        tag('بازل 1971', 360, 170, .15, size=40, z=40, depth=0),
+       svg(900, 220, bunting_(), 360, 110, z=3, kind=None, depth=.6, shadow=False, idle={"type": "sway", "amp": .8, "speed": .35}),
+       svg(520, 420, booth(name='AUDEMARS PIGUET'), 360, 600, z=4, kind='fade', at=.1, dur=.4, depth=.8),
        svg(300, 300, OCT, 360, 560, z=10, kind='fade', at=t_proto, dur=.5, out={"type": "fade", "at": t_dm - .2, "dur": .3}),
        tag('النموذج (إعادة بناء)', 360, 760, t_proto + .3, size=24, z=12, rot=2, until=t_dm),
        polaroid('assets/ap/demarchi_bauty1992', 360, 450, 420, t_dm - .2, label='دي ماركي وبوتي (صورة 1992)', z=20, rot=-3, labelSize=17, until=t_gl),
@@ -928,20 +934,24 @@ OAK = ('<rect x="92" y="170" width="36" height="110" fill="#6B4A2B"/>' +
        ''.join('<circle cx="%d" cy="%d" r="%d" fill="%s"/>' % c for c in [(110, 110, 70, '#5E7A3A'), (60, 140, 48, '#6E8A45'), (160, 140, 48, '#6E8A45'), (110, 60, 46, '#7A9650'), (70, 80, 36, '#7A9650'), (150, 80, 36, '#7A9650')]))
 SHIP = ('<path d="M10 150 L230 150 L200 190 L40 190 Z" fill="#5A3E26"/><rect x="116" y="20" width="6" height="130" fill="#3A2A1A"/>'
         '<path d="M122 26 L200 70 L122 110 Z" fill="#EFE8D6"/><path d="M116 34 L50 80 L116 126 Z" fill="#E4DCC8"/><path d="M122 20 L150 28 L122 36 Z" fill="#B23A2E"/>')
-els = [svg(300, 150, name_card('SAFARI'), 220, 380, z=10, kind='drop', at=t_saf - .2, dur=.4, rot=-6, out={"type": "fade", "at": t_ro_n + .6, "dur": .3}),
+els = [svg(560, 640, drafting_sheet(560, 640, paper='#F3EDDF'), 360, 560, z=2, kind='fade', at=.05, dur=.4, depth=.9, out={"type": "fade", "at": t_tree - .2, "dur": .4}),   # a page of names
+       svg(300, 150, name_card('SAFARI'), 220, 380, z=10, kind='drop', at=t_saf - .2, dur=.4, rot=-6, out={"type": "fade", "at": t_ro_n + .6, "dur": .3}),
        svg(300, 150, name_card('EXCALIBUR ?'), 500, 470, z=11, kind='drop', at=t_exc - .2, dur=.4, rot=5, out={"type": "fade", "at": t_ro_n + .6, "dur": .3}),
        tag('رواية منقولة', 500, 580, t_exc + .4, size=20, z=12, rot=5, until=t_ro_n + .6),
        sk([{"d": 'M 90 380 L 350 380', "at": t_ro_n, "dur": .25, "stroke": "#B23A2E", "width": 5, "opacity": 1},
            {"d": 'M 370 470 L 630 470', "at": t_ro_n + .2, "dur": .25, "stroke": "#B23A2E", "width": 5, "opacity": 1}], z=13) | {"out": {"type": "fade", "at": t_ro_n + .6, "dur": .3}},
        svg(360, 180, name_card('ROYAL OAK', 360, 180, 34), 360, 420, z=20, kind='drop', at=t_ro_n + .5, dur=.45, rot=-2),
        tag('اقتراح دي ماركي', 360, 560, t_ro_n + .9, size=26, z=21, rot=2),
-       svg(220, 280, OAK, 190, 860, z=15, kind='grow', at=t_tree, dur=.6),
-       tag('تشارلز الثاني، 1651', 190, 690, t_tree + .4, size=22, z=16, rot=-2),
-       svg(240, 200, SHIP, 520, 870, z=15, kind='rise', at=t_ship, dur=.5, idle={"type": "bob", "amp": 2, "speed": .6}),
+       polaroid('assets/ap/ro5402_front', 360, 755, 260, t_ro_n + 1.0, small=True, label='Royal Oak · 5402', z=18, rot=3, kind='rise', until=t_tree - .1),
+       svg(110, 70, CROWN, 190, 610, z=17, kind='drop', at=t_tree + .5, dur=.4, rot=-6),
+       svg(220, 280, OAK, 190, 860, z=15, kind='grow', at=t_tree, dur=.6, scale=1.3),
+       tag('تشارلز الثاني، 1651', 190, 700, t_tree + .4, size=22, z=16, rot=-2),
+       svg(420, 60, '<path d="M0 30 Q35 10 70 30 T140 30 T210 30 T280 30 T350 30 T420 30 L420 60 L0 60 Z" fill="#5E7FA0"/>', 520, 960, z=14, kind='rise', at=t_ship - .2, dur=.5, shadow=False),
+       svg(240, 200, SHIP, 520, 870, z=15, kind='rise', at=t_ship, dur=.5, scale=1.3, idle={"type": "bob", "amp": 2, "speed": .6}),
        tag('سفن بريطانية', 520, 735, t_ship + .3, size=22, z=16, rot=2),
        tag('حكاية الاسم ≠ مصدر التصميم', 360, 170, t_ship + 1.0, size=28, z=40, depth=0)]
 P3.S('p3-n', 'ro-paper', C, els, transition='slide',
-     camera=cam((0, 1.0, 360, 520, None), (t_ro_n, 1.04, 360, 480, 'inOutCubic'), (t_tree, 1.0, 300, 720, 'inOutCubic'), (t_ship, 1.0, 420, 720, 'inOutCubic'), (END_N, 1.0, 360, 640, 'inOutCubic')),
+     camera=cam((0, 1.0, 360, 520, None), (t_ro_n, 1.03, 360, 600, 'inOutCubic'), (t_tree, 1.0, 300, 720, 'inOutCubic'), (t_ship, 1.0, 420, 720, 'inOutCubic'), (END_N, 1.0, 360, 640, 'inOutCubic')),
      sfx=[E('paper_place', t_saf - .2, -12), E('paper_place', t_exc - .2, -12), E('pencil', t_ro_n, -9), E('stamp', t_ro_n + .5, -8), E('paper_slide', t_tree, -14), E('whoosh', t_ship, -16)])
 
 # 7  Basel 1972: the Royal Oak, Ref. 5402ST, 39 mm, huge for its time. (Genta was there too, but on his own stand: he is not shown at AP's.)
@@ -1015,10 +1025,11 @@ END_I = round(VO_AT + VO['p3-i']['seconds'] + TAIL, 2)
 els = [svg(640, 960, drafting_sheet(paper='#F3EDDF'), 360, 620, z=2, kind=None, depth=.9),
        tag('فشل؟', 360, 420, t_fail + .2, size=72, z=20, rot=-6, ink='#EFE8D6', paper='#B23A2E', until=t_72 + .3,
            **{"in": {"type": "slam", "at": t_fail + .2, "dur": .3}}),
-       tag('1972 · 490', 250, 560, t_72 + .5, size=52, z=22, rot=-3),
-       tag('1973 · 543', 470, 700, t_73 + .3, size=52, z=22, rot=3),
+       tag('1972 · 490', 250, 610, t_72 + .5, size=52, z=22, rot=-3),
+       tag('1973 · 543', 470, 740, t_73 + .3, size=52, z=22, rot=3),
        tag('أرقام تسليم من الدار، لا مبيعات نهائية', 360, 900, t_note, size=24, z=30, rot=0, depth=0),
-       polaroid('assets/ap/ro5402_period', 360, 345, 360, t_72, label='Royal Oak · 1972', z=12, rot=4, labelSize=18)]
+       polaroid('assets/ap/ro5402_period', 250, 330, 330, t_72, label='Royal Oak · 1972', z=12, rot=-4, labelSize=18),
+       polaroid('assets/ap/ro5402_box', 545, 390, 280, t_72 + 1.0, label='في علبتها الأصلية', z=13, rot=5, labelSize=18)]
 P3.S('p3-i', 'ro-paper', C, els, transition='slide',
      camera=cam((0, 1.08, 360, 480, None), (t_72, 1.0, 360, 600, 'inOutCubic'), (t_73, 1.04, 400, 660, 'inOutCubic'), (t_note, 1.04, 360, 700, 'inOutCubic'), (END_I, 1.04, 360, 700, None)),
      sfx=[E('paper_tear', t_fail + .1, -12), E('stamp', t_fail + .2, -8), E('stamp', t_72 + .5, -10), E('stamp', t_73 + .3, -10), E('paper_place', t_note, -12)])
