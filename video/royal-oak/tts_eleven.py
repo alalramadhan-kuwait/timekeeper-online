@@ -127,6 +127,7 @@ if __name__ == '__main__':
     script = os.environ.get('ELEVEN_SCRIPT', 'script-kw.json')                       # the approved wording, key -> text
     raw = json.load(open(os.path.join(H, script)))
     src = {k: {'text': v} for k, v in raw.items() if not k.startswith('_')}
+    SAY = raw.get('_say', {})            # per line: spelling for the voice only, e.g. «الستيل» -> «الإستيل» so the article is heard
     KEEP = raw.get('_arabic', {})          # per line: terms the voice reads in Arabic (e.g. «الكوارتز» with its article)
     if cmd == '--test':
         items = [('test', T.spoken(args[1]))]
@@ -145,7 +146,11 @@ if __name__ == '__main__':
                   open(os.path.join(OUT, 'compare', key + '.json'), 'w'), ensure_ascii=False, indent=1)
         sys.exit()
     keys = args or list(src)
-    items = [(k, T.spoken(src[k]['text'], KEEP.get(k, ()))) for k in keys]
+    def say(k):
+        t = src[k]['text']
+        for x, y in SAY.get(k, {}).items(): t = t.replace(x, y)
+        return T.spoken(t, tuple(KEEP.get(k, ())) + tuple(SAY.get(k, {}).values()))
+    items = [(k, say(k)) for k in keys]
     if not yes: plan(items, [SETTINGS]); sys.exit()
     f_json = os.path.join(OUT, 'clips.json')
     done = json.load(open(f_json)) if os.path.exists(f_json) else {}
