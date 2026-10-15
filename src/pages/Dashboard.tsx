@@ -30,6 +30,21 @@ const EMPTY_CHARTS: Charts = { salesTrend: [], outletSales: [], stockHistory: []
 const IG_MAIN = 'timekeeperkw';
 const IG_COLOR: Record<string, string> = { timekeeperkw: '#db2777', timegallerykw: '#0ea5e9', timekeeperkwshop: '#8b5cf6' };
 
+/* A read the API would cut off at its 1000-row page: the first page brings the
+   exact count, and the rest are asked for together. `page` must order its rows
+   so the pages neither overlap nor skip. */
+const PAGE = 1000;
+async function allRows(page: (from: number, to: number) => PromiseLike<{ data: any[] | null; error: unknown; count?: number | null }>) {
+  const first = await page(0, PAGE - 1);
+  const rows = first.data ?? [];
+  if (first.error || rows.length < PAGE || !first.count || first.count <= PAGE) return { data: rows, error: first.error };
+  const rest = await Promise.all(
+    Array.from({ length: Math.ceil(first.count / PAGE) - 1 }, (_, i) => page((i + 1) * PAGE, (i + 2) * PAGE - 1)),
+  );
+  const failed = rest.find((r) => r.error);
+  return { data: rows.concat(...rest.map((r) => r.data ?? [])), error: failed?.error ?? null };
+}
+
 /* Revenue already resolved to a channel by the pos_channel_sales view, which
    also splits the one till register that serves two: what Eman rings up there
    is the WhatsApp channel, the rest is the online shop. The dashboard never
@@ -379,7 +394,11 @@ export default function Dashboard({ title = 'Dashboard' }: { title?: string }) {
         supabase.from('lightspeed_stock_summary').select('*').single(),
         supabase.from('lightspeed_low_stock').select('product_id', { count: 'exact', head: true }),
         supabase.from('lightspeed_stock').select('product_id', { count: 'exact', head: true }),
-        supabase.from('purchase_orders').select('status, total_cost, amount_paid, brand').not('status', 'in', '("Cancelled")').is('merged_into', null),
+        /* Every purchase order, not the API's first page of 1000: there are
+           over 2000, and the balance, open orders, shipments and the brand
+           chart were reading about half of them. */
+        allRows((from, to) => supabase.from('purchase_orders').select('status, total_cost, amount_paid, brand', { count: 'exact' })
+          .not('status', 'in', '("Cancelled")').is('merged_into', null).order('id').range(from, to)),
         supabase.from('attendance_records').select('user_id, employee_name').gte('clock_in', `${today}T00:00:00+03:00`).lte('clock_in', `${today}T23:59:59+03:00`),
         supabase.from('attendance_records').select('id', { count: 'exact', head: true }).eq('is_late', true).eq('justified', false).gte('clock_in', `${monthStart}T00:00:00+03:00`),
         supabase.from('leave_records').select('id, leave_type, approval_status').eq('approval_status', 'Pending'),
@@ -456,7 +475,16 @@ export default function Dashboard({ title = 'Dashboard' }: { title?: string }) {
       const poRows = (poQ.data ?? []) as any[];
       const openPOs = poRows.filter((p) => !['Fully Received'].includes(p.status)).length;
       const shipments = poRows.filter((p) => ['Ordered', 'Partially Received'].includes(p.status)).length;
-      const supplierBalance = poRows.reduce((s, p) => s + Number(p.total_cost ?? 0) - Number(p.amount_paid ?? 0), 0);
+      /* An amount paid well beyond the order's cost is a typing slip, not a
+         payment (one order of 370 KD is recorded as paid 371 trillion), and a
+         single one swamps the balance. Same test the World's purchase-order
+         panel uses to mark an amount paid unreliable; those orders stay out. */
+      const paidUnreliable = (p: any) => {
+        const cost = Number(p.total_cost ?? 0), paid = Number(p.amount_paid ?? 0);
+        return paid > 0 && (cost <= 0 || paid > cost * 1.5 + 1);
+      };
+      const supplierBalance = poRows.filter((p) => !paidUnreliable(p))
+        .reduce((s, p) => s + Number(p.total_cost ?? 0) - Number(p.amount_paid ?? 0), 0);
 
       // HR
       /* Counted by login, not by spelling. The name on a record is a copy from

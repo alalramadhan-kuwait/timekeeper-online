@@ -72,7 +72,10 @@ export const alertQueries = {
   preOrders: () => supabase.from('waiting_list').select('customer_name, brand, product, status, expected_arrival', { count: 'exact' }).eq('list_type', 'Pre-Order').not('status', 'in', '("Delivered","Cancelled","Converted")'),
   purchaseOrders: () => supabase.from('purchase_orders').select('po_number, supplier, status, expected_arrival, invoice_received').not('status', 'in', '("Fully Received","Cancelled")').is('merged_into', null),
   documents: () => supabase.from('company_documents').select('doc_name, expiry_date, renewal_status'),
-  customers: () => supabase.from('customers').select('display_name, birthday, occasions'),
+  /* Only customers with a date to remember. Reading every customer stopped at
+     the API's 1000-row page, so anyone past the first thousand never got a
+     birthday or occasion reminder. `occasions` is never null, only empty. */
+  customers: () => supabase.from('customers').select('display_name, birthday, occasions').or('birthday.not.is.null,occasions.neq.[]'),
 };
 
 /** Returns active (non-dismissed, non-snoozed) alerts sorted by severity. */

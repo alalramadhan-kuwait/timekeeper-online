@@ -2,10 +2,13 @@
   {
     "version": "3.8.1",
     "date": "2026-10-15",
-    "title": "A quicker start",
+    "title": "A quicker start, and the right numbers",
     "changes": [
       "The app opens faster: it downloads less before the first screen appears, and each page arrives the first time you open it.",
-      "The dashboard, the Inbox and the Stock page load their figures faster."
+      "The dashboard, the Inbox and the Stock page load their figures faster.",
+      "The dashboard's supplier balance, open purchase orders, shipments and brand chart now count every purchase order. They were reading only about half.",
+      "Birthday and occasion reminders now cover every customer with a date, not only the first thousand customers.",
+      "A screen left open past midnight keeps updating by itself."
     ]
   },
   {
