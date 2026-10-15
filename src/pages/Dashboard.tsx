@@ -8,7 +8,7 @@ import { supabase } from '../lib/supabase';
 import { resolveOutlet, outletName, type OutletCode } from '../shared/outlets';
 import { Badge, Spinner } from '../components/ui';
 import { formatKDCompact } from '../lib/format';
-import { buildAlerts, loadAlertActions, saveAlertAction, Alert, AlertAction } from '../lib/alerts';
+import { alertsFrom, alertQueries, loadAlertActions, saveAlertAction, Alert, AlertAction } from '../lib/alerts';
 import { tierClass, tierLabel } from '../lib/expiry';
 import { useAuth } from '../context/AuthContext';
 import { canAccessPath } from '../components/Layout';
@@ -357,7 +357,7 @@ export default function Dashboard({ title = 'Dashboard' }: { title?: string }) {
       const [
         posQ, lostQ, overdueFuQ, newCustQ, vipQ, wlQ, preQ, projQ,
         stockSumQ, lowQ, stockCntQ, poQ, attTodayQ, attLateQ, leaveQ, reqQ, empQ,
-        repairsQ, contentQ, igQ, setQ, alertList, actMap, stockHistQ, syncQ,
+        repairsQ, contentQ, igQ, setQ, actMap, stockHistQ, syncQ, alertPoQ, alertDocQ, postQ,
       ] = await Promise.all([
         /* Till revenue from Lightspeed, refreshed by the 05:00 UTC sync every
            morning. This used to read logged Sale cases — which is a pipeline,
@@ -368,9 +368,13 @@ export default function Dashboard({ title = 'Dashboard' }: { title?: string }) {
         supabase.from('cases_visible').select('amount_kd').eq('case_type', 'Lost Sale').eq('deleted', false).gte('date_logged', monthStart),
         supabase.from('cases_visible').select('id', { count: 'exact', head: true }).eq('case_type', 'Follow-up').eq('status', 'Open').eq('deleted', false).lt('promised_callback', today),
         supabase.from('customers').select('id', { count: 'exact', head: true }).gte('created_at', monthStart),
-        supabase.from('customers').select('birthday, occasions'),
-        supabase.from('waiting_list').select('id', { count: 'exact', head: true }).eq('list_type', 'Waiting List').in('status', ['Open', 'Contacted']),
-        supabase.from('waiting_list').select('id', { count: 'exact', head: true }).eq('list_type', 'Pre-Order').not('status', 'in', '("Delivered","Cancelled","Converted")'),
+        /* These three are the alerts' own reads, shared rather than repeated:
+           the customers for both the occasions tile and the birthday alerts,
+           and the open waiting list and pre-orders, whose exact counts are the
+           tiles and whose rows are the follow-up alerts. */
+        alertQueries.customers(),
+        alertQueries.waitingList(),
+        alertQueries.preOrders(),
         supabase.from('limited_projects').select('status, launch_date'),
         supabase.from('lightspeed_stock_summary').select('*').single(),
         supabase.from('lightspeed_low_stock').select('product_id', { count: 'exact', head: true }),
@@ -378,21 +382,32 @@ export default function Dashboard({ title = 'Dashboard' }: { title?: string }) {
         supabase.from('purchase_orders').select('status, total_cost, amount_paid, brand').not('status', 'in', '("Cancelled")').is('merged_into', null),
         supabase.from('attendance_records').select('user_id, employee_name').gte('clock_in', `${today}T00:00:00+03:00`).lte('clock_in', `${today}T23:59:59+03:00`),
         supabase.from('attendance_records').select('id', { count: 'exact', head: true }).eq('is_late', true).eq('justified', false).gte('clock_in', `${monthStart}T00:00:00+03:00`),
-        supabase.from('leave_records').select('leave_type').eq('approval_status', 'Pending'),
+        supabase.from('leave_records').select('id, leave_type, approval_status').eq('approval_status', 'Pending'),
         /* Requests of every kind, already staged by the database. The cards
            below count what the Inbox tabs hold — one source, so a card and the
            tab it opens can never disagree. */
         supabase.from('v_requests').select('stage_owner, is_overdue'),
-        canHR ? supabase.from('employees').select('residency_expiry, work_permit_expiry, status').in('status', ['Active', 'On leave']) : Promise.resolve({ data: [] as any[] }),
+        canHR ? supabase.from('employees').select('full_name, residency_expiry, work_permit_expiry, status').in('status', ['Active', 'On leave']) : Promise.resolve({ data: [] as any[] }),
         supabase.from('repair_watches').select('status, estimated_completion, date_returned'),
         supabase.from('content_tasks').select('status, planned_date, posted_date'),
         supabase.from('instagram_daily').select('snapshot_date, followers, username, last_post_date').order('snapshot_date', { ascending: true }).limit(400),
         supabase.from('settings').select('sales_target_month, sales_target_avenues, sales_target_timegallery, sales_target_online, sales_target_whatsapp').single(),
-        buildAlerts(role),
         loadAlertActions(),
         supabase.from('lightspeed_stock_value_history').select('snapshot_date, retail_value, cost_value').order('snapshot_date', { ascending: true }).limit(90),
         supabase.from('lightspeed_sync_log').select('finished_at').eq('status', 'ok').not('finished_at', 'is', null).order('finished_at', { ascending: false }).limit(1),
+        // the rest of what the alerts read; the dashboard's own purchase orders are a different set
+        alertQueries.purchaseOrders(),
+        alertQueries.documents(),
+        // main-account post engagement (Phase 3); needs nothing above, so it goes in the same round
+        supabase.from('instagram_posts')
+          .select('posted_at, type, likes, comments, url, caption')
+          .eq('username', IG_MAIN)
+          .order('posted_at', { ascending: false }).limit(30),
       ]);
+      const alertList = alertsFrom(role, {
+        waitingList: wlQ, preOrders: preQ, purchaseOrders: alertPoQ, documents: alertDocQ,
+        employees: empQ as { data: any[] | null }, pendingLeave: leaveQ, customers: vipQ, actions: actMap,
+      });
 
       // sales — what rang through the tills, per outlet, as of this morning's sync
       const posDays = (posQ.data ?? []) as any[];
@@ -559,11 +574,7 @@ export default function Dashboard({ title = 'Dashboard' }: { title?: string }) {
         .sort((a, b) => (b.followers ?? 0) - (a.followers ?? 0));
 
       // main-account post engagement (Phase 3): avg engagement + best recent posts
-      const { data: postData } = await supabase.from('instagram_posts')
-        .select('posted_at, type, likes, comments, url, caption')
-        .eq('username', IG_MAIN)
-        .order('posted_at', { ascending: false }).limit(30);
-      const posts = (postData ?? []) as any[];
+      const posts = (postQ.data ?? []) as any[];
       const eng = (p: any) => Number(p.likes ?? 0) + Number(p.comments ?? 0);
       const igTopPosts: IgPostRow[] = posts
         .map((p) => ({ date: p.posted_at ? String(p.posted_at).slice(0, 10) : null, type: p.type, likes: Number(p.likes ?? 0), comments: Number(p.comments ?? 0), url: p.url, caption: p.caption }))

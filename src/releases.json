@@ -1,5 +1,14 @@
 [
   {
+    "version": "3.8.1",
+    "date": "2026-10-15",
+    "title": "A quicker start",
+    "changes": [
+      "The app opens faster: it downloads less before the first screen appears, and each page arrives the first time you open it.",
+      "The dashboard, the Inbox and the Stock page load their figures faster."
+    ]
+  },
+  {
     "version": "3.8.0",
     "date": "2026-10-12",
     "title": "A new Loading Dock",

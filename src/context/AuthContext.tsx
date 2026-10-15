@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { clearAllDrafts } from '../lib/drafts';
 import { supabase } from '../lib/supabase';
@@ -37,6 +37,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  // whose profile is held, so an event repeating the same sign-in does not fetch it again
+  const profileFor = useRef<string | null>(null);
 
   async function loadProfile(userId: string) {
     const { data } = await supabase
@@ -44,7 +46,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .select('id, full_name, role, page_access, sales_name')
       .eq('id', userId)
       .single();
-    if (data) setProfile(data as Profile);
+    // only once it has arrived, so a profile that failed to load is still asked for again
+    if (data) { setProfile(data as Profile); profileFor.current = userId; }
   }
 
   useEffect(() => {
@@ -56,10 +59,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (session?.user) { try { await loadProfile(session.user.id); } catch { /* signed in without a profile */ } }
       setLoading(false);
     });
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    /* The listener also reports the session the app opened with, and the same
+       sign-in again whenever the tab comes back into view. Both used to fetch
+       the profile a second time at startup and on every return to the app.
+       The opening session is getSession's above; a repeat for the person
+       already loaded is skipped. A different person, a sign-out, and the
+       hourly token refresh (which still re-reads the role) go through. */
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null);
-      if (session?.user) loadProfile(session.user.id);
-      else setProfile(null);
+      if (session?.user) {
+        if (event === 'INITIAL_SESSION') return;
+        if (event === 'SIGNED_IN' && profileFor.current === session.user.id) return;
+        loadProfile(session.user.id);
+      } else {
+        profileFor.current = null;
+        setProfile(null);
+      }
     });
     return () => subscription.unsubscribe();
   }, []);

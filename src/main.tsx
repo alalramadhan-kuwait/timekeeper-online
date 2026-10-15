@@ -27,9 +27,17 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
 window.__booted = true;
 try { sessionStorage.removeItem('tk:recovering'); } catch { /* private mode */ }
 
-// register the PWA service worker (production only — avoids clashing with dev HMR)
+/* Register the PWA service worker (production only — avoids clashing with dev
+   HMR). After the page has loaded and a moment more, as the shop app does: the
+   install downloads the whole app again to keep offline, and doing that while
+   the first screen is still fetching its data slows down the very start it is
+   there to make fast. */
 if (import.meta.env.PROD) {
-  registerSW().then((reg) => { if (reg) watchForUpdates(reg); });
+  const register = () => setTimeout(() => {
+    registerSW().then((reg) => { if (reg) watchForUpdates(reg); });
+  }, 1200);
+  if (document.readyState === 'complete') register();
+  else window.addEventListener('load', register, { once: true });
 }
 
 // when a notification is tapped, the service worker tells us where to go (reliable on iOS)

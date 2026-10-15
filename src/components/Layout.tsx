@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Briefcase, TrendingUp, Hourglass, Truck, Handshake,
   Star, Users, CalendarRange, LogOut, Watch, Menu, Contact, Settings, Gem, ClipboardCheck, PhoneCall, Boxes, History, UserRound, Wrench, Instagram, Megaphone, Target, Sparkles, Activity, Gauge, Inbox, ClipboardList, ChevronDown, BellRing, Bell, Download, Share, Castle, type LucideIcon,
 } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import { useAuth, Role } from '../context/AuthContext';
 import { logActivity } from '../lib/activity';
 import { loadInbox, inboxCount } from '../lib/inbox';
@@ -13,6 +13,7 @@ import { supabase } from '../lib/supabase';
 import { X as CloseIcon } from 'lucide-react';
 import { VersionChip } from './WhatsNew';
 import AskMohammed from './AskMohammed';
+import { Spinner } from './ui';
 
 interface NavItem {
   to: string;
@@ -315,7 +316,12 @@ export default function Layout() {
             </div>
           )}
           <div key={location.pathname} className="tk-route">
-            <Outlet />
+            {/* A page opened for the first time arrives as its own file; until it
+                does, the space it will fill says Loading… as the pages themselves
+                do while they fetch, and the menu and header stay where they are. */}
+            <Suspense fallback={<Spinner />}>
+              <Outlet />
+            </Suspense>
           </div>
         </main>
       </div>
