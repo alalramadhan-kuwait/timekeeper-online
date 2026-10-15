@@ -68,40 +68,55 @@ export default function StockPage() {
 
   async function load() {
     setLoading(true);
+    /* The five reads do not depend on one another, so they go out together;
+       only the pages within each table follow one after the other. One after
+       another, the page waited for the sum of them rather than the slowest. */
     // page through all rows (PostgREST caps a single request at 1000)
-    const all: StockRow[] = [];
-    for (let fromIdx = 0; ; fromIdx += 1000) {
-      const { data, error } = await supabase.from('lightspeed_stock').select('*')
-        .order('name').range(fromIdx, fromIdx + 999);
-      if (error || !data?.length) break;
-      all.push(...(data as StockRow[]));
-      if (data.length < 1000) break;
-    }
-    setRows(all);
-    const salesAll: (SalesAgg & { product_id: string })[] = [];
-    for (let fromIdx = 0; ; fromIdx += 1000) {
-      const { data, error } = await supabase.from('lightspeed_product_sales').select('*').range(fromIdx, fromIdx + 999);
-      if (error || !data?.length) break;
-      salesAll.push(...(data as (SalesAgg & { product_id: string })[]));
-      if (data.length < 1000) break;
-    }
-    setSalesMap(new Map(salesAll.map((s) => [s.product_id, s])));
-    // cost table is readable by admin/manager only (RLS) — others just get no rows
-    const costs = new Map<string, number>();
-    for (let fromIdx = 0; ; fromIdx += 1000) {
-      const { data, error } = await supabase.from('lightspeed_stock_cost').select('product_id, outlet, cost').range(fromIdx, fromIdx + 999);
-      if (error || !data?.length) break;
-      for (const c of data as { product_id: string; outlet: string; cost: number | null }[]) {
-        if (c.cost != null) costs.set(`${c.product_id}|${c.outlet}`, Number(c.cost));
+    const stockRows = (async () => {
+      const all: StockRow[] = [];
+      for (let fromIdx = 0; ; fromIdx += 1000) {
+        const { data, error } = await supabase.from('lightspeed_stock').select('*')
+          .order('name').range(fromIdx, fromIdx + 999);
+        if (error || !data?.length) break;
+        all.push(...(data as StockRow[]));
+        if (data.length < 1000) break;
       }
-      if (data.length < 1000) break;
-    }
+      return all;
+    })();
+    const salesRows = (async () => {
+      const salesAll: (SalesAgg & { product_id: string })[] = [];
+      for (let fromIdx = 0; ; fromIdx += 1000) {
+        const { data, error } = await supabase.from('lightspeed_product_sales').select('*').range(fromIdx, fromIdx + 999);
+        if (error || !data?.length) break;
+        salesAll.push(...(data as (SalesAgg & { product_id: string })[]));
+        if (data.length < 1000) break;
+      }
+      return salesAll;
+    })();
+    // cost table is readable by admin/manager only (RLS) — others just get no rows
+    const costRows = (async () => {
+      const costs = new Map<string, number>();
+      for (let fromIdx = 0; ; fromIdx += 1000) {
+        const { data, error } = await supabase.from('lightspeed_stock_cost').select('product_id, outlet, cost').range(fromIdx, fromIdx + 999);
+        if (error || !data?.length) break;
+        for (const c of data as { product_id: string; outlet: string; cost: number | null }[]) {
+          if (c.cost != null) costs.set(`${c.product_id}|${c.outlet}`, Number(c.cost));
+        }
+        if (data.length < 1000) break;
+      }
+      return costs;
+    })();
+    const [all, salesAll, costs, { data: log }, { data: hist }] = await Promise.all([
+      stockRows, salesRows, costRows,
+      supabase.from('lightspeed_sync_log')
+        .select('finished_at, status, error').order('started_at', { ascending: false }).limit(1),
+      supabase.from('lightspeed_stock_value_history')
+        .select('snapshot_date, retail_value, cost_value, dead_value, units, products').order('snapshot_date').limit(365),
+    ]);
+    setRows(all);
+    setSalesMap(new Map(salesAll.map((s) => [s.product_id, s])));
     setCostMap(costs);
-    const { data: log } = await supabase.from('lightspeed_sync_log')
-      .select('finished_at, status, error').order('started_at', { ascending: false }).limit(1);
     setLastSync(log?.[0] ?? null);
-    const { data: hist } = await supabase.from('lightspeed_stock_value_history')
-      .select('snapshot_date, retail_value, cost_value, dead_value, units, products').order('snapshot_date').limit(365);
     setHistory((hist ?? []) as HistPoint[]);
     setLoading(false);
   }

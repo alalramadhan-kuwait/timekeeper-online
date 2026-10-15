@@ -105,34 +105,130 @@ async function myIdentity(user: User, profile: Profile | null): Promise<{ names:
   return { names, empIds: emp.map((e) => e.id) };
 }
 
-export async function loadInbox(user: User, profile: Profile | null, role: Role | null): Promise<InboxData> {
-  const [ident, content, ads, repairs, collabs, cases, demand] = await Promise.all([
-    myIdentity(user, profile),
-    safe<any>(supabase.from('content_tasks').select('id, title, owner, status, planned_date')),
-    safe<any>(supabase.from('paid_ads').select('id, ad_name, owner, status, end_date')),
-    safe<any>(supabase.from('repair_watches').select('id, repair_id, customer_name, assigned_to, status, estimated_completion')),
-    safe<any>(supabase.from('influencer_collaborations').select('id, campaign, product_brand, owner, status, posted_date, agreed_date, influencer_id')),
-    safe<any>(supabase.from('cases_visible').select('id, case_id, customer_name, staff, status, promised_callback').eq('status', 'Open')),
-    safe<any>(supabase.from('waiting_list').select('id, customer_name, staff_responsible, status, list_type, follow_up_date, expected_arrival')),
+/** The rows an approver's half of the Inbox is built from. */
+async function loadApprovalSources() {
+  const reqP = safe<any>(supabase.from('employee_requests').select('id, request_type, details, created_at, user_id, employee_id, status, attendance_date, proposed_clock_in, proposed_clock_out, attendance_record_id').or('status.eq.Pending,status.is.null'));
+  const currentP = reqP.then(async (req) => {
+    const current = new Map<string, { clock_in: string | null; clock_out: string | null; shifts: number }>();
+    /* What is on the record today for every day somebody has asked about. An
+       approver was being shown the requested times alone, which reads as a
+       statement rather than a change: "arrived 14:12" with nothing beside it
+       gives no way to tell a missing clock-in from one being moved by an hour.
+       One query covers every pending correction. */
+    const askedAbout = req
+      .filter((r: any) => r.request_type === 'Attendance correction' && r.attendance_date)
+      .map((r: any) => r.attendance_date as string)
+      .sort();
+    if (askedAbout.length) {
+      const rows = await safe<any>(supabase.from('attendance_records')
+        .select('user_id, clock_in, clock_out')
+        .gte('clock_in', `${askedAbout[0]}T00:00:00+03:00`)
+        .lte('clock_in', `${askedAbout[askedAbout.length - 1]}T23:59:59+03:00`));
+      for (const row of rows) {
+        const day = new Date(row.clock_in).toLocaleDateString('en-CA', { timeZone: 'Asia/Kuwait' });
+        const key = `${row.user_id}|${day}`;
+        const seen = current.get(key);
+        current.set(key, {
+          // the day opens at the first clock-in and closes at the last clock-out
+          clock_in: seen && seen.clock_in && seen.clock_in < row.clock_in ? seen.clock_in : row.clock_in,
+          clock_out: [seen?.clock_out, row.clock_out].filter(Boolean).sort().pop() ?? null,
+          shifts: (seen?.shifts ?? 0) + 1,
+        });
+      }
+    }
+    return current;
+  });
+  const [lv, empRows, req, profRows, scopeRows, current] = await Promise.all([
+    safe<any>(supabase.from('leave_records').select('id, employee_id, leave_type, leave_start, leave_end, days, notes, approval_status, manager_status').eq('approval_status', 'Pending')),
+    safe<any>(supabase.from('employees').select('id, full_name, user_id, location')),
+    reqP,
+    safe<any>(supabase.from('profiles').select('id, full_name')),
+    safe<any>(supabase.from('manager_scopes').select('manager_id, location')),
+    currentP,
   ]);
-  const { names, empIds } = ident;
+  return { lv, empRows, req, profRows, scopeRows, current };
+}
+
+/* What each module counts as finished, as a PostgREST condition, so the
+   database leaves those rows behind instead of sending every row for the page
+   to throw away. It is the OPEN list above turned inside out — a status that is
+   missing still counts as open, exactly as it does there. */
+const openIn = (terminal: string[]) => `status.is.null,status.not.in.(${terminal.map((t) => `"${t}"`).join(',')})`;
+
+/* Opening the Inbox asks for it twice in the same moment: the page for its
+   lists, the menu for its badge. The second caller shares the read already on
+   its way rather than sending the same queries again. Only a read that has
+   just started is shared, so one asked for after somebody has acted on an item
+   always starts afresh and sees what they did. */
+const SHARE_MS = 250;
+let inFlight: { key: string; at: number; p: Promise<InboxData> } | null = null;
+
+export function loadInbox(user: User, profile: Profile | null, role: Role | null): Promise<InboxData> {
+  const key = [user.id, role, profile?.full_name, profile?.sales_name].join('|');
+  const now = Date.now();
+  if (inFlight && inFlight.key === key && now - inFlight.at < SHARE_MS) return inFlight.p;
+  const p = readInbox(user, profile, role).finally(() => { if (inFlight?.p === p) inFlight = null; });
+  inFlight = { key, at: now, p };
+  return p;
+}
+
+async function readInbox(user: User, profile: Profile | null, role: Role | null): Promise<InboxData> {
+  /* Every read that does not need another one's answer goes out in the same
+     round. Only two genuinely wait: the tasks assigned to this person need
+     their employee-record ids, and the attendance on record needs the days the
+     pending corrections ask about. Each of those follows its own source the
+     moment it arrives, rather than waiting for everything else as well. */
+  const isApprover = isApproverRole(role);
+  const identP = myIdentity(user, profile);
 
   // tasks assigned to this person directly, or to their team (role)
-  let myTasks: MyTask[] = [];
-  const orParts: string[] = [];
-  if (empIds.length > 0) orParts.push(`assignee_employee_id.in.(${empIds.join(',')})`);
-  if (role) orParts.push(`assignee_role.eq.${role}`);
-  if (orParts.length) {
+  const myTasksP = identP.then(async ({ empIds }) => {
+    const orParts: string[] = [];
+    if (empIds.length > 0) orParts.push(`assignee_employee_id.in.(${empIds.join(',')})`);
+    if (role) orParts.push(`assignee_role.eq.${role}`);
+    if (!orParts.length) return [] as MyTask[];
     const rows = await safe<any>(
       supabase.from('assigned_tasks').select('id, title, details, priority, due_date, assigned_by, status, source_table, source_id')
         .or(orParts.join(',')).eq('status', 'Open').order('due_date', { ascending: true, nullsFirst: false }),
     );
-    myTasks = rows.map((r) => ({
+    return rows.map((r): MyTask => ({
       id: r.id, title: r.title, details: r.details, priority: r.priority, due_date: r.due_date, assigned_by: r.assigned_by,
       url: r.source_table === 'limited_projects' && r.source_id ? `#/limited-projects?focus=${r.source_id}` : undefined,
       campaignId: r.source_table === 'marketing_campaigns' && r.source_id ? r.source_id : undefined,
     }));
-  }
+  });
+
+  /* Only rows somebody is named on and that are still open can ever be this
+     person's, so those are all that is asked for. The name itself is still
+     matched here, because the match ignores case and surrounding spaces. */
+  const [ident, myTasks, content, ads, repairs, collabs, cases, demand, myLocations, approvals] = await Promise.all([
+    identP,
+    myTasksP,
+    safe<any>(supabase.from('content_tasks').select('id, title, owner, status, planned_date')
+      .not('owner', 'is', null).or(openIn(['Posted', 'Cancelled']))),
+    safe<any>(supabase.from('paid_ads').select('id, ad_name, owner, status, end_date')
+      .not('owner', 'is', null).or(openIn(['Completed', 'Cancelled']))),
+    safe<any>(supabase.from('repair_watches').select('id, repair_id, customer_name, assigned_to, status, estimated_completion')
+      .not('assigned_to', 'is', null).or(openIn(['Returned to customer', 'Cancelled']))),
+    safe<any>(supabase.from('influencer_collaborations').select('id, campaign, product_brand, owner, status, posted_date, agreed_date, influencer_id')
+      .not('owner', 'is', null).or(openIn(['Completed', 'Cancelled']))),
+    safe<any>(supabase.from('cases_visible').select('id, case_id, customer_name, staff, status, promised_callback').eq('status', 'Open')),
+    safe<any>(supabase.from('waiting_list').select('id, customer_name, staff_responsible, status, list_type, follow_up_date, expected_arrival')
+      .not('staff_responsible', 'is', null).or(openIn(['Delivered', 'Converted', 'Cancelled']))),
+    // The database owns the routing: it knows which workplaces this manager
+    // approves for. Asking it keeps one source of truth, and a manager who
+    // covers nothing is simply not a first approver.
+    role === 'manager'
+      ? (async () => {
+        try {
+          const { data } = await supabase.rpc('my_approval_locations');
+          return Array.isArray(data) ? (data.filter(Boolean) as string[]) : [];
+        } catch { return [] as string[]; }
+      })()
+      : Promise.resolve([] as string[]),
+    isApprover ? loadApprovalSources() : Promise.resolve(null),
+  ]);
+  const { names } = ident;
 
   const mine = (v: unknown) => names.has(norm(v)) && norm(v) !== '';
   const tasks: InboxTask[] = [];
@@ -165,30 +261,13 @@ export async function loadInbox(user: User, profile: Profile | null, role: Role 
   tasks.sort((a, b) => (a.due ?? '9999').localeCompare(b.due ?? '9999'));
 
   // ── Approvals waiting on me (admin / manager / hr) ──
-  const isApprover = isApproverRole(role);
-  // The database owns the routing: it knows which workplaces this manager
-  // approves for. Asking it keeps one source of truth, and a manager who
-  // covers nothing is simply not a first approver.
-  let myLocations: string[] = [];
-  if (role === 'manager') {
-    try {
-      const { data } = await supabase.rpc('my_approval_locations');
-      myLocations = Array.isArray(data) ? data.filter(Boolean) : [];
-    } catch { myLocations = []; }
-  }
   const isStoreManager = myLocations.length > 0;
   let leaveApprovals: LeaveApproval[] = [];
   let awaitingManager: LeaveApproval[] = [];
   let requestApprovals: RequestApproval[] = [];
 
-  if (isApprover) {
-    const [lv, empRows, req, profRows, scopeRows] = await Promise.all([
-      safe<any>(supabase.from('leave_records').select('id, employee_id, leave_type, leave_start, leave_end, days, notes, approval_status, manager_status').eq('approval_status', 'Pending')),
-      safe<any>(supabase.from('employees').select('id, full_name, user_id, location')),
-      safe<any>(supabase.from('employee_requests').select('id, request_type, details, created_at, user_id, employee_id, status, attendance_date, proposed_clock_in, proposed_clock_out, attendance_record_id').or('status.eq.Pending,status.is.null')),
-      safe<any>(supabase.from('profiles').select('id, full_name')),
-      safe<any>(supabase.from('manager_scopes').select('manager_id, location')),
-    ]);
+  if (approvals) {
+    const { lv, empRows, req, profRows, scopeRows, current } = approvals;
     const empById = new Map(empRows.map((e) => [e.id, e.full_name]));
     const empLocation = new Map(empRows.map((e) => [e.id, e.location as string | null]));
     // Who a workplace's first approval belongs to — so "with the manager" can
@@ -223,34 +302,6 @@ export async function loadInbox(user: User, profile: Profile | null, role: Role 
     awaitingManager = isStoreManager ? []
       : mine.filter((l) => l.manager_status === 'Pending').map(asApproval);
     const empByUserRow = new Map(empRows.filter((e) => e.user_id).map((e) => [e.user_id, e]));
-
-    /* What is on the record today for every day somebody has asked about. An
-       approver was being shown the requested times alone, which reads as a
-       statement rather than a change: "arrived 14:12" with nothing beside it
-       gives no way to tell a missing clock-in from one being moved by an hour.
-       One query covers every pending correction. */
-    const askedAbout = req
-      .filter((r: any) => r.request_type === 'Attendance correction' && r.attendance_date)
-      .map((r: any) => r.attendance_date as string)
-      .sort();
-    const current = new Map<string, { clock_in: string | null; clock_out: string | null; shifts: number }>();
-    if (askedAbout.length) {
-      const rows = await safe<any>(supabase.from('attendance_records')
-        .select('user_id, clock_in, clock_out')
-        .gte('clock_in', `${askedAbout[0]}T00:00:00+03:00`)
-        .lte('clock_in', `${askedAbout[askedAbout.length - 1]}T23:59:59+03:00`));
-      for (const row of rows) {
-        const day = new Date(row.clock_in).toLocaleDateString('en-CA', { timeZone: 'Asia/Kuwait' });
-        const key = `${row.user_id}|${day}`;
-        const seen = current.get(key);
-        current.set(key, {
-          // the day opens at the first clock-in and closes at the last clock-out
-          clock_in: seen && seen.clock_in && seen.clock_in < row.clock_in ? seen.clock_in : row.clock_in,
-          clock_out: [seen?.clock_out, row.clock_out].filter(Boolean).sort().pop() ?? null,
-          shifts: (seen?.shifts ?? 0) + 1,
-        });
-      }
-    }
 
     requestApprovals = req.map((r) => {
       const emp = (r.employee_id && empRows.find((e) => e.id === r.employee_id)) || empByUserRow.get(r.user_id) || null;

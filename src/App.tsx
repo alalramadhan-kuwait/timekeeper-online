@@ -1,37 +1,74 @@
+import { lazy, type ComponentType } from 'react';
 import { HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Layout, { canAccessPath } from './components/Layout';
 import LoginPage from './components/LoginPage';
 import Dashboard from './pages/Dashboard';
 import ManagerDashboard from './pages/ManagerDashboard';
-import SalesPage from './pages/Sales';
-import CrmPage from './pages/Crm';
-import FollowUpsPage from './pages/FollowUps';
-import StockPage from './pages/Stock';
-import HistoryLogPage from './pages/HistoryLog';
-import MyPortalPage from './pages/MyPortal';
-import InboxPage from './pages/Inbox';
-import AssignTasksPage from './pages/AssignTasks';
-import NotificationSettingsPage from './pages/NotificationSettings';
-import NotificationsPage from './pages/Notifications';
-import InstagramPage from './pages/Instagram';
-import UserActivityPage from './pages/UserActivity';
-import SettingsPage from './pages/Settings';
-import LeavePage from './pages/Leave';
-import AttendancePage from './pages/Attendance';
-import OpenShiftsPage from './pages/OpenShifts';
-import InfluencerProfilePage from './pages/InfluencerProfile';
-import PerformancePage from './pages/Performance';
-import { PurchaseOrdersPage } from './pages/PurchaseOrders';
-import {
-  WaitingListPage, PreOrdersPage, ConsignmentsPage,
-  VipCustomersPage, EmployeesPage, CompanyDocsPage, LimitedProjectsPage, RepairWatchesPage, ContentPlannerPage, InfluencersPage,
-} from './pages/modules';
-import { AdsPage } from './pages/Ads';
-import { ClientAdsPage } from './pages/ClientAds';
-import { MarketingOverviewPage } from './pages/MarketingOverview';
 import { Spinner } from './components/ui';
 import WorldRoute from './components/WorldRoute';
+
+/* Every other page arrives as its own file the first time it is opened.
+
+   The two dashboards stay in the main file because one of them is the first
+   thing everybody sees, and splitting it off would only add a second download
+   before anything appears. The rest — thirty-odd pages, most of which any one
+   person never opens — no longer hold up the start. The service worker keeps
+   all of them for offline, so after the first visit they open from the device.
+
+   A page file can go missing under an open tab: each deploy deletes the
+   previous build's files, and a phone without the worker (Chrome on iPhone)
+   still asks for the old name. Reloading once lands on the current build and
+   the same page; a second failure within the minute is a real one and reaches
+   the error screen rather than reloading in a loop. */
+const RELOADED = 'tk:page-reload';
+function page<T extends ComponentType<any>>(load: () => Promise<{ default: T }>) {
+  return lazy(() => load().catch((err) => {
+    try {
+      const last = Number(sessionStorage.getItem(RELOADED) ?? 0);
+      if (Date.now() - last > 60_000) {
+        sessionStorage.setItem(RELOADED, String(Date.now()));
+        window.location.reload();
+        return new Promise<{ default: T }>(() => {});
+      }
+    } catch { /* no storage to remember by: do not risk a loop */ }
+    throw err;
+  }));
+}
+const modules = () => import('./pages/modules');
+
+const SalesPage = page(() => import('./pages/Sales'));
+const CrmPage = page(() => import('./pages/Crm'));
+const FollowUpsPage = page(() => import('./pages/FollowUps'));
+const StockPage = page(() => import('./pages/Stock'));
+const HistoryLogPage = page(() => import('./pages/HistoryLog'));
+const MyPortalPage = page(() => import('./pages/MyPortal'));
+const InboxPage = page(() => import('./pages/Inbox'));
+const AssignTasksPage = page(() => import('./pages/AssignTasks'));
+const NotificationSettingsPage = page(() => import('./pages/NotificationSettings'));
+const NotificationsPage = page(() => import('./pages/Notifications'));
+const InstagramPage = page(() => import('./pages/Instagram'));
+const UserActivityPage = page(() => import('./pages/UserActivity'));
+const SettingsPage = page(() => import('./pages/Settings'));
+const LeavePage = page(() => import('./pages/Leave'));
+const AttendancePage = page(() => import('./pages/Attendance'));
+const OpenShiftsPage = page(() => import('./pages/OpenShifts'));
+const InfluencerProfilePage = page(() => import('./pages/InfluencerProfile'));
+const PerformancePage = page(() => import('./pages/Performance'));
+const PurchaseOrdersPage = page(() => import('./pages/PurchaseOrders').then((m) => ({ default: m.PurchaseOrdersPage })));
+const WaitingListPage = page(() => modules().then((m) => ({ default: m.WaitingListPage })));
+const PreOrdersPage = page(() => modules().then((m) => ({ default: m.PreOrdersPage })));
+const ConsignmentsPage = page(() => modules().then((m) => ({ default: m.ConsignmentsPage })));
+const VipCustomersPage = page(() => modules().then((m) => ({ default: m.VipCustomersPage })));
+const EmployeesPage = page(() => modules().then((m) => ({ default: m.EmployeesPage })));
+const CompanyDocsPage = page(() => modules().then((m) => ({ default: m.CompanyDocsPage })));
+const LimitedProjectsPage = page(() => modules().then((m) => ({ default: m.LimitedProjectsPage })));
+const RepairWatchesPage = page(() => modules().then((m) => ({ default: m.RepairWatchesPage })));
+const ContentPlannerPage = page(() => modules().then((m) => ({ default: m.ContentPlannerPage })));
+const InfluencersPage = page(() => modules().then((m) => ({ default: m.InfluencersPage })));
+const AdsPage = page(() => import('./pages/Ads').then((m) => ({ default: m.AdsPage })));
+const ClientAdsPage = page(() => import('./pages/ClientAds').then((m) => ({ default: m.ClientAdsPage })));
+const MarketingOverviewPage = page(() => import('./pages/MarketingOverview').then((m) => ({ default: m.MarketingOverviewPage })));
 
 /** The manager runs the day, so admin and manager land on the manager's screen; the owner's money view is at /owner. Everyone else keeps the role-based dashboard. */
 function Home() {

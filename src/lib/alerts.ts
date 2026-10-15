@@ -51,21 +51,57 @@ function isActive(action: AlertAction | undefined): boolean {
   return true;
 }
 
+/* The reads the alerts are built from, as query results.
+
+   Kept apart from the building so the dashboard, which needs most of the same
+   rows for its own cards, can fetch them once and hand them over instead of the
+   page asking the database for the same customers, waiting list and leave twice. */
+type Rows = { data: any[] | null };
+export interface AlertSources {
+  waitingList: Rows; preOrders: Rows; purchaseOrders: Rows; documents: Rows;
+  /** HR roles only; anyone else's rows are ignored here. */
+  employees: Rows; pendingLeave: Rows;
+  customers: Rows; actions: Map<string, AlertAction>;
+}
+
+/* The queries themselves, so a caller sharing them asks for exactly what the
+   alerts would have asked for. The waiting-list reads also return their exact
+   count, which is what the dashboard's tiles show. */
+export const alertQueries = {
+  waitingList: () => supabase.from('waiting_list').select('customer_name, status, follow_up_date, list_type', { count: 'exact' }).eq('list_type', 'Waiting List').in('status', ['Open', 'Contacted']),
+  preOrders: () => supabase.from('waiting_list').select('customer_name, brand, product, status, expected_arrival', { count: 'exact' }).eq('list_type', 'Pre-Order').not('status', 'in', '("Delivered","Cancelled","Converted")'),
+  purchaseOrders: () => supabase.from('purchase_orders').select('po_number, supplier, status, expected_arrival, invoice_received').not('status', 'in', '("Fully Received","Cancelled")').is('merged_into', null),
+  documents: () => supabase.from('company_documents').select('doc_name, expiry_date, renewal_status'),
+  /* Only customers with a date to remember. Reading every customer stopped at
+     the API's 1000-row page, so anyone past the first thousand never got a
+     birthday or occasion reminder. `occasions` is never null, only empty. */
+  customers: () => supabase.from('customers').select('display_name, birthday, occasions').or('birthday.not.is.null,occasions.neq.[]'),
+};
+
 /** Returns active (non-dismissed, non-snoozed) alerts sorted by severity. */
 export async function buildAlerts(role: string | null): Promise<Alert[]> {
-  const alerts: Alert[] = [];
   const canHR = ['admin', 'manager', 'hr'].includes(role ?? '');
-
-  const [wl, demandPO, pur, docs, emp, leave, vip, actions] = await Promise.all([
-    supabase.from('waiting_list').select('customer_name, status, follow_up_date, list_type').eq('list_type', 'Waiting List').in('status', ['Open', 'Contacted']),
-    supabase.from('waiting_list').select('customer_name, brand, product, status, expected_arrival').eq('list_type', 'Pre-Order').not('status', 'in', '("Delivered","Cancelled","Converted")'),
-    supabase.from('purchase_orders').select('po_number, supplier, status, expected_arrival, invoice_received').not('status', 'in', '("Fully Received","Cancelled")').is('merged_into', null),
-    supabase.from('company_documents').select('doc_name, expiry_date, renewal_status'),
+  const [waitingList, preOrders, purchaseOrders, documents, employees, pendingLeave, customers, actions] = await Promise.all([
+    alertQueries.waitingList(),
+    alertQueries.preOrders(),
+    alertQueries.purchaseOrders(),
+    alertQueries.documents(),
     canHR ? supabase.from('employees').select('full_name, residency_expiry, work_permit_expiry, status').in('status', ['Active', 'On leave']) : Promise.resolve({ data: [] as any[] }),
     canHR ? supabase.from('leave_records').select('id, approval_status').eq('approval_status', 'Pending') : Promise.resolve({ data: [] as any[] }),
-    supabase.from('customers').select('display_name, birthday, occasions'),
+    alertQueries.customers(),
     loadAlertActions(),
   ]);
+  return alertsFrom(role, { waitingList, preOrders, purchaseOrders, documents, employees, pendingLeave, customers, actions });
+}
+
+/** The same alerts, from rows already fetched. */
+export function alertsFrom(role: string | null, src: AlertSources): Alert[] {
+  const alerts: Alert[] = [];
+  const canHR = ['admin', 'manager', 'hr'].includes(role ?? '');
+  const wl = src.waitingList, demandPO = src.preOrders, pur = src.purchaseOrders, docs = src.documents;
+  const emp = canHR ? src.employees : { data: [] as any[] };
+  const leave = canHR ? src.pendingLeave : { data: [] as any[] };
+  const vip = src.customers, actions = src.actions;
 
   for (const r of wl.data ?? []) {
     const key = `wl_followup_${(r.customer_name ?? '').replace(/\s+/g, '_')}`;
