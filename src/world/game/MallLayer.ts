@@ -312,6 +312,13 @@ export class MallLayer {
     const hit = this.keep(s.add.rectangle(c.x, c.y, 200, 90, 0xffffff, 0.001).setDepth(-7.2e5));
     hit.setInteractive({ useHandCursor: true });
     s.tag(hit, { type: 'boutique-door', brand }, 0);
+    // a small sign over it, so the way in reads as one
+    const t = this.keep(s.add.text(c.x, c.y - 46, 'Step inside  ›', {
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', fontSize: '15px', fontStyle: '600',
+      color: '#f3e7cf', backgroundColor: '#22304d', padding: { x: 10, y: 5 }, resolution: 3,
+    }).setOrigin(0.5).setDepth(-7.1e5));
+    t.setInteractive({ useHandCursor: true });
+    s.tag(t, { type: 'boutique-door', brand }, 0);
   }
 
   /* The brand's name painted on a plaque, for a brand without a logo file. Sized by its writing

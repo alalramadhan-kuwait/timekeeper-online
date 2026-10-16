@@ -76,6 +76,19 @@ export default function WorldPage({ onClose }: { onClose?: () => void }) {
   const [lens, setLens] = useState<Lens>('all');
   const [sort, setSort] = useState<SortKey>('sold90');
   const catScroll = useRef(0);
+  // a pointer to the Collection Board, shown inside a boutique until the collection is first opened
+  const [hintOn, setHintOn] = useState(false);
+  const [hint, setHint] = useState<{ x: number; y: number } | null>(null);
+  // it follows the board on screen while the view settles or is moved
+  useEffect(() => {
+    if (!hintOn || room !== 'boutique') return;
+    const t = setInterval(() => setHint(game.current?.boardOnScreen() ?? null), 200);
+    return () => clearInterval(t);
+  }, [hintOn, room]);
+  const seenHint = useCallback(() => {
+    setHintOn(false); setHint(null);
+    try { localStorage.setItem('tk-world-board-hint', '1'); } catch { /* shown again next time */ }
+  }, []);
   const lensBarRef = useRef<HTMLDivElement>(null);
   // when each source was last updated
   const fresh = useMemo(() => snap ? [
@@ -121,11 +134,15 @@ export default function WorldPage({ onClose }: { onClose?: () => void }) {
       setStack([]);
       setRoom('boutique');
       game.current?.enterBoutique(d);
+      let seen = false;
+      try { seen = localStorage.getItem('tk-world-board-hint') === '1'; } catch { /* not remembered */ }
+      if (!seen) setHintOn(true);
       then?.(d);
     } catch (e) { setBqErr((e as Error).message); }
     setEntering(null);
   }, [boutique]);
   const exitBoutique = useCallback(() => {
+    setHintOn(false); setHint(null);
     game.current?.exitBoutique();
     setStack([]);
     setRoom('floor');
@@ -135,12 +152,12 @@ export default function WorldPage({ onClose }: { onClose?: () => void }) {
     selectRef.current = (s: Selection | null) => {
       if (s?.type === 'boutique-door') { enterBoutique(s.brand); return; }
       if (s?.type === 'boutique-exit') { exitBoutique(); return; }
-      if (s?.type === 'collection') { setStack([{ type: 'browse' }]); return; }
+      if (s?.type === 'collection') { setStack([{ type: 'browse' }]); seenHint(); return; }
       setStack(s ? [s.type === 'dock-area'
         ? (s.area === 'pay' ? { type: 'dock-pay' } : { type: 'dock-recv', tab: s.area === 'history' ? 'hist' : 'part' })
         : s] : []);
     };
-  }, [enterBoutique, exitBoutique]);
+  }, [enterBoutique, exitBoutique, seenHint]);
   // boot the game once there is something to draw
   useEffect(() => {
     if (!model || game.current || !host.current) return;
@@ -403,16 +420,27 @@ export default function WorldPage({ onClose }: { onClose?: () => void }) {
         </div>
       )}
 
-      {/* inside a boutique: the way into the collection, within thumb reach (the board on the wall does the same) */}
+      {/* inside a boutique: back to the mall, and the way into the collection, within thumb reach */}
       {inBoutique && boutique && (
-        <div ref={lensBarRef} className="absolute inset-x-0 bottom-0 z-30 flex justify-center px-4"
+        <div ref={lensBarRef} className="absolute inset-x-0 bottom-0 z-30 flex items-center gap-2 px-3"
           style={{ paddingBottom: 'calc(14px + env(safe-area-inset-bottom, 0px))' }}>
-          <button onClick={() => setStack([{ type: 'browse' }])}
-            className="flex min-h-[48px] w-full max-w-[420px] items-center justify-center gap-2 rounded-full bg-[#17120d]/90 px-5 text-[14px] font-semibold text-[#f3e7cf] shadow-lg ring-1 ring-[#c79b4a]/60">
-            <LayoutGrid size={17} className="text-[#d8b45a]" /> Browse the collection
-            <span className="font-normal tabular-nums text-[#d8c9a8]">· {boutique.products.length} watches</span>
+          <button onClick={exitBoutique} className="flex min-h-[48px] shrink-0 items-center gap-1.5 rounded-full bg-[#22304d] px-4 text-[14px] font-semibold text-white shadow-lg">
+            <ArrowLeft size={17} /> Mall
+          </button>
+          <button onClick={() => { setStack([{ type: 'browse' }]); seenHint(); }}
+            className="flex min-h-[48px] flex-1 items-center justify-center gap-2 rounded-full bg-[#17120d]/90 px-4 text-[14px] font-semibold text-[#f3e7cf] shadow-lg ring-1 ring-[#c79b4a]/70">
+            <LayoutGrid size={17} className="text-[#d8b45a]" /> Collection <span className="font-normal tabular-nums text-[#d8c9a8]">· {boutique.products.length}</span>
           </button>
         </div>
+      )}
+      {/* the first time inside: where the collection is */}
+      {inBoutique && hintOn && hint && !view && (
+        <button onClick={() => { setStack([{ type: 'browse' }]); seenHint(); }}
+          className="tk-sheet-enter absolute z-30 -translate-x-1/2 whitespace-nowrap rounded-2xl bg-[#22304d] px-3.5 py-2 text-left text-[13px] font-semibold leading-snug text-white shadow-xl ring-1 ring-[#c79b4a]"
+          style={{ left: Math.min(Math.max(hint.x, 110), window.innerWidth - 110), top: hint.y + 56 }}>
+          <span className="absolute -top-1.5 left-1/2 h-3 w-3 -translate-x-1/2 rotate-45 bg-[#22304d]" />
+          Tap the Collection Board<br /><span className="font-normal text-[#d8c9a8]">to see every watch</span>
+        </button>
       )}
       {(entering || bqErr) && (
         <div className="absolute inset-x-0 top-1/3 z-40 mx-auto w-fit max-w-[90%] rounded-2xl bg-white/95 px-4 py-3 text-center text-sm shadow-xl">
@@ -442,7 +470,7 @@ export default function WorldPage({ onClose }: { onClose?: () => void }) {
         <CatalogueWatch key={catWatch.product_id} w={catWatch} brand={boutique.brand} onBack={() => setStack((s) => s.slice(0, -1))} onDock={toDockPo} />
       )}
       {view && isBoutiqueView(view) && !inCatalogue && (
-        <aside ref={panelRef} key={stack.length} className="tk-sheet-enter absolute inset-x-0 bottom-0 z-40 flex max-h-[72%] flex-col rounded-t-3xl bg-white shadow-2xl sm:inset-x-auto sm:bottom-3 sm:right-3 sm:top-3 sm:max-h-none sm:w-[400px] sm:rounded-3xl"
+        <aside ref={panelRef} key={stack.length} className={`tk-sheet-enter absolute inset-x-0 bottom-0 z-40 flex max-h-[72%] flex-col rounded-t-3xl ${view.type === 'desk' ? 'bg-[#f4ecdc]' : 'bg-white'} shadow-2xl sm:inset-x-auto sm:bottom-3 sm:right-3 sm:top-3 sm:max-h-none sm:w-[400px] sm:rounded-3xl`}
           style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
           <div className="pointer-events-none relative z-10 flex items-center gap-1 px-3 pt-2.5 sm:pt-3">
             <div className="absolute left-1/2 top-1.5 h-1 w-10 -translate-x-1/2 rounded-full bg-slate-200 sm:hidden" />

@@ -17,6 +17,7 @@ export interface WorldGame {
   showDock: (sel: { bay?: number; area?: 'recv' | 'pay' } | null) => void;
   enterBoutique: (data: BoutiqueData, resume?: boolean) => void;
   exitBoutique: (stepOut?: boolean) => void;
+  boardOnScreen: () => { x: number; y: number } | null;
   setLens: (lens: Lens) => void;
   focusWatch: (id: string) => void;
   destroy: () => void;
@@ -74,6 +75,7 @@ export function createGame(parent: HTMLElement, model: WorldModel, hooks: SceneH
     showDock: (sel) => withScene((s) => s.showDock(sel)),
     enterBoutique: (d, resume) => withScene((s) => s.enterBoutique(d, true, resume)),
     exitBoutique: (stepOut) => withScene((s) => s.exitBoutique(stepOut)),
+    boardOnScreen: () => scene?.boardOnScreen() ?? null,
     setLens: (l) => withScene((s) => s.setLens(l)),
     focusWatch: (id) => withScene((s) => s.focusWatch(id)),
     destroy: () => { ro.disconnect(); game.destroy(true); },

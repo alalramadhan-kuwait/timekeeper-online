@@ -408,6 +408,14 @@ export class WorldScene extends Phaser.Scene {
     } else { cam.setZoom(z); cam.centerOn(cx, cy); }
   }
 
+  /* Where the Collection Board is on screen, in CSS pixels, while inside a boutique. */
+  boardOnScreen(): { x: number; y: number } | null {
+    if (this.room !== 'boutique' || !this.boutique.data) return null;
+    const p = this.boutique.boardPoint(), cam = this.cameras.main;
+    const k = this.game.canvas.width / (this.game.canvas.clientWidth || this.game.canvas.width);   // canvas pixels per CSS pixel
+    return { x: (p.x - cam.worldView.x) * cam.zoom / k, y: (p.y - cam.worldView.y) * cam.zoom / k };
+  }
+
   /* The optional discovery filters: some watches lit, the rest dimmed. */
   setLens(lens: Lens) { this.boutique.setLens(lens); }
 

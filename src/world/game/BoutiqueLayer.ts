@@ -81,6 +81,12 @@ export class BoutiqueLayer {
       g.fillStyle(0xdccaa8, 1).fillPoints(q, true);
       g.lineStyle(2, 0xc79b4a, 0.9).strokePoints(q, true);
       g.fillStyle(0xfff3d6, 0.5).fillPoints([q[0], q[1], new Phaser.Math.Vector2(q[1].x, q[1].y + 14), new Phaser.Math.Vector2(q[0].x, q[0].y + 14)], true);
+      // a brass sconce above it, and its warm light on the wall
+      const c = V('left', t + 0.8, 262);
+      g.fillStyle(0xffd98a, 0.16).fillEllipse(c.x, c.y + 26, 120, 90);
+      g.fillStyle(0xffe6a8, 0.28).fillEllipse(c.x, c.y + 8, 56, 40);
+      g.fillStyle(0xb8893b, 1).fillRect(c.x - 3, c.y - 2, 6, 14);
+      g.fillStyle(0xfff1c9, 1).fillTriangle(c.x - 12, c.y + 2, c.x + 12, c.y + 2, c.x, c.y - 14);
     }
     // the Collection Board: a walnut frame built into the back wall, a deep navy face lit along
     // its top; its pictures and words are put on it with the boutique's watches
@@ -107,6 +113,9 @@ export class BoutiqueLayer {
     stand('bq-counter', COUNTER.cell, COUNTER.w, COUNTER.d);
     stand('bench', BENCH.cell, BENCH.w, BENCH.d);
     PLANTS.forEach((c) => stand('plant', c));
+    const pools = s.add.graphics().setDepth(depthAt(BOUTIQUE_AT.x, BOUTIQUE_AT.y, -14));
+    for (const c of PEDESTALS) { const p = iso(...toWorldB(c[0] + 0.5, c[1] + 0.5)); pools.fillStyle(0xffe9b8, 0.22).fillEllipse(p.x, p.y, 190, 92); }
+    this.fixed.push(pools);
     for (const c of PEDESTALS) stand('case-plinth-owned', c);
 
     // the door: a mat just inside the front edge, and the light from the mall falling in
@@ -191,7 +200,7 @@ export class BoutiqueLayer {
     const put = <T extends Phaser.GameObjects.GameObject>(g: T) => { face.add(g); return g; };
     const logo = BRAND_LOGOS[data.brand];
     if (logo && s.textures.exists(logo.key)) {
-      put(s.add.rectangle(U / 2, 38, 210, 46, 0xf6efe0).setStrokeStyle(2, 0xc79b4a));
+      put(s.add.rectangle(U / 2, 38, 220, 46, logo.plate === 'dark' ? 0x0f1830 : 0xf6efe0).setStrokeStyle(2, 0xc79b4a));
       const img = put(s.add.image(U / 2, 38, logo.key));
       img.setScale(Math.min(190 / img.width, 34 / img.height));
     } else {
@@ -304,6 +313,9 @@ export class BoutiqueLayer {
     for (const it of this.items.values()) if (it.photo && !this.scene.textures.exists(`w:${it.watch.product_id}`)) it.photo.setVisible(false);
     for (const [id, bp] of this.bandPhotos) if (!this.scene.textures.exists(`w:${id}`)) bp.setVisible(false);
   }
+
+  /* The Collection Board's middle, in world units. */
+  boardPoint() { return this.onWall((BOARD.x0 + BOARD.x1) / 2, (BOARD.lo + BOARD.hi) / 2); }
 
   /* Where a watch stands, to bring it into view. */
   pointOf(id: string) { return this.items.get(id)?.at ?? null; }
