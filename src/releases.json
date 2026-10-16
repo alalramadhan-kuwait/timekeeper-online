@@ -1,5 +1,15 @@
 [
   {
+    "version": "3.9.0",
+    "date": "2026-10-16",
+    "title": "The Promenade",
+    "changes": [
+      "Time Keeper World's mall has a new section, The Promenade, with six boutiques: every brand with more than 5,000 KD of stock at cost now has its own shop. Beda’a, Wolf, Baltic, Citizen, Raketa and Seven Friday moved in.",
+      "West End's sign shows the brand's own W emblem with its name beside it, so it reads at a glance.",
+      "In the Loading Dock, an owner can set the date an order is expected to arrive, with a note. Lightspeed's own due date stays as it is, and an order past the owners' date is marked to review."
+    ]
+  },
+  {
     "version": "3.8.1",
     "date": "2026-10-15",
     "title": "A quicker start, and the right numbers",
