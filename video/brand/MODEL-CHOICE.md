@@ -344,3 +344,4 @@ These need a synonym in scripts or the fine-tune.
   The user's note on sentence 1: «مو عارف يقولها عدل», which refers to باجر.
   - The six-model page (9tRX4nrPhTLsojm68H8tQN) was only partly answered: V5 was rated مو كويتية and آلي in sentence 1, and the Chatterbox_Kuwaiti clone was picked best in sentence 2.
   - Pilot 0's before/after page has no answers yet.
+- **Full test page** (11 sentences, OmniVoice vs the Chatterbox_Kuwaiti clone baseline of pilot 0): artifact 93L1dS6SSn7v1YvxUkoUtn.
