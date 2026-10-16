@@ -196,12 +196,42 @@ if (opt.check) {
   // every 0.2 s: is any face covered by a banner, caption card, bubble or picture? (elements marked "person": true)
   const hits = [];
   for (let t = 0.05; t < duration; t += 0.2) hits.push(...(await first.page.evaluate((tt) => window.PM.headClashes(tt), t)));
-  await browser.close();
   const seen = new Map();
   for (const h of hits) { const k = h.scene + '|' + h.person + '|' + h.by; const e = seen.get(k); if (!e) seen.set(k, { ...h, from: h.t, to: h.t }); else { e.to = h.t; e.covered = Math.max(e.covered, h.covered); } }
   for (const e of seen.values()) console.log(`scene ${e.scene + 1}  ${e.from.toFixed(1)}-${e.to.toFixed(1)}s  ` + (e.under ? `${e.by} is ${e.covered}% under the banner` : `${e.by} covers ${e.covered}% of the head of ${e.person}`));
   console.log(seen.size ? seen.size + ' clash(es)' : 'no face covered, nothing under the banner');
-  process.exit(seen.size ? 1 : 0);
+  // layout: cut by the frame, prints over prints, things on the captions, pictures shown bigger than their file
+  const lays = [];
+  { const pg = await newPage(); for (let t = 0.05; t < duration; t += 0.2) lays.push(...(await pg.page.evaluate(([tt, k]) => window.PM.layout(tt, k), [t, opt.scale > 1 ? opt.scale : 1.5]))); }
+  // runs of consecutive samples; a run shorter than 0.6 s is an entrance or exit (a drop, a slide), not a fault
+  const runs = [], open = new Map();
+  for (const h of lays) {
+    const k = h.kind + '|' + h.scene + '|' + h.what, e = open.get(k);
+    if (e && h.t - e.to < 0.25) { e.to = h.t; e.n++; e.pct = Math.max(e.pct, h.pct); } else { const r = { ...h, from: h.t, to: h.t, n: 1 }; runs.push(r); open.set(k, r); }
+  }
+  const SAY = { cut: (e) => `${e.what} is ${e.pct}% outside the frame`, overlap: (e) => `${e.what} (${e.pct}%)`,
+                caption: (e) => `${e.what} sits on the captions (${e.pct}% of a word)`, soft: (e) => `${e.what} is shown at ${e.pct}% of its file (${e.file}px wide): it will look soft` };
+  const faults = runs.filter((e) => e.n >= 3 && e.kind !== 'soft');
+  const soft = [...new Map(runs.filter((e) => e.kind === 'soft').map((e) => [e.what, e])).values()];
+  for (const e of faults) console.log(`scene ${e.scene + 1}  ${e.from.toFixed(1)}-${e.to.toFixed(1)}s  ` + SAY[e.kind](e) + (process.env.PM_DEBUG && e.r ? '  ' + JSON.stringify(e.r) : ''));
+  const cuts = faults.filter((e) => e.kind === 'cut').length;
+  console.log(cuts ? cuts + ' cut by the frame' : 'nothing cut by the frame');
+  console.log(faults.length - cuts ? (faults.length - cuts) + ' overlap(s) or picture(s) on the captions' : 'no print over another, nothing on the captions');
+  for (const e of soft) console.log(`note: scene ${e.scene + 1}  ` + SAY.soft(e));
+  // sparse stretches: 2 s or more with under a quarter of the frame used, or two things or fewer using under a third (a note)
+  { const pg = await newPage(); const ds = [];
+    for (let t = 0.05; t < duration; t += 0.25) { const d = await pg.page.evaluate((tt) => { const g = []; const r = window.PM.density(tt, g); return r && Object.assign(r, { dbg: g }); }, t); if (process.env.PM_DEBUG_T && Math.abs(t - +process.env.PM_DEBUG_T) < 0.13) console.log(JSON.stringify(d)); if (d && !sb.scenes[d.scene].endcard) ds.push(d); }
+    let run = null; const sparse = [];
+    const med = (a) => [...a].sort((x, y) => x - y)[a.length >> 1];
+    const close = () => { if (run && run.to - run.from >= 2) sparse.push({ ...run, n: med(run.ns), cover: med(run.cs) }); run = null; };
+    for (const d of ds) { const thin = d.cover < 0.25 || (d.n <= 2 && d.cover < 0.35);
+      if (thin && run && run.scene === d.scene && d.t - run.to < 0.3) { run.to = d.t; run.ns.push(d.n); run.cs.push(d.cover); }
+      else { close(); if (thin) run = { scene: d.scene, from: d.t, to: d.t, ns: [d.n], cs: [d.cover] }; } }
+    close();
+    for (const e of sparse) console.log(`note: scene ${e.scene + 1}  ${e.from.toFixed(1)}-${e.to.toFixed(1)}s  looks empty (${e.n} thing(s) on screen, ${Math.round(e.cover * 100)}% of the frame)`);
+    if (!sparse.length) console.log('no empty-looking stretch'); }
+  await browser.close().catch(() => {});
+  process.exit(seen.size || faults.length ? 1 : 0);
 }
 
 if (opt.still || opt.sheet) {

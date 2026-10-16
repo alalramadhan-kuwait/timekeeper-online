@@ -1,7 +1,8 @@
 """The Time Keeper end card. Every Time Keeper film ends on it (the owner's choice, taken from the success story).
 
 On a near-black plate a gold clock hand sweeps once around and draws the Time Keeper logo (2 s, the "reveal"
-element). One tick as the hand starts, the double tick as the screen falls to black, then 1.3 s of black. The film's
+element). One tick as the hand starts, the double tick the moment the logo is complete (2.3 s; at 3.6 s, as the
+screen fell to black, it was heard late), then the fade and 1.3 s of black. The film's
 music should end before it, so the ticks are heard alone.
 
     import sys; sys.path.insert(0, '<repo>/video/brand'); from tk_endcard import endcard
@@ -33,7 +34,7 @@ def endcard(storyboard_dir, theme, caption='', voice=None, voice_at=0.15, captio
             "rot": [[0.3, 0], [2.3, 360, "inOutSine"]], "opacity": [[0.3, 0], [0.4, 1], [2.3, 1], [2.6, 0]]},
            _plate('#000000', 90, opacity=[[3.6, 0], [4.5, 1]])]
     card = {"theme": theme, "floor": False, "elements": els, "dur": DUR, "silent": True, "transition": "fade", "endcard": "timekeeper",
-            "sfx": [{"at": 0.3, "name": "tick", "gain": -12}, {"at": 3.6, "name": "tick_pair", "gain": -8}],
+            "sfx": [{"at": 0.3, "name": "tick", "gain": -12}, {"at": 2.3, "name": "tick_pair", "gain": -8}],
             "camera": {"zoom": [[0, 1.0], [DUR, 1.08]], "x": [[0, 360]], "y": [[0, 600]]}}
     if caption:
         card.update({"captions": caption, "captionStart": voice_at + .05, "captionEnd": caption_end or 3.0})

@@ -14,21 +14,25 @@ OUT = os.path.join(H, 'voice-habibi'); os.makedirs(os.path.join(OUT, 'clips'), e
 REF_TEXT = 'وين تو الناس متى تصحى ومتى تفطر وتغير يبيلك ساعة يعني بالله تروح الشغل الساعة عشره.'
 SPEED = 0.9            # a little slower than the model's natural pace: a documentary narrator, not a conversation
 # English and foreign words are written in Latin letters for the model only (the owner asked for brand names, people's
-# names and cities to be read in English); the captions keep the Arabic spelling.
+# names and cities to be read in English; people's names in their own French spelling); the captions keep the Arabic spelling.
 PRON = {
-    'جيرالد جنتا': 'Gerald Genta', 'جنتا': 'Genta', 'جيرالد': 'Gerald',
+    'جيرالد جنتا': 'Gérald Genta', 'جنتا': 'Genta', 'جيرالد': 'Gérald',
     'جورج غولاي': 'Georges Golay', 'غولاي': 'Golay',
     'كارلو دي ماركي': 'Carlo de Marchi', 'شارل بوتي': 'Charles Bauty', 'شارل دورو': 'Charles Dorot',
-    'يونيفرسال جنيف': 'Universal Geneve', 'جنيف': 'Geneva', 'بازل': 'Basel', 'تورينو': 'Torino', 'لوزان': 'Lausanne', 'باريس': 'Paris',
-    'إس إيه إس': 'S.A.S', 'البولروتر': 'Polerouter', 'أوميغا': 'Omega', 'الكونستليشن': 'Constellation',
-    'أوديمار بيغيه': 'Audemars Piguet', 'الرويال أوك': 'Royal Oak', 'سيكو': 'Seiko', 'الكوارتز': 'quartz', 'كوارتز': 'quartz',
+    'يونيفرسال جنيف': 'Universal Genève', 'جنيف': 'Geneva', 'بازل': 'Basel', 'تورينو': 'Torino', 'لوزان': 'Lausanne', 'باريس': 'Paris',
+    'إس إيه إس': 'S.A.S', 'البولروتر': 'Polerouter', 'بولروتر': 'Polerouter', 'بولاراوتر': 'Polarouter', 'أوميغا': 'Omega', 'الكونستليشن': 'Constellation',
+    'أوديمار بيغيه': 'Audemars Piguet', 'الرويال أوك': 'Royal Oak', 'سيكو': 'Seiko', 'الكوارتز': 'Quartz', 'كوارتز': 'Quartz', 'الستيل': 'Steel', 'ستيل': 'Steel', 'الذهب الأبيض': 'White Gold',
+    'فافر-بيريه': 'Favre-Perret', 'غاي فرير': 'Gay Frères', 'سفاري': 'Safari', 'إكسكاليبر': 'Excalibur', 'تشارلز الثاني': 'Charles II',
+    'دي ماركي': 'de Marchi', 'بوتي': 'Bauty', 'العيار ألفان ومئة وواحد وعشرون': 'Calibre 2121',
     'ملم': 'ملي',
 }
 DIAC = re.compile('[\u064B-\u0652]')
 
 
-def spoken(t):
+def spoken(t, keep=()):
+    """The text the voice receives: names and terms in PRON go in Latin letters, except those in `keep` (stay Arabic)."""
     for a in sorted(PRON, key=len, reverse=True):
+        if a in keep: continue
         t = re.sub(r'(?<![\u0621-\u064A])([وبلف]?)' + re.escape(a) + r'(?![\u0621-\u064A])', lambda m: m.group(1) + (' ' if m.group(1) and PRON[a][:1].isascii() else '') + PRON[a], t)
     return t
 

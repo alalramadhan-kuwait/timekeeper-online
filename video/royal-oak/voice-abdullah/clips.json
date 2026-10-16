@@ -1,0 +1,512 @@
+{
+ "p2-7": {
+  "file": "clips/p2-7.wav",
+  "mp3": "mp3/p2-7.mp3",
+  "seconds": 13.24,
+  "text": "بازل، عام ألفٍ وتسعمئةٍ واثنين وسبعين. الرويال أوك، الطراز خمسة أربعة صفر اثنين، بقطر تسعةٍ وثلاثين مليمترًا… ضخمةٌ بمقاييس زمنها.",
+  "spoken": "Basel، عام ألفٍ وتسعمئةٍ واثنين وسبعين. Royal Oak، الطراز خمسة أربعة صفر اثنين، بقطر تسعةٍ وثلاثين مليمترًا… ضخمةٌ بمقاييس زمنها.",
+  "voice": "ElevenLabs",
+  "voice_id": "XdoLPWNt7ytn6BtU4FBf",
+  "model": "eleven_multilingual_v2",
+  "settings": {
+   "stability": 0.5,
+   "similarity_boost": 0.75,
+   "style": 0,
+   "use_speaker_boost": true,
+   "speed": 1.0
+  }
+ },
+ "p1-h": {
+  "file": "clips/p1-h.wav",
+  "mp3": "mp3/p1-h.mp3",
+  "seconds": 4.37,
+  "text": "تعرفون الرويال أوك… لكن هل تعرفون الرجل الذي رسمها؟",
+  "spoken": "تعرفون Royal Oak… لكن هل تعرفون الرجل الذي رسمها؟",
+  "voice": "ElevenLabs",
+  "voice_id": "XdoLPWNt7ytn6BtU4FBf",
+  "model": "eleven_multilingual_v2",
+  "settings": {
+   "stability": 0.5,
+   "similarity_boost": 0.75,
+   "style": 0,
+   "use_speaker_boost": true,
+   "speed": 1.0
+  }
+ },
+ "p2-q": {
+  "file": "clips/p2-q.wav",
+  "mp3": "mp3/p2-q.mp3",
+  "seconds": 19.6,
+  "text": "قبل تلك المكالمة بأشهر… ظهرت ساعةٌ ستفتح سؤالًا جديدًا. في ديسمبر، عام تسعةٍ وستين، طرحت سيكو أول ساعة يدٍ بالكوارتز. رآها البعض المستقبل… ورآها آخرون تهديدًا للميكانيك. لكن الأزمة الكبرى… ستأتي لاحقًا.",
+  "spoken": "قبل تلك المكالمة بأشهر… ظهرت ساعةٌ ستفتح سؤالًا جديدًا. في ديسمبر، عام تسعةٍ وستين، طرحت Seiko أول ساعة يدٍ ب Quartz. رآها البعض المستقبل… ورآها آخرون تهديدًا للميكانيك. لكن الأزمة الكبرى… ستأتي لاحقًا.",
+  "voice": "ElevenLabs",
+  "voice_id": "XdoLPWNt7ytn6BtU4FBf",
+  "model": "eleven_multilingual_v2",
+  "settings": {
+   "stability": 0.5,
+   "similarity_boost": 0.75,
+   "style": 0,
+   "use_speaker_boost": true,
+   "speed": 1.0
+  }
+ },
+ "p1-0": {
+  "file": "clips/p1-0.wav",
+  "mp3": "mp3/p1-0.mp3",
+  "seconds": 5.85,
+  "text": "قصةٌ تبدأ قبل الرويال أوك بستة عشر عامًا… دعونا نعود إلى البداية.",
+  "spoken": "قصةٌ تبدأ قبل Royal Oak بستة عشر عامًا… دعونا نعود إلى البداية.",
+  "voice": "ElevenLabs",
+  "voice_id": "XdoLPWNt7ytn6BtU4FBf",
+  "model": "eleven_multilingual_v2",
+  "settings": {
+   "stability": 0.5,
+   "similarity_boost": 0.75,
+   "style": 0,
+   "use_speaker_boost": true,
+   "speed": 1.0
+  }
+ },
+ "p1-1": {
+  "file": "clips/p1-1.wav",
+  "mp3": "mp3/p1-1.mp3",
+  "seconds": 17.65,
+  "text": "جنيف، عام ألفٍ وتسعمئةٍ وأربعةٍ وخمسين. شابٌّ اسمه جيرالد جنتا، في الثالثة والعشرين فقط، يصمّم لشركة يونيفرسال جنيف ساعةً لرحلات طيران إس إيه إس فوق القطب الشمالي.",
+  "spoken": "Geneva، عام ألفٍ وتسعمئةٍ وأربعةٍ وخمسين. شابٌّ اسمه Gérald Genta، في الثالثة والعشرين فقط، يصمّم لشركة Universal Genève ساعةً لرحلات طيران S.A.S فوق القطب الشمالي.",
+  "voice": "ElevenLabs",
+  "voice_id": "XdoLPWNt7ytn6BtU4FBf",
+  "model": "eleven_multilingual_v2",
+  "settings": {
+   "stability": 0.5,
+   "similarity_boost": 0.75,
+   "style": 0,
+   "use_speaker_boost": true,
+   "speed": 1.0
+  }
+ },
+ "p1-2": {
+  "file": "clips/p1-2.wav",
+  "mp3": "mp3/p1-2.mp3",
+  "seconds": 10.03,
+  "text": "اسمها الأول بولاراوتر… ثم استقرّ الاسم لاحقًا على بولروتر. وهي التي جعلت اسمه معروفًا لدى شركات الساعات.",
+  "spoken": "اسمها الأول Polarouter… ثم استقرّ الاسم لاحقًا على Polerouter. وهي التي جعلت اسمه معروفًا لدى شركات الساعات.",
+  "voice": "ElevenLabs",
+  "voice_id": "XdoLPWNt7ytn6BtU4FBf",
+  "model": "eleven_multilingual_v2",
+  "settings": {
+   "stability": 0.5,
+   "similarity_boost": 0.75,
+   "style": 0,
+   "use_speaker_boost": true,
+   "speed": 1.0
+  }
+ },
+ "p1-3": {
+  "file": "clips/p1-3.wav",
+  "mp3": "mp3/p1-3.mp3",
+  "seconds": 6.64,
+  "text": "بعدها، ساهم في تصاميم أوميغا… ومنها أعمالٌ ارتبطت بمجموعة الكونستليشن.",
+  "spoken": "بعدها، ساهم في تصاميم Omega… ومنها أعمالٌ ارتبطت بمجموعة Constellation.",
+  "voice": "ElevenLabs",
+  "voice_id": "XdoLPWNt7ytn6BtU4FBf",
+  "model": "eleven_multilingual_v2",
+  "settings": {
+   "stability": 0.5,
+   "similarity_boost": 0.75,
+   "style": 0,
+   "use_speaker_boost": true,
+   "speed": 1.0
+  }
+ },
+ "p1-4": {
+  "file": "clips/p1-4.wav",
+  "mp3": "mp3/p1-4.mp3",
+  "seconds": 11.8,
+  "text": "ومع بداية الستينيات، يظهر اسمه في أرشيف أوديمار بيغيه… وتُنسب إليه ساعاتٌ مثل: ساعةٍ تجمع الدائرة والمربع، وأخرى غير متناظرة…",
+  "spoken": "ومع بداية الستينيات، يظهر اسمه في أرشيف Audemars Piguet… وتُنسب إليه ساعاتٌ مثل: ساعةٍ تجمع الدائرة والمربع، وأخرى غير متناظرة…",
+  "voice": "ElevenLabs",
+  "voice_id": "XdoLPWNt7ytn6BtU4FBf",
+  "model": "eleven_multilingual_v2",
+  "settings": {
+   "stability": 0.5,
+   "similarity_boost": 0.75,
+   "style": 0,
+   "use_speaker_boost": true,
+   "speed": 1.0
+  }
+ },
+ "p1-5": {
+  "file": "clips/p1-5.wav",
+  "mp3": "mp3/p1-5.mp3",
+  "seconds": 7.24,
+  "text": "وفي عام سبعةٍ وستين، تنال ساعةٌ للحقيبة من تصميمه تنويهًا في جائزة مدينة جنيف.",
+  "spoken": "وفي عام سبعةٍ وستين، تنال ساعةٌ للحقيبة من تصميمه تنويهًا في جائزة مدينة Geneva.",
+  "voice": "ElevenLabs",
+  "voice_id": "XdoLPWNt7ytn6BtU4FBf",
+  "model": "eleven_multilingual_v2",
+  "settings": {
+   "stability": 0.5,
+   "similarity_boost": 0.75,
+   "style": 0,
+   "use_speaker_boost": true,
+   "speed": 1.0
+  }
+ },
+ "p1-6": {
+  "file": "clips/p1-6.wav",
+  "mp3": "mp3/p1-6.mp3",
+  "seconds": 8.64,
+  "text": "وهناك وجد شريكه: جورج غولاي، المدير العام… وأول من أدار الشركة من خارج العائلتين المؤسستين.",
+  "spoken": "وهناك وجد شريكه: Georges Golay، المدير العام… وأول من أدار الشركة من خارج العائلتين المؤسستين.",
+  "voice": "ElevenLabs",
+  "voice_id": "XdoLPWNt7ytn6BtU4FBf",
+  "model": "eleven_multilingual_v2",
+  "settings": {
+   "stability": 0.5,
+   "similarity_boost": 0.75,
+   "style": 0,
+   "use_speaker_boost": true,
+   "speed": 1.0
+  }
+ },
+ "p1-7": {
+  "file": "clips/p1-7.wav",
+  "mp3": "mp3/p1-7.mp3",
+  "seconds": 10.26,
+  "text": "يقول جنتا: كنا كدرّاجةٍ يقودها اثنان… إن لم يقتنع أحدنا، فلا نصنع الطراز. حتى إنهما كانا يرتديان الساعة نفسها.",
+  "spoken": "يقول Genta: كنا كدرّاجةٍ يقودها اثنان… إن لم يقتنع أحدنا، فلا نصنع الطراز. حتى إنهما كانا يرتديان الساعة نفسها.",
+  "voice": "ElevenLabs",
+  "voice_id": "XdoLPWNt7ytn6BtU4FBf",
+  "model": "eleven_multilingual_v2",
+  "settings": {
+   "stability": 0.5,
+   "similarity_boost": 0.75,
+   "style": 0,
+   "use_speaker_boost": true,
+   "speed": 1.0
+  }
+ },
+ "p1-8": {
+  "file": "clips/p1-8.wav",
+  "mp3": "mp3/p1-8.mp3",
+  "seconds": 15.37,
+  "text": "أبريل، عام ألفٍ وتسعمئةٍ وسبعين. جنتا في الثامنة والثلاثين، وخلفه ستة عشر عامًا من التصاميم. وفي اليوم العاشر، عند الرابعة عصرًا… يرنّ هاتفه.",
+  "spoken": "أبريل، عام ألفٍ وتسعمئةٍ وسبعين. Genta في الثامنة والثلاثين، وخلفه ستة عشر عامًا من التصاميم. وفي اليوم العاشر، عند الرابعة عصرًا… يرنّ هاتفه.",
+  "voice": "ElevenLabs",
+  "voice_id": "XdoLPWNt7ytn6BtU4FBf",
+  "model": "eleven_multilingual_v2",
+  "settings": {
+   "stability": 0.5,
+   "similarity_boost": 0.75,
+   "style": 0,
+   "use_speaker_boost": true,
+   "speed": 1.0
+  }
+ },
+ "p2-h": {
+  "file": "clips/p2-h.wav",
+  "mp3": "mp3/p2-h.mp3",
+  "seconds": 10.5,
+  "text": "عام سبعين، هدّدت ساعاتُ الكوارتز الساعاتِ الميكانيكية… وراهنت أوديمار بيغيه على ساعةٍ من الستيل بتشطيبٍ فاخر.",
+  "spoken": "عام سبعين، هدّدت ساعاتُ الكوارتز الساعاتِ الميكانيكية… وراهنت Audemars Piguet على ساعةٍ من الستيل بتشطيبٍ فاخر.",
+  "voice": "ElevenLabs",
+  "voice_id": "XdoLPWNt7ytn6BtU4FBf",
+  "model": "eleven_multilingual_v2",
+  "settings": {
+   "stability": 0.5,
+   "similarity_boost": 0.75,
+   "style": 0,
+   "use_speaker_boost": true,
+   "speed": 1.0
+  }
+ },
+ "p2-0": {
+  "file": "clips/p2-0.wav",
+  "mp3": "mp3/p2-0.mp3",
+  "seconds": 17.88,
+  "text": "بازل، العاشر من أبريل عام ألفٍ وتسعمئةٍ وسبعين. قبل افتتاح معرض الساعات، يجتمع جورج غولاي بثلاثةٍ من الوكلاء: كارلو دي ماركي من تورينو، وشارل بوتي من لوزان، وشارل دورو من باريس.",
+  "spoken": "Basel، العاشر من أبريل عام ألفٍ وتسعمئةٍ وسبعين. قبل افتتاح معرض الساعات، يجتمع Georges Golay بثلاثةٍ من الوكلاء: Carlo de Marchi من Torino، و Charles Bauty من Lausanne، و Charles Dorot من Paris.",
+  "voice": "ElevenLabs",
+  "voice_id": "XdoLPWNt7ytn6BtU4FBf",
+  "model": "eleven_multilingual_v2",
+  "settings": {
+   "stability": 0.5,
+   "similarity_boost": 0.75,
+   "style": 0,
+   "use_speaker_boost": true,
+   "speed": 1.0
+  }
+ },
+ "p2-1": {
+  "file": "clips/p2-1.wav",
+  "mp3": "mp3/p2-1.mp3",
+  "seconds": 16.49,
+  "text": "طلبهم واضح: ساعات الذهب وحدها لم تعد تكفي. يريدون ساعةً من الستيل، رياضيةً وأنيقة، تناسب أسلوب الحياة الجديد. وعُرف الوكلاء الثلاثة لاحقًا بلقب: الفرسان الثلاثة.",
+  "spoken": "طلبهم واضح: ساعات الذهب وحدها لم تعد تكفي. يريدون ساعةً من Steel، رياضيةً وأنيقة، تناسب أسلوب الحياة الجديد. وعُرف الوكلاء الثلاثة لاحقًا بلقب: الفرسان الثلاثة.",
+  "voice": "ElevenLabs",
+  "voice_id": "XdoLPWNt7ytn6BtU4FBf",
+  "model": "eleven_multilingual_v2",
+  "settings": {
+   "stability": 0.5,
+   "similarity_boost": 0.75,
+   "style": 0,
+   "use_speaker_boost": true,
+   "speed": 1.0
+  }
+ },
+ "p2-2": {
+  "file": "clips/p2-2.wav",
+  "mp3": "mp3/p2-2.mp3",
+  "seconds": 11.56,
+  "text": "وكما يروي جنتا، عند الرابعة عصرًا، يتصل به غولاي: نريد ساعةً رياضيةً من الستيل، لم يُصنع مثلها من قبل… ونريد الرسم صباح الغد.",
+  "spoken": "وكما يروي Genta، عند الرابعة عصرًا، يتصل به Golay: نريد ساعةً رياضيةً من Steel، لم يُصنع مثلها من قبل… ونريد الرسم صباح الغد.",
+  "voice": "ElevenLabs",
+  "voice_id": "XdoLPWNt7ytn6BtU4FBf",
+  "model": "eleven_multilingual_v2",
+  "settings": {
+   "stability": 0.5,
+   "similarity_boost": 0.75,
+   "style": 0,
+   "use_speaker_boost": true,
+   "speed": 1.0
+  }
+ },
+ "p2-3": {
+  "file": "clips/p2-3.wav",
+  "mp3": "mp3/p2-3.mp3",
+  "seconds": 10.77,
+  "text": "وطوال الليل، يتذكّر جنتا غوّاصًا رآه صغيرًا في جنيف: خوذةٌ مشدودةٌ بالبراغي، وتحتها حلقةٌ مطاطية تحميه من الماء.",
+  "spoken": "وطوال الليل، يتذكّر Genta غوّاصًا رآه صغيرًا في Geneva: خوذةٌ مشدودةٌ بالبراغي، وتحتها حلقةٌ مطاطية تحميه من الماء.",
+  "voice": "ElevenLabs",
+  "voice_id": "XdoLPWNt7ytn6BtU4FBf",
+  "model": "eleven_multilingual_v2",
+  "settings": {
+   "stability": 0.5,
+   "similarity_boost": 0.75,
+   "style": 0,
+   "use_speaker_boost": true,
+   "speed": 1.0
+  }
+ },
+ "p2-4": {
+  "file": "clips/p2-4.wav",
+  "mp3": "mp3/p2-4.mp3",
+  "seconds": 11.75,
+  "text": "استلهم الشكل الثماني من خوذة الغوّاص… وثبّت الإطار الخارجي بثمانية براغٍ ظاهرة. وسوارٌ يخرج من قلب الهيكل… وكلّها من الستيل.",
+  "spoken": "استلهم الشكل الثماني من خوذة الغوّاص… وثبّت الإطار الخارجي بثمانية براغٍ ظاهرة. وسوارٌ يخرج من قلب الهيكل… وكلّها من Steel.",
+  "voice": "ElevenLabs",
+  "voice_id": "XdoLPWNt7ytn6BtU4FBf",
+  "model": "eleven_multilingual_v2",
+  "settings": {
+   "stability": 0.5,
+   "similarity_boost": 0.75,
+   "style": 0,
+   "use_speaker_boost": true,
+   "speed": 1.0
+  }
+ },
+ "p2-5": {
+  "file": "clips/p2-5.wav",
+  "mp3": "mp3/p2-5.mp3",
+  "seconds": 6.22,
+  "text": "وهذا رسم جنتا الأول… في ليلةٍ واحدة، قبل أن يبدأ تطوير الساعة.",
+  "spoken": "وهذا رسم Genta الأول… في ليلةٍ واحدة، قبل أن يبدأ تطوير الساعة.",
+  "voice": "ElevenLabs",
+  "voice_id": "XdoLPWNt7ytn6BtU4FBf",
+  "model": "eleven_multilingual_v2",
+  "settings": {
+   "stability": 0.5,
+   "similarity_boost": 0.75,
+   "style": 0,
+   "use_speaker_boost": true,
+   "speed": 1.0
+  }
+ },
+ "p2-6": {
+  "file": "clips/p2-6.wav",
+  "mp3": "mp3/p2-6.mp3",
+  "seconds": 17.51,
+  "text": "كان الستيل يرتبط غالبًا بالساعات العملية. لكن أوديمار بيغيه أرادت ساعةً رياضية بتشطيبٍ فاخر وسعرٍ مرتفعٍ: ثلاثة آلافٍ وثلاثمئة فرنك… وقدّمتها بوصفها أغلى ساعة من الستيل في العالم.",
+  "spoken": "كان Steel يرتبط غالبًا بالساعات العملية. لكن Audemars Piguet أرادت ساعةً رياضية بتشطيبٍ فاخر وسعرٍ مرتفعٍ: ثلاثة آلافٍ وثلاثمئة فرنك… وقدّمتها بوصفها أغلى ساعة من Steel في العالم.",
+  "voice": "ElevenLabs",
+  "voice_id": "XdoLPWNt7ytn6BtU4FBf",
+  "model": "eleven_multilingual_v2",
+  "settings": {
+   "stability": 0.5,
+   "similarity_boost": 0.75,
+   "style": 0,
+   "use_speaker_boost": true,
+   "speed": 1.0
+  }
+ },
+ "p2-8": {
+  "file": "clips/p2-8.wav",
+  "mp3": "mp3/p2-8.mp3",
+  "seconds": 17.23,
+  "text": "وتشير سجلات الدار إلى أن الشاه اقتنى أول نسخةٍ من الذهب الأبيض، ورقمها مئةٌ وواحد. لكن نجاح الرويال أوك لم يصنعه زبونٌ واحد. رسمٌ في ليلة… وسنتان من العمل، وفريقٌ كامل.",
+  "spoken": "وتشير سجلات الدار إلى أن الشاه اقتنى أول نسخةٍ من الذهب الأبيض، ورقمها مئةٌ وواحد. لكن نجاح Royal Oak لم يصنعه زبونٌ واحد. رسمٌ في ليلة… وسنتان من العمل، وفريقٌ كامل.",
+  "voice": "ElevenLabs",
+  "voice_id": "XdoLPWNt7ytn6BtU4FBf",
+  "model": "eleven_multilingual_v2",
+  "settings": {
+   "stability": 0.5,
+   "similarity_boost": 0.75,
+   "style": 0,
+   "use_speaker_boost": true,
+   "speed": 1.0
+  }
+ },
+ "p1-a": {
+  "file": "clips/p1-a.wav",
+  "mp3": "mp3/p1-a.mp3",
+  "seconds": 8.08,
+  "text": "قبل الرويال أوك، صمّم لأوديمار بيغيه أشكالًا غير مألوفة… حتى ساعةً تختبئ داخل حقيبة.",
+  "spoken": "قبل Royal Oak، صمّم ل Audemars Piguet أشكالًا غير مألوفة… حتى ساعةً تختبئ داخل حقيبة.",
+  "voice": "ElevenLabs",
+  "voice_id": "XdoLPWNt7ytn6BtU4FBf",
+  "model": "eleven_multilingual_v2",
+  "settings": {
+   "stability": 0.5,
+   "similarity_boost": 0.75,
+   "style": 0,
+   "use_speaker_boost": true,
+   "speed": 1.0
+  }
+ },
+ "p1-b": {
+  "file": "clips/p1-b.wav",
+  "mp3": "mp3/p1-b.mp3",
+  "seconds": 7.76,
+  "text": "كان غولاي يلتقي الوكلاء ويسمع السوق… وجنتا يحمل إليه التصاميم، ويبحث لها عن شكل.",
+  "spoken": "كان Golay يلتقي الوكلاء ويسمع السوق… و Genta يحمل إليه التصاميم، ويبحث لها عن شكل.",
+  "voice": "ElevenLabs",
+  "voice_id": "XdoLPWNt7ytn6BtU4FBf",
+  "model": "eleven_multilingual_v2",
+  "settings": {
+   "stability": 0.5,
+   "similarity_boost": 0.75,
+   "style": 0,
+   "use_speaker_boost": true,
+   "speed": 1.0
+  }
+ },
+ "p2-d": {
+  "file": "clips/p2-d.wav",
+  "mp3": "mp3/p2-d.mp3",
+  "seconds": 9.24,
+  "text": "لم ينقل الخوذة إلى الساعة. أخذ فكرة الإحكام… والحشية التي تمنع الماء. وجعل التثبيت ظاهرًا في التصميم.",
+  "spoken": "لم ينقل الخوذة إلى الساعة. أخذ فكرة الإحكام… والحشية التي تمنع الماء. وجعل التثبيت ظاهرًا في التصميم.",
+  "voice": "ElevenLabs",
+  "voice_id": "XdoLPWNt7ytn6BtU4FBf",
+  "model": "eleven_multilingual_v2",
+  "settings": {
+   "stability": 0.5,
+   "similarity_boost": 0.75,
+   "style": 0,
+   "use_speaker_boost": true,
+   "speed": 1.0
+  }
+ },
+ "p3-e": {
+  "file": "clips/p3-e.wav",
+  "mp3": "mp3/p3-e.mp3",
+  "seconds": 11.8,
+  "text": "انتهى الرسم في ليلة. لكن الساعة احتاجت فريقًا وتجارب. صُنعت النماذج الأولى من الذهب الأبيض… قبل أن يبدأ التحدي الحقيقي مع الستيل.",
+  "spoken": "انتهى الرسم في ليلة. لكن الساعة احتاجت فريقًا وتجارب. صُنعت النماذج الأولى من الذهب الأبيض… قبل أن يبدأ التحدي الحقيقي مع Steel.",
+  "voice": "ElevenLabs",
+  "voice_id": "XdoLPWNt7ytn6BtU4FBf",
+  "model": "eleven_multilingual_v2",
+  "settings": {
+   "stability": 0.5,
+   "similarity_boost": 0.75,
+   "style": 0,
+   "use_speaker_boost": true,
+   "speed": 1.0
+  }
+ },
+ "p3-f": {
+  "file": "clips/p3-f.wav",
+  "mp3": "mp3/p3-f.mp3",
+  "seconds": 21.22,
+  "text": "علبةٌ من فافر-بيريه، وسوارٌ من غاي فرير… وملاءمةٌ يدوية لكل وصلة. واختير نقش المينا من ثلاث عشرة عيّنة. وفي الداخل، العيار ألفان ومئة وواحد وعشرون: حركةٌ أوتوماتيكية نحيفة جدًا، سماكتها ثلاثة فاصلة صفر خمسة مليمتر.",
+  "spoken": "علبةٌ من Favre-Perret، وسوارٌ من Gay Frères… وملاءمةٌ يدوية لكل وصلة. واختير نقش المينا من ثلاث عشرة عيّنة. وفي الداخل، العيار ألفان ومئة وواحد وعشرون: حركةٌ أوتوماتيكية نحيفة جدًا، سماكتها ثلاثة فاصلة صفر خمسة مليمتر.",
+  "voice": "ElevenLabs",
+  "voice_id": "XdoLPWNt7ytn6BtU4FBf",
+  "model": "eleven_multilingual_v2",
+  "settings": {
+   "stability": 0.5,
+   "similarity_boost": 0.75,
+   "style": 0,
+   "use_speaker_boost": true,
+   "speed": 1.0
+  }
+ },
+ "p3-g": {
+  "file": "clips/p3-g.wav",
+  "mp3": "mp3/p3-g.mp3",
+  "seconds": 11.94,
+  "text": "في بازل، عام واحدٍ وسبعين، ظَهَرَ النموذج. التزم دي ماركي بأربعمئة ساعة، وبوتي بأربعمئة أخرى. وقرّر غولاي إنتاج ألف.",
+  "spoken": "في Basel، عام واحدٍ وسبعين، ظَهَرَ النموذج. التزم دي ماركي بأربعمئة ساعة، و Bauty بأربعمئة أخرى. وقرّر غولاي إنتاج ألف.",
+  "voice": "ElevenLabs",
+  "voice_id": "XdoLPWNt7ytn6BtU4FBf",
+  "model": "eleven_multilingual_v2",
+  "settings": {
+   "stability": 0.5,
+   "similarity_boost": 0.75,
+   "style": 0,
+   "use_speaker_boost": true,
+   "speed": 1.0
+  }
+ },
+ "p3-n": {
+  "file": "clips/p3-n.wav",
+  "mp3": "mp3/p3-n.mp3",
+  "seconds": 21.83,
+  "text": "ظهرت أسماء أخرى: سفاري… وقيل إكسكاليبر. ثم اقترح دي ماركي اسم الرويال أوك… أي \"شجرة البلوط الملكية\": شجرةٌ اختبأ فيها الملك تشارلز الثاني من جنود كرومويل، بعد هزيمته في الحرب الأهلية الإنجليزية، ثم حملت اسمَها سفنٌ حربيةٌ بريطانية.",
+  "spoken": "ظهرت أسماء أخرى: Safari… وقيل Excalibur. ثم اقترح دي ماركي اسم Royal Oak… أي \"شجرة البلوط الملكية\": شجرةٌ اختبأ فيها الملك تشارلز الثاني من جنود كرومويل، بعد هزيمته في الحرب الأهلية الإنجليزية، ثم حملت اسمَها سفنٌ حربيةٌ بريطانية.",
+  "voice": "ElevenLabs",
+  "voice_id": "XdoLPWNt7ytn6BtU4FBf",
+  "model": "eleven_multilingual_v2",
+  "settings": {
+   "stability": 0.5,
+   "similarity_boost": 0.75,
+   "style": 0,
+   "use_speaker_boost": true,
+   "speed": 1.0
+  }
+ },
+ "p3-i": {
+  "file": "clips/p3-i.wav",
+  "mp3": "mp3/p3-i.mp3",
+  "seconds": 16.95,
+  "text": "قالوا إنها فشلت. لكن سُلّمت أربعمئةٍ وتسعون ساعة في عام اثنين وسبعين، وخمسمئةٍ وثلاثٌ وأربعون في عام ثلاثةٍ وسبعين. أرقامُ تسليم… لا تثبت كم ساعة اشتراها الجمهور في النهاية.",
+  "spoken": "قالوا إنها فشلت. لكن سُلّمت أربعمئةٍ وتسعون ساعة في عام اثنين وسبعين، وخمسمئةٍ وثلاثٌ وأربعون في عام ثلاثةٍ وسبعين. أرقامُ تسليم… لا تثبت كم ساعة اشتراها الجمهور في النهاية.",
+  "voice": "ElevenLabs",
+  "voice_id": "XdoLPWNt7ytn6BtU4FBf",
+  "model": "eleven_multilingual_v2",
+  "settings": {
+   "stability": 0.5,
+   "similarity_boost": 0.75,
+   "style": 0,
+   "use_speaker_boost": true,
+   "speed": 1.0
+  }
+ },
+ "p3-h": {
+  "file": "clips/p3-h.wav",
+  "mp3": "mp3/p3-h.mp3",
+  "seconds": 5.71,
+  "text": "ساعةٌ من الستيل… بسعرٍ أعلى من ساعاتٍ كثيرة من الذهب. كيف؟",
+  "spoken": "ساعةٌ من Steel… بسعرٍ أعلى من ساعاتٍ كثيرة من الذهب. كيف؟",
+  "voice": "ElevenLabs",
+  "voice_id": "XdoLPWNt7ytn6BtU4FBf",
+  "model": "eleven_multilingual_v2",
+  "settings": {
+   "stability": 0.5,
+   "similarity_boost": 0.75,
+   "style": 0,
+   "use_speaker_boost": true,
+   "speed": 1.0
+  }
+ }
+}

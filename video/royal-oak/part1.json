@@ -133,24 +133,29 @@
      "w": 484,
      "h": 76,
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"484\" height=\"76\" viewBox=\"0 0 484 76\" style=\"overflow:visible;\"><defs><filter id=\"se2\" x=\"-50%\" y=\"-50%\" width=\"200%\" height=\"200%\"><feGaussianBlur stdDeviation=\"6\"/></filter></defs><ellipse cx=\"242\" cy=\"38\" rx=\"218\" ry=\"14\" fill=\"#000\" opacity=\"0.32\" filter=\"url(#se2)\"/></svg>",
-     "x": 330,
+     "x": 280,
      "y": 1174,
      "anchor": "c",
      "z": 19,
+     "in": {
+      "type": "fade",
+      "at": 3.25,
+      "dur": 0.5
+     },
      "still": true
     },
     {
      "type": "cutout",
-     "x": 330,
+     "x": 280,
      "y": 1180,
      "h": 700,
      "aspect": 0.6977,
      "edge": 0,
      "z": 20,
      "in": {
-      "type": "none",
-      "at": 0,
-      "dur": 0.3
+      "type": "fade",
+      "at": 3.25,
+      "dur": 0.35
      },
      "src": "assets/gen/genta23_desk_cut.png",
      "person": true,
@@ -159,16 +164,16 @@
       "type": "pulse",
       "amp": 0.005,
       "speed": 0.22,
-      "from": 0.3
+      "from": 3.6
      }
     },
     {
      "type": "text",
-     "text": "كيف صار ورا أشهر ساعات العالم؟",
+     "text": "تعرفونها… فمن رسمها؟",
      "x": 360,
-     "y": 150,
+     "y": 140,
      "font": "banner",
-     "size": 32,
+     "size": 40,
      "color": "#16181D",
      "paper": "#EFE8D6",
      "upper": false,
@@ -185,110 +190,154 @@
      "src": "assets/ap/ro5402_hero.jpg",
      "polaroid": true,
      "aspect": 0.8676789587852495,
-     "label": "Royal Oak",
-     "w": 220,
-     "x": 180,
-     "y": 340,
+     "label": "Royal Oak · 1972",
+     "w": 480,
+     "x": [
+      [
+       0,
+       360
+      ],
+      [
+       2.85,
+       360
+      ],
+      [
+       3.45,
+       530,
+       "inOutCubic"
+      ]
+     ],
+     "y": [
+      [
+       0,
+       600
+      ],
+      [
+       2.85,
+       600
+      ],
+      [
+       3.45,
+       340,
+       "inOutCubic"
+      ]
+     ],
      "z": 30,
      "rot": [
       [
-       2.94,
-       -6
+       0,
+       -1
       ],
       [
-       4.06,
-       -7.2
+       2.85,
+       1
+      ],
+      [
+       3.45,
+       -5,
+       "inOutCubic"
       ]
      ],
      "in": {
-      "type": "pop",
-      "at": 2.4899999999999998,
+      "type": "none",
+      "at": 0,
       "dur": 0.45
      },
      "labelSize": 22,
      "scale": [
       [
-       2.94,
-       1
+       0,
+       1.0
       ],
       [
-       4.06,
-       1.006
+       2.85,
+       1.05
+      ],
+      [
+       3.45,
+       0.55,
+       "inOutCubic"
       ]
-     ]
+     ],
+     "idle": {
+      "type": "float",
+      "amp": 3,
+      "speed": 0.3,
+      "from": 0
+     }
     },
     {
      "type": "svg",
      "w": 130,
-     "h": 208.0032,
-     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"130\" height=\"208\" viewBox=\"0 0 130 208\" style=\"overflow:visible;\"><defs><linearGradient id=\"gl3\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/><stop offset=\".5\" stop-color=\"#FFFAEB\" stop-opacity=\"0.42\"/><stop offset=\"1\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/></linearGradient></defs><polygon points=\"40.0,0.0 130.0,0.0 90.0,208.0 0.0,208.0\" fill=\"url(#gl3)\"/></svg>",
+     "h": 489.6741999999999,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"130\" height=\"489\" viewBox=\"0 0 130 489\" style=\"overflow:visible;\"><defs><linearGradient id=\"gl3\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/><stop offset=\".5\" stop-color=\"#FFFAEB\" stop-opacity=\"0.42\"/><stop offset=\"1\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/></linearGradient></defs><polygon points=\"40.0,0.0 130.0,0.0 90.0,489.7 0.0,489.7\" fill=\"url(#gl3)\"/></svg>",
      "x": [
       [
-       2.9899999999999998,
-       149.0
+       0.35,
+       199.0
       ],
       [
-       3.6899999999999995,
-       211.0,
+       1.0499999999999998,
+       521.0,
        "inOutCubic"
       ]
      ],
-     "y": 318,
+     "y": 578,
      "anchor": "c",
      "z": 31,
      "in": {
       "type": "none",
-      "at": 2.9899999999999998,
+      "at": 0.35,
       "dur": 0.5
      },
-     "rot": -6,
+     "rot": -1,
      "still": true,
      "opacity": [
       [
-       2.9899999999999998,
+       0.35,
        0
       ],
       [
-       3.11,
+       0.47,
        1
       ],
       [
-       3.5699999999999994,
+       0.9299999999999998,
        1
       ],
       [
-       3.6899999999999995,
+       1.0499999999999998,
        0
       ]
      ],
      "out": {
       "type": "fade",
-      "at": 3.6899999999999995,
+      "at": 1.0499999999999998,
       "dur": 0.01
      }
     }
    ],
-   "dur": 4.06,
+   "dur": 4.69,
    "silent": true,
-   "captions": "كيف شاب | عمره ثلاثة وعشرين… | صار ورا | أشهر ساعات العالم؟",
+   "captions": "تعرفون | الرويال أوك… | لكن هل تعرفون | الرجل الذي رسمها؟",
    "captionStart": 0.16999999999999998,
-   "captionEnd": 3.8600000000000003,
-   "voice": "voice-habibi/clips/p1-h.wav",
+   "captionEnd": 4.49,
+   "voice": "voice-abdullah/clips/p1-h.wav",
    "voiceAt": 0.12,
    "transition": "cut",
    "camera": {
     "zoom": [
      [
       0,
-      1.18
+      1.1
      ],
      [
-      2.3899999999999997,
+      2.85,
       1.0,
       "inOutCubic"
      ],
      [
-      4.06,
+      4.69,
       1.03,
       "inOutCubic"
      ]
@@ -296,51 +345,56 @@
     "x": [
      [
       0,
-      340
+      360
      ],
      [
-      2.3899999999999997,
+      2.85,
       360,
       "inOutCubic"
      ],
      [
-      4.06,
-      330,
+      4.69,
+      340,
       "inOutCubic"
      ]
     ],
     "y": [
      [
       0,
-      820
+      600
      ],
      [
-      2.3899999999999997,
-      640,
+      2.85,
+      620,
       "inOutCubic"
      ],
      [
-      4.06,
-      620,
+      4.69,
+      640,
       "inOutCubic"
      ]
     ]
    },
    "sfx": [
     {
-     "at": 0.1,
-     "name": "pencil",
+     "at": 0.05,
+     "name": "shutter",
      "gain": -12
     },
     {
-     "at": 2.49,
-     "name": "click",
-     "gain": -10
-    },
-    {
-     "at": 2.99,
+     "at": 0.35,
      "name": "tick",
      "gain": -16
+    },
+    {
+     "at": 2.9,
+     "name": "whoosh",
+     "gain": -14
+    },
+    {
+     "at": 3.3,
+     "name": "pencil",
+     "gain": -12
     }
    ]
   },
@@ -359,11 +413,11 @@
        360
       ],
       [
-       5.5,
+       3.89,
        360
       ],
       [
-       6.75,
+       5.8,
        320,
        "inOutCubic"
       ]
@@ -397,15 +451,15 @@
        1
       ],
       [
-       5.5,
+       3.89,
        1
       ],
       [
-       5.75,
+       4.140000000000001,
        0.5
       ],
       [
-       6.66,
+       5.66,
        1
       ]
      ]
@@ -423,10 +477,10 @@
     },
     {
      "type": "image",
-     "src": "assets/src/genta.jpg",
+     "src": "assets/ap/ro5402_hero.jpg",
      "polaroid": true,
-     "aspect": 0.6699232379623168,
-     "label": "Gérald Genta",
+     "aspect": 0.8676789587852495,
+     "label": "Royal Oak · 1972",
      "w": 500,
      "x": 360,
      "y": 600,
@@ -440,13 +494,13 @@
      "labelSize": 22,
      "out": {
       "type": "fade",
-      "at": 1.45,
+      "at": 3.79,
       "dur": 0.25
      }
     },
     {
      "type": "text",
-     "text": "الرجل اللي رسم الرويال أوك",
+     "text": "قبل الرويال أوك بـ16 عامًا",
      "x": 360,
      "y": 150,
      "font": "banner",
@@ -458,74 +512,15 @@
      "rot": -2,
      "in": {
       "type": "pop",
-      "at": 0.1,
+      "at": 1.06,
       "dur": 0.35
      },
      "out": {
       "type": "fade",
-      "at": 1.5,
+      "at": 3.89,
       "dur": 0.2
      },
      "depth": 0
-    },
-    {
-     "type": "cutout",
-     "x": 360,
-     "y": 1160,
-     "h": 760,
-     "aspect": 0.328,
-     "edge": 0,
-     "z": 21,
-     "in": {
-      "type": "flip",
-      "at": 1.37,
-      "dur": 0.4
-     },
-     "src": "assets/gen/genta_think_cut.png",
-     "person": true,
-     "headBand": 0.2,
-     "scale": [
-      [
-       5.5,
-       1
-      ],
-      [
-       6.1,
-       0.96
-      ]
-     ],
-     "out": {
-      "type": "fade",
-      "at": 5.85,
-      "dur": 0.35
-     },
-     "idle": {
-      "type": "pulse",
-      "amp": 0.005,
-      "speed": 0.22,
-      "from": 1.77
-     }
-    },
-    {
-     "type": "svg",
-     "w": 300,
-     "h": 76,
-     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"300\" height=\"76\" viewBox=\"0 0 300 76\" style=\"overflow:visible;\"><defs><filter id=\"se6\" x=\"-50%\" y=\"-50%\" width=\"200%\" height=\"200%\"><feGaussianBlur stdDeviation=\"6\"/></filter></defs><ellipse cx=\"150\" cy=\"38\" rx=\"126\" ry=\"14\" fill=\"#000\" opacity=\"0.32\" filter=\"url(#se6)\"/></svg>",
-     "x": 360,
-     "y": 1154,
-     "anchor": "c",
-     "z": 20,
-     "in": {
-      "type": "fade",
-      "at": 1.37,
-      "dur": 0.5
-     },
-     "still": true,
-     "out": {
-      "type": "fade",
-      "at": 5.85,
-      "dur": 0.35
-     }
     },
     {
      "type": "cutout",
@@ -537,7 +532,7 @@
      "z": 22,
      "in": {
       "type": "fade",
-      "at": 6.0,
+      "at": 4.390000000000001,
       "dur": 0.35
      },
      "src": "assets/gen/young_think_cut.png",
@@ -545,16 +540,16 @@
      "headBand": 0.2,
      "out": {
       "type": "fade",
-      "at": 6.79,
+      "at": 5.87,
       "dur": 0.25
      },
      "scale": [
       [
-       6.0,
+       4.390000000000001,
        1.04
       ],
       [
-       6.55,
+       4.94,
        1
       ]
      ],
@@ -562,30 +557,7 @@
       "type": "pulse",
       "amp": 0.005,
       "speed": 0.22,
-      "from": 6.35
-     }
-    },
-    {
-     "type": "image",
-     "src": "assets/ap/ro5402_hero.jpg",
-     "polaroid": true,
-     "aspect": 0.8676789587852495,
-     "label": "Royal Oak",
-     "w": 190,
-     "x": 628,
-     "y": 650,
-     "z": 30,
-     "rot": 6,
-     "in": {
-      "type": "pop",
-      "at": 4.97,
-      "dur": 0.45
-     },
-     "labelSize": 22,
-     "out": {
-      "type": "slideR",
-      "at": 5.55,
-      "dur": 0.3
+      "from": 4.74
      }
     },
     {
@@ -839,7 +811,7 @@
      "z": 6,
      "in": {
       "type": "pop",
-      "at": 5.3,
+      "at": 3.69,
       "dur": 0.4
      }
     },
@@ -854,16 +826,16 @@
      "z": 7,
      "in": {
       "type": "pop",
-      "at": 5.3,
+      "at": 3.69,
       "dur": 0.4
      },
      "rot": [
       [
-       5.5,
+       3.89,
        120.0
       ],
       [
-       6.83,
+       5.94,
        -120.0,
        "inOutCubic"
       ]
@@ -880,16 +852,16 @@
      "z": 7,
      "in": {
       "type": "pop",
-      "at": 5.3,
+      "at": 3.69,
       "dur": 0.4
      },
      "rot": [
       [
-       5.5,
+       3.89,
        0
       ],
       [
-       6.83,
+       5.94,
        -2880.0,
        "inOutCubic"
       ]
@@ -899,20 +871,20 @@
      "type": "svg",
      "w": 300,
      "h": 330,
-     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"300\" height=\"330\" viewBox=\"0 0 300 330\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><rect x=\"0\" y=\"18\" width=\"300\" height=\"312\" rx=\"6\" fill=\"#F3EEE1\"/><rect x=\"0\" y=\"18\" width=\"300\" height=\"74\" rx=\"6\" fill=\"#B23A2E\"/><rect x=\"0\" y=\"70\" width=\"300\" height=\"22\" fill=\"#B23A2E\"/><rect x=\"70\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><rect x=\"214\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><text x=\"150\" y=\"262\" font-family=\"var(--f-title)\" font-size=\"150\" fill=\"#16181D\" text-anchor=\"middle\">2000</text><line x1=\"24\" y1=\"292\" x2=\"276\" y2=\"292\" stroke=\"#CFC6B1\" stroke-width=\"2\"/></svg>",
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"300\" height=\"330\" viewBox=\"0 0 300 330\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><rect x=\"0\" y=\"18\" width=\"300\" height=\"312\" rx=\"6\" fill=\"#F3EEE1\"/><rect x=\"0\" y=\"18\" width=\"300\" height=\"74\" rx=\"6\" fill=\"#B23A2E\"/><rect x=\"0\" y=\"70\" width=\"300\" height=\"22\" fill=\"#B23A2E\"/><rect x=\"70\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><rect x=\"214\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><text x=\"150\" y=\"262\" font-family=\"var(--f-title)\" font-size=\"150\" fill=\"#16181D\" text-anchor=\"middle\">1970</text><line x1=\"24\" y1=\"292\" x2=\"276\" y2=\"292\" stroke=\"#CFC6B1\" stroke-width=\"2\"/></svg>",
      "x": 160,
      "y": 330,
      "anchor": "c",
      "z": 10,
      "in": {
       "type": "flip",
-      "at": 5.55,
+      "at": 3.94,
       "dur": 0.12
      },
      "scale": 0.62,
      "out": {
       "type": "fade",
-      "at": 5.77,
+      "at": 4.159999999999999,
       "dur": 0.05
      }
     },
@@ -920,20 +892,20 @@
      "type": "svg",
      "w": 300,
      "h": 330,
-     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"300\" height=\"330\" viewBox=\"0 0 300 330\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><rect x=\"0\" y=\"18\" width=\"300\" height=\"312\" rx=\"6\" fill=\"#F3EEE1\"/><rect x=\"0\" y=\"18\" width=\"300\" height=\"74\" rx=\"6\" fill=\"#B23A2E\"/><rect x=\"0\" y=\"70\" width=\"300\" height=\"22\" fill=\"#B23A2E\"/><rect x=\"70\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><rect x=\"214\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><text x=\"150\" y=\"262\" font-family=\"var(--f-title)\" font-size=\"150\" fill=\"#16181D\" text-anchor=\"middle\">1990</text><line x1=\"24\" y1=\"292\" x2=\"276\" y2=\"292\" stroke=\"#CFC6B1\" stroke-width=\"2\"/></svg>",
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"300\" height=\"330\" viewBox=\"0 0 300 330\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><rect x=\"0\" y=\"18\" width=\"300\" height=\"312\" rx=\"6\" fill=\"#F3EEE1\"/><rect x=\"0\" y=\"18\" width=\"300\" height=\"74\" rx=\"6\" fill=\"#B23A2E\"/><rect x=\"0\" y=\"70\" width=\"300\" height=\"22\" fill=\"#B23A2E\"/><rect x=\"70\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><rect x=\"214\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><text x=\"150\" y=\"262\" font-family=\"var(--f-title)\" font-size=\"150\" fill=\"#16181D\" text-anchor=\"middle\">1966</text><line x1=\"24\" y1=\"292\" x2=\"276\" y2=\"292\" stroke=\"#CFC6B1\" stroke-width=\"2\"/></svg>",
      "x": 160,
      "y": 330,
      "anchor": "c",
      "z": 11,
      "in": {
       "type": "flip",
-      "at": 5.75,
+      "at": 4.14,
       "dur": 0.12
      },
      "scale": 0.62,
      "out": {
       "type": "fade",
-      "at": 5.97,
+      "at": 4.359999999999999,
       "dur": 0.05
      }
     },
@@ -941,20 +913,20 @@
      "type": "svg",
      "w": 300,
      "h": 330,
-     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"300\" height=\"330\" viewBox=\"0 0 300 330\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><rect x=\"0\" y=\"18\" width=\"300\" height=\"312\" rx=\"6\" fill=\"#F3EEE1\"/><rect x=\"0\" y=\"18\" width=\"300\" height=\"74\" rx=\"6\" fill=\"#B23A2E\"/><rect x=\"0\" y=\"70\" width=\"300\" height=\"22\" fill=\"#B23A2E\"/><rect x=\"70\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><rect x=\"214\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><text x=\"150\" y=\"262\" font-family=\"var(--f-title)\" font-size=\"150\" fill=\"#16181D\" text-anchor=\"middle\">1980</text><line x1=\"24\" y1=\"292\" x2=\"276\" y2=\"292\" stroke=\"#CFC6B1\" stroke-width=\"2\"/></svg>",
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"300\" height=\"330\" viewBox=\"0 0 300 330\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><rect x=\"0\" y=\"18\" width=\"300\" height=\"312\" rx=\"6\" fill=\"#F3EEE1\"/><rect x=\"0\" y=\"18\" width=\"300\" height=\"74\" rx=\"6\" fill=\"#B23A2E\"/><rect x=\"0\" y=\"70\" width=\"300\" height=\"22\" fill=\"#B23A2E\"/><rect x=\"70\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><rect x=\"214\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><text x=\"150\" y=\"262\" font-family=\"var(--f-title)\" font-size=\"150\" fill=\"#16181D\" text-anchor=\"middle\">1962</text><line x1=\"24\" y1=\"292\" x2=\"276\" y2=\"292\" stroke=\"#CFC6B1\" stroke-width=\"2\"/></svg>",
      "x": 160,
      "y": 330,
      "anchor": "c",
      "z": 12,
      "in": {
       "type": "flip",
-      "at": 5.95,
+      "at": 4.34,
       "dur": 0.12
      },
      "scale": 0.62,
      "out": {
       "type": "fade",
-      "at": 6.17,
+      "at": 4.56,
       "dur": 0.05
      }
     },
@@ -962,41 +934,20 @@
      "type": "svg",
      "w": 300,
      "h": 330,
-     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"300\" height=\"330\" viewBox=\"0 0 300 330\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><rect x=\"0\" y=\"18\" width=\"300\" height=\"312\" rx=\"6\" fill=\"#F3EEE1\"/><rect x=\"0\" y=\"18\" width=\"300\" height=\"74\" rx=\"6\" fill=\"#B23A2E\"/><rect x=\"0\" y=\"70\" width=\"300\" height=\"22\" fill=\"#B23A2E\"/><rect x=\"70\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><rect x=\"214\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><text x=\"150\" y=\"262\" font-family=\"var(--f-title)\" font-size=\"150\" fill=\"#16181D\" text-anchor=\"middle\">1970</text><line x1=\"24\" y1=\"292\" x2=\"276\" y2=\"292\" stroke=\"#CFC6B1\" stroke-width=\"2\"/></svg>",
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"300\" height=\"330\" viewBox=\"0 0 300 330\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><rect x=\"0\" y=\"18\" width=\"300\" height=\"312\" rx=\"6\" fill=\"#F3EEE1\"/><rect x=\"0\" y=\"18\" width=\"300\" height=\"74\" rx=\"6\" fill=\"#B23A2E\"/><rect x=\"0\" y=\"70\" width=\"300\" height=\"22\" fill=\"#B23A2E\"/><rect x=\"70\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><rect x=\"214\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><text x=\"150\" y=\"262\" font-family=\"var(--f-title)\" font-size=\"150\" fill=\"#16181D\" text-anchor=\"middle\">1958</text><line x1=\"24\" y1=\"292\" x2=\"276\" y2=\"292\" stroke=\"#CFC6B1\" stroke-width=\"2\"/></svg>",
      "x": 160,
      "y": 330,
      "anchor": "c",
      "z": 13,
      "in": {
       "type": "flip",
-      "at": 6.15,
+      "at": 4.54,
       "dur": 0.12
      },
      "scale": 0.62,
      "out": {
       "type": "fade",
-      "at": 6.37,
-      "dur": 0.05
-     }
-    },
-    {
-     "type": "svg",
-     "w": 300,
-     "h": 330,
-     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"300\" height=\"330\" viewBox=\"0 0 300 330\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><rect x=\"0\" y=\"18\" width=\"300\" height=\"312\" rx=\"6\" fill=\"#F3EEE1\"/><rect x=\"0\" y=\"18\" width=\"300\" height=\"74\" rx=\"6\" fill=\"#B23A2E\"/><rect x=\"0\" y=\"70\" width=\"300\" height=\"22\" fill=\"#B23A2E\"/><rect x=\"70\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><rect x=\"214\" y=\"0\" width=\"16\" height=\"40\" rx=\"7\" fill=\"#2A2C31\"/><text x=\"150\" y=\"262\" font-family=\"var(--f-title)\" font-size=\"150\" fill=\"#16181D\" text-anchor=\"middle\">1960</text><line x1=\"24\" y1=\"292\" x2=\"276\" y2=\"292\" stroke=\"#CFC6B1\" stroke-width=\"2\"/></svg>",
-     "x": 160,
-     "y": 330,
-     "anchor": "c",
-     "z": 14,
-     "in": {
-      "type": "flip",
-      "at": 6.35,
-      "dur": 0.12
-     },
-     "scale": 0.62,
-     "out": {
-      "type": "fade",
-      "at": 6.569999999999999,
+      "at": 4.76,
       "dur": 0.05
      }
     },
@@ -1008,10 +959,10 @@
      "x": 160,
      "y": 330,
      "anchor": "c",
-     "z": 15,
+     "z": 14,
      "in": {
       "type": "flip",
-      "at": 6.55,
+      "at": 4.74,
       "dur": 0.12
      },
      "scale": 0.62
@@ -1020,7 +971,7 @@
      "type": "svg",
      "w": 760,
      "h": 1320,
-     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"760\" height=\"1320\" viewBox=\"0 0 760 1320\" style=\"overflow:visible;\"><rect width=\"760\" height=\"1320\" fill=\"#8A6A3A\"/><defs><radialGradient id=\"vg7\" cx=\"50%\" cy=\"48%\" r=\"75%\"><stop offset=\"0.55\" stop-color=\"#3A2A14\" stop-opacity=\"0\"/><stop offset=\"1\" stop-color=\"#3A2A14\" stop-opacity=\"0.6\"/></radialGradient></defs><rect width=\"760\" height=\"1320\" fill=\"url(#vg7)\"/></svg>",
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"760\" height=\"1320\" viewBox=\"0 0 760 1320\" style=\"overflow:visible;\"><rect width=\"760\" height=\"1320\" fill=\"#8A6A3A\"/><defs><radialGradient id=\"vg6\" cx=\"50%\" cy=\"48%\" r=\"75%\"><stop offset=\"0.55\" stop-color=\"#3A2A14\" stop-opacity=\"0\"/><stop offset=\"1\" stop-color=\"#3A2A14\" stop-opacity=\"0.6\"/></radialGradient></defs><rect width=\"760\" height=\"1320\" fill=\"url(#vg6)\"/></svg>",
      "x": 360,
      "y": 640,
      "anchor": "c",
@@ -1029,50 +980,50 @@
      "still": true,
      "opacity": [
       [
-       5.5,
+       3.89,
        0
       ],
       [
-       6.55,
+       4.94,
        0.26
       ],
       [
-       6.92,
+       6.03,
        0.16
       ]
      ]
     }
    ],
-   "dur": 7.05,
+   "dur": 6.17,
    "silent": true,
-   "captions": "هذا جيرالد جنتا… | من أشهر | مصممي الساعات | بالتاريخ. | بس قبل لا | يصير اسمه | أسطورة… | خلونا نرجع للبداية.",
+   "captions": "قصةٌ تبدأ | قبل الرويال أوك | بستة عشر عامًا… | دعونا نعود | إلى البداية.",
    "captionStart": 0.16999999999999998,
-   "captionEnd": 6.8500000000000005,
-   "voice": "voice-habibi/clips/p1-0.wav",
+   "captionEnd": 5.97,
+   "voice": "voice-abdullah/clips/p1-0.wav",
    "voiceAt": 0.12,
    "camera": {
     "zoom": [
      [
       0,
-      1.7
+      1.35
      ],
      [
-      1.15,
+      0.38,
       1.0,
       "inOutCubic"
      ],
      [
-      3.56,
+      1.0,
       1.06,
       "inOutCubic"
      ],
      [
-      5.5,
+      3.89,
       1.12,
       "inOutCubic"
      ],
      [
-      6.92,
+      6.03,
       1.0,
       "inOutCubic"
      ]
@@ -1080,25 +1031,25 @@
     "x": [
      [
       0,
-      299
+      360
      ],
      [
-      1.15,
+      0.38,
       360,
       "inOutCubic"
      ],
      [
-      3.56,
+      1.0,
       385,
       "inOutCubic"
      ],
      [
-      5.5,
+      3.89,
       360,
       "inOutCubic"
      ],
      [
-      6.92,
+      6.03,
       360,
       "inOutCubic"
      ]
@@ -1106,25 +1057,25 @@
     "y": [
      [
       0,
-      768
+      560
      ],
      [
-      1.15,
-      700,
+      0.38,
+      640,
       "inOutCubic"
      ],
      [
-      3.56,
-      680,
-      "inOutCubic"
-     ],
-     [
-      5.5,
+      1.0,
       660,
       "inOutCubic"
      ],
      [
-      6.92,
+      3.89,
+      660,
+      "inOutCubic"
+     ],
+     [
+      6.03,
       640,
       "inOutCubic"
      ]
@@ -1137,52 +1088,52 @@
      "gain": -14
     },
     {
-     "at": 1.37,
+     "at": 0.44,
      "name": "paper_slide",
      "gain": -13
     },
     {
-     "at": 4.97,
+     "at": 1.06,
      "name": "click",
      "gain": -14
     },
     {
-     "at": 5.5,
+     "at": 3.89,
      "name": "whoosh",
      "gain": -12
     },
     {
-     "at": 5.6,
+     "at": 3.99,
      "name": "crown_wind",
      "gain": -10
     },
     {
-     "at": 5.55,
+     "at": 3.94,
      "name": "paper_tear",
      "gain": -17
     },
     {
-     "at": 5.75,
+     "at": 4.14,
      "name": "paper_tear",
      "gain": -17
     },
     {
-     "at": 5.95,
+     "at": 4.34,
      "name": "paper_tear",
      "gain": -17
     },
     {
-     "at": 6.15,
+     "at": 4.54,
      "name": "paper_tear",
      "gain": -17
     },
     {
-     "at": 6.35,
+     "at": 4.74,
      "name": "paper_tear",
      "gain": -17
     },
     {
-     "at": 6.55,
+     "at": 4.94,
      "name": "paper_tear",
      "gain": -17
     }
@@ -1204,7 +1155,7 @@
      "type": "svg",
      "w": 720,
      "h": 760,
-     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"720\" height=\"760\" viewBox=\"0 0 720 760\" style=\"overflow:visible;\"><defs><linearGradient id=\"gs8\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#B9C9D6\"/><stop offset=\"1\" stop-color=\"#DCE4EA\"/></linearGradient></defs><rect width=\"720\" height=\"760\" fill=\"url(#gs8)\"/></svg>",
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"720\" height=\"760\" viewBox=\"0 0 720 760\" style=\"overflow:visible;\"><defs><linearGradient id=\"gs7\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#B9C9D6\"/><stop offset=\"1\" stop-color=\"#DCE4EA\"/></linearGradient></defs><rect width=\"720\" height=\"760\" fill=\"url(#gs7)\"/></svg>",
      "x": 360,
      "y": 380,
      "anchor": "c",
@@ -1391,7 +1342,7 @@
      "type": "svg",
      "w": 484,
      "h": 76,
-     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"484\" height=\"76\" viewBox=\"0 0 484 76\" style=\"overflow:visible;\"><defs><filter id=\"se9\" x=\"-50%\" y=\"-50%\" width=\"200%\" height=\"200%\"><feGaussianBlur stdDeviation=\"6\"/></filter></defs><ellipse cx=\"242\" cy=\"38\" rx=\"218\" ry=\"14\" fill=\"#000\" opacity=\"0.32\" filter=\"url(#se9)\"/></svg>",
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"484\" height=\"76\" viewBox=\"0 0 484 76\" style=\"overflow:visible;\"><defs><filter id=\"se8\" x=\"-50%\" y=\"-50%\" width=\"200%\" height=\"200%\"><feGaussianBlur stdDeviation=\"6\"/></filter></defs><ellipse cx=\"242\" cy=\"38\" rx=\"218\" ry=\"14\" fill=\"#000\" opacity=\"0.32\" filter=\"url(#se8)\"/></svg>",
      "x": 330,
      "y": 1174,
      "anchor": "c",
@@ -1421,7 +1372,7 @@
      "headBand": 0.2,
      "out": {
       "type": "fade",
-      "at": 5.31,
+      "at": 10.63,
       "dur": 0.25
      },
      "idle": {
@@ -1429,6 +1380,29 @@
       "amp": 0.005,
       "speed": 0.22,
       "from": 0.7
+     }
+    },
+    {
+     "type": "text",
+     "text": "جيرالد جنتا",
+     "x": 300,
+     "y": 820,
+     "font": "banner",
+     "size": 40,
+     "color": "#16181D",
+     "paper": "#EFE8D6",
+     "upper": false,
+     "z": 31,
+     "rot": -3,
+     "in": {
+      "type": "pop",
+      "at": 5.61,
+      "dur": 0.35
+     },
+     "out": {
+      "type": "fade",
+      "at": 10.200000000000001,
+      "dur": 0.2
      }
     },
     {
@@ -1440,7 +1414,7 @@
      "z": 40,
      "view": [
       [
-       5.11,
+       10.3,
        {
         "lon": 10,
         "lat": 58,
@@ -1448,7 +1422,7 @@
        }
       ],
       [
-       6.13,
+       11.93,
        {
         "lon": 0,
         "lat": 62,
@@ -1456,7 +1430,7 @@
        }
       ],
       [
-       7.64,
+       14.4,
        {
         "lon": -95,
         "lat": 58,
@@ -1465,7 +1439,7 @@
        "inOutCubic"
       ],
       [
-       9.62,
+       17.54,
        {
         "lon": -40,
         "lat": 64,
@@ -1482,28 +1456,28 @@
        "lon": 12.57,
        "lat": 55.68,
        "label": "كوبنهاغن",
-       "at": 5.59
+       "at": 11.06
       },
       {
        "id": "lax",
        "lon": -118.24,
        "lat": 34.05,
        "label": "لوس أنجلوس",
-       "at": 7.57
+       "at": 14.29
       },
       {
        "id": "pole",
        "lon": -40,
        "lat": 84,
        "label": "القطب الشمالي",
-       "at": 8.48
+       "at": 15.74
       }
      ],
      "routes": [
       {
        "from": "cph",
        "to": "lax",
-       "at": 6.13,
+       "at": 11.93,
        "dur": 2.4,
        "curve": 0.45,
        "plane": true,
@@ -1511,12 +1485,12 @@
       }
      ],
      "unfold": {
-      "at": 5.11,
+      "at": 10.3,
       "dur": 0.8
      },
      "in": {
       "type": "none",
-      "at": 5.11
+      "at": 10.3
      },
      "depth": 0
     },
@@ -1528,7 +1502,7 @@
      "radius": 30,
      "life": 0.8,
      "color": "#B23A2E",
-     "at": 8.48,
+     "at": 15.74,
      "z": 41,
      "depth": 0
     },
@@ -1538,45 +1512,52 @@
      "polaroid": true,
      "aspect": 0.69,
      "label": "SAS · 1954",
-     "w": 190,
+     "w": 280,
      "x": 360,
      "y": 800,
      "z": 45,
      "rot": [
       [
-       8.36,
+       15.29,
        -4
       ],
       [
-       9.96,
+       17.97,
        -5.2
       ]
      ],
      "in": {
       "type": "drop",
-      "at": 7.91,
+      "at": 14.84,
       "dur": 0.45
      },
      "labelSize": 22,
      "depth": 0,
      "scale": [
       [
-       8.36,
+       15.29,
        1
       ],
       [
-       9.96,
-       1.006
+       17.97,
+       1.035
       ]
-     ]
+     ],
+     "idle": {
+      "type": "float",
+      "amp": 3,
+      "speed": 0.25,
+      "phase": 0.54,
+      "from": 15.29
+     }
     }
    ],
-   "dur": 9.96,
+   "dur": 17.97,
    "silent": true,
-   "captions": "جنيف، | سنة ألف وتسعمية | وأربعة وخمسين. | شاب | عمره ثلاثة وعشرين | سنة بس، | يصمم لشركة | يونيفرسال جنيف | ساعة لرحلات طيران | إس إيه إس | فوق القطب الشمالي.",
+   "captions": "جنيف، | عام ألفٍ وتسعمئةٍ | وأربعةٍ وخمسين. | شابٌّ اسمه | جيرالد جنتا، | في الثالثة والعشرين فقط، | يصمّم لشركة | يونيفرسال جنيف | ساعةً لرحلات طيران | إس إيه إس | فوق القطب الشمالي.",
    "captionStart": 0.16999999999999998,
-   "captionEnd": 9.76,
-   "voice": "voice-habibi/clips/p1-1.wav",
+   "captionEnd": 17.77,
+   "voice": "voice-abdullah/clips/p1-1.wav",
    "voiceAt": 0.12,
    "transition": "cut",
    "camera": {
@@ -1586,17 +1567,17 @@
       1.0
      ],
      [
-      2.67,
+      4.41,
       1.0,
       "inOutCubic"
      ],
      [
-      3.67,
+      6.93,
       1.15,
       "inOutCubic"
      ],
      [
-      5.04,
+      10.19,
       1.6,
       "inOutCubic"
      ]
@@ -1607,17 +1588,17 @@
       360
      ],
      [
-      2.67,
+      4.41,
       360,
       "inOutCubic"
      ],
      [
-      3.67,
+      6.93,
       340,
       "inOutCubic"
      ],
      [
-      5.04,
+      10.19,
       250,
       "inOutCubic"
      ]
@@ -1628,17 +1609,17 @@
       640
      ],
      [
-      2.67,
+      4.41,
       620,
       "inOutCubic"
      ],
      [
-      3.67,
+      6.93,
       880,
       "inOutCubic"
      ],
      [
-      5.04,
+      10.19,
       750,
       "inOutCubic"
      ]
@@ -1646,27 +1627,32 @@
    },
    "sfx": [
     {
-     "at": 3.13,
+     "at": 5.62,
      "name": "pencil",
      "gain": -10
     },
     {
-     "at": 5.11,
+     "at": 5.61,
+     "name": "stamp",
+     "gain": -10
+    },
+    {
+     "at": 10.3,
      "name": "paper_slide",
      "gain": -12
     },
     {
-     "at": 6.13,
+     "at": 11.93,
      "name": "plane",
      "gain": -14
     },
     {
-     "at": 8.48,
+     "at": 15.74,
      "name": "pin",
      "gain": -14
     },
     {
-     "at": 7.91,
+     "at": 14.84,
      "name": "paper_place",
      "gain": -10
     }
@@ -1753,7 +1739,7 @@
        0
       ],
       [
-       4.48,
+       10.35,
        1.2
       ]
      ],
@@ -1769,23 +1755,30 @@
        1
       ],
       [
-       4.48,
-       1.006
+       10.35,
+       1.035
       ]
-     ]
+     ],
+     "idle": {
+      "type": "float",
+      "amp": 3,
+      "speed": 0.25,
+      "phase": 1.27,
+      "from": 0.45
+     }
     },
     {
      "type": "svg",
      "w": 130,
      "h": 480.43510588235296,
-     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"130\" height=\"480\" viewBox=\"0 0 130 480\" style=\"overflow:visible;\"><defs><linearGradient id=\"gl10\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/><stop offset=\".5\" stop-color=\"#FFFAEB\" stop-opacity=\"0.42\"/><stop offset=\"1\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/></linearGradient></defs><polygon points=\"40.0,0.0 130.0,0.0 90.0,480.4 0.0,480.4\" fill=\"url(#gl10)\"/></svg>",
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"130\" height=\"480\" viewBox=\"0 0 130 480\" style=\"overflow:visible;\"><defs><linearGradient id=\"gl9\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/><stop offset=\".5\" stop-color=\"#FFFAEB\" stop-opacity=\"0.42\"/><stop offset=\"1\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/></linearGradient></defs><polygon points=\"40.0,0.0 130.0,0.0 90.0,480.4 0.0,480.4\" fill=\"url(#gl9)\"/></svg>",
      "x": [
       [
-       1.61,
+       6.23,
        179.0
       ],
       [
-       2.31,
+       6.930000000000001,
        541.0,
        "inOutCubic"
       ]
@@ -1795,38 +1788,38 @@
      "z": 21,
      "in": {
       "type": "none",
-      "at": 1.61,
+      "at": 6.23,
       "dur": 0.5
      },
      "rot": 0,
      "still": true,
      "opacity": [
       [
-       1.61,
+       6.23,
        0
       ],
       [
-       1.73,
+       6.3500000000000005,
        1
       ],
       [
-       2.19,
+       6.8100000000000005,
        1
       ],
       [
-       2.31,
+       6.930000000000001,
        0
       ]
      ],
      "out": {
       "type": "fade",
-      "at": 2.31,
+      "at": 6.930000000000001,
       "dur": 0.01
      }
     },
     {
      "type": "text",
-     "text": "أول اسم لها: Polarouter",
+     "text": "Polarouter ← Polerouter",
      "x": 360,
      "y": 1130,
      "font": "banner",
@@ -1838,12 +1831,12 @@
      "rot": 1.5,
      "in": {
       "type": "pop",
-      "at": 1.94,
+      "at": 6.73,
       "dur": 0.35
      },
      "out": {
       "type": "fade",
-      "at": 4.18,
+      "at": 6.63,
       "dur": 0.2
      },
      "depth": 0
@@ -2047,22 +2040,22 @@
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"150\" height=\"96\" viewBox=\"0 0 150 96\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><rect width=\"150\" height=\"96\" rx=\"4\" fill=\"#EFE8D6\"/><path d=\"M 0 0 L 75 52 L 150 0\" fill=\"#E2D9C3\" stroke=\"#CFC6B1\" stroke-width=\"1.5\"/><circle cx=\"75\" cy=\"52\" r=\"10\" fill=\"#9E2B22\"/></svg>",
      "x": [
       [
-       2.23,
+       6.63,
        -200
       ],
       [
-       2.73,
+       7.13,
        140,
        "outCubic"
       ]
      ],
      "y": [
       [
-       2.23,
+       6.63,
        880
       ],
       [
-       2.73,
+       7.13,
        880,
        "outCubic"
       ]
@@ -2071,7 +2064,7 @@
      "z": 15,
      "in": {
       "type": "none",
-      "at": 2.23,
+      "at": 6.63,
       "dur": 0.5
      },
      "rot": -10
@@ -2083,22 +2076,22 @@
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"150\" height=\"96\" viewBox=\"0 0 150 96\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><rect width=\"150\" height=\"96\" rx=\"4\" fill=\"#EFE8D6\"/><path d=\"M 0 0 L 75 52 L 150 0\" fill=\"#E2D9C3\" stroke=\"#CFC6B1\" stroke-width=\"1.5\"/><circle cx=\"75\" cy=\"52\" r=\"10\" fill=\"#9E2B22\"/></svg>",
      "x": [
       [
-       2.53,
+       6.93,
        900
       ],
       [
-       3.03,
+       7.43,
        590,
        "outCubic"
       ]
      ],
      "y": [
       [
-       2.53,
+       6.93,
        900
       ],
       [
-       3.03,
+       7.43,
        880,
        "outCubic"
       ]
@@ -2107,7 +2100,7 @@
      "z": 15,
      "in": {
       "type": "none",
-      "at": 2.53,
+      "at": 6.93,
       "dur": 0.5
      },
      "rot": 8
@@ -2119,22 +2112,22 @@
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"150\" height=\"96\" viewBox=\"0 0 150 96\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><rect width=\"150\" height=\"96\" rx=\"4\" fill=\"#EFE8D6\"/><path d=\"M 0 0 L 75 52 L 150 0\" fill=\"#E2D9C3\" stroke=\"#CFC6B1\" stroke-width=\"1.5\"/><circle cx=\"75\" cy=\"52\" r=\"10\" fill=\"#9E2B22\"/></svg>",
      "x": [
       [
-       2.83,
+       7.2299999999999995,
        900
       ],
       [
-       3.33,
+       7.7299999999999995,
        585,
        "outCubic"
       ]
      ],
      "y": [
       [
-       2.83,
+       7.2299999999999995,
        250
       ],
       [
-       3.33,
+       7.7299999999999995,
        330,
        "outCubic"
       ]
@@ -2143,34 +2136,34 @@
      "z": 15,
      "in": {
       "type": "none",
-      "at": 2.83,
+      "at": 7.2299999999999995,
       "dur": 0.5
      },
      "rot": 12
     }
    ],
-   "dur": 4.48,
+   "dur": 10.35,
    "silent": true,
-   "captions": "اسمها البولروتر… | وهي اللي خلت | اسمه ينعرف | عند شركات الساعات.",
+   "captions": "اسمها الأول | بولاراوتر… | ثم استقرّ الاسم | لاحقًا على بولروتر. | وهي التي | جعلت اسمه معروفًا | لدى شركات الساعات.",
    "captionStart": 0.16999999999999998,
-   "captionEnd": 4.28,
-   "voice": "voice-habibi/clips/p1-2.wav",
+   "captionEnd": 10.149999999999999,
+   "voice": "voice-abdullah/clips/p1-2.wav",
    "voiceAt": 0.12,
    "transition": "fade",
    "camera": {
     "zoom": [
      [
       0,
-      1.9
+      1.25
      ],
      [
-      1.45,
+      5.99,
       1.0,
       "inOutCubic"
      ],
      [
       5.3,
-      1.08,
+      1.05,
       "inOutCubic"
      ]
     ],
@@ -2180,7 +2173,7 @@
       360
      ],
      [
-      1.45,
+      5.99,
       360,
       "inOutCubic"
      ],
@@ -2193,16 +2186,16 @@
     "y": [
      [
       0,
-      560
+      580
      ],
      [
-      1.45,
+      5.99,
       620,
       "inOutCubic"
      ],
      [
       5.3,
-      600,
+      610,
       "inOutCubic"
      ]
     ]
@@ -2214,22 +2207,22 @@
      "gain": -12
     },
     {
-     "at": 1.61,
+     "at": 6.23,
      "name": "tick",
      "gain": -16
     },
     {
-     "at": 2.23,
+     "at": 6.63,
      "name": "paper_slide",
      "gain": -16
     },
     {
-     "at": 2.53,
+     "at": 6.93,
      "name": "paper_slide",
      "gain": -16
     },
     {
-     "at": 2.83,
+     "at": 7.23,
      "name": "paper_slide",
      "gain": -16
     }
@@ -2282,7 +2275,7 @@
       "amp": 3,
       "speed": 9,
       "from": 0.2,
-      "until": 1.21
+      "until": 2.72
      }
     },
     {
@@ -2293,11 +2286,11 @@
      "x": 560,
      "y": [
       [
-       1.21,
+       2.72,
        290
       ],
       [
-       1.51,
+       3.02,
        240,
        "outBack"
       ]
@@ -2312,11 +2305,11 @@
      "scale": 0.6,
      "rot": [
       [
-       1.21,
+       2.72,
        0
       ],
       [
-       1.51,
+       3.02,
        -18
       ]
      ],
@@ -2325,7 +2318,7 @@
       "amp": 3,
       "speed": 9,
       "from": 0.2,
-      "until": 1.21
+      "until": 2.72
      }
     },
     {
@@ -2350,15 +2343,15 @@
      },
      "out": {
       "type": "fade",
-      "at": 1.21,
+      "at": 2.72,
       "dur": 0.1
      }
     },
     {
      "type": "text",
      "text": "أوميغا",
-     "x": 560,
-     "y": 160,
+     "x": 470,
+     "y": 210,
      "font": "banner",
      "size": 34,
      "color": "#16181D",
@@ -2368,7 +2361,7 @@
      "rot": -2,
      "in": {
       "type": "pop",
-      "at": 0.37,
+      "at": 0.46,
       "dur": 0.35
      }
     },
@@ -2384,43 +2377,50 @@
      "z": 20,
      "rot": [
       [
-       1.74,
+       3.28,
        -2
       ],
       [
-       3.98,
+       6.96,
        -3.2
       ]
      ],
      "in": {
       "type": "rise",
-      "at": 1.29,
+      "at": 2.83,
       "dur": 0.45
      },
      "labelSize": 22,
      "scale": [
       [
-       1.74,
+       3.28,
        1
       ],
       [
-       3.98,
-       1.006
+       6.96,
+       1.035
       ]
-     ]
+     ],
+     "idle": {
+      "type": "float",
+      "amp": 3,
+      "speed": 0.25,
+      "phase": 5.06,
+      "from": 3.28
+     }
     },
     {
      "type": "svg",
      "w": 130,
      "h": 496.32,
-     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"130\" height=\"496\" viewBox=\"0 0 130 496\" style=\"overflow:visible;\"><defs><linearGradient id=\"gl11\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/><stop offset=\".5\" stop-color=\"#FFFAEB\" stop-opacity=\"0.42\"/><stop offset=\"1\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/></linearGradient></defs><polygon points=\"40.0,0.0 130.0,0.0 90.0,496.3 0.0,496.3\" fill=\"url(#gl11)\"/></svg>",
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"130\" height=\"496\" viewBox=\"0 0 130 496\" style=\"overflow:visible;\"><defs><linearGradient id=\"gl10\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/><stop offset=\".5\" stop-color=\"#FFFAEB\" stop-opacity=\"0.42\"/><stop offset=\"1\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/></linearGradient></defs><polygon points=\"40.0,0.0 130.0,0.0 90.0,496.3 0.0,496.3\" fill=\"url(#gl10)\"/></svg>",
      "x": [
       [
-       2.68,
+       4.44,
        179.0
       ],
       [
-       3.38,
+       5.140000000000001,
        401.0,
        "inOutCubic"
       ]
@@ -2430,38 +2430,38 @@
      "z": 21,
      "in": {
       "type": "none",
-      "at": 2.68,
+      "at": 4.44,
       "dur": 0.5
      },
      "rot": -2,
      "still": true,
      "opacity": [
       [
-       2.68,
+       4.44,
        0
       ],
       [
-       2.8000000000000003,
+       4.5600000000000005,
        1
       ],
       [
-       3.26,
+       5.0200000000000005,
        1
       ],
       [
-       3.38,
+       5.140000000000001,
        0
       ]
      ],
      "out": {
       "type": "fade",
-      "at": 3.38,
+      "at": 5.140000000000001,
       "dur": 0.01
      }
     },
     {
      "type": "text",
-     "text": "قبل ما يجددها",
+     "text": "Constellation · 1958",
      "x": 290,
      "y": 262,
      "font": "banner",
@@ -2473,7 +2473,7 @@
      "rot": -3,
      "in": {
       "type": "pop",
-      "at": 2.48,
+      "at": 4.24,
       "dur": 0.35
      }
     },
@@ -2488,7 +2488,7 @@
      "z": 8,
      "in": {
       "type": "pop",
-      "at": 2.13,
+      "at": 4.22,
       "dur": 0.3
      },
      "idle": {
@@ -2508,7 +2508,7 @@
      "z": 8,
      "in": {
       "type": "pop",
-      "at": 2.28,
+      "at": 4.37,
       "dur": 0.3
      },
      "idle": {
@@ -2528,7 +2528,7 @@
      "z": 8,
      "in": {
       "type": "pop",
-      "at": 2.4299999999999997,
+      "at": 4.52,
       "dur": 0.3
      },
      "idle": {
@@ -2548,7 +2548,7 @@
      "z": 8,
      "in": {
       "type": "pop",
-      "at": 2.58,
+      "at": 4.67,
       "dur": 0.3
      },
      "idle": {
@@ -2568,7 +2568,7 @@
      "z": 8,
      "in": {
       "type": "pop",
-      "at": 2.73,
+      "at": 4.819999999999999,
       "dur": 0.3
      },
      "idle": {
@@ -2588,7 +2588,7 @@
      "z": 8,
      "in": {
       "type": "pop",
-      "at": 2.88,
+      "at": 4.97,
       "dur": 0.3
      },
      "idle": {
@@ -2608,7 +2608,7 @@
      "z": 8,
      "in": {
       "type": "pop",
-      "at": 3.03,
+      "at": 5.119999999999999,
       "dur": 0.3
      },
      "idle": {
@@ -2628,7 +2628,7 @@
      "z": 8,
      "in": {
       "type": "pop",
-      "at": 3.1799999999999997,
+      "at": 5.27,
       "dur": 0.3
      },
      "idle": {
@@ -2638,12 +2638,12 @@
      }
     }
    ],
-   "dur": 3.98,
+   "dur": 6.96,
    "silent": true,
-   "captions": "بعدها جات أوميغا، | وطلبت منه يجدد | مجموعة الكونستليشن.",
+   "captions": "بعدها، | ساهم في | تصاميم أوميغا… | ومنها أعمالٌ | ارتبطت بمجموعة | الكونستليشن.",
    "captionStart": 0.16999999999999998,
-   "captionEnd": 3.7800000000000002,
-   "voice": "voice-habibi/clips/p1-3.wav",
+   "captionEnd": 6.76,
+   "voice": "voice-abdullah/clips/p1-3.wav",
    "voiceAt": 0.12,
    "transition": "slide",
    "camera": {
@@ -2653,7 +2653,7 @@
       1.05
      ],
      [
-      1.21,
+      2.72,
       1.0,
       "inOutCubic"
      ],
@@ -2669,7 +2669,7 @@
       470
      ],
      [
-      1.21,
+      2.72,
       360,
       "inOutCubic"
      ],
@@ -2685,7 +2685,7 @@
       470
      ],
      [
-      1.21,
+      2.72,
       640,
       "inOutCubic"
      ],
@@ -2703,17 +2703,17 @@
      "gain": -12
     },
     {
-     "at": 1.21,
+     "at": 2.72,
      "name": "click",
      "gain": -9
     },
     {
-     "at": 1.29,
+     "at": 2.83,
      "name": "paper_place",
      "gain": -10
     },
     {
-     "at": 2.68,
+     "at": 4.44,
      "name": "tick",
      "gain": -16
     }
@@ -2806,13 +2806,13 @@
      "z": 15,
      "in": {
       "type": "slideU",
-      "at": 1.55,
+      "at": 2.1,
       "dur": 0.5
      },
      "rot": -3,
      "out": {
       "type": "fade",
-      "at": 3.7399999999999998,
+      "at": 7.37,
       "dur": 0.3
      }
     },
@@ -2827,12 +2827,12 @@
      "z": 16,
      "in": {
       "type": "slam",
-      "at": 2.25,
+      "at": 2.8,
       "dur": 0.25
      },
      "out": {
       "type": "fade",
-      "at": 3.7399999999999998,
+      "at": 7.37,
       "dur": 0.3
      }
     },
@@ -2848,30 +2848,37 @@
      "z": 20,
      "rot": [
       [
-       4.19,
+       7.82,
        -3
       ],
       [
-       7.32,
+       12.12,
        -4.2
       ]
      ],
      "in": {
       "type": "rise",
-      "at": 3.7399999999999998,
+      "at": 7.37,
       "dur": 0.45
      },
      "labelSize": 24,
      "scale": [
       [
-       4.19,
+       7.82,
        1
       ],
       [
-       7.32,
-       1.006
+       12.12,
+       1.035
       ]
-     ]
+     ],
+     "idle": {
+      "type": "float",
+      "amp": 3,
+      "speed": 0.25,
+      "phase": 4.31,
+      "from": 7.82
+     }
     },
     {
      "type": "image",
@@ -2885,30 +2892,37 @@
      "z": 21,
      "rot": [
       [
-       6.05,
+       10.4,
        3
       ],
       [
-       7.32,
+       12.12,
        4.2
       ]
      ],
      "in": {
       "type": "rise",
-      "at": 5.6,
+      "at": 9.950000000000001,
       "dur": 0.45
      },
      "labelSize": 24,
      "scale": [
       [
-       6.05,
+       10.4,
        1
       ],
       [
-       7.32,
-       1.006
+       12.12,
+       1.035
       ]
-     ]
+     ],
+     "idle": {
+      "type": "float",
+      "amp": 3,
+      "speed": 0.25,
+      "phase": 4.15,
+      "from": 10.4
+     }
     },
     {
      "type": "sketch",
@@ -2921,7 +2935,7 @@
      "paths": [
       {
        "d": "M 144.0 668.0 a 56.0 56.0 0 1 0 112.0 0 a 56.0 56.0 0 1 0 -112.0 0",
-       "at": 4.66,
+       "at": 8.62,
        "dur": 0.4,
        "stroke": "#B23A2E",
        "width": 3,
@@ -2929,7 +2943,7 @@
       },
       {
        "d": "M 136 604 L 264 604 L 264 732 L 136 732 Z",
-       "at": 5.0600000000000005,
+       "at": 9.02,
        "dur": 0.4,
        "stroke": "#B23A2E",
        "width": 3,
@@ -2949,7 +2963,7 @@
      "paths": [
       {
        "d": "M 476.0 590.0 L 476.0 602.2 M 476.0 612.2 L 476.0 624.4 M 476.0 634.4 L 476.0 646.7 M 476.0 656.7 L 476.0 668.9 M 476.0 678.9 L 476.0 691.1 M 476.0 701.1 L 476.0 713.3 M 476.0 723.3 L 476.0 735.6 M 476.0 745.6 L 476.0 757.8 M 476.0 767.8 L 476.0 780.0",
-       "at": 6.22,
+       "at": 10.71,
        "dur": 0.35,
        "stroke": "#B23A2E",
        "width": 3,
@@ -2957,7 +2971,7 @@
       },
       {
        "d": "M 508.0 590.0 L 506.3 602.2 M 504.9 612.2 L 503.2 624.4 M 501.8 634.4 L 500.1 646.7 M 498.7 656.7 L 497.0 668.9 M 495.6 678.9 L 493.8 691.1 M 492.4 701.1 L 490.7 713.3 M 489.3 723.3 L 487.6 735.6 M 486.2 745.6 L 484.5 757.8 M 483.1 767.8 L 481.4 780.0",
-       "at": 6.67,
+       "at": 11.16,
        "dur": 0.35,
        "stroke": "#B23A2E",
        "width": 3,
@@ -2967,12 +2981,12 @@
      "texts": []
     }
    ],
-   "dur": 7.32,
+   "dur": 12.12,
    "silent": true,
-   "captions": "ومع بداية الستينات، | يظهر اسمه | في أرشيف | أوديمار بيغيه: | ساعة تجمع | الدائرة والمربع، | وساعة غير متناظرة…",
+   "captions": "ومع بداية الستينيات، | يظهر اسمه | في أرشيف | أوديمار بيغيه… | وتُنسب إليه | ساعاتٌ مثل: | ساعةٍ تجمع | الدائرة والمربع، | وأخرى غير متناظرة…",
    "captionStart": 0.16999999999999998,
-   "captionEnd": 7.12,
-   "voice": "voice-habibi/clips/p1-4.wav",
+   "captionEnd": 11.92,
+   "voice": "voice-abdullah/clips/p1-4.wav",
    "voiceAt": 0.12,
    "transition": "slide",
    "camera": {
@@ -2982,21 +2996,21 @@
       1.0
      ],
      [
-      3.7399999999999998,
+      7.37,
       1.02,
       "inOutCubic"
      ],
      [
-      4.46,
+      8.42,
       1.18,
       "inOutCubic"
      ],
      [
-      5.6,
+      9.950000000000001,
       1.18
      ],
      [
-      6.22,
+      10.71,
       1.18,
       "inOutCubic"
      ],
@@ -3012,21 +3026,21 @@
       360
      ],
      [
-      3.7399999999999998,
+      7.37,
       340,
       "inOutCubic"
      ],
      [
-      4.46,
+      8.42,
       210,
       "inOutCubic"
      ],
      [
-      5.6,
+      9.950000000000001,
       230
      ],
      [
-      6.22,
+      10.71,
       500,
       "inOutCubic"
      ],
@@ -3042,21 +3056,21 @@
       620
      ],
      [
-      3.7399999999999998,
+      7.37,
       600,
       "inOutCubic"
      ],
      [
-      4.46,
+      8.42,
       700,
       "inOutCubic"
      ],
      [
-      5.6,
+      9.950000000000001,
       700
      ],
      [
-      6.22,
+      10.71,
       700,
       "inOutCubic"
      ],
@@ -3084,34 +3098,348 @@
      "gain": -15
     },
     {
-     "at": 1.55,
+     "at": 2.1,
      "name": "paper_slide",
      "gain": -12
     },
     {
-     "at": 2.25,
+     "at": 2.8,
      "name": "stamp",
      "gain": -10
     },
     {
-     "at": 3.74,
+     "at": 7.37,
      "name": "shutter",
      "gain": -14
     },
     {
-     "at": 5.6,
+     "at": 9.95,
      "name": "shutter",
      "gain": -14
     },
     {
-     "at": 4.66,
+     "at": 8.62,
      "name": "pencil",
      "gain": -10
     },
     {
-     "at": 6.22,
+     "at": 10.71,
      "name": "pencil",
      "gain": -10
+    }
+   ]
+  },
+  {
+   "theme": "ro-paper",
+   "floor": false,
+   "elements": [
+    {
+     "type": "svg",
+     "w": 640,
+     "h": 960,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"640\" height=\"960\" viewBox=\"0 0 640 960\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><rect width=\"640\" height=\"960\" fill=\"#F3EDDF\"/><line x1=\"0\" y1=\"0\" x2=\"640\" y2=\"0\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"0\" y1=\"32\" x2=\"640\" y2=\"32\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"0\" y1=\"64\" x2=\"640\" y2=\"64\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"0\" y1=\"96\" x2=\"640\" y2=\"96\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"0\" y1=\"128\" x2=\"640\" y2=\"128\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"0\" y1=\"160\" x2=\"640\" y2=\"160\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"0\" y1=\"192\" x2=\"640\" y2=\"192\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"0\" y1=\"224\" x2=\"640\" y2=\"224\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"0\" y1=\"256\" x2=\"640\" y2=\"256\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"0\" y1=\"288\" x2=\"640\" y2=\"288\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"0\" y1=\"320\" x2=\"640\" y2=\"320\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"0\" y1=\"352\" x2=\"640\" y2=\"352\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"0\" y1=\"384\" x2=\"640\" y2=\"384\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"0\" y1=\"416\" x2=\"640\" y2=\"416\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"0\" y1=\"448\" x2=\"640\" y2=\"448\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"0\" y1=\"480\" x2=\"640\" y2=\"480\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"0\" y1=\"512\" x2=\"640\" y2=\"512\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"0\" y1=\"544\" x2=\"640\" y2=\"544\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"0\" y1=\"576\" x2=\"640\" y2=\"576\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"0\" y1=\"608\" x2=\"640\" y2=\"608\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"0\" y1=\"640\" x2=\"640\" y2=\"640\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"0\" y1=\"672\" x2=\"640\" y2=\"672\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"0\" y1=\"704\" x2=\"640\" y2=\"704\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"0\" y1=\"736\" x2=\"640\" y2=\"736\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"0\" y1=\"768\" x2=\"640\" y2=\"768\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"0\" y1=\"800\" x2=\"640\" y2=\"800\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"0\" y1=\"832\" x2=\"640\" y2=\"832\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"0\" y1=\"864\" x2=\"640\" y2=\"864\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"0\" y1=\"896\" x2=\"640\" y2=\"896\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"0\" y1=\"928\" x2=\"640\" y2=\"928\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"0\" y1=\"0\" x2=\"0\" y2=\"960\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"32\" y1=\"0\" x2=\"32\" y2=\"960\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"64\" y1=\"0\" x2=\"64\" y2=\"960\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"96\" y1=\"0\" x2=\"96\" y2=\"960\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"128\" y1=\"0\" x2=\"128\" y2=\"960\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"160\" y1=\"0\" x2=\"160\" y2=\"960\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"192\" y1=\"0\" x2=\"192\" y2=\"960\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"224\" y1=\"0\" x2=\"224\" y2=\"960\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"256\" y1=\"0\" x2=\"256\" y2=\"960\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"288\" y1=\"0\" x2=\"288\" y2=\"960\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"320\" y1=\"0\" x2=\"320\" y2=\"960\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"352\" y1=\"0\" x2=\"352\" y2=\"960\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"384\" y1=\"0\" x2=\"384\" y2=\"960\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"416\" y1=\"0\" x2=\"416\" y2=\"960\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"448\" y1=\"0\" x2=\"448\" y2=\"960\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"480\" y1=\"0\" x2=\"480\" y2=\"960\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"512\" y1=\"0\" x2=\"512\" y2=\"960\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"544\" y1=\"0\" x2=\"544\" y2=\"960\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"576\" y1=\"0\" x2=\"576\" y2=\"960\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"608\" y1=\"0\" x2=\"608\" y2=\"960\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><rect x=\"14\" y=\"14\" width=\"612\" height=\"932\" fill=\"none\" stroke=\"#8A9AA6\" stroke-width=\"2\"/></svg>",
+     "x": 360,
+     "y": 620,
+     "anchor": "c",
+     "z": 2,
+     "in": {
+      "type": "fade",
+      "at": 0,
+      "dur": 0.4
+     },
+     "depth": 0.9
+    },
+    {
+     "type": "text",
+     "text": "أرشيف أوديمار بيغيه",
+     "x": 360,
+     "y": 170,
+     "font": "banner",
+     "size": 30,
+     "color": "#16181D",
+     "paper": "#EFE8D6",
+     "upper": false,
+     "z": 40,
+     "rot": -2,
+     "in": {
+      "type": "pop",
+      "at": 0.1,
+      "dur": 0.35
+     },
+     "out": {
+      "type": "fade",
+      "at": 5.52,
+      "dur": 0.2
+     },
+     "depth": 0
+    },
+    {
+     "type": "image",
+     "src": "assets/ap/m5179.jpg",
+     "polaroid": true,
+     "aspect": 0.8676789587852495,
+     "label": "Ref. 5179 · 1961",
+     "w": 330,
+     "x": 210,
+     "y": 470,
+     "z": 10,
+     "rot": [
+      [
+       0.8,
+       -6
+      ],
+      [
+       5.72,
+       -7.2
+      ]
+     ],
+     "in": {
+      "type": "drop",
+      "at": 0.35,
+      "dur": 0.45
+     },
+     "labelSize": 18,
+     "out": {
+      "type": "fade",
+      "at": 5.72,
+      "dur": 0.25
+     },
+     "scale": [
+      [
+       0.8,
+       1
+      ],
+      [
+       5.72,
+       1.035
+      ]
+     ],
+     "idle": {
+      "type": "float",
+      "amp": 3,
+      "speed": 0.25,
+      "phase": 4.31,
+      "from": 0.8
+     }
+    },
+    {
+     "type": "image",
+     "src": "assets/ap/m5182.jpg",
+     "polaroid": true,
+     "aspect": 0.8676789587852495,
+     "label": "Ref. 5182 · 1962",
+     "w": 330,
+     "x": 510,
+     "y": 600,
+     "z": 11,
+     "rot": [
+      [
+       1.25,
+       5
+      ],
+      [
+       5.72,
+       6.2
+      ]
+     ],
+     "in": {
+      "type": "drop",
+      "at": 0.8,
+      "dur": 0.45
+     },
+     "labelSize": 18,
+     "out": {
+      "type": "fade",
+      "at": 5.72,
+      "dur": 0.25
+     },
+     "scale": [
+      [
+       1.25,
+       1
+      ],
+      [
+       5.72,
+       1.035
+      ]
+     ],
+     "idle": {
+      "type": "float",
+      "amp": 3,
+      "speed": 0.25,
+      "phase": 4.15,
+      "from": 1.25
+     }
+    },
+    {
+     "type": "svg",
+     "w": 300,
+     "h": 260,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"300\" height=\"260\" viewBox=\"0 0 300 260\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><path d=\"M40 74 Q40 54 62 54 L238 54 Q260 54 260 74 L282 232 Q284 254 260 254 L40 254 Q16 254 18 232 Z\" fill=\"#7A4E2D\"/><path d=\"M40 74 Q40 54 62 54 L238 54 Q260 54 260 74 L264 110 L36 110 Z\" fill=\"#8C5C36\"/><path d=\"M104 54 Q104 6 150 6 Q196 6 196 54\" fill=\"none\" stroke=\"#5A3820\" stroke-width=\"12\" stroke-linecap=\"round\"/><rect x=\"136\" y=\"100\" width=\"28\" height=\"20\" rx=\"3\" fill=\"#C9A35E\"/></svg>",
+     "x": 360,
+     "y": 700,
+     "anchor": "c",
+     "z": 14,
+     "in": {
+      "type": "drop",
+      "at": 5.319999999999999,
+      "dur": 0.45
+     },
+     "rot": -3
+    },
+    {
+     "type": "image",
+     "src": "assets/crop/m8311_open.jpg",
+     "polaroid": true,
+     "aspect": 0.7301587301587301,
+     "label": "Ref. 8311 · 1967",
+     "w": 460,
+     "x": 360,
+     "y": [
+      [
+       5.819999999999999,
+       700
+      ],
+      [
+       6.52,
+       560,
+       "outCubic"
+      ]
+     ],
+     "z": 16,
+     "rot": [
+      [
+       6.27,
+       3
+      ],
+      [
+       8.4,
+       4.2
+      ]
+     ],
+     "in": {
+      "type": "pop",
+      "at": 5.819999999999999,
+      "dur": 0.45
+     },
+     "labelSize": 22,
+     "scale": [
+      [
+       6.27,
+       1
+      ],
+      [
+       8.4,
+       1.035
+      ]
+     ],
+     "idle": {
+      "type": "float",
+      "amp": 3,
+      "speed": 0.25,
+      "phase": 1.66,
+      "from": 6.27
+     }
+    }
+   ],
+   "dur": 8.4,
+   "silent": true,
+   "captions": "قبل الرويال أوك، | صمّم لأوديمار بيغيه | أشكالًا غير مألوفة… | حتى ساعةً | تختبئ داخل حقيبة.",
+   "captionStart": 0.16999999999999998,
+   "captionEnd": 8.2,
+   "voice": "voice-abdullah/clips/p1-a.wav",
+   "voiceAt": 0.12,
+   "transition": "slide",
+   "camera": {
+    "zoom": [
+     [
+      0,
+      1.0
+     ],
+     [
+      3.66,
+      1.06,
+      "inOutCubic"
+     ],
+     [
+      5.52,
+      1.06,
+      "inOutCubic"
+     ],
+     [
+      8.4,
+      1.08,
+      "inOutCubic"
+     ]
+    ],
+    "x": [
+     [
+      0,
+      360
+     ],
+     [
+      3.66,
+      360,
+      "inOutCubic"
+     ],
+     [
+      5.52,
+      360,
+      "inOutCubic"
+     ],
+     [
+      8.4,
+      360,
+      "inOutCubic"
+     ]
+    ],
+    "y": [
+     [
+      0,
+      620
+     ],
+     [
+      3.66,
+      560,
+      "inOutCubic"
+     ],
+     [
+      5.52,
+      640,
+      "inOutCubic"
+     ],
+     [
+      8.4,
+      620,
+      "inOutCubic"
+     ]
+    ]
+   },
+   "sfx": [
+    {
+     "at": 0,
+     "name": "paper_slide",
+     "gain": -13
+    },
+    {
+     "at": 0.35,
+     "name": "shutter",
+     "gain": -14
+    },
+    {
+     "at": 0.8,
+     "name": "shutter",
+     "gain": -14
+    },
+    {
+     "at": 5.32,
+     "name": "paper_place",
+     "gain": -11
+    },
+    {
+     "at": 5.82,
+     "name": "clasp",
+     "gain": -9
     }
    ]
   },
@@ -3225,43 +3553,50 @@
      "z": 14,
      "rot": [
       [
-       1.87,
+       2.92,
        3
       ],
       [
-       5.21,
+       7.56,
        4.2
       ]
      ],
      "in": {
       "type": "drop",
-      "at": 1.42,
+      "at": 2.4699999999999998,
       "dur": 0.45
      },
      "labelSize": 20,
      "scale": [
       [
-       1.87,
+       2.92,
        1
       ],
       [
-       5.21,
-       1.006
+       7.56,
+       1.035
       ]
-     ]
+     ],
+     "idle": {
+      "type": "float",
+      "amp": 3,
+      "speed": 0.25,
+      "phase": 1.67,
+      "from": 2.92
+     }
     },
     {
      "type": "svg",
      "w": 130,
      "h": 565.8491803278689,
-     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"130\" height=\"565\" viewBox=\"0 0 130 565\" style=\"overflow:visible;\"><defs><linearGradient id=\"gl12\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/><stop offset=\".5\" stop-color=\"#FFFAEB\" stop-opacity=\"0.42\"/><stop offset=\"1\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/></linearGradient></defs><polygon points=\"40.0,0.0 130.0,0.0 90.0,565.8 0.0,565.8\" fill=\"url(#gl12)\"/></svg>",
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"130\" height=\"565\" viewBox=\"0 0 130 565\" style=\"overflow:visible;\"><defs><linearGradient id=\"gl11\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"0\"><stop offset=\"0\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/><stop offset=\".5\" stop-color=\"#FFFAEB\" stop-opacity=\"0.42\"/><stop offset=\"1\" stop-color=\"#FFFAEB\" stop-opacity=\"0\"/></linearGradient></defs><polygon points=\"40.0,0.0 130.0,0.0 90.0,565.8 0.0,565.8\" fill=\"url(#gl11)\"/></svg>",
      "x": [
       [
-       2.2199999999999998,
+       3.2699999999999996,
        409.0
       ],
       [
-       2.92,
+       3.9699999999999998,
        551.0,
        "inOutCubic"
       ]
@@ -3271,32 +3606,32 @@
      "z": 15,
      "in": {
       "type": "none",
-      "at": 2.2199999999999998,
+      "at": 3.2699999999999996,
       "dur": 0.5
      },
      "rot": 3,
      "still": true,
      "opacity": [
       [
-       2.2199999999999998,
+       3.2699999999999996,
        0
       ],
       [
-       2.34,
+       3.3899999999999997,
        1
       ],
       [
-       2.8,
+       3.8499999999999996,
        1
       ],
       [
-       2.92,
+       3.9699999999999998,
        0
       ]
      ],
      "out": {
       "type": "fade",
-      "at": 2.92,
+      "at": 3.9699999999999998,
       "dur": 0.01
      }
     },
@@ -3306,36 +3641,43 @@
      "polaroid": true,
      "aspect": 0.8676789587852495,
      "label": "رسم التصميم",
-     "w": 240,
+     "w": 280,
      "x": 200,
      "y": 560,
      "z": 12,
      "rot": [
       [
-       2.65,
+       4.25,
        -5
       ],
       [
-       5.21,
+       7.56,
        -6.2
       ]
      ],
      "in": {
       "type": "drop",
-      "at": 2.2,
+      "at": 3.8,
       "dur": 0.45
      },
      "labelSize": 22,
      "scale": [
       [
-       2.65,
+       4.25,
        1
       ],
       [
-       5.21,
-       1.006
+       7.56,
+       1.035
       ]
-     ]
+     ],
+     "idle": {
+      "type": "float",
+      "amp": 3,
+      "speed": 0.25,
+      "phase": 4.31,
+      "from": 4.25
+     }
     },
     {
      "type": "svg",
@@ -3348,7 +3690,7 @@
      "z": 20,
      "in": {
       "type": "drop",
-      "at": 2.87,
+      "at": 4.73,
       "dur": 0.45
      },
      "rot": -6,
@@ -3356,7 +3698,7 @@
       "type": "sway",
       "amp": 2,
       "speed": 0.45,
-      "from": 3.3200000000000003
+      "from": 5.180000000000001
      }
     },
     {
@@ -3367,16 +3709,16 @@
      "radius": 40,
      "life": 0.7,
      "color": "#EFE8D6",
-     "at": 3.27,
+     "at": 5.130000000000001,
      "z": 21
     }
    ],
-   "dur": 5.21,
+   "dur": 7.56,
    "silent": true,
-   "captions": "وفي سنة | سبعة وستين، | ساعة شنطة | من تصميمه | تاخذ تنويه | في جائزة | مدينة جنيف.",
+   "captions": "وفي عام | سبعةٍ وستين، | تنال ساعةٌ للحقيبة | من تصميمه | تنويهًا | في جائزة | مدينة جنيف.",
    "captionStart": 0.16999999999999998,
-   "captionEnd": 5.01,
-   "voice": "voice-habibi/clips/p1-5.wav",
+   "captionEnd": 7.36,
+   "voice": "voice-abdullah/clips/p1-5.wav",
    "voiceAt": 0.12,
    "transition": "cut",
    "camera": {
@@ -3386,18 +3728,19 @@
       1.06
      ],
      [
-      1.52,
+      2.57,
       1.0,
       "inOutCubic"
      ],
      [
-      2.8000000000000003,
-      1.3,
+      4.3999999999999995,
+      1.08,
       "inOutCubic"
      ],
      [
-      2.77,
-      1.25
+      4.630000000000001,
+      1.1,
+      "inOutCubic"
      ],
      [
       7.37,
@@ -3411,18 +3754,19 @@
       360
      ],
      [
-      1.52,
+      2.57,
       380,
       "inOutCubic"
      ],
      [
-      2.8000000000000003,
-      480,
+      4.3999999999999995,
+      360,
       "inOutCubic"
      ],
      [
-      2.77,
-      460
+      4.630000000000001,
+      320,
+      "inOutCubic"
      ],
      [
       7.37,
@@ -3436,18 +3780,19 @@
       700
      ],
      [
-      1.52,
+      2.57,
       640,
       "inOutCubic"
      ],
      [
-      2.8000000000000003,
-      690,
+      4.3999999999999995,
+      660,
       "inOutCubic"
      ],
      [
-      2.77,
-      680
+      4.630000000000001,
+      700,
+      "inOutCubic"
      ],
      [
       7.37,
@@ -3478,17 +3823,17 @@
      "gain": -16
     },
     {
-     "at": 1.42,
+     "at": 2.47,
      "name": "paper_place",
      "gain": -10
     },
     {
-     "at": 2.2,
+     "at": 3.8,
      "name": "paper_place",
      "gain": -10
     },
     {
-     "at": 2.87,
+     "at": 4.73,
      "name": "stamp",
      "gain": -10
     }
@@ -3514,7 +3859,7 @@
        -1
       ],
       [
-       6.78,
+       8.96,
        -2.2
       ]
      ],
@@ -3526,11 +3871,11 @@
      "labelSize": 22,
      "opacity": [
       [
-       2.94,
+       3.9799999999999995,
        1
       ],
       [
-       3.54,
+       4.58,
        0.3
       ]
      ],
@@ -3540,10 +3885,17 @@
        1
       ],
       [
-       6.78,
-       1.006
+       8.96,
+       1.035
       ]
-     ]
+     ],
+     "idle": {
+      "type": "float",
+      "amp": 3,
+      "speed": 0.25,
+      "phase": 4.83,
+      "from": 0.55
+     }
     },
     {
      "type": "image",
@@ -3557,30 +3909,37 @@
      "z": 20,
      "rot": [
       [
-       1.89,
+       2.35,
        -3
       ],
       [
-       6.78,
+       8.96,
        -4.2
       ]
      ],
      "in": {
       "type": "drop",
-      "at": 1.44,
+      "at": 1.9,
       "dur": 0.45
      },
      "labelSize": 24,
      "scale": [
       [
-       1.89,
+       2.35,
        1
       ],
       [
-       6.78,
-       1.006
+       8.96,
+       1.035
       ]
-     ]
+     ],
+     "idle": {
+      "type": "float",
+      "amp": 3,
+      "speed": 0.25,
+      "phase": 5.98,
+      "from": 2.35
+     }
     },
     {
      "type": "svg",
@@ -3608,14 +3967,14 @@
      "type": "svg",
      "w": 324,
      "h": 76,
-     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"324\" height=\"76\" viewBox=\"0 0 324 76\" style=\"overflow:visible;\"><defs><filter id=\"se13\" x=\"-50%\" y=\"-50%\" width=\"200%\" height=\"200%\"><feGaussianBlur stdDeviation=\"6\"/></filter></defs><ellipse cx=\"162\" cy=\"38\" rx=\"138\" ry=\"14\" fill=\"#000\" opacity=\"0.32\" filter=\"url(#se13)\"/></svg>",
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"324\" height=\"76\" viewBox=\"0 0 324 76\" style=\"overflow:visible;\"><defs><filter id=\"se12\" x=\"-50%\" y=\"-50%\" width=\"200%\" height=\"200%\"><feGaussianBlur stdDeviation=\"6\"/></filter></defs><ellipse cx=\"162\" cy=\"38\" rx=\"138\" ry=\"14\" fill=\"#000\" opacity=\"0.32\" filter=\"url(#se12)\"/></svg>",
      "x": 540,
      "y": 1224,
      "anchor": "c",
      "z": 17,
      "in": {
       "type": "fade",
-      "at": 2.38,
+      "at": 3.17,
       "dur": 0.5
      },
      "still": true
@@ -3630,13 +3989,13 @@
      "z": 18,
      "in": {
       "type": "rise",
-      "at": 2.38,
+      "at": 3.17,
       "dur": 0.5
      },
      "src": "assets/gen/golay_phone_cut.png",
      "rot": [
       [
-       2.75,
+       3.67,
        0
       ],
       [
@@ -3659,7 +4018,7 @@
      "rot": -2,
      "in": {
       "type": "pop",
-      "at": 3.24,
+      "at": 4.279999999999999,
       "dur": 0.35
      }
     },
@@ -3677,7 +4036,7 @@
      "rot": 2,
      "in": {
       "type": "pop",
-      "at": 3.44,
+      "at": 4.4799999999999995,
       "dur": 0.35
      }
     },
@@ -3692,7 +4051,7 @@
      "paths": [
       {
        "d": "M 210 240 L 210 300 L 510 300 L 510 240 M 360 300 L 360 380",
-       "at": 3.54,
+       "at": 4.58,
        "dur": 0.6,
        "stroke": "#EFE8D6",
        "width": 4,
@@ -3715,7 +4074,7 @@
      "rot": 3,
      "in": {
       "type": "pop",
-      "at": 4.68,
+      "at": 6.11,
       "dur": 0.35
      }
     },
@@ -3730,7 +4089,7 @@
      "paths": [
       {
        "d": "M 560.0 500.0 L 542.1 509.6 M 527.5 517.5 L 509.6 527.1 M 495.0 535.0 L 477.1 544.6 M 462.5 552.5 L 444.6 562.1 M 430.0 570.0 L 412.1 579.6 M 397.5 587.5 L 379.6 597.1 M 365.0 605.0 L 347.1 614.6 M 332.5 622.5 L 314.6 632.1",
-       "at": 4.9799999999999995,
+       "at": 6.41,
        "dur": 0.6,
        "stroke": "#B23A2E",
        "width": 4,
@@ -3740,12 +4099,12 @@
      "texts": []
     }
    ],
-   "dur": 6.78,
+   "dur": 8.96,
    "silent": true,
-   "captions": "وهناك لقى شريكه: | جورج غولاي، | المدير العام… | وأول واحد | يدير الشركة | من برا | العائلتين المؤسستين.",
+   "captions": "وهناك وجد شريكه: | جورج غولاي، | المدير العام… | وأول من | أدار الشركة | من خارج | العائلتين المؤسستين.",
    "captionStart": 0.16999999999999998,
-   "captionEnd": 6.58,
-   "voice": "voice-habibi/clips/p1-6.wav",
+   "captionEnd": 8.76,
+   "voice": "voice-abdullah/clips/p1-6.wav",
    "voiceAt": 0.12,
    "transition": "slide",
    "camera": {
@@ -3755,27 +4114,27 @@
       1.0
      ],
      [
-      1.32,
+      1.74,
       1.0,
       "inOutCubic"
      ],
      [
-      3.14,
+      4.18,
       1.02
      ],
      [
-      3.54,
+      4.58,
       1.04,
       "inOutCubic"
      ],
      [
-      4.88,
+      6.3100000000000005,
       1.04,
       "inOutCubic"
      ],
      [
       8.91,
-      1.1,
+      1.04,
       "inOutCubic"
      ]
     ],
@@ -3785,27 +4144,27 @@
       360
      ],
      [
-      1.32,
+      1.74,
       360,
       "inOutCubic"
      ],
      [
-      3.14,
+      4.18,
       360
      ],
      [
-      3.54,
+      4.58,
       360,
       "inOutCubic"
      ],
      [
-      4.88,
-      400,
+      6.3100000000000005,
+      380,
       "inOutCubic"
      ],
      [
       8.91,
-      420,
+      370,
       "inOutCubic"
      ]
     ],
@@ -3815,61 +4174,440 @@
       520
      ],
      [
-      1.32,
+      1.74,
       620,
       "inOutCubic"
      ],
      [
-      3.14,
+      4.18,
       600
      ],
      [
-      3.54,
+      4.58,
       480,
       "inOutCubic"
      ],
      [
-      4.88,
-      540,
+      6.3100000000000005,
+      560,
       "inOutCubic"
      ],
      [
       8.91,
-      820,
+      620,
       "inOutCubic"
      ]
     ]
    },
    "sfx": [
     {
-     "at": 1.44,
+     "at": 1.9,
      "name": "paper_place",
      "gain": -10
     },
     {
-     "at": 2.38,
+     "at": 3.17,
      "name": "pin",
      "gain": -14
     },
     {
-     "at": 3.24,
+     "at": 4.28,
      "name": "pin",
      "gain": -14
     },
     {
-     "at": 3.44,
+     "at": 4.48,
      "name": "pin",
      "gain": -14
     },
     {
-     "at": 3.54,
+     "at": 4.58,
      "name": "pencil",
      "gain": -12
     },
     {
-     "at": 4.68,
+     "at": 6.11,
      "name": "stamp",
      "gain": -12
+    }
+   ]
+  },
+  {
+   "theme": "ro-paper",
+   "floor": false,
+   "elements": [
+    {
+     "type": "svg",
+     "w": 300,
+     "h": 460,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"300\" height=\"460\" viewBox=\"0 0 300 460\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><rect width=\"300\" height=\"460\" rx=\"6\" fill=\"#F3EDDF\"/></svg>",
+     "x": [
+      [
+       0,
+       200
+      ],
+      [
+       6.09,
+       240,
+       "inOutCubic"
+      ]
+     ],
+     "y": 600,
+     "anchor": "c",
+     "z": 3,
+     "in": {
+      "type": "drop",
+      "at": 0.05,
+      "dur": 0.45
+     },
+     "rot": -3
+    },
+    {
+     "type": "image",
+     "src": "assets/ap/golay1966.jpg",
+     "polaroid": true,
+     "aspect": 1.3179571663920921,
+     "label": "غولاي · السوق",
+     "w": 280,
+     "x": [
+      [
+       0,
+       200
+      ],
+      [
+       6.09,
+       240,
+       "inOutCubic"
+      ]
+     ],
+     "y": 450,
+     "z": 6,
+     "rot": [
+      [
+       0.65,
+       -4
+      ],
+      [
+       8.08,
+       -5.2
+      ]
+     ],
+     "in": {
+      "type": "drop",
+      "at": 0.2,
+      "dur": 0.45
+     },
+     "labelSize": 18,
+     "scale": [
+      [
+       0.65,
+       1
+      ],
+      [
+       8.08,
+       1.035
+      ]
+     ],
+     "idle": {
+      "type": "float",
+      "amp": 3,
+      "speed": 0.25,
+      "phase": 5.98,
+      "from": 0.65
+     }
+    },
+    {
+     "type": "text",
+     "text": "دي ماركي · تورينو",
+     "x": [
+      [
+       0,
+       200
+      ],
+      [
+       6.09,
+       240,
+       "inOutCubic"
+      ]
+     ],
+     "y": 640,
+     "font": "banner",
+     "size": 24,
+     "color": "#16181D",
+     "paper": "#EFE8D6",
+     "upper": false,
+     "z": 7,
+     "rot": -4,
+     "in": {
+      "type": "pop",
+      "at": 1.14,
+      "dur": 0.35
+     }
+    },
+    {
+     "type": "text",
+     "text": "بوتي · لوزان",
+     "x": [
+      [
+       0,
+       200
+      ],
+      [
+       6.09,
+       240,
+       "inOutCubic"
+      ]
+     ],
+     "y": 702,
+     "font": "banner",
+     "size": 24,
+     "color": "#16181D",
+     "paper": "#EFE8D6",
+     "upper": false,
+     "z": 8,
+     "rot": 3,
+     "in": {
+      "type": "pop",
+      "at": 1.39,
+      "dur": 0.35
+     }
+    },
+    {
+     "type": "text",
+     "text": "دورو · باريس",
+     "x": [
+      [
+       0,
+       200
+      ],
+      [
+       6.09,
+       240,
+       "inOutCubic"
+      ]
+     ],
+     "y": 764,
+     "font": "banner",
+     "size": 24,
+     "color": "#16181D",
+     "paper": "#EFE8D6",
+     "upper": false,
+     "z": 9,
+     "rot": -2,
+     "in": {
+      "type": "pop",
+      "at": 1.64,
+      "dur": 0.35
+     }
+    },
+    {
+     "type": "svg",
+     "w": 300,
+     "h": 460,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"300\" height=\"460\" viewBox=\"0 0 300 460\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><rect width=\"300\" height=\"460\" fill=\"#F6F1E3\"/><line x1=\"0\" y1=\"0\" x2=\"300\" y2=\"0\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"0\" y1=\"32\" x2=\"300\" y2=\"32\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"0\" y1=\"64\" x2=\"300\" y2=\"64\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"0\" y1=\"96\" x2=\"300\" y2=\"96\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"0\" y1=\"128\" x2=\"300\" y2=\"128\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"0\" y1=\"160\" x2=\"300\" y2=\"160\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"0\" y1=\"192\" x2=\"300\" y2=\"192\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"0\" y1=\"224\" x2=\"300\" y2=\"224\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"0\" y1=\"256\" x2=\"300\" y2=\"256\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"0\" y1=\"288\" x2=\"300\" y2=\"288\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"0\" y1=\"320\" x2=\"300\" y2=\"320\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"0\" y1=\"352\" x2=\"300\" y2=\"352\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"0\" y1=\"384\" x2=\"300\" y2=\"384\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"0\" y1=\"416\" x2=\"300\" y2=\"416\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"0\" y1=\"448\" x2=\"300\" y2=\"448\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"0\" y1=\"0\" x2=\"0\" y2=\"460\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"32\" y1=\"0\" x2=\"32\" y2=\"460\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"64\" y1=\"0\" x2=\"64\" y2=\"460\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"96\" y1=\"0\" x2=\"96\" y2=\"460\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"128\" y1=\"0\" x2=\"128\" y2=\"460\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"160\" y1=\"0\" x2=\"160\" y2=\"460\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"192\" y1=\"0\" x2=\"192\" y2=\"460\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"224\" y1=\"0\" x2=\"224\" y2=\"460\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"256\" y1=\"0\" x2=\"256\" y2=\"460\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><line x1=\"288\" y1=\"0\" x2=\"288\" y2=\"460\" stroke=\"#C9D6DD\" stroke-width=\"1\"/><rect x=\"14\" y=\"14\" width=\"272\" height=\"432\" fill=\"none\" stroke=\"#8A9AA6\" stroke-width=\"2\"/></svg>",
+     "x": [
+      [
+       0,
+       520
+      ],
+      [
+       6.09,
+       480,
+       "inOutCubic"
+      ]
+     ],
+     "y": 600,
+     "anchor": "c",
+     "z": 4,
+     "in": {
+      "type": "drop",
+      "at": 3.46,
+      "dur": 0.45
+     },
+     "rot": 3
+    },
+    {
+     "type": "image",
+     "src": "assets/ap/m5233.jpg",
+     "polaroid": true,
+     "aspect": 0.8676789587852495,
+     "label": "جنتا · التصميم",
+     "w": 280,
+     "x": [
+      [
+       0,
+       520
+      ],
+      [
+       6.09,
+       480,
+       "inOutCubic"
+      ]
+     ],
+     "y": 540,
+     "z": 12,
+     "rot": [
+      [
+       4.11,
+       4
+      ],
+      [
+       8.08,
+       5.2
+      ]
+     ],
+     "in": {
+      "type": "drop",
+      "at": 3.66,
+      "dur": 0.45
+     },
+     "labelSize": 18,
+     "scale": [
+      [
+       4.11,
+       1
+      ],
+      [
+       8.08,
+       1.035
+      ]
+     ],
+     "idle": {
+      "type": "float",
+      "amp": 3,
+      "speed": 0.25,
+      "phase": 3.25,
+      "from": 4.11
+     }
+    },
+    {
+     "type": "text",
+     "text": "السوق + التصميم",
+     "x": 360,
+     "y": 170,
+     "font": "banner",
+     "size": 36,
+     "color": "#16181D",
+     "paper": "#EFE8D6",
+     "upper": false,
+     "z": 40,
+     "rot": -2,
+     "in": {
+      "type": "pop",
+      "at": 6.39,
+      "dur": 0.35
+     },
+     "depth": 0
+    }
+   ],
+   "dur": 8.08,
+   "silent": true,
+   "captions": "كان غولاي | يلتقي الوكلاء | ويسمع السوق… | وجنتا يحمل إليه | التصاميم، | ويبحث لها عن شكل.",
+   "captionStart": 0.16999999999999998,
+   "captionEnd": 7.88,
+   "voice": "voice-abdullah/clips/p1-b.wav",
+   "voiceAt": 0.12,
+   "transition": "slide",
+   "camera": {
+    "zoom": [
+     [
+      0,
+      1.0
+     ],
+     [
+      3.66,
+      1.04,
+      "inOutCubic"
+     ],
+     [
+      6.09,
+      1.0,
+      "inOutCubic"
+     ],
+     [
+      8.08,
+      1.06,
+      "inOutCubic"
+     ]
+    ],
+    "x": [
+     [
+      0,
+      300
+     ],
+     [
+      3.66,
+      420,
+      "inOutCubic"
+     ],
+     [
+      6.09,
+      360,
+      "inOutCubic"
+     ],
+     [
+      8.08,
+      360,
+      "inOutCubic"
+     ]
+    ],
+    "y": [
+     [
+      0,
+      640
+     ],
+     [
+      3.66,
+      640,
+      "inOutCubic"
+     ],
+     [
+      6.09,
+      640,
+      "inOutCubic"
+     ],
+     [
+      8.08,
+      620,
+      "inOutCubic"
+     ]
+    ]
+   },
+   "sfx": [
+    {
+     "at": 0.05,
+     "name": "paper_place",
+     "gain": -12
+    },
+    {
+     "at": 1.14,
+     "name": "pin",
+     "gain": -16
+    },
+    {
+     "at": 1.39,
+     "name": "pin",
+     "gain": -16
+    },
+    {
+     "at": 1.64,
+     "name": "pin",
+     "gain": -16
+    },
+    {
+     "at": 3.46,
+     "name": "paper_place",
+     "gain": -12
+    },
+    {
+     "at": 6.09,
+     "name": "paper_slide",
+     "gain": -13
+    },
+    {
+     "at": 6.39,
+     "name": "stamp",
+     "gain": -11
     }
    ]
   },
@@ -3905,7 +4643,7 @@
      "depth": 0.8,
      "out": {
       "type": "fade",
-      "at": 6.06,
+      "at": 7.0,
       "dur": 0.35
      }
     },
@@ -3916,11 +4654,11 @@
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"520\" height=\"230\" viewBox=\"0 0 520 230\" style=\"overflow:visible;filter:drop-shadow(3px 5px 4px rgba(0,0,0,.32))\"><path d=\"M 80 160 L 170 70 L 330 70 L 440 160 M 170 70 L 250 160 L 330 70 M 250 160 L 80 160 M 440 160 L 400 40\" stroke=\"#B23A2E\" stroke-width=\"11\" fill=\"none\" stroke-linejoin=\"round\"/><rect x=\"150\" y=\"52\" width=\"46\" height=\"12\" rx=\"6\" fill=\"#2A2C31\"/><rect x=\"306\" y=\"52\" width=\"46\" height=\"12\" rx=\"6\" fill=\"#2A2C31\"/><path d=\"M 384 36 L 430 30\" stroke=\"#2A2C31\" stroke-width=\"9\" stroke-linecap=\"round\"/><path d=\"M 172 50 L 150 30 L 176 40 Z\" fill=\"#B23A2E\"/></svg>",
      "x": [
       [
-       1.01,
+       1.34,
        -300
       ],
       [
-       4.9,
+       5.43,
        420,
        "outCubic"
       ]
@@ -3930,25 +4668,25 @@
      "z": 10,
      "in": {
       "type": "none",
-      "at": 1.01,
+      "at": 1.34,
       "dur": 0.5
      },
      "out": {
       "type": "fade",
-      "at": 6.06,
+      "at": 7.0,
       "dur": 0.35
      },
      "rot": [
       [
-       4.9,
+       5.43,
        0
       ],
       [
-       5.050000000000001,
+       5.58,
        3
       ],
       [
-       5.3500000000000005,
+       5.88,
        0,
        "outBack"
       ]
@@ -3957,7 +4695,7 @@
       "type": "bob",
       "amp": 1.5,
       "speed": 1.2,
-      "until": 4.9
+      "until": 5.43
      }
     },
     {
@@ -3967,11 +4705,11 @@
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"134\" height=\"134\" viewBox=\"0 0 134 134\" style=\"overflow:visible;\"><circle cx=\"67\" cy=\"67\" r=\"62\" fill=\"none\" stroke=\"#2A2C31\" stroke-width=\"9\"/><line x1=\"67\" y1=\"67\" x2=\"125.0\" y2=\"67.0\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"67\" y1=\"67\" x2=\"117.2\" y2=\"96.0\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"67\" y1=\"67\" x2=\"96.0\" y2=\"117.2\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"67\" y1=\"67\" x2=\"67.0\" y2=\"125.0\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"67\" y1=\"67\" x2=\"38.0\" y2=\"117.2\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"67\" y1=\"67\" x2=\"16.8\" y2=\"96.0\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"67\" y1=\"67\" x2=\"9.0\" y2=\"67.0\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"67\" y1=\"67\" x2=\"16.8\" y2=\"38.0\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"67\" y1=\"67\" x2=\"38.0\" y2=\"16.8\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"67\" y1=\"67\" x2=\"67.0\" y2=\"9.0\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"67\" y1=\"67\" x2=\"96.0\" y2=\"16.8\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"67\" y1=\"67\" x2=\"117.2\" y2=\"38.0\" stroke=\"#8A8F96\" stroke-width=\"2\"/><circle cx=\"67\" cy=\"67\" r=\"6\" fill=\"#2A2C31\"/></svg>",
      "x": [
       [
-       1.01,
+       1.34,
        -480
       ],
       [
-       4.9,
+       5.43,
        240,
        "outCubic"
       ]
@@ -3981,21 +4719,21 @@
      "z": 9,
      "in": {
       "type": "none",
-      "at": 1.01,
+      "at": 1.34,
       "dur": 0.5
      },
      "out": {
       "type": "fade",
-      "at": 6.06,
+      "at": 7.0,
       "dur": 0.35
      },
      "rot": [
       [
-       1.01,
+       1.34,
        0
       ],
       [
-       4.9,
+       5.43,
        650,
        "outCubic"
       ]
@@ -4008,11 +4746,11 @@
      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"134\" height=\"134\" viewBox=\"0 0 134 134\" style=\"overflow:visible;\"><circle cx=\"67\" cy=\"67\" r=\"62\" fill=\"none\" stroke=\"#2A2C31\" stroke-width=\"9\"/><line x1=\"67\" y1=\"67\" x2=\"125.0\" y2=\"67.0\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"67\" y1=\"67\" x2=\"117.2\" y2=\"96.0\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"67\" y1=\"67\" x2=\"96.0\" y2=\"117.2\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"67\" y1=\"67\" x2=\"67.0\" y2=\"125.0\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"67\" y1=\"67\" x2=\"38.0\" y2=\"117.2\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"67\" y1=\"67\" x2=\"16.8\" y2=\"96.0\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"67\" y1=\"67\" x2=\"9.0\" y2=\"67.0\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"67\" y1=\"67\" x2=\"16.8\" y2=\"38.0\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"67\" y1=\"67\" x2=\"38.0\" y2=\"16.8\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"67\" y1=\"67\" x2=\"67.0\" y2=\"9.0\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"67\" y1=\"67\" x2=\"96.0\" y2=\"16.8\" stroke=\"#8A8F96\" stroke-width=\"2\"/><line x1=\"67\" y1=\"67\" x2=\"117.2\" y2=\"38.0\" stroke=\"#8A8F96\" stroke-width=\"2\"/><circle cx=\"67\" cy=\"67\" r=\"6\" fill=\"#2A2C31\"/></svg>",
      "x": [
       [
-       1.01,
+       1.34,
        -120
       ],
       [
-       4.9,
+       5.43,
        600,
        "outCubic"
       ]
@@ -4022,21 +4760,21 @@
      "z": 9,
      "in": {
       "type": "none",
-      "at": 1.01,
+      "at": 1.34,
       "dur": 0.5
      },
      "out": {
       "type": "fade",
-      "at": 6.06,
+      "at": 7.0,
       "dur": 0.35
      },
      "rot": [
       [
-       1.01,
+       1.34,
        0
       ],
       [
-       4.9,
+       5.43,
        650,
        "outCubic"
       ]
@@ -4044,7 +4782,7 @@
     },
     {
      "type": "text",
-     "text": "«دراجة لاثنين»",
+     "text": "«درّاجة لاثنين»",
      "x": 360,
      "y": 200,
      "font": "banner",
@@ -4056,12 +4794,12 @@
      "rot": -2,
      "in": {
       "type": "pop",
-      "at": 1.28,
+      "at": 1.68,
       "dur": 0.35
      },
      "out": {
       "type": "fade",
-      "at": 5.96,
+      "at": 6.9,
       "dur": 0.2
      },
      "depth": 0
@@ -4070,7 +4808,7 @@
      "type": "svg",
      "w": 266,
      "h": 76,
-     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"266\" height=\"76\" viewBox=\"0 0 266 76\" style=\"overflow:visible;\"><defs><filter id=\"se14\" x=\"-50%\" y=\"-50%\" width=\"200%\" height=\"200%\"><feGaussianBlur stdDeviation=\"6\"/></filter></defs><ellipse cx=\"133\" cy=\"38\" rx=\"109\" ry=\"14\" fill=\"#000\" opacity=\"0.32\" filter=\"url(#se14)\"/></svg>",
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"266\" height=\"76\" viewBox=\"0 0 266 76\" style=\"overflow:visible;\"><defs><filter id=\"se13\" x=\"-50%\" y=\"-50%\" width=\"200%\" height=\"200%\"><feGaussianBlur stdDeviation=\"6\"/></filter></defs><ellipse cx=\"133\" cy=\"38\" rx=\"109\" ry=\"14\" fill=\"#000\" opacity=\"0.32\" filter=\"url(#se13)\"/></svg>",
      "x": 190,
      "y": 1194,
      "anchor": "c",
@@ -4126,36 +4864,43 @@
      "polaroid": true,
      "aspect": 0.8676789587852495,
      "label": "جنتا",
-     "w": 200,
+     "w": 280,
      "x": 255,
      "y": 330,
      "z": 40,
      "rot": [
       [
-       7.62,
+       9.47,
        -4
       ],
       [
-       8.28,
+       10.58,
        -5.2
       ]
      ],
      "in": {
       "type": "pop",
-      "at": 7.17,
+      "at": 9.02,
       "dur": 0.45
      },
      "labelSize": 22,
      "scale": [
       [
-       7.62,
+       9.47,
        1
       ],
       [
-       8.28,
-       1.006
+       10.58,
+       1.035
       ]
-     ]
+     ],
+     "idle": {
+      "type": "float",
+      "amp": 3,
+      "speed": 0.25,
+      "phase": 3.25,
+      "from": 9.47
+     }
     },
     {
      "type": "image",
@@ -4163,17 +4908,43 @@
      "polaroid": true,
      "aspect": 0.8676789587852495,
      "label": "غولاي",
-     "w": 200,
+     "w": 280,
      "x": 475,
      "y": 330,
      "z": 40,
-     "rot": 4,
+     "rot": [
+      [
+       9.72,
+       4
+      ],
+      [
+       10.58,
+       5.2
+      ]
+     ],
      "in": {
       "type": "pop",
-      "at": 7.42,
+      "at": 9.27,
       "dur": 0.45
      },
-     "labelSize": 22
+     "labelSize": 22,
+     "scale": [
+      [
+       9.72,
+       1
+      ],
+      [
+       10.58,
+       1.035
+      ]
+     ],
+     "idle": {
+      "type": "float",
+      "amp": 3,
+      "speed": 0.25,
+      "phase": 3.25,
+      "from": 9.72
+     }
     },
     {
      "type": "sketch",
@@ -4186,7 +4957,7 @@
      "paths": [
       {
        "d": "M 352 316 L 378 316 M 352 336 L 378 336",
-       "at": 7.72,
+       "at": 9.569999999999999,
        "dur": 0.3,
        "stroke": "#B23A2E",
        "width": 4,
@@ -4209,17 +4980,17 @@
      "rot": 1,
      "in": {
       "type": "pop",
-      "at": 7.819999999999999,
+      "at": 9.67,
       "dur": 0.35
      }
     }
    ],
-   "dur": 8.28,
+   "dur": 10.58,
    "silent": true,
-   "captions": "جنتا يقول: | كنا مثل الدراجة | اللي يسوقها اثنين… | إذا واحد منا | مو مقتنع، | ما نسوي الموديل. | وحتى كانوا يلبسون | نفس الساعة.",
+   "captions": "يقول جنتا: | كنا كدرّاجةٍ | يقودها اثنان… | إن لم | يقتنع أحدنا، | فلا نصنع الطراز. | حتى إنهما كانا | يرتديان الساعة نفسها.",
    "captionStart": 0.16999999999999998,
-   "captionEnd": 8.08,
-   "voice": "voice-habibi/clips/p1-7.wav",
+   "captionEnd": 10.379999999999999,
+   "voice": "voice-abdullah/clips/p1-7.wav",
    "voiceAt": 0.12,
    "transition": "fade",
    "camera": {
@@ -4229,17 +5000,17 @@
       1.1
      ],
      [
-      1.01,
+      1.34,
       1.0,
       "inOutCubic"
      ],
      [
-      4.9,
+      5.43,
       1.06,
       "inOutCubic"
      ],
      [
-      6.06,
+      7.0,
       1.0,
       "inOutCubic"
      ],
@@ -4255,17 +5026,17 @@
       420
      ],
      [
-      1.01,
+      1.34,
       300,
       "inOutCubic"
      ],
      [
-      4.9,
+      5.43,
       420,
       "inOutCubic"
      ],
      [
-      6.06,
+      7.0,
       360,
       "inOutCubic"
      ],
@@ -4281,17 +5052,17 @@
       820
      ],
      [
-      1.01,
+      1.34,
       600,
       "inOutCubic"
      ],
      [
-      4.9,
+      5.43,
       600,
       "inOutCubic"
      ],
      [
-      6.06,
+      7.0,
       560,
       "inOutCubic"
      ],
@@ -4304,22 +5075,22 @@
    },
    "sfx": [
     {
-     "at": 1.01,
+     "at": 1.34,
      "name": "whoosh",
      "gain": -14
     },
     {
-     "at": 4.9,
+     "at": 5.43,
      "name": "clasp",
      "gain": -12
     },
     {
-     "at": 7.17,
+     "at": 9.02,
      "name": "click",
      "gain": -10
     },
     {
-     "at": 7.42,
+     "at": 9.27,
      "name": "click",
      "gain": -10
     }
@@ -4388,7 +5159,7 @@
      "scale": 0.55,
      "out": {
       "type": "fade",
-      "at": 3.52,
+      "at": 6.38,
       "dur": 0.2
      }
     },
@@ -4396,7 +5167,7 @@
      "type": "svg",
      "w": 760,
      "h": 1320,
-     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"760\" height=\"1320\" viewBox=\"0 0 760 1320\" style=\"overflow:visible;\"><defs><linearGradient id=\"lb15\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#FFE3A0\" stop-opacity=\"0.1\"/><stop offset=\"1\" stop-color=\"#FFE3A0\" stop-opacity=\"0.034999999999999996\"/></linearGradient></defs><polygon points=\"760.0,0.0 560.0,0.0 40.0,1320.0 560.0,1320.0\" fill=\"url(#lb15)\"/></svg>",
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"760\" height=\"1320\" viewBox=\"0 0 760 1320\" style=\"overflow:visible;\"><defs><linearGradient id=\"lb14\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#FFE3A0\" stop-opacity=\"0.1\"/><stop offset=\"1\" stop-color=\"#FFE3A0\" stop-opacity=\"0.034999999999999996\"/></linearGradient></defs><polygon points=\"760.0,0.0 560.0,0.0 40.0,1320.0 560.0,1320.0\" fill=\"url(#lb14)\"/></svg>",
      "x": 360,
      "y": 640,
      "anchor": "c",
@@ -4431,13 +5202,13 @@
      "z": 6,
      "in": {
       "type": "drop",
-      "at": 3.72,
+      "at": 6.58,
       "dur": 0.5
      },
      "depth": 0.85,
      "out": {
       "type": "fade",
-      "at": 5.73,
+      "at": 10.2,
       "dur": 0.4
      }
     },
@@ -4453,37 +5224,44 @@
      "z": 7,
      "rot": [
       [
-       4.62,
+       7.48,
        -5
       ],
       [
-       5.73,
+       10.2,
        -6.2
       ]
      ],
      "in": {
       "type": "pop",
-      "at": 4.17,
+      "at": 7.03,
       "dur": 0.45
      },
      "labelSize": 22,
      "out": {
       "type": "fade",
-      "at": 5.73,
+      "at": 10.2,
       "dur": 0.25
      },
      "bottom": 12,
      "depth": 0.85,
      "scale": [
       [
-       4.62,
+       7.48,
        1
       ],
       [
-       5.73,
-       1.006
+       10.2,
+       1.035
       ]
-     ]
+     ],
+     "idle": {
+      "type": "float",
+      "amp": 3,
+      "speed": 0.25,
+      "phase": 1.27,
+      "from": 7.48
+     }
     },
     {
      "type": "svg",
@@ -4496,13 +5274,13 @@
      "z": 13,
      "in": {
       "type": "pop",
-      "at": 4.27,
+      "at": 7.13,
       "dur": 0.2
      },
      "depth": 0.85,
      "out": {
       "type": "fade",
-      "at": 5.73,
+      "at": 10.2,
       "dur": 0.4
      }
     },
@@ -4518,37 +5296,44 @@
      "z": 8,
      "rot": [
       [
-       4.77,
+       7.63,
        3
       ],
       [
-       5.73,
+       10.2,
        4.2
       ]
      ],
      "in": {
       "type": "pop",
-      "at": 4.32,
+      "at": 7.180000000000001,
       "dur": 0.45
      },
      "labelSize": 22,
      "out": {
       "type": "fade",
-      "at": 5.73,
+      "at": 10.2,
       "dur": 0.25
      },
      "bottom": 12,
      "depth": 0.85,
      "scale": [
       [
-       4.77,
+       7.63,
        1
       ],
       [
-       5.73,
-       1.006
+       10.2,
+       1.035
       ]
-     ]
+     ],
+     "idle": {
+      "type": "float",
+      "amp": 3,
+      "speed": 0.25,
+      "phase": 4.31,
+      "from": 7.63
+     }
     },
     {
      "type": "svg",
@@ -4561,13 +5346,13 @@
      "z": 13,
      "in": {
       "type": "pop",
-      "at": 4.42,
+      "at": 7.28,
       "dur": 0.2
      },
      "depth": 0.85,
      "out": {
       "type": "fade",
-      "at": 5.73,
+      "at": 10.2,
       "dur": 0.4
      }
     },
@@ -4583,37 +5368,44 @@
      "z": 9,
      "rot": [
       [
-       4.92,
+       7.78,
        -2
       ],
       [
-       5.73,
+       10.2,
        -3.2
       ]
      ],
      "in": {
       "type": "pop",
-      "at": 4.47,
+      "at": 7.33,
       "dur": 0.45
      },
      "labelSize": 22,
      "out": {
       "type": "fade",
-      "at": 5.73,
+      "at": 10.2,
       "dur": 0.25
      },
      "bottom": 12,
      "depth": 0.85,
      "scale": [
       [
-       4.92,
+       7.78,
        1
       ],
       [
-       5.73,
-       1.006
+       10.2,
+       1.035
       ]
-     ]
+     ],
+     "idle": {
+      "type": "float",
+      "amp": 3,
+      "speed": 0.25,
+      "phase": 4.15,
+      "from": 7.78
+     }
     },
     {
      "type": "svg",
@@ -4626,13 +5418,13 @@
      "z": 13,
      "in": {
       "type": "pop",
-      "at": 4.569999999999999,
+      "at": 7.43,
       "dur": 0.2
      },
      "depth": 0.85,
      "out": {
       "type": "fade",
-      "at": 5.73,
+      "at": 10.2,
       "dur": 0.4
      }
     },
@@ -4648,37 +5440,44 @@
      "z": 10,
      "rot": [
       [
-       5.07,
+       7.93,
        5
       ],
       [
-       5.73,
+       10.2,
        6.2
       ]
      ],
      "in": {
       "type": "pop",
-      "at": 4.62,
+      "at": 7.48,
       "dur": 0.45
      },
      "labelSize": 22,
      "out": {
       "type": "fade",
-      "at": 5.73,
+      "at": 10.2,
       "dur": 0.25
      },
      "bottom": 12,
      "depth": 0.85,
      "scale": [
       [
-       5.07,
+       7.93,
        1
       ],
       [
-       5.73,
-       1.006
+       10.2,
+       1.035
       ]
-     ]
+     ],
+     "idle": {
+      "type": "float",
+      "amp": 3,
+      "speed": 0.25,
+      "phase": 1.66,
+      "from": 7.93
+     }
     },
     {
      "type": "svg",
@@ -4691,13 +5490,13 @@
      "z": 13,
      "in": {
       "type": "pop",
-      "at": 4.72,
+      "at": 7.58,
       "dur": 0.2
      },
      "depth": 0.85,
      "out": {
       "type": "fade",
-      "at": 5.73,
+      "at": 10.2,
       "dur": 0.4
      }
     },
@@ -4711,20 +5510,46 @@
      "x": 440,
      "y": 385,
      "z": 11,
-     "rot": -3,
+     "rot": [
+      [
+       8.08,
+       -3
+      ],
+      [
+       10.2,
+       -4.2
+      ]
+     ],
      "in": {
       "type": "pop",
-      "at": 4.77,
+      "at": 7.63,
       "dur": 0.45
      },
      "labelSize": 22,
      "out": {
       "type": "fade",
-      "at": 5.73,
+      "at": 10.2,
       "dur": 0.25
      },
      "bottom": 12,
-     "depth": 0.85
+     "depth": 0.85,
+     "scale": [
+      [
+       8.08,
+       1
+      ],
+      [
+       10.2,
+       1.035
+      ]
+     ],
+     "idle": {
+      "type": "float",
+      "amp": 3,
+      "speed": 0.25,
+      "phase": 3.25,
+      "from": 8.08
+     }
     },
     {
      "type": "svg",
@@ -4737,13 +5562,13 @@
      "z": 13,
      "in": {
       "type": "pop",
-      "at": 4.869999999999999,
+      "at": 7.7299999999999995,
       "dur": 0.2
      },
      "depth": 0.85,
      "out": {
       "type": "fade",
-      "at": 5.73,
+      "at": 10.2,
       "dur": 0.4
      }
     },
@@ -4758,7 +5583,7 @@
      "paths": [
       {
        "d": "M 200 175 L 360 175 L 520 175 L 280 315 L 440 315",
-       "at": 5.0200000000000005,
+       "at": 7.88,
        "dur": 1.0,
        "stroke": "#B23A2E",
        "width": 2,
@@ -4769,7 +5594,7 @@
      "depth": 0.85,
      "out": {
       "type": "fade",
-      "at": 5.73,
+      "at": 10.2,
       "dur": 0.4
      }
     },
@@ -4777,14 +5602,14 @@
      "type": "svg",
      "w": 266,
      "h": 76,
-     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"266\" height=\"76\" viewBox=\"0 0 266 76\" style=\"overflow:visible;\"><defs><filter id=\"se16\" x=\"-50%\" y=\"-50%\" width=\"200%\" height=\"200%\"><feGaussianBlur stdDeviation=\"6\"/></filter></defs><ellipse cx=\"133\" cy=\"38\" rx=\"109\" ry=\"14\" fill=\"#000\" opacity=\"0.32\" filter=\"url(#se16)\"/></svg>",
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"266\" height=\"76\" viewBox=\"0 0 266 76\" style=\"overflow:visible;\"><defs><filter id=\"se15\" x=\"-50%\" y=\"-50%\" width=\"200%\" height=\"200%\"><feGaussianBlur stdDeviation=\"6\"/></filter></defs><ellipse cx=\"133\" cy=\"38\" rx=\"109\" ry=\"14\" fill=\"#000\" opacity=\"0.32\" filter=\"url(#se15)\"/></svg>",
      "x": 360,
      "y": 1174,
      "anchor": "c",
      "z": 19,
      "in": {
       "type": "fade",
-      "at": 1.94,
+      "at": 3.7,
       "dur": 0.5
      },
      "still": true
@@ -4798,15 +5623,15 @@
        1180
       ],
       [
-       8.100000000000001,
+       14.09,
        1180
       ],
       [
-       8.25,
+       14.239999999999998,
        1172
       ],
       [
-       8.450000000000001,
+       14.44,
        1180
       ]
      ],
@@ -4816,7 +5641,7 @@
      "z": 20,
      "in": {
       "type": "rise",
-      "at": 1.94,
+      "at": 3.7,
       "dur": 0.5
      },
      "src": "assets/gen/young_think_cut.png",
@@ -4826,14 +5651,14 @@
       "type": "pulse",
       "amp": 0.005,
       "speed": 0.22,
-      "from": 2.44
+      "from": 4.2
      }
     },
     {
      "type": "text",
      "text": "10 أبريل",
-     "x": 170,
-     "y": 250,
+     "x": 230,
+     "y": 260,
      "font": "banner",
      "size": 34,
      "color": "#16181D",
@@ -4843,12 +5668,12 @@
      "rot": -2,
      "in": {
       "type": "pop",
-      "at": 5.73,
+      "at": 10.2,
       "dur": 0.35
      },
      "out": {
       "type": "fade",
-      "at": 8.65,
+      "at": 15.04,
       "dur": 0.2
      }
     },
@@ -4863,7 +5688,7 @@
      "z": 11,
      "in": {
       "type": "pop",
-      "at": 6.430000000000001,
+      "at": 11.85,
       "dur": 0.4
      }
     },
@@ -4878,16 +5703,16 @@
      "z": 12,
      "in": {
       "type": "pop",
-      "at": 6.430000000000001,
+      "at": 11.85,
       "dur": 0.4
      },
      "rot": [
       [
-       6.73,
+       12.15,
        115.0
       ],
       [
-       7.9,
+       13.79,
        120.0,
        "inOutCubic"
       ]
@@ -4904,16 +5729,16 @@
      "z": 12,
      "in": {
       "type": "pop",
-      "at": 6.430000000000001,
+      "at": 11.85,
       "dur": 0.4
      },
      "rot": [
       [
-       6.73,
+       12.15,
        300
       ],
       [
-       7.9,
+       13.79,
        360.0,
        "inOutCubic"
       ]
@@ -4930,7 +5755,7 @@
      "z": 59,
      "in": {
       "type": "pop",
-      "at": 7.83,
+      "at": 13.66,
       "dur": 0.3
      },
      "scale": 0.75,
@@ -4938,12 +5763,12 @@
       "type": "shake",
       "amp": 3,
       "speed": 9,
-      "from": 8.05,
-      "until": 8.8
+      "from": 14.04,
+      "until": 15.29
      },
      "out": {
       "type": "fade",
-      "at": 9.32,
+      "at": 16.2,
       "dur": 0.01
      }
     },
@@ -4958,7 +5783,7 @@
      "z": 60,
      "in": {
       "type": "pop",
-      "at": 8.05,
+      "at": 14.04,
       "dur": 0.2
      },
      "scale": 0.75,
@@ -4969,7 +5794,7 @@
      },
      "out": {
       "type": "fade",
-      "at": 8.8,
+      "at": 15.29,
       "dur": 0.15
      }
     },
@@ -4984,7 +5809,7 @@
      "z": 59,
      "in": {
       "type": "none",
-      "at": 9.32,
+      "at": 16.2,
       "dur": 0.3
      },
      "scale": 0.75,
@@ -4992,7 +5817,7 @@
       "type": "shake",
       "amp": 3,
       "speed": 9,
-      "from": 9.32
+      "from": 16.2
      }
     },
     {
@@ -5006,7 +5831,7 @@
      "z": 60,
      "in": {
       "type": "pop",
-      "at": 9.32,
+      "at": 16.2,
       "dur": 0.2
      },
      "scale": 0.75,
@@ -5029,11 +5854,11 @@
      "still": true,
      "opacity": [
       [
-       8.88,
+       15.41,
        0
       ],
       [
-       9.4,
+       16.33,
        0.55
       ]
      ]
@@ -5052,14 +5877,14 @@
      "rot": -2,
      "in": {
       "type": "pop",
-      "at": 9.1,
+      "at": 15.8,
       "dur": 0.35
      },
      "depth": 0
     },
     {
      "type": "text",
-     "text": "الجزء الثاني: الرويال أوك",
+     "text": "الجزء الثاني: الرهان",
      "x": 360,
      "y": 1080,
      "font": "banner",
@@ -5071,14 +5896,14 @@
      "rot": 1,
      "in": {
       "type": "pop",
-      "at": 9.25,
+      "at": 16.07,
       "dur": 0.35
      },
      "depth": 0
     },
     {
      "type": "text",
-     "text": "Archive images: © Audemars Piguet (AP Chronicles). Georges Golay, 1966: © Épreuves internationales de ski Le Brassus (J. Piguet, 2017). Polerouter (Watch15, CC BY-SA 4.0), Omega Constellation (Noop1958, CC BY-SA 3.0), SAS advertisement 1954: Wikimedia Commons. Portrait of Gérald Genta: Studio Luxury Griffes (CC BY-SA 3.0). Paper characters are AI illustrations (Higgsfield).",
+     "text": "Archive images: © Audemars Piguet (AP Chronicles). Georges Golay, 1966: © Épreuves internationales de ski Le Brassus (J. Piguet, 2017). Polerouter (Watch15, CC BY-SA 4.0), Omega Constellation (Noop1958, CC BY-SA 3.0), SAS advertisement 1954: Wikimedia Commons. Portrait of Gérald Genta: Studio Luxury Griffes (CC BY-SA 3.0). Paper characters are AI illustrations (Higgsfield). Narration: AI voice (ElevenLabs).",
      "x": 360,
      "y": 110,
      "font": "ui",
@@ -5090,20 +5915,20 @@
      "depth": 0,
      "in": {
       "type": "fade",
-      "at": 9.55,
+      "at": 16.59,
       "dur": 0.4
      }
     }
    ],
-   "dur": 11.52,
+   "dur": 18.09,
    "silent": true,
-   "captions": "أبريل | ألف وتسعمية وسبعين. | جنتا عمره | ثمانية وثلاثين، | ووراه ستطعش سنة | من التصاميم. | وفي يوم عشرة، | الساعة أربعة العصر… | تلفونه يرن.",
+   "captions": "أبريل، | عام ألفٍ وتسعمئةٍ وسبعين. | جنتا في | الثامنة والثلاثين، | وخلفه ستة عشر عامًا | من التصاميم. | وفي اليوم العاشر، | عند الرابعة عصرًا… | يرنّ هاتفه.",
    "captionStart": 0.16999999999999998,
-   "captionEnd": 8.92,
-   "voice": "voice-habibi/clips/p1-8.wav",
+   "captionEnd": 15.489999999999998,
+   "voice": "voice-abdullah/clips/p1-8.wav",
    "voiceAt": 0.12,
    "transition": "fade",
-   "captionClear": 9.02,
+   "captionClear": 15.67,
    "camera": {
     "zoom": [
      [
@@ -5111,26 +5936,26 @@
       1.0
      ],
      [
-      3.72,
+      6.58,
       1.0,
       "inOutCubic"
      ],
      [
-      5.53,
+      10.0,
       1.06,
       "inOutCubic"
      ],
      [
-      6.73,
+      12.15,
       1.0,
       "inOutCubic"
      ],
      [
-      7.9,
+      13.79,
       1.0
      ],
      [
-      8.95,
+      15.54,
       1.12,
       "inOutCubic"
      ],
@@ -5146,26 +5971,26 @@
       360
      ],
      [
-      3.72,
+      6.58,
       360,
       "inOutCubic"
      ],
      [
-      5.53,
+      10.0,
       360,
       "inOutCubic"
      ],
      [
-      6.73,
+      12.15,
       400,
       "inOutCubic"
      ],
      [
-      7.9,
+      13.79,
       420
      ],
      [
-      8.95,
+      15.54,
       440,
       "inOutCubic"
      ],
@@ -5181,26 +6006,26 @@
       640
      ],
      [
-      3.72,
+      6.58,
       560,
       "inOutCubic"
      ],
      [
-      5.53,
+      10.0,
       500,
       "inOutCubic"
      ],
      [
-      6.73,
+      12.15,
       620,
       "inOutCubic"
      ],
      [
-      7.9,
+      13.79,
       640
      ],
      [
-      8.95,
+      15.54,
       720,
       "inOutCubic"
      ],
@@ -5228,62 +6053,62 @@
      "gain": -15
     },
     {
-     "at": 3.72,
+     "at": 6.58,
      "name": "paper_place",
      "gain": -11
     },
     {
-     "at": 4.17,
+     "at": 7.03,
      "name": "click",
      "gain": -16
     },
     {
-     "at": 4.32,
+     "at": 7.18,
      "name": "click",
      "gain": -16
     },
     {
-     "at": 4.47,
+     "at": 7.33,
      "name": "click",
      "gain": -16
     },
     {
-     "at": 4.62,
+     "at": 7.48,
      "name": "click",
      "gain": -16
     },
     {
-     "at": 4.77,
+     "at": 7.63,
      "name": "click",
      "gain": -16
     },
     {
-     "at": 6.73,
+     "at": 12.15,
      "name": "tick",
      "gain": -14
     },
     {
-     "at": 7.13,
+     "at": 12.55,
      "name": "tick",
      "gain": -14
     },
     {
-     "at": 7.53,
+     "at": 12.95,
      "name": "tick",
      "gain": -14
     },
     {
-     "at": 7.93,
+     "at": 13.35,
      "name": "tick",
      "gain": -14
     },
     {
-     "at": 8.05,
+     "at": 14.04,
      "name": "ring",
      "gain": -8
     },
     {
-     "at": 9.32,
+     "at": 16.2,
      "name": "ring",
      "gain": -9
     }
@@ -5399,7 +6224,7 @@
      "gain": -12
     },
     {
-     "at": 3.6,
+     "at": 2.3,
      "name": "tick_pair",
      "gain": -8
     }

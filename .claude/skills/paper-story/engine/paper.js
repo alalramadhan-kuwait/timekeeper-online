@@ -636,6 +636,92 @@
     return out;
   };
 
+  // Layout faults at time t, for render.mjs --check (each found by a review note on a real film):
+  //  cut      a photo, print or caption card partly outside the frame (camera zoom and drift included); a cut-out
+  //           figure only at its sides and top, since waist-up figures are cropped at the bottom on purpose
+  //           (mark a figure that is meant to leave the frame with "crop": true)
+  //  overlap  a print laid over another print, hiding more than 20 % of it (a deliberate stack: "stack": true)
+  //  caption  a print, card, figure or small drawing under the caption tags while they are on
+  //  soft     a picture shown bigger than its file (more than 1.5x at the render scale): it will look blurred
+  PM.layout = function (t, scale) {
+    PM.setTime(t);
+    scale = scale || 1.5;
+    const out = [], area = S.width * S.height;
+    const shown = (el) => el && el.style.display !== 'none' && +(el.style.opacity || 1) > 0.15;
+    const inter = (a, b) => Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b.left)) * Math.max(0, Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top));
+    const name = (it) => it.spec.type + ' "' + (it.spec.label || it.spec.text || String(it.spec.src || '').split('/').pop() || it.spec.name || '') + '"'
+      + (it.spec.type === 'svg' && !it.spec.label && !it.spec.name ? ' at ' + Math.round(PM.val(it.spec.x, 0, 0)) + ',' + Math.round(PM.val(it.spec.y, 0, 0)) : '');
+    const entering = (it, lt) => it.spec.in && lt < (it.spec.in.at || 0) + (it.spec.in.dur || 0.5) + 0.1;
+    const caps = [...document.querySelectorAll('.caps')].filter((r) => r.style.display !== 'none')
+      .flatMap((r) => [...r.children]).filter((c) => c.style.visibility !== 'hidden').map((c) => c.getBoundingClientRect());
+    scenes.forEach((sc, si) => {
+      const lt = t - sc.start, trd = sc.spec.transitionDur || 0.45;
+      if (lt < trd + 0.05 || lt > sc.spec.dur - 0.05 || sc.root.style.display === 'none') return;
+      const items = sc.items.filter((it) => shown(it.el) && it.built.w * it.built.h < area * 0.5 && it.spec.fit !== 'cover')
+        .map((it) => ({ it, r: it.el.firstChild.getBoundingClientRect() })).filter(({ r }) => r.width * r.height > 0);
+      const prints = items.filter(({ it }) => it.spec.type === 'image' || it.spec.type === 'photo' || (it.spec.type === 'svg' && it.spec.print));
+      items.forEach(({ it, r }) => {
+        const a = r.width * r.height, rec = (kind, extra) => out.push({ kind, scene: si, t: +t.toFixed(2), what: name(it), r: [r.left, r.top, r.right, r.bottom].map(Math.round), ...extra });
+        const ty = it.spec.type;
+        if (ty === 'image' || ty === 'photo' || (ty === 'text' && it.spec.paper) || (ty === 'svg' && it.spec.print)) {
+          const vis = Math.max(0, Math.min(r.right, S.width) - Math.max(r.left, 0)) * Math.max(0, Math.min(r.bottom, S.height) - Math.max(r.top, 0)) / a;
+          if (vis < 0.97) rec('cut', { pct: Math.round((1 - vis) * 100) });
+        } else if (ty === 'cutout' && !it.spec.crop) {
+          const hv = Math.max(0, Math.min(r.right, S.width) - Math.max(r.left, 0)) / r.width, tv = 1 - Math.max(0, -r.top) / r.height;
+          if (hv * tv < 0.97 && hv * tv > 0.5) rec('cut', { pct: Math.round((1 - hv * tv) * 100) });   // mostly gone = leaving, or a panel
+        }
+        if (caps.length && (ty === 'image' || ty === 'photo' || ty === 'card' || (ty === 'text' && it.spec.paper) || (ty === 'svg' && a < area * 0.08 && !it.spec.still))) {
+          const hit = caps.reduce((m, c) => Math.max(m, inter(c, r) / Math.max(1, c.width * c.height)), 0);
+          if (hit > 0.25 && !it.spec.underCaptions) rec('caption', { pct: Math.round(hit * 100) });
+        }
+        const im = it.el.querySelector('img');
+        if (im && im.naturalWidth && (ty === 'image' || ty === 'cutout' || ty === 'photo')) {
+          const shownW = (it.spec.fit === 'cover' ? r.width : im.getBoundingClientRect().width) * scale;
+          const k = shownW / im.naturalWidth;
+          if (k > 1.5) rec('soft', { pct: Math.round(k * 100), file: im.naturalWidth });
+        }
+      });
+      prints.forEach((lo) => prints.forEach((hi) => {
+        if (lo === hi || +hi.it.el.style.zIndex <= +lo.it.el.style.zIndex || lo.it.spec.stack || hi.it.spec.stack || entering(hi.it, lt) || entering(lo.it, lt)) return;
+        const f = inter(lo.r, hi.r) / (lo.r.width * lo.r.height);
+        // a print's caption strip (its label) must stay readable too
+        const lb = lo.it.spec.label && lo.it.spec.polaroid ? (lo.it.spec.bottom || 58) / lo.it.built.h * lo.r.height : 0;
+        const band = { left: lo.r.left, right: lo.r.right, top: lo.r.bottom - lb, bottom: lo.r.bottom };
+        const fl = lb ? inter(band, hi.r) / ((band.right - band.left) * lb) : 0;
+        if (f > 0.2) out.push({ kind: 'overlap', scene: si, t: +t.toFixed(2), what: name(hi.it) + ' covers ' + name(lo.it), pct: Math.round(f * 100) });
+        else if (fl > 0.15) out.push({ kind: 'overlap', scene: si, t: +t.toFixed(2), what: name(hi.it) + ' covers the label of ' + name(lo.it), pct: Math.round(fl * 100) });
+      }));
+    });
+    return out;
+  };
+  // How full the frame is at t: the things a viewer looks at (prints, figures, cards, tags, drawings smaller than half
+  // the frame; not walls, floors, plates or overlays) and the share of the frame they cover, union by a coarse grid.
+  PM.density = function (t, dbg) {
+    PM.setTime(t);
+    const area = S.width * S.height, G = 24, cols = Math.ceil(S.width / G), rowsN = Math.ceil(S.height / G);
+    const shown = (el) => el && el.style.display !== 'none' && +(el.style.opacity || 1) > 0.15;
+    let best = null;
+    scenes.forEach((sc, si) => {
+      const lt = t - sc.start;
+      if (lt < 0 || lt > sc.spec.dur || sc.root.style.display === 'none') return;
+      const grid = new Uint8Array(cols * rowsN); let n = 0;
+      // a full-frame photograph (a macro close-up) or map fills the frame on its own; the first second is entrances
+      if (lt < 1.0 || sc.items.some((it) => shown(it.el) && (it.spec.fit === 'cover' || it.spec.type === 'map') && it.built.w * it.built.h >= area * 0.5)) { if (!best || si > best.scene) best = { scene: si, t: +t.toFixed(2), n: 9, cover: 1 }; return; }
+      sc.items.forEach((it) => {
+        const sp = it.spec, ty = sp.type;
+        if (!shown(it.el) || sp.still || sp.depth === 0 && ty === 'svg' || it.built.w * it.built.h >= area * 0.5 || sp.fit === 'cover' || ty === 'sketch' || ty === 'sparkles' || ty === 'motes') return;
+        const r = it.el.firstChild.getBoundingClientRect(); if (dbg) dbg.push([si, ty, sp.label || sp.text || '', Math.round(r.width), Math.round(r.height)]); if (r.width * r.height < 900) return;
+        n++;
+        for (let y = Math.max(0, Math.floor(r.top / G)); y < Math.min(rowsN, Math.ceil(r.bottom / G)); y++)
+          for (let x = Math.max(0, Math.floor(r.left / G)); x < Math.min(cols, Math.ceil(r.right / G)); x++) grid[y * cols + x] = 1;
+      });
+      const cover = grid.reduce((a, v) => a + v, 0) / grid.length;
+      if (!best || si > best.scene) best = { scene: si, t: +t.toFixed(2), n, cover: +cover.toFixed(2) };
+    });
+    return best;
+  };
+  PM.offFrame = (t) => PM.layout(t).filter((x) => x.kind === 'cut');      // older callers
+
   PM.setTime = function (t) {
     t = clamp(t, 0, S.duration - 1e-6);
     scenes.forEach((sc, si) => {

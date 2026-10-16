@@ -564,13 +564,25 @@
     // `aspect` (width / height of the photo) sizes the frame so the picture is never cropped
     const h = sp.aspect ? Math.round((w - pad * 2) / sp.aspect + pad + bottom) : (sp.h || 200);
     const node = PM.div('', { position: 'relative', width: px(w), height: px(h) });
-    if (!sp.src && sp.asset) return { node: PM.needPhoto(node, w, h, sp), w, h };   // real photo not supplied yet
+    if (!sp.src && sp.asset && !sp.silhouette) return { node: PM.needPhoto(node, w, h, sp), w, h };   // real photo not supplied yet
     if (pad) put(node, { w, h, color: sp.color || '#F6EEDD', j: 1.2 });
-    const img = document.createElement('img');
-    img.src = sp.src;
-    Object.assign(img.style, { position: 'absolute', left: px(pad), top: px(pad), width: px(w - pad * 2), height: px(h - pad - bottom),
-      objectFit: sp.fit || (sp.aspect ? 'cover' : 'contain'), objectPosition: sp.pos || '50% 50%' });
-    node.appendChild(img);
+    if (sp.silhouette) {
+      // a person with no documented photograph: the same print, a plain grey silhouette and a note, never an invented face
+      const pw = w - pad * 2, ph = h - pad - bottom, note = sp.silhouette === true ? 'لا توجد صورة موثّقة' : sp.silhouette;
+      const sv = PM.div('', { position: 'absolute', left: px(pad), top: px(pad), width: px(pw), height: px(ph), overflow: 'hidden',
+        background: 'linear-gradient(#565C64, #33383E)' });
+      sv.innerHTML = '<svg width="' + pw + '" height="' + ph + '" viewBox="0 0 ' + pw + ' ' + ph + '" style="position:absolute;left:0;top:0"><g fill="#8B929B">' +
+        '<circle cx="' + pw / 2 + '" cy="' + ph * .36 + '" r="' + pw * .17 + '"/><rect x="' + (pw / 2 - pw * .07) + '" y="' + ph * .46 + '" width="' + pw * .14 + '" height="' + ph * .1 + '" rx="6"/>' +
+        '<ellipse cx="' + pw / 2 + '" cy="' + ph + '" rx="' + pw * .42 + '" ry="' + ph * .38 + '"/></g></svg>';
+      node.appendChild(sv);
+      text(sv, note, { font: 'ui', size: Math.max(13, Math.round(pw / 17)), color: '#E9E4D8', w: pw, h: 34, y: 8, center: true });
+    } else {
+      const img = document.createElement('img');
+      img.src = sp.src;
+      Object.assign(img.style, { position: 'absolute', left: px(pad), top: px(pad), width: px(w - pad * 2), height: px(h - pad - bottom),
+        objectFit: sp.fit || (sp.aspect ? 'cover' : 'contain'), objectPosition: sp.pos || '50% 50%' });
+      node.appendChild(img);
+    }
     if (sp.label) text(node, sp.label, { font: 'cap', size: sp.labelSize || 24, color: '#2A2622', w, h: bottom, y: h - bottom, center: true });
     if (polaroid || sp.tape) put(node, { w: 84, h: 30, x: w / 2 - 42, y: -15, color: 'rgb(214,190,128)', rot: sp.tapeRot == null ? -3 : sp.tapeRot, j: .8, bevel: false });
     return { node, w, h };

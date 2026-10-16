@@ -53,7 +53,7 @@ Easing names: `linear`, `outCubic`, `inCubic`, `inOutCubic` (default), `outBack`
 
 ## Your own art
 
-**image** `src` (path relative to the storyboard), `w`, `h`, `frame: false` for no paper border, `fit`, `pos` (crop focus such as `"50% 20%"`). Use it for the user's logo. For photos add `polaroid: true` (taped paper frame with a caption strip), `aspect` (the photo's width divided by height, so the frame fits it and nothing is cropped), `label` (caption text under the photo), `bottom` (strip height).
+**image** `src` (path relative to the storyboard), `w`, `h`, `frame: false` for no paper border, `fit`, `pos` (crop focus such as `"50% 20%"`). Use it for the user's logo. For photos add `polaroid: true` (taped paper frame with a caption strip), `aspect` (the photo's width divided by height, so the frame fits it and nothing is cropped), `label` (caption text under the photo), `bottom` (strip height). `silhouette: true` (or a note string) draws a grey head-and-shoulders and «لا توجد صورة موثّقة» instead of a photo, for a named person with no documented picture; no `src` needed. Layout flags read by `--check`: `stack: true` (a deliberate stack, such as a dim display behind the hero), `crop: true` on a figure meant to leave the frame, `underCaptions: true` on something meant to sit under the captions.
 **svg** / **html** `svg` or `html` string with `w`, `h`. Use `PM.piece` in `engine/props.js` to add a reusable prop instead.
 
 ## Recipes
@@ -66,7 +66,7 @@ Easing names: `linear`, `outCubic`, `inCubic`, `inOutCubic` (default), `outBack`
 ## Documentary elements (props-docu.js)
 
 **watch** `size`, `strap: false` (case only), `caseColor`, `dialColor`, `strapColor`, `handColor`, `markerColor`, `numerals: "arabic"`, `brand`, `date`, `time: [h, m, s]`, `rate` (seconds of watch time per scene second), `tick: false` for a smooth second hand. `assemble: { at, stagger, dur }` flies the parts in layer by layer. `explode` keyframes 0 to 1 pull it apart.
-**map** `w`, `h`, `view` (a `{lon, lat, span}` or keyframes `[[t, {lon, lat, span}, ease]]`, span in degrees of longitude), `pins: [{id, lon, lat, label, at}]`, `routes: [{from, to, at, dur, curve, plane, keep}]`, `highlight: [{n: "Kuwait", at, color}]`, `states: true`, `graticule`, `sea`, `land`, `unfold: {at, dur}`.
+**map** `w`, `h`, `view` (a `{lon, lat, span}` or keyframes `[[t, {lon, lat, span}, ease]]`, span in degrees of longitude), `pins: [{id, lon, lat, label, at, left}]` (`left: true` puts the label on the pin's left, clear of a neighbouring pin or route), `routes: [{from, to, at, dur, curve, plane, keep}]`, `highlight: [{n: "Kuwait", at, color}]`, `states: true`, `graticule`, `sea`, `land`, `unfold: {at, dur}`.
 **image** and **cutout** also take `asset` (with `desc`): until the file is in `assets/`, a REAL PHOTO NEEDED panel stands in at the same size.
 **photo** a polaroid for real evidence: `src` or `asset`, `w`, `aspect`, `label`, `desc` (shown on the placeholder). **igpost** a generic social post card: `asset`/`src`, `avatar`, `handle`, `caption`, `empty`, `likeAt`. **notif** `text`, `name`, `initial`, `rtl`.
 **phone** `src`/`label`, `fold` keyframes (screen folds down). **door** `open` keyframes, `sign`, `src`/`asset`. **box** watch box (`lid` keyframes) or `kind: "parcel"`. **mic**, **waves** (`bars`, `level`), **cup**, **laptop**, **suitcase**, **pedestal**, **spotlight**, **towers** (Kuwait Towers).

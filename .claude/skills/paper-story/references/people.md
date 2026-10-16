@@ -88,8 +88,14 @@ than a silhouette (a note on the Royal Oak story). So find a photograph you may 
   drafting table, holding a blank sheet, presenting with an empty palm) using the approved image as a second
   reference. Credit them on screen as AI illustrations.
 - Someone with no usable photograph gets no invented face: a detailed paper character seen from behind or from the
-  side (`video/royal-oak/`: Golay at his desk, from behind). Never a black silhouette: the user asked for people with
-  detail and personality, so give them clothes, hair, posture and a prop that says who they are.
+  side (`video/royal-oak/`: Golay at his desk, from behind). Never a black silhouette standing in for a character:
+  the user asked for people with detail and personality, so give them clothes, hair, posture and a prop that says who
+  they are.
+- **Everyone the narration counts is on screen.** "Three agents" with two photos read as two (the owner's note on
+  Part 2). When a named person has no documented photograph, give them a print the same size as the others with
+  the engine's silhouette in it (`"silhouette": true` on a polaroid `image`, or a note text instead of `true`): a
+  plain grey head and shoulders and «لا توجد صورة موثّقة», labelled with their name. A typed name card next to two
+  photographs did not read as a person.
 - Generated backdrops often carry a gradient; cut them with Higgsfield `remove_background` rather than `cut-poses.py`.
 
 ## Real products on screen (notes from the Royal Oak story)
@@ -111,3 +117,15 @@ than a silhouette (a note on the Royal Oak story). So find a photograph you may 
   date where they are, proportions from the technical sheet.
 - **Gallery of a career:** a cork board with pinned prints in date order and a red thread reads as "sixteen years of
   work"; a scatter of polaroids that pop and vanish does not.
+
+## Archive photographs of people (notes from the Royal Oak story)
+
+- **Crop to the face, then look at the crop at full size.** A group photo cropped to "the man on the right" cut him
+  at the nose; the owner saw only his ear and glasses. Keep the whole face, glasses, nose and mouth; widen the crop
+  rather than lose the profile. Render a still at the final scale (`--still t --scale 1.5`) and look at every person.
+- **A neighbour at the edge of a crop:** darken that edge with a soft gradient so the subject reads as the subject;
+  never touch the subject (`video/royal-oak/crops.py`, `bauty1976_face`). Make crops in a script so they can be rebuilt.
+- **Every archive portrait carries its year** in the label ("شارل بوتي، باريس 1976"), so no photo reads as taken at the
+  meeting the story is about. A photo that does not say who is who is labelled with both names, not guessed.
+- **Resolution:** `--check` notes any picture shown more than 1.5x bigger than its file. A face that soft looks
+  wrong on a phone: find a bigger scan, or show it smaller. Never AI-upscale or retouch a real person's face.
