@@ -365,7 +365,7 @@ export class WorldScene extends Phaser.Scene {
   mallView(): MallView {
     const cam = this.cameras.main;
     const at = { x: cam.midPoint.x, y: cam.midPoint.y }, zoom = cam.zoom;
-    const sel = (this.chosen?.active ? this.chosen.getData('sel') : null) as Selection | null;
+    const sel = (this.chosen?.active && this.selectRing.visible ? this.chosen.getData('sel') : null) as Selection | null;
     return { room: this.room, x: at.x, y: at.y, zoom, section: this.section, owner: this.owner.cell, cover: { ...this.cover }, sel };
   }
 
@@ -402,7 +402,7 @@ export class WorldScene extends Phaser.Scene {
     this.revealTo = null;
     cam.setZoom(b.zoom); cam.centerOn(b.x, b.y); this.zoomTarget = b.zoom;
     // and what was selected, marked again without moving the view
-    const t = b.sel?.type === 'brand' ? this.mall.target(b.sel.brand) : null;
+    const t = b.sel?.type === 'brand' && b.room === 'floor' ? this.mall.target(b.sel.brand) : null;
     if (t) this.markChosen(t.obj as Phaser.GameObjects.Image, 0);
   }
 

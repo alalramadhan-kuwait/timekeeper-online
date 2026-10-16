@@ -152,7 +152,7 @@ export default function WorldPage({ onClose }: { onClose?: () => void }) {
     const back = cameFrom.current;
     cameFrom.current = null;
     // the panel that was open comes back with the view (the brand's own, from 'Step inside')
-    setStack(back?.stack.filter((v) => !isBoutiqueView(v)) ?? []);
+    setStack(back?.stack.filter((v) => v.type !== 'watch' && v.type !== 'browse') ?? []);
     setRoom(back?.room && back.room !== 'boutique' ? back.room : 'floor');
   }, []);
   const selectRef = useRef<(s: Selection | null) => void>(() => {});
