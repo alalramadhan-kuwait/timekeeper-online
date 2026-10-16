@@ -345,3 +345,9 @@ These need a synonym in scripts or the fine-tune.
   - The six-model page (9tRX4nrPhTLsojm68H8tQN) was only partly answered: V5 was rated مو كويتية and آلي in sentence 1, and the Chatterbox_Kuwaiti clone was picked best in sentence 2.
   - Pilot 0's before/after page has no answers yet.
 - **Full test page** (11 sentences, OmniVoice vs the Chatterbox_Kuwaiti clone baseline of pilot 0): artifact 93L1dS6SSn7v1YvxUkoUtn.
+- **Full test result (2026-10-16): OmniVoice was better in 11 of 11 sentences** against the Chatterbox_Kuwaiti clone.
+  This was blind, one question per sentence (the user asked for the simpler test).
+  - The one note was on u01: «اللهجة مو كويتية».
+  - OmniVoice is now the leading automatic voice. Its pronunciation is checked next.
+  - The weights are CC-BY-NC, so it is research only until the licence is settled.
+- Pronunciation check of OmniVoice on the 11 sentences (wrong words + dialect): artifact NoZAkVkr3CkAP1N1FhC7wu.
