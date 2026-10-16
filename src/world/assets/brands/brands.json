@@ -83,5 +83,65 @@
   "source_url": "https://www.behrenswatches.com/static/upload/image/20231012/1697092520432782.png",
   "source_sha256": "b55832419ad71d4609ee211098fedb519dccc135c510b9f7ea95e73a59daba03",
   "name_share": 0.29
+ },
+ "Beda’a": {
+  "file": "bedaa.png",
+  "plate": "light",
+  "px": [
+   1028,
+   124
+  ],
+  "official_site": "https://bedaawatches.com/",
+  "source_url": "https://bedaawatches.com/wp-content/uploads/2024/04/beda_a-transparent-04-e1711999405292.png",
+  "source_sha256": "18cb7c3cd48e37f859c0164f42f7bfe590586c4c06320e4cae0dce1f5d148fd8",
+  "name_share": 0.85
+ },
+ "Wolf": {
+  "file": "wolf.png",
+  "plate": "light",
+  "px": [
+   828,
+   300
+  ],
+  "official_site": "https://www.wolf1834.com/",
+  "source_url": "https://www.wolf1834.com/ (inline SVG logo in the site header, rendered at 300 px tall)",
+  "source_sha256": "7bc7fdd5c227160b6243a6054f0d10363a3759174ebacd390dd4b92c8e0e3bce",
+  "name_share": 0.6
+ },
+ "Baltic": {
+  "file": "baltic.png",
+  "plate": "light",
+  "px": [
+   514,
+   400
+  ],
+  "official_site": "https://balticwatches.com/",
+  "source_url": "https://balticwatches.com/css/images/logo.svg",
+  "source_sha256": "78eb587bb54145b4517ad8518893b2df94d65ddaa28b1fd6bfaa9b01da9799e9",
+  "name_share": 0.19
+ },
+ "Citizen": {
+  "file": "citizen.png",
+  "plate": "dark",
+  "px": [
+   886,
+   161
+  ],
+  "official_site": "https://www.citizenwatch.com/",
+  "source_url": "https://images.ctfassets.net/w88fevehnr84/31GGp8azqk311T4gZi3Zv5/600b02cc5fd538ffd3a24b68c3f2d7b4/citizen-logo.png",
+  "source_sha256": "4334631f837dc4376c6ef4ce706bbe0c59b3c411b01deb45035c83d76f8bc81d",
+  "name_share": 0.95
+ },
+ "Seven Friday": {
+  "file": "seven-friday.png",
+  "plate": "dark",
+  "px": [
+   695,
+   55
+  ],
+  "official_site": "https://www.sevenfriday.com/",
+  "source_url": "https://www.sevenfriday.com/cdn/shop/files/SEVENFRIDAY_Logo_White_700x_46de4a2f-3217-415c-a759-132651891df2.png?v=1614312150",
+  "source_sha256": "ac25c595dc6c25143529a2e3650e7f2600328ebedbbaecfbe34bcb9b9c971f8c",
+  "name_share": 0.93
  }
 }
