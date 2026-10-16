@@ -351,3 +351,9 @@ These need a synonym in scripts or the fine-tune.
   - OmniVoice is now the leading automatic voice. Its pronunciation is checked next.
   - The weights are CC-BY-NC, so it is research only until the licence is settled.
 - Pronunciation check of OmniVoice on the 11 sentences (wrong words + dialect): artifact NoZAkVkr3CkAP1N1FhC7wu.
+- **Pronunciation check, first page (u01–u04, 2026-10-16).**
+  - Dialect: كويتية in all 3 rated. Words: 6 of 34 wrong (82%).
+  - Wrong: أشيك (say اتشيك), امبارح (not Kuwaiti; the text's word choice), ترا, هالموديل (better as the English «model»), قبل, حجزتها.
+  - The user's note on u02: قدام is جدام in Kuwaiti. It was not tapped, but it is a word-choice fix.
+  - Several of these are text fixes that the general lexicon already holds or now holds: امبارح → أمس, قدام → جدام, أشيك → اتشيك.
+  - Pages 2–3 (u05–t01) were not answered yet.

@@ -241,7 +241,7 @@
    ],
    "meaning": "yesterday",
    "status": "confirmed",
-   "source": "the user: امبارح is not Kuwaiti"
+   "source": "the user: امبارح is not Kuwaiti; again on OmniVoice u01"
   },
   "چذي": {
    "say": "chidhi",
@@ -303,7 +303,7 @@
    ],
    "meaning": "in front of",
    "status": "confirmed",
-   "source": "the user, spelling round 2 (k27 note: جدامك)"
+   "source": "the user, spelling round 2 (k27 note: جدامك); again on OmniVoice u02"
   },
   "يديد": {
    "say": "yidīd",
@@ -313,6 +313,22 @@
    "meaning": "new",
    "status": "proposed",
    "note": "the user picked يديد for the model; whether scripts should be written يديد is still open"
+  },
+  "اتشيك": {
+   "say": "atshayyik",
+   "instead_of": [
+    "أشيك"
+   ],
+   "meaning": "I check",
+   "status": "confirmed",
+   "source": "the user, OmniVoice pronunciation check u01 (2026-10-16): أشيك is not said that way"
+  },
+  "موديل": {
+   "say": "model (English)",
+   "instead_of": [],
+   "meaning": "model (of a watch)",
+   "status": "proposed",
+   "note": "the user: هالموديل may be better said as the English word"
   }
  },
  "sounds": {
