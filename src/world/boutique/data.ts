@@ -81,14 +81,14 @@ export const shelfOf = (w: Watch): Shelf => (w.on_hand > 0 ? 'in_stock' : w.on_o
 /* The optional discovery filters: the analyst's classes, and what is missing from the shelves. */
 export type Lens = 'all' | 'fast' | 'healthy' | 'new' | 'slow' | 'dead' | 'sold_out' | 'on_order';
 export const LENSES: { key: Lens; label: string }[] = [
-  { key: 'all', label: 'Everything' },
-  { key: 'fast', label: 'Moving fast' },
-  { key: 'healthy', label: 'Steady' },
+  { key: 'all', label: 'All' },
+  { key: 'fast', label: 'Fast' },
+  { key: 'healthy', label: 'Healthy' },
   { key: 'new', label: 'New' },
   { key: 'slow', label: 'Slow' },
-  { key: 'dead', label: 'Not moving' },
-  { key: 'sold_out', label: 'Sold out' },
-  { key: 'on_order', label: 'On order' },
+  { key: 'dead', label: 'Dead' },
+  { key: 'sold_out', label: 'Sold Out' },
+  { key: 'on_order', label: 'On Order' },
 ];
 export function matches(w: Watch, lens: Lens): boolean {
   switch (lens) {
@@ -101,10 +101,10 @@ export function matches(w: Watch, lens: Lens): boolean {
 
 export type SortKey = 'sold90' | 'stock' | 'unsold' | 'name';
 export const SORTS: { key: SortKey; label: string }[] = [
-  { key: 'sold90', label: 'Sold in 90 days' },
-  { key: 'stock', label: 'Most in stock' },
+  { key: 'sold90', label: 'Sales movement' },
+  { key: 'stock', label: 'Highest stock' },
   { key: 'unsold', label: 'Longest unsold' },
-  { key: 'name', label: 'A–Z' },
+  { key: 'name', label: 'Name' },
 ];
 const lastSaleTime = (w: Watch) => (w.last_sale ? Date.parse(w.last_sale) : -Infinity);
 export function sortWatches(list: Watch[], key: SortKey): Watch[] {
@@ -117,8 +117,17 @@ export function sortWatches(list: Watch[], key: SortKey): Watch[] {
   return by;
 }
 
+/* The watches in the glass cases: the best sellers of the last 90 days that are on the shelf now
+   and have a verified photo. A plain rule, so the cases change as the sales do and no one picks. */
+export const CASE_COUNT = 6;
+export function curated(list: Watch[], n = CASE_COUNT): Watch[] {
+  return list.filter((w) => w.on_hand > 0 && w.image)
+    .sort((a, b) => b.u90 - a.u90 || b.u365 - a.u365 || a.name.localeCompare(b.name))
+    .slice(0, n);
+}
+
 export const CLASS_WORD: Record<string, string> = {
-  fast: 'Moving fast', healthy: 'Steady', new: 'New', slow: 'Slow', dead: 'Not moving',
+  fast: 'Fast', healthy: 'Healthy', new: 'New', slow: 'Slow', dead: 'Dead',
   not_stocked: 'Sold out', unclassified: 'Not classed yet',
 };
 export const CLASS_COLOUR: Record<string, string> = {

@@ -1,22 +1,22 @@
 import Phaser from 'phaser';
 import { BRAND_LOGOS } from '../assets/brandLogos';
-import { matches, shelfOf, type BoutiqueData, type Lens, type Watch } from '../boutique/data';
-import {
-  BENCH, BOUTIQUE_AT, COUNTER, DOOR, NICHE_H, PEDESTALS, PLANTS, ROOM, SHELVES, WALL_H, displaySpots, toWorldB, type DisplaySpot,
-} from '../boutique/layout';
+import { curated, matches, shelfOf, type BoutiqueData, type Lens, type Watch } from '../boutique/data';
+import { BENCH, BOARD, BOUTIQUE_AT, COUNTER, DOOR, PEDESTALS, PLANTS, ROOM, WALL_H, toWorldB } from '../boutique/layout';
 import { FloorBatch } from './FloorBatch';
 import { depthAt, iso } from './iso';
 import type { WorldScene } from './WorldScene';
 
-/* Inside a boutique: a marble floor, panelled walls with lit niches, glass pedestals, a counter and
-   a bench, and the boutique's real watches, each shown by its own photograph.
+/* Inside a boutique: a marble floor, panelled walls, a counter and a bench, six glass cases with a
+   watch in each (the best sellers on the shelf now), and the Collection Board on the back wall,
+   which opens the catalogue of every watch. Each watch is shown by its own photograph.
 
-   Nothing here is written in the room: no counts, classes or prices. A watch is tapped to see
-   what it is doing. The optional discovery filters only light some watches and dim the rest. */
+   Nothing in the room carries a figure: no counts, classes or prices beside a watch. A watch is
+   tapped to see what it is doing. */
 
-const CARD = 56;          // a watch's card, world units
 const PHOTO = 52;
-const CASE_CARD = 40;     // smaller, lying under a pedestal's glass
+const CASE_CARD = 50;     // a watch in a glass case, world units
+const BAND = 8;           // photographs across the Collection Board
+const BAND_CARD = 56;
 const FONT = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
 
 type Item = { watch: Watch; card: Phaser.GameObjects.Rectangle; shade: Phaser.GameObjects.Rectangle; photo: Phaser.GameObjects.Image | null; text: Phaser.GameObjects.Text | null; ring: Phaser.GameObjects.Rectangle; box: Phaser.GameObjects.Image | null; at: { x: number; y: number } };
@@ -25,11 +25,12 @@ export class BoutiqueLayer {
   private fixed: Phaser.GameObjects.GameObject[] = [];
   private dyn: Phaser.GameObjects.GameObject[] = [];
   private items = new Map<string, Item>();
+  private bandPhotos = new Map<string, Phaser.GameObjects.Image>();
   private lens: Lens = 'all';
   private shown = false;
   brand: string | null = null;
   data: BoutiqueData | null = null;
-  overflow: Watch[] = [];          // watches with no place left in the room (shown in the browser)
+  overflow: Watch[] = [];          // watches not in a case (all of them are in the catalogue)
 
   constructor(private scene: WorldScene) {}
 
@@ -69,24 +70,30 @@ export class BoutiqueLayer {
     // a cap along the walls' top edge
     g.lineStyle(6, 0x3a2a1e, 1).lineBetween(P(0, ROOM.D).x, P(0, ROOM.D).y - WALL_H, P(0, 0).x, P(0, 0).y - WALL_H);
     g.lineBetween(P(0, 0).x, P(0, 0).y - WALL_H, P(ROOM.W, 0).x, P(ROOM.W, 0).y - WALL_H);
-    // the wall vitrines: a walnut frame along each wall, a lit cream recess for each shelf, a brass
-    // shelf edge the watches stand on, and a warm light at the top of each recess
-    const V = (t: number, h: number, side: 'back' | 'left') => {
+    // the left wall: tall panels in a moulding, lit from above
+    const V = (side: 'back' | 'left', t: number, h: number) => {
       const [wx, wy] = side === 'back' ? toWorldB(t, 0) : toWorldB(0, t);
       const p = iso(wx, wy);
       return new Phaser.Math.Vector2(p.x, p.y - h);
     };
-    for (const side of ['back', 'left'] as const) {
-      const [t0, t1] = side === 'back' ? [0.7, ROOM.W - 0.2] : [0.7, ROOM.D - 0.2];
-      const lo = SHELVES[0] - 14, hi = SHELVES[SHELVES.length - 1] + NICHE_H + 12;
-      g.fillStyle(0x4a2f1f, 1).fillPoints([V(t0, hi, side), V(t1, hi, side), V(t1, lo, side), V(t0, lo, side)], true);
-      for (const h0 of SHELVES) {
-        const h1 = h0 + NICHE_H;
-        g.fillStyle(side === 'back' ? 0xf7eedc : 0xeadcc0, 1).fillPoints([V(t0 + 0.08, h1, side), V(t1 - 0.08, h1, side), V(t1 - 0.08, h0, side), V(t0 + 0.08, h0, side)], true);
-        g.fillStyle(0xfff8e6, 0.9).fillPoints([V(t0 + 0.08, h1, side), V(t1 - 0.08, h1, side), V(t1 - 0.08, h1 - 8, side), V(t0 + 0.08, h1 - 8, side)], true);
-        g.lineStyle(4, 0xc79b4a, 1).lineBetween(V(t0 + 0.08, h0, side).x, V(t0 + 0.08, h0, side).y, V(t1 - 0.08, h0, side).x, V(t1 - 0.08, h0, side).y);
-      }
+    for (let t = 1; t + 1.6 <= ROOM.D; t += 2.2) {
+      const q = [V('left', t, 236), V('left', t + 1.6, 236), V('left', t + 1.6, 40), V('left', t, 40)];
+      g.fillStyle(0xdccaa8, 1).fillPoints(q, true);
+      g.lineStyle(2, 0xc79b4a, 0.9).strokePoints(q, true);
+      g.fillStyle(0xfff3d6, 0.5).fillPoints([q[0], q[1], new Phaser.Math.Vector2(q[1].x, q[1].y + 14), new Phaser.Math.Vector2(q[0].x, q[0].y + 14)], true);
     }
+    // the Collection Board: a walnut frame built into the back wall, a deep navy face lit along
+    // its top; its pictures and words are put on it with the boutique's watches
+    const B = BOARD;
+    const outer = [V('back', B.x0, B.hi), V('back', B.x1, B.hi), V('back', B.x1, B.lo), V('back', B.x0, B.lo)];
+    const inner = [V('back', B.x0 + 0.18, B.hi - 12), V('back', B.x1 - 0.18, B.hi - 12), V('back', B.x1 - 0.18, B.lo + 12), V('back', B.x0 + 0.18, B.lo + 12)];
+    g.fillStyle(0x000000, 0.18).fillPoints(outer.map((v) => new Phaser.Math.Vector2(v.x + 8, v.y + 10)), true);
+    g.fillStyle(0x4a2f1f, 1).fillPoints(outer, true);
+    g.fillStyle(0x1b2741, 1).fillPoints(inner, true);
+    g.lineStyle(3, 0xc79b4a, 1).strokePoints(inner, true);
+    g.fillStyle(0xffe9b8, 0.22).fillPoints([inner[0], inner[1], new Phaser.Math.Vector2(inner[1].x, inner[1].y + 30), new Phaser.Math.Vector2(inner[0].x, inner[0].y + 30)], true);
+    // a brass picture light over it
+    g.lineStyle(5, 0xb8893b, 1).lineBetween(V('back', B.x0 + 1, B.hi + 14).x, V('back', B.x0 + 1, B.hi + 14).y, V('back', B.x1 - 1, B.hi + 14).x, V('back', B.x1 - 1, B.hi + 14).y);
     this.fixed.push(g);
 
     // furniture
@@ -118,32 +125,34 @@ export class BoutiqueLayer {
     this.setShown(false);
   }
 
-  /* A niche's four corners on its wall: top left, top right, bottom right, bottom left. */
-  private nicheQuad(spot: Exclude<DisplaySpot, { kind: 'pedestal' }>): Phaser.Math.Vector2[] {
-    const h0 = SHELVES[spot.shelf], h1 = h0 + NICHE_H;
-    const along = (t: number, h: number) => {
-      const [wx, wy] = spot.kind === 'back' ? toWorldB(spot.cell + t, 0) : toWorldB(0, spot.cell + t);
-      const p = iso(wx, wy);
-      return new Phaser.Math.Vector2(p.x, p.y - h);
-    };
-    // the left wall runs towards the viewer, so its niches are read from the corner outwards
-    return spot.kind === 'back'
-      ? [along(0.1, h1), along(0.9, h1), along(0.9, h0), along(0.1, h0)]
-      : [along(0.9, h1), along(0.1, h1), along(0.1, h0), along(0.9, h0)];
+  /* A point on the back wall: t cells along it, h units up. */
+  private onWall(t: number, h: number) {
+    const p = iso(...toWorldB(t, 0));
+    return { x: p.x, y: p.y - h };
   }
 
-  /* Where a watch's card stands, and how deep it is drawn. */
-  private placeOf(spot: DisplaySpot): { x: number; y: number; depth: number } {
-    if (spot.kind === 'pedestal') {
-      const [x, y] = toWorldB(...PEDESTALS[spot.index]);
-      const p = iso(x + 1, y + 1);
-      return { x: p.x + (spot.side ? 24 : -24), y: p.y - 96 + (spot.side ? -2 : 2), depth: depthAt(x + 1, y + 1, 0.6) };
-    }
-    // standing on the shelf's edge: the card's foot on the brass line where the card's middle is
-    const q = this.nicheQuad(spot);
-    const cx = (q[2].x + q[3].x) / 2, foot = (q[2].y + q[3].y) / 2;
-    const [wx, wy] = spot.kind === 'back' ? toWorldB(spot.cell + 1, 0.4) : toWorldB(0.4, spot.cell + 1);
-    return { x: cx, y: foot - CARD / 2 - 3, depth: depthAt(wx, wy, -5) };
+  /* A container whose children, laid out flat, appear on the back wall's slant: screen x = u,
+     screen y = v + u/2 from the given point. The shear is split into rotate · scale · rotate (its
+     singular value decomposition), which nested containers can each carry. */
+  private sheared(x: number, y: number, depth: number) {
+    const s = this.scene;
+    const a = 1, b = 0, c = 0.5, d = 1;                         // [[a, b], [c, d]]: x' = x, y' = 0.5x + y
+    const E = (a + d) / 2, F = (a - d) / 2, G = (c + b) / 2, H = (c - b) / 2;
+    const Q = Math.hypot(E, H), R = Math.hypot(F, G);
+    const a1 = Math.atan2(G, F), a2 = Math.atan2(H, E);
+    const outer = s.add.container(x, y).setRotation((a2 + a1) / 2).setDepth(depth);
+    const mid = s.add.container(0, 0).setScale(Q + R, Q - R);
+    const inner = s.add.container(0, 0).setRotation((a2 - a1) / 2);
+    outer.add(mid); mid.add(inner);
+    this.dyn.push(outer);
+    return inner;
+  }
+
+  /* Where a case's watch lies, under its glass, and how deep it is drawn. */
+  private caseSpot(index: number): { x: number; y: number; depth: number } {
+    const [x, y] = toWorldB(...PEDESTALS[index]);
+    const p = iso(x + 1, y + 1);
+    return { x: p.x, y: p.y - 96, depth: depthAt(x + 1, y + 1, 0.6) };
   }
 
   /* ── a boutique's watches ─────────────────────────────────────────────── */
@@ -152,66 +161,86 @@ export class BoutiqueLayer {
     for (const o of this.dyn) o.destroy();
     this.dyn = [];
     this.items.clear();
+    this.bandPhotos.clear();
     this.overflow = [];
     this.brand = data?.brand ?? null;
     this.data = data;
     if (!data) return;
     const s = this.scene;
-    // the brand's own logo on a navy plate, in the middle of the back wall's top shelf
-    const logo = BRAND_LOGOS[data.brand];
+    const B = BOARD;
+    const sel = { type: 'collection' as const };
+    const boardDepth = depthAt(...toWorldB(B.x1, 0.3), -6);
+    const tagBoard = (o: Phaser.GameObjects.GameObject & { setInteractive: (...a: never[]) => unknown }) => {
+      (o as unknown as Phaser.GameObjects.Image).setInteractive({ useHandCursor: true });
+      s.tag(o, sel, 0);
+      this.dyn.push(o);
+      return o;
+    };
+    // the whole board answers a tap, wherever it is touched
     {
-      const [ax, ay] = toWorldB(6, 0), [bx, by] = toWorldB(8, 0);
-      const a = iso(ax, ay), b = iso(bx, by), h = SHELVES[SHELVES.length - 1] + NICHE_H / 2;
-      const cx = (a.x + b.x) / 2, cy = (a.y + b.y) / 2 - h;
-      const plate = s.add.rectangle(cx, cy, 150, 58, 0x22304d).setStrokeStyle(3, 0xc79b4a).setDepth(depthAt(...toWorldB(8, 0.4), -4));
-      this.dyn.push(plate);
-      if (logo && s.textures.exists(logo.key)) {
-        const img = s.add.image(cx, cy, logo.key).setDepth(plate.depth + 0.1);
-        const k = Math.min(132 / img.width, 42 / img.height);
-        img.setScale(k);
-        this.dyn.push(img);
-      } else {
-        this.dyn.push(s.add.text(cx, cy, data.brand, { fontFamily: FONT, fontSize: '22px', fontStyle: '600', color: '#fbf3dc', resolution: 2 }).setOrigin(0.5).setDepth(plate.depth + 0.1));
-      }
+      const a = this.onWall(B.x0, B.hi), b = this.onWall(B.x1, B.lo);
+      const hit = s.add.zone((a.x + b.x) / 2, (a.y + b.y) / 2, Math.abs(b.x - a.x), Math.abs(b.y - a.y) + 40).setDepth(boardDepth - 0.5);
+      tagBoard(hit);
     }
-    // watches fill the room's places in Lightspeed's name order
-    const spots = displaySpots();
-    const watches = [...data.products].sort((a, b) => a.name.localeCompare(b.name));
+    // its title: the brand's logo where we have it, then the collection's size
+    // the board's face is laid out flat (u along the wall, v down from its top edge), then set onto
+    // the wall's slant: three nested containers, rotate · stretch · rotate, make the shear exactly
+    const U = (B.x1 - B.x0) * 64, Hh = B.hi - B.lo;
+    const o = this.onWall(B.x0, B.hi);
+    const face = this.sheared(o.x, o.y, boardDepth);
+    const put = <T extends Phaser.GameObjects.GameObject>(g: T) => { face.add(g); return g; };
+    const logo = BRAND_LOGOS[data.brand];
+    if (logo && s.textures.exists(logo.key)) {
+      put(s.add.rectangle(U / 2, 38, 210, 46, 0xf6efe0).setStrokeStyle(2, 0xc79b4a));
+      const img = put(s.add.image(U / 2, 38, logo.key));
+      img.setScale(Math.min(190 / img.width, 34 / img.height));
+    } else {
+      put(s.add.text(U / 2, 38, data.brand.toUpperCase(), { fontFamily: FONT, fontSize: '26px', fontStyle: '600', color: '#f3e7cf', resolution: 2 }).setOrigin(0.5));
+    }
+    put(s.add.text(U / 2, 76, `THE COLLECTION · ${data.products.length} WATCHES`, {
+      fontFamily: FONT, fontSize: '14px', fontStyle: '600', color: '#d8b45a', resolution: 3, letterSpacing: 2,
+    }).setOrigin(0.5));
+    // a band of the collection's own photographs, the next best sellers after the cases
+    const cases = curated(data.products);
+    const caseIds = new Set(cases.map((w) => w.product_id));
+    const band = curated(data.products.filter((w) => !caseIds.has(w.product_id)), BAND);
     const toLoad: Watch[] = [];
-    watches.forEach((w, i) => {
-      const spot = spots[i];
-      if (!spot) { this.overflow.push(w); return; }
-      const at = this.placeOf(spot);
-      const size = spot.kind === 'pedestal' ? CASE_CARD : CARD;
+    const gap = (U - 60) / BAND;
+    band.forEach((w, i) => {
+      const x = 30 + gap * (i + 0.5), y = 128;
+      put(s.add.rectangle(x, y, BAND_CARD, BAND_CARD, 0xffffff));
+      const photo = put(s.add.image(x, y, '__WHITE').setVisible(false));
+      photo.setData('size', BAND_CARD - 4);
+      this.bandPhotos.set(w.product_id, photo);
+      toLoad.push(w);
+    });
+    put(s.add.text(U / 2, Hh - 24, 'Tap to browse every watch  ›', { fontFamily: FONT, fontSize: '13px', color: '#efe6d3', resolution: 3 }).setOrigin(0.5));
+
+    // the glass cases: one watch in each, the best sellers on the shelf now
+    cases.forEach((w, i) => {
+      const at = this.caseSpot(i);
+      const size = CASE_CARD;
       const card = s.add.rectangle(at.x, at.y, size, size, 0xffffff).setStrokeStyle(1, 0xe8dcc4).setDepth(at.depth);
       const shade = s.add.rectangle(at.x + 3, at.y + 4, size, size, 0x3a2414, 0.18).setDepth(at.depth - 0.02);
       const ring = s.add.rectangle(at.x, at.y, size + 8, size + 8).setStrokeStyle(4, 0xe0b04a).setDepth(at.depth - 0.01).setVisible(false);
       card.setInteractive({ useHandCursor: true });
       s.tag(card, { type: 'watch', id: w.product_id }, 0);
-      let photo: Phaser.GameObjects.Image | null = null, text: Phaser.GameObjects.Text | null = null;
       const key = `w:${w.product_id}`;
-      if (w.image) {
-        photo = s.add.image(at.x, at.y, s.textures.exists(key) ? key : '__WHITE').setDepth(at.depth + 0.01);
-        photo.setData('size', size - 4);
-        if (s.textures.exists(key)) this.fitPhoto(photo); else { photo.setVisible(false); toLoad.push(w); }
-        photo.setInteractive({ useHandCursor: true });
-        s.tag(photo, { type: 'watch', id: w.product_id }, 0);
-      } else {
-        // no verified picture: the card carries the name instead, never a stand-in drawing
-        text = s.add.text(at.x, at.y, w.name.replace(/\s+-\s+/g, '\n').slice(0, 40), {
-          fontFamily: FONT, fontSize: '8px', color: '#5b4a35', align: 'center', wordWrap: { width: size - 6 }, resolution: 3,
-        }).setOrigin(0.5).setDepth(at.depth + 0.01);
-      }
+      const photo = s.add.image(at.x, at.y, s.textures.exists(key) ? key : '__WHITE').setDepth(at.depth + 0.01);
+      photo.setData('size', size - 4);
+      if (s.textures.exists(key)) this.fitPhoto(photo); else { photo.setVisible(false); if (!toLoad.includes(w)) toLoad.push(w); }
+      photo.setInteractive({ useHandCursor: true });
+      s.tag(photo, { type: 'watch', id: w.product_id }, 0);
       let box: Phaser.GameObjects.Image | null = null;
       if (w.open_pos.some((p) => p.outstanding > 0)) {
         box = s.add.image(at.x + size / 2 - 6, at.y + size / 2 - 6, 'box-sealed').setDepth(at.depth + 0.02);
         box.setScale(20 / box.width);
       }
-      const item: Item = { watch: w, card, shade, photo, text, ring, box, at: { x: at.x, y: at.y } };
-      this.items.set(w.product_id, item);
-      this.dyn.push(card, shade, ring, ...(photo ? [photo] : []), ...(text ? [text] : []), ...(box ? [box] : []));
+      this.items.set(w.product_id, { watch: w, card, shade, photo, text: null, ring, box, at: { x: at.x, y: at.y } });
+      this.dyn.push(card, shade, ring, photo, ...(box ? [box] : []));
     });
-    // the glass over each pedestal goes on last, over its watches
+    this.overflow = data.products.filter((w) => !caseIds.has(w.product_id));
+    // the glass over each case goes on last, over its watch
     for (const c of PEDESTALS) {
       const [x, y] = toWorldB(...c);
       const p = iso(x + 1, y + 1);
@@ -232,10 +261,9 @@ export class BoutiqueLayer {
       const key = `w:${w.product_id}`;
       s.load.once(`filecomplete-image-${key}`, () => {
         const it = this.items.get(w.product_id);
-        if (!it?.photo || !it.photo.active) return;
-        it.photo.setTexture(key).setVisible(true);
-        this.fitPhoto(it.photo);
-        this.style(it);
+        if (it?.photo?.active) { it.photo.setTexture(key).setVisible(this.shown); this.fitPhoto(it.photo); this.style(it); }
+        const bp = this.bandPhotos.get(w.product_id);
+        if (bp?.active) { bp.setTexture(key).setVisible(this.shown); this.fitPhoto(bp); }
       });
       s.load.image(key, w.image!.thumb);
     }
@@ -274,6 +302,7 @@ export class BoutiqueLayer {
     for (const o of [...this.fixed, ...this.dyn]) (o as unknown as Phaser.GameObjects.Components.Visible).setVisible?.(on);
     if (on) this.applyLens(); else for (const it of this.items.values()) it.ring.setVisible(false);
     for (const it of this.items.values()) if (it.photo && !this.scene.textures.exists(`w:${it.watch.product_id}`)) it.photo.setVisible(false);
+    for (const [id, bp] of this.bandPhotos) if (!this.scene.textures.exists(`w:${id}`)) bp.setVisible(false);
   }
 
   /* Where a watch stands, to bring it into view. */

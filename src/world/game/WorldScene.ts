@@ -34,7 +34,8 @@ export type Selection =
   | { type: 'boutique-door'; brand: string }                           // a boutique's door, from the mall
   | { type: 'boutique-exit' }                                           // the door, from inside
   | { type: 'watch'; id: string }                                       // a watch in a boutique
-  | { type: 'desk' };                                                   // the Manager's Desk in the office
+  | { type: 'desk' }
+  | { type: 'collection' };                                             // a boutique's Collection Board                                                   // the Manager's Desk in the office
 
 export interface SceneHooks {
   onSelect: (s: Selection | null) => void;
@@ -395,8 +396,9 @@ export class WorldScene extends Phaser.Scene {
     // running towards the viewer and the cases in between, close enough to know the watches
     const z = Phaser.Math.Clamp(Math.min(BOUTIQUE_ZOOM * px, cam.width / 1000), this.minZoom(), this.maxZoom());
     const top = this.insets.top * px, bottom = this.insets.bottom * px;
-    const r = this.boutique.bounds();
-    const cx = r.x + r.w / 2, cy = r.y + r.h * 0.5 - (top - bottom) / 2 / z;
+    // framed on the Collection Board and the cases before it
+    const board = iso(...toWorldB(7, 0)), cases = iso(...toWorldB(8, 7.5));
+    const cx = (board.x + cases.x) / 2, cy = (board.y - 150 + cases.y) / 2 - (top - bottom) / 2 / z;
     this.zoomTarget = z;
     // a glide still under way in the mall (to the brand just tapped) would carry the view back out
     cam.panEffect.reset(); cam.zoomEffect.reset();
@@ -1025,7 +1027,7 @@ export class WorldScene extends Phaser.Scene {
     // the dock marks its own: the chosen bay's tag shows the supplier's name
     if (sel.type === 'bay' || sel.type === 'dock-area') { this.selectRing.setVisible(false); this.chosen = null; this.hooks.onSelect(sel); return; }
     // a watch is marked by its own card's light; the door in and out is handled by the page
-    if (sel.type === 'watch' || sel.type === 'boutique-exit' || sel.type === 'boutique-door') {
+    if (sel.type === 'watch' || sel.type === 'boutique-exit' || sel.type === 'boutique-door' || sel.type === 'collection') {
       this.selectRing.setVisible(false); this.chosen = sel.type === 'watch' ? (this.boutique.cardOf(sel.id) as unknown as Phaser.GameObjects.Image) : null;
       this.hooks.onSelect(sel); return;
     }

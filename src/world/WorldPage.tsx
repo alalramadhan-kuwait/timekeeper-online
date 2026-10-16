@@ -14,8 +14,8 @@ import type { Snapshot } from './types';
 import { buildDock, loadDock, type DockRaw } from './dock/data';
 import { DockSheet, bayForView, isDockView, type DockView } from './dock/DockSheet';
 import type { DockArea } from './game/DockLayer';
-import { LENSES, loadBoutique, matches, type BoutiqueData, type Discovery, type Lens } from './boutique/data';
-import { BrowsePanel, DeskPanel, WatchPanel } from './boutique/BoutiqueSheet';
+import { loadBoutique, type BoutiqueData, type Discovery, type Lens, type SortKey } from './boutique/data';
+import { Catalogue, CatalogueWatch, DeskPanel, WatchPanel } from './boutique/BoutiqueSheet';
 
 const isBoutiqueView = (v: { type: string } | null) => !!v && (v.type === 'watch' || v.type === 'browse' || v.type === 'desk');
 
@@ -71,7 +71,11 @@ export default function WorldPage({ onClose }: { onClose?: () => void }) {
   const [boutique, setBoutique] = useState<BoutiqueData | null>(null);
   const [entering, setEntering] = useState<string | null>(null);
   const [bqErr, setBqErr] = useState<string | null>(null);
-  const [lens, setLensState] = useState<Lens>('all');
+  // the catalogue's filter, order and place in the list, kept while the owner looks at a watch,
+  // steps out to the dock and comes back
+  const [lens, setLens] = useState<Lens>('all');
+  const [sort, setSort] = useState<SortKey>('sold90');
+  const catScroll = useRef(0);
   const lensBarRef = useRef<HTMLDivElement>(null);
   // when each source was last updated
   const fresh = useMemo(() => snap ? [
@@ -117,22 +121,21 @@ export default function WorldPage({ onClose }: { onClose?: () => void }) {
       setStack([]);
       setRoom('boutique');
       game.current?.enterBoutique(d);
-      game.current?.setLens(lens);
       then?.(d);
     } catch (e) { setBqErr((e as Error).message); }
     setEntering(null);
-  }, [boutique, lens]);
+  }, [boutique]);
   const exitBoutique = useCallback(() => {
     game.current?.exitBoutique();
     setStack([]);
     setRoom('floor');
   }, []);
-  const setLens = useCallback((l: Lens) => { setLensState(l); game.current?.setLens(l); }, []);
   const selectRef = useRef<(s: Selection | null) => void>(() => {});
   useEffect(() => {
     selectRef.current = (s: Selection | null) => {
       if (s?.type === 'boutique-door') { enterBoutique(s.brand); return; }
       if (s?.type === 'boutique-exit') { exitBoutique(); return; }
+      if (s?.type === 'collection') { setStack([{ type: 'browse' }]); return; }
       setStack(s ? [s.type === 'dock-area'
         ? (s.area === 'pay' ? { type: 'dock-pay' } : { type: 'dock-recv', tab: s.area === 'history' ? 'hist' : 'part' })
         : s] : []);
@@ -159,12 +162,12 @@ export default function WorldPage({ onClose }: { onClose?: () => void }) {
     const under = stack[stack.length - 2];
     setStack((s) => s.slice(0, -1));
     if (boutique && under && (under.type === 'watch' || under.type === 'browse') && room !== 'boutique') {
-      setRoom('boutique'); game.current?.enterBoutique(boutique, true); game.current?.setLens(lens);
+      setRoom('boutique'); game.current?.enterBoutique(boutique, true);
       if (under.type === 'watch') setTimeout(() => game.current?.focusWatch(under.id), 450);
     }
-  }, [stack, boutique, room, lens]);
+  }, [stack, boutique, room]);
   const onSeeInRoom = useCallback((id: string) => { setStack([{ type: 'watch', id }]); game.current?.focusWatch(id); }, []);
-  const openWatch = useCallback((id: string) => { setStack((s) => [...s, { type: 'watch', id }]); game.current?.focusWatch(id); }, []);
+  const openWatch = useCallback((id: string) => setStack((s) => [...s, { type: 'watch', id }]), []);
   const openDiscovery = (d: Discovery) => {
     const brand = d.brand ?? boutique?.brand;
     if (!brand) return;
@@ -263,6 +266,9 @@ export default function WorldPage({ onClose }: { onClose?: () => void }) {
 
   const inBoutique = room === 'boutique';
   const openW = view?.type === 'watch' ? boutique?.products.find((p) => p.product_id === view.id) ?? null : null;
+  // the catalogue fills the screen while it is anywhere in the stack; a watch opened from it lies over it
+  const inCatalogue = inBoutique && !!boutique && stack.some((v) => v.type === 'browse');
+  const catWatch = inCatalogue && view?.type === 'watch' && stack[stack.length - 2]?.type === 'browse' ? openW : null;
   const top = model?.topMission;
   const todo = snap ? snap.missions.filter((m) => m.state === 'open' || m.state === 'changed_since_review').length : 0;
 
@@ -397,23 +403,15 @@ export default function WorldPage({ onClose }: { onClose?: () => void }) {
         </div>
       )}
 
-      {/* inside a boutique: the optional discovery filters, and the whole collection as a list */}
+      {/* inside a boutique: the way into the collection, within thumb reach (the board on the wall does the same) */}
       {inBoutique && boutique && (
-        <div ref={lensBarRef} className="absolute inset-x-0 bottom-0 z-30 flex items-center gap-1.5 px-3"
+        <div ref={lensBarRef} className="absolute inset-x-0 bottom-0 z-30 flex justify-center px-4"
           style={{ paddingBottom: 'calc(14px + env(safe-area-inset-bottom, 0px))' }}>
-          <div className="flex min-w-0 flex-1 gap-1.5 overflow-x-auto rounded-full bg-[#17120d]/85 p-1 shadow-lg [scrollbar-width:none]" role="toolbar" aria-label="Discovery filters">
-            {LENSES.map((l) => {
-              const n = boutique.products.filter((w) => matches(w, l.key)).length;
-              return (
-                <button key={l.key} onClick={() => setLens(lens === l.key && l.key !== 'all' ? 'all' : l.key)} aria-pressed={lens === l.key} disabled={n === 0}
-                  className={`shrink-0 whitespace-nowrap rounded-full px-3 py-2 text-[12.5px] font-medium disabled:opacity-40 ${lens === l.key ? 'bg-[#d8b45a] text-[#17120d]' : 'text-[#efe6d3]'}`}>
-                  {l.label}{l.key !== 'all' && <span className="ml-1 tabular-nums opacity-70">{n}</span>}
-                </button>
-              );
-            })}
-          </div>
-          <button onClick={() => setStack([{ type: 'browse' }])} aria-label="See them as a list"
-            className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#f6f1e6] text-[#22304d] shadow-lg"><LayoutGrid size={18} /></button>
+          <button onClick={() => setStack([{ type: 'browse' }])}
+            className="flex min-h-[48px] w-full max-w-[420px] items-center justify-center gap-2 rounded-full bg-[#17120d]/90 px-5 text-[14px] font-semibold text-[#f3e7cf] shadow-lg ring-1 ring-[#c79b4a]/60">
+            <LayoutGrid size={17} className="text-[#d8b45a]" /> Browse the collection
+            <span className="font-normal tabular-nums text-[#d8c9a8]">· {boutique.products.length} watches</span>
+          </button>
         </div>
       )}
       {(entering || bqErr) && (
@@ -436,7 +434,14 @@ export default function WorldPage({ onClose }: { onClose?: () => void }) {
           open={(v: DockView) => open(v)} back={goBack} close={closePanel}
           onChanged={() => (snap ? readDock(snap) : undefined)} />
       )}
-      {view && isBoutiqueView(view) && (
+      {inCatalogue && boutique && (
+        <Catalogue data={boutique} lens={lens} onLens={setLens} sort={sort} onSort={setSort} scrollRef={catScroll}
+          onOpen={openWatch} onClose={() => { catScroll.current = 0; setStack([]); }} />
+      )}
+      {catWatch && boutique && (
+        <CatalogueWatch key={catWatch.product_id} w={catWatch} brand={boutique.brand} onBack={() => setStack((s) => s.slice(0, -1))} onDock={toDockPo} />
+      )}
+      {view && isBoutiqueView(view) && !inCatalogue && (
         <aside ref={panelRef} key={stack.length} className="tk-sheet-enter absolute inset-x-0 bottom-0 z-40 flex max-h-[72%] flex-col rounded-t-3xl bg-white shadow-2xl sm:inset-x-auto sm:bottom-3 sm:right-3 sm:top-3 sm:max-h-none sm:w-[400px] sm:rounded-3xl"
           style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
           <div className="pointer-events-none relative z-10 flex items-center gap-1 px-3 pt-2.5 sm:pt-3">
@@ -448,10 +453,6 @@ export default function WorldPage({ onClose }: { onClose?: () => void }) {
           </div>
           <div className={`${stack.length > 1 ? '' : '-mt-6 '}overflow-y-auto overscroll-contain px-5 pb-6 pt-1 select-text`}>
             {view.type === 'desk' && <DeskPanel onOpen={openDiscovery} />}
-            {view.type === 'browse' && boutique && (
-              <BrowsePanel data={boutique} lens={lens} onLens={setLens}
-                onOpen={openWatch} />
-            )}
             {view.type === 'watch' && (openW
               ? <WatchPanel key={openW.product_id} w={openW} onDock={toDockPo} inRoom={inBoutique} onSeeInRoom={() => onSeeInRoom(openW.product_id)} />
               : <Loading />)}
