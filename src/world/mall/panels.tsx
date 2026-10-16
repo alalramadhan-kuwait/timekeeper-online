@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
-import { Check, Loader2, Search, Star } from 'lucide-react';
+import { Check, Loader2, Search, Star, DoorOpen } from 'lucide-react';
+import { canEnter } from '../boutique/data';
 import { ClassBar, Head, MissionRows, Note, Row, Section, Stat, type Ctx, type View } from '../panels';
 import { OWNERSHIP_LABEL } from '../model';
 import { day, kd0, num, plural } from '../format';
@@ -73,6 +74,12 @@ function BrandPanel({ name, ctx }: { name: string; ctx: Ctx }) {
         {!b.inStock && <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-600">No stock now</span>}
         {b.place?.how === 'new_brand' && <span className="rounded-full bg-sky-50 px-2 py-0.5 text-[11px] text-sky-800">New: placed automatically</span>}
       </div>
+      {boutique && canEnter(b.brand) && ctx.enterBoutique && (
+        <button onClick={() => ctx.enterBoutique!(b.brand)}
+          className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-[#22304d] px-3 py-3 text-sm font-semibold text-white">
+          <DoorOpen size={17} /> Step inside {b.brand}
+        </button>
+      )}
       <div className="mt-3 grid grid-cols-2 gap-2">
         <Stat label="Units" value={num(b.units)} sub={plural(b.products, 'product')} />
         <Stat label="At cost" value={kd0(b.cost)} sub={`${kd0(b.retail)} at retail`} />

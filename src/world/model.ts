@@ -3,12 +3,13 @@ import type { MallData, MallStaff } from './mall/data';
 import { buildMall, type MallModel } from './mall/model';
 import { MALL, WALK, fromGallery, toWorld } from './mall/layout';
 import { DOCK_PLAN, type DockData } from './dock/data';
+import { ROOM as BQ, toWorldB } from './boutique/layout';
 
 /* Turns a snapshot into the things the scene draws. Pure and deterministic: the
    same snapshot always lays the World out the same way, and every object keeps
    the key of the record it stands for, so whatever is tapped leads back to it. */
 
-export type Room = 'floor' | 'dock' | 'office';
+export type Room = 'floor' | 'dock' | 'office' | 'boutique';
 
 export type RepMood = 'calm' | 'waiting' | 'review';
 export interface RepModel { supplier: SupplierUnpaid; cell: [number, number]; mood: RepMood }
@@ -47,6 +48,8 @@ export const ROOMS: Record<Room, Rect> = {
   floor: { x0: MALL.x0, y0: MALL.y0, x1: MALL.x0 + MALL.w, y1: MALL.y0 + MALL.d },   // the Watch Mall
   dock: { x0: DOCK_AT.x, y0: DOCK_AT.y, x1: DOCK_AT.x + DOCK_PLAN.W, y1: DOCK_AT.y + DOCK_PLAN.DEPTH },
   office: { x0: 0, y0: 13, x1: 11, y1: 21 },
+  // inside a boutique: a room of its own, far from the rest, reached through the boutique's door
+  boutique: { x0: toWorldB(0, 0)[0], y0: toWorldB(0, 0)[1], x1: toWorldB(BQ.W, BQ.D)[0], y1: toWorldB(BQ.W, BQ.D)[1] },
 };
 
 /* Doorways between the rooms, two cells deep: from the middle of the mall's walkway, two cells
@@ -101,7 +104,7 @@ export function blockedCells(m: WorldModel): Set<string> {
 
 export function walkable(x: number, y: number): boolean {
   const inside = (r: Rect) => x >= r.x0 && x < r.x1 && y >= r.y0 && y < r.y1;
-  return inside(ROOMS.floor) || inside(ROOMS.dock) || inside(ROOMS.office) || CORRIDORS.some(inside);
+  return inside(ROOMS.floor) || inside(ROOMS.dock) || inside(ROOMS.office) || inside(ROOMS.boutique) || CORRIDORS.some(inside);
 }
 
 export function roomOf(x: number, y: number): Room | null {
@@ -140,6 +143,7 @@ const HOMES: Record<Room, [number, number][]> = {
   floor: ([[3, 0], [9, 1], [16, 0], [22, 1], [29, 0], [35, 1], [6, 1]] as [number, number][]).map(([x, y]) => toWorld(fromGallery(Math.round((x * (MALL.w - fromGallery(0))) / 38)), y ? WALK.y1 - 1 : WALK.y0)),
   dock: ([[2, DOCK_PLAN.MAIN], [6, DOCK_PLAN.MAIN + 1], [4, DOCK_PLAN.MAIN - 4], [9, DOCK_PLAN.SOUTH]] as [number, number][]).map(([x, y]) => dockCell(x, y)),
   office: [[2, 15], [9, 15], [7, 17], [3, 17]],
+  boutique: [],
 };
 
 export function buildModel(s: Snapshot, mallData: MallData, dock: DockData | null = null): WorldModel {
@@ -151,7 +155,7 @@ export function buildModel(s: Snapshot, mallData: MallData, dock: DockData | nul
     mood: supplier.review_count > 0 || supplier.oldest_days > 45 ? 'review' : supplier.oldest_days >= 30 ? 'waiting' : 'calm',
   }));
 
-  const used: Record<Room, number> = { floor: 0, dock: 0, office: 0 };
+  const used: Record<Room, number> = { floor: 0, dock: 0, office: 0, boutique: 0 };
   // only people the attendance records show on duty right now are drawn
   const staff: PersonModel[] = mallData.staff.filter((p) => p.duty.state === 'on').map((person) => {
     const { room, family } = placeFor(person);

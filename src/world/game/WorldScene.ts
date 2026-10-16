@@ -11,6 +11,9 @@ import { FIGURE_SCALE, HOME_SECTION, MALL, SECTIONS, WALK, WALL_HEIGHT, fromGall
 import { FloorBatch } from './FloorBatch';
 import { cellAt, depthAt, findPath, iso } from './iso';
 import { MallLayer } from './MallLayer';
+import { BoutiqueLayer } from './BoutiqueLayer';
+import { ENTRY, blockedB, toWorldB } from '../boutique/layout';
+import type { BoutiqueData, Lens } from '../boutique/data';
 
 export type Selection =
   | { type: 'brand'; brand: string }
@@ -27,7 +30,11 @@ export type Selection =
   | { type: 'issues' }
   | { type: 'delivery' }
   | { type: 'mohammed' }
-  | { type: 'owner' };
+  | { type: 'owner' }
+  | { type: 'boutique-door'; brand: string }                           // a boutique's door, from the mall
+  | { type: 'boutique-exit' }                                           // the door, from inside
+  | { type: 'watch'; id: string }                                       // a watch in a boutique
+  | { type: 'desk' };                                                   // the Manager's Desk in the office
 
 export interface SceneHooks {
   onSelect: (s: Selection | null) => void;
@@ -46,7 +53,11 @@ const SECTION_VIEW = { w: (12.6 + 11) * 64, h: (12.6 + 11) * 32 + 210 };
 const FOCUS: Record<Exclude<Room, 'dock'>, { x0: number; y0: number; x1: number; y1: number }> = {
   floor: ROOMS.floor,
   office: ROOMS.office,
+  boutique: ROOMS.boutique,
 };
+/* How close the view inside a boutique starts, in CSS px per world unit: a few cells across on a
+   phone, so the watches on the walls are big enough to recognise; the rest is a walk or a pan away. */
+const BOUTIQUE_ZOOM = 0.7;
 
 /* A person who can stand, walk a path and wander. */
 class Walker {
@@ -137,6 +148,8 @@ export class WorldScene extends Phaser.Scene {
   private dock!: DockLayer;
   private dockFocus: { x: number; y: number } | null = null;   // what an open dock sheet keeps in view
   private dockArea: DockArea = 'orders';                  // the part of the dock framed last
+  private boutique!: BoutiqueLayer;
+  private beforeBoutique: { room: Room; x: number; y: number; zoom: number; section: number | null; owner: [number, number] } | null = null;
 
   constructor() { super('world'); }
 
@@ -173,6 +186,7 @@ export class WorldScene extends Phaser.Scene {
     this.cameras.main.setBackgroundColor('#dfca93');
     this.mall = new MallLayer(this);
     this.dock = new DockLayer(this);
+    this.boutique = new BoutiqueLayer(this);
     this.drawGround();
     this.drawRooms();
     this.selectRing = this.add.image(0, 0, 'select').setVisible(false).setDepth(LABEL_DEPTH - 2);
@@ -185,6 +199,7 @@ export class WorldScene extends Phaser.Scene {
 
   update(time: number, delta: number) {
     for (const w of this.walkers) w.sync(time);
+    this.followOwner(delta);
     this.keepInZone(delta);
     this.mall.lod(this.cameras.main.zoom / (this.base * 2));
     const cam = this.cameras.main, wv = cam.worldView, u = (this.base * 2) / cam.zoom, m = 6 * u;
@@ -231,6 +246,7 @@ export class WorldScene extends Phaser.Scene {
   focus(room: Room, animate = true) {
     if (room === 'floor') { this.room = room; this.focusSection(this.section, animate); return; }
     if (room === 'dock') { this.frameDock('orders', false, animate); return; }
+    if (room === 'boutique') { this.frameBoutique(animate); return; }
     this.room = room;
     this.showAreaLabels();
     const cam = this.cameras.main;
@@ -328,6 +344,83 @@ export class WorldScene extends Phaser.Scene {
     const bay = sel?.bay ? this.model.dock?.bays.find((b) => b.no === sel.bay) ?? null : null;
     this.dock.select(bay?.no ?? null);
     this.dockFocus = bay ? bayFocus(bay) : sel?.area ? AREA_FOCUS[sel.area] : null;
+  }
+
+  /* ── inside a boutique ─────────────────────────────────────────────── */
+
+  /* Steps through a boutique's door: its watches are put in the room, the owner stands just
+     inside, and the view opens close enough to recognise the watches. Where the camera stood in
+     the mall is kept, so leaving puts it back exactly there. */
+  enterBoutique(data: BoutiqueData, animate = true) {
+    if (this.room !== 'boutique') {
+      const cam = this.cameras.main;
+      this.beforeBoutique = { room: this.room, x: cam.midPoint.x, y: cam.midPoint.y, zoom: cam.zoom, section: this.section, owner: this.owner.cell };
+    }
+    if (this.boutique.data !== data) this.boutique.build(data);
+    this.selectRing.setVisible(false);
+    this.chosen = null;
+    this.owner.walk([]);
+    const [ex, ey] = toWorldB(...ENTRY);
+    this.owner.fx = ex + 0.5; this.owner.fy = ey + 0.5;
+    this.room = 'boutique';
+    this.showAreaLabels();
+    this.frameBoutique(animate);
+  }
+
+  /* Back out into the mall, the camera where it was before. */
+  exitBoutique() {
+    const b = this.beforeBoutique;
+    this.beforeBoutique = null;
+    this.room = b?.room && b.room !== 'boutique' ? b.room : 'floor';
+    if (b) { this.owner.fx = b.owner[0] + 0.5; this.owner.fy = b.owner[1] + 0.5; this.section = b.section; }
+    this.showAreaLabels();
+    const cam = this.cameras.main;
+    if (b) { cam.setZoom(b.zoom); cam.centerOn(b.x, b.y); this.zoomTarget = b.zoom; }
+    else this.focus('floor', false);
+  }
+
+  /* The view inside: the door end of the room, the walls of watches beyond it. */
+  frameBoutique(animate = true) {
+    this.room = 'boutique';
+    this.revealTo = null;
+    const cam = this.cameras.main, px = this.dpr;
+    const z = Phaser.Math.Clamp(BOUTIQUE_ZOOM * px, this.minZoom(), this.maxZoom());
+    // the owner just inside the door, a little low in the free part of the screen
+    const o = iso(this.owner.fx, this.owner.fy);
+    const top = this.insets.top * px, bottom = this.insets.bottom * px;
+    const cx = o.x - 120, cy = o.y - 170 - (top - bottom) / 2 / z;
+    this.zoomTarget = z;
+    if (animate && !this.reduced) {
+      cam.fadeOut(160, 29, 24, 20);
+      cam.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => { cam.setZoom(z); cam.centerOn(cx, cy); cam.fadeIn(260, 29, 24, 20); });
+    } else { cam.setZoom(z); cam.centerOn(cx, cy); }
+  }
+
+  /* The optional discovery filters: some watches lit, the rest dimmed. */
+  setLens(lens: Lens) { this.boutique.setLens(lens); }
+
+  /* Brings a watch into view (when it was found in the browser or on the desk). */
+  focusWatch(id: string) {
+    const p = this.boutique.pointOf(id);
+    if (!p || this.room !== 'boutique') return;
+    const cam = this.cameras.main;
+    const z = Math.max(cam.zoom, 0.9 * this.dpr);
+    this.chosen = this.boutique.cardOf(id) as unknown as Phaser.GameObjects.Image;
+    this.zoomTarget = z;
+    this.revealTo = { x: p.x, y: p.y };
+    if (this.reduced) { cam.setZoom(z); cam.centerOn(p.x, p.y); }
+    else { cam.pan(p.x, p.y, 500, 'Sine.easeInOut', true); cam.zoomTo(z, 500, 'Sine.easeInOut', true); }
+  }
+
+  /* Inside a boutique the view walks with the owner, so the room is explored on foot. */
+  private followOwner(delta: number) {
+    if (this.room !== 'boutique' || !this.owner?.moving || this.input.activePointer.isDown) return;
+    const cam = this.cameras.main;
+    if (cam.panEffect.isRunning || cam.zoomEffect.isRunning) return;
+    const o = iso(this.owner.fx, this.owner.fy);
+    const tx = o.x, ty = o.y - 120;
+    const k = 1 - Math.pow(0.92, delta / 16.7);
+    cam.centerOn(cam.midPoint.x + (tx - cam.midPoint.x) * k, cam.midPoint.y + (ty - cam.midPoint.y) * k);
   }
 
   /* Takes the camera to a brand and marks it, as if it had been tapped. */
@@ -450,6 +543,8 @@ export class WorldScene extends Phaser.Scene {
     for (const a of this.areaLabels) a.t.setVisible(a.room === null || a.room === this.room);
     this.mall?.setShown(this.room === 'floor');
     this.dock?.setShown(this.room === 'dock');
+    this.boutique?.setShown(this.room === 'boutique');
+    this.cameras.main.setBackgroundColor(this.room === 'boutique' ? '#1d1814' : '#dfca93');
   }
 
   /* `ringDy` puts the selection ring under the object's footprint rather than its anchor. */
@@ -522,6 +617,7 @@ export class WorldScene extends Phaser.Scene {
       ground('tile-parquet', x, y);
     floor.draw();
     this.dock.drawStatic();      // the dock's floors, walls, corridor and stations
+    this.boutique.drawStatic();  // the inside of a boutique: one room, filled when one is entered
 
     // walls on the two far sides of each room, open at the doorways
     const wall = (room: string, side: 'l' | 'r', x: number, y: number) => {
@@ -552,7 +648,10 @@ export class WorldScene extends Phaser.Scene {
       const p = iso(x + w, y + d);
       return this.fit(this.add.image(p.x, p.y, key), key).setDepth(depthAt(x + w, y + d));
     };
-    fixed('desk', FIXTURES.desk.cell[0], FIXTURES.desk.cell[1], 2, 1);
+    // the Manager's Desk: the watches the owners saved, to come back to
+    const desk = fixed('desk', FIXTURES.desk.cell[0], FIXTURES.desk.cell[1], 2, 1);
+    desk.setInteractive({ useHandCursor: true, pixelPerfect: true, alphaTolerance: 1 });
+    this.tag(desk, { type: 'desk' }, 0);
     FIXTURES.staffDesks.forEach(([x, y]) => fixed('desk-small', x, y));
     FIXTURES.benches.forEach(([x, y]) => fixed('bench', x, y, 2, 1));
     FIXTURES.plants.forEach(([x, y]) => fixed('plant', x, y));
@@ -588,7 +687,7 @@ export class WorldScene extends Phaser.Scene {
 
     const m = this.model;
     this.mall.build(m.mall);
-    this.blocked = new Set([...blockedCells(m), ...this.mall.blocked]);
+    this.blocked = new Set([...blockedCells(m), ...this.mall.blocked, ...blockedB()]);
     this.dock.build(m.dock);
     this.labelRoom = 'office';
     this.buildOffice();
@@ -826,6 +925,7 @@ export class WorldScene extends Phaser.Scene {
      walls and signs, and a margin of the rooms and ground around it. */
   private zone(room: Room) {
     if (room === 'dock') return DOCK_BOUNDS;
+    if (room === 'boutique') { const b = this.boutique.bounds(); return { x: b.x - 60, y: b.y - 40, w: b.w + 120, h: b.h + 80 }; }
     const r = FOCUS[room];
     const minX = iso(r.x0, r.y1).x, maxX = iso(r.x1, r.y0).x;
     const minY = iso(r.x0, r.y0).y - 150, maxY = iso(r.x1, r.y1).y + 20;
@@ -914,6 +1014,11 @@ export class WorldScene extends Phaser.Scene {
     if (sel.type === 'section') { this.hooks.onSection?.(sel.index); this.focusSection(sel.index); return; }
     // the dock marks its own: the chosen bay's tag shows the supplier's name
     if (sel.type === 'bay' || sel.type === 'dock-area') { this.selectRing.setVisible(false); this.chosen = null; this.hooks.onSelect(sel); return; }
+    // a watch is marked by its own card's light; the door in and out is handled by the page
+    if (sel.type === 'watch' || sel.type === 'boutique-exit' || sel.type === 'boutique-door') {
+      this.selectRing.setVisible(false); this.chosen = sel.type === 'watch' ? (this.boutique.cardOf(sel.id) as unknown as Phaser.GameObjects.Image) : null;
+      this.hooks.onSelect(sel); return;
+    }
     this.markChosen(o as Phaser.GameObjects.Image, (o.getData('ringDy') as number) ?? -32);
     if (sel.type === 'brand') this.showSectionOf(sel.brand);
     this.hooks.onSelect(sel);

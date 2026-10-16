@@ -9,6 +9,7 @@ import type { Ownership, StockClass } from '../types';
 import { FloorBatch } from './FloorBatch';
 import { depthAt, iso } from './iso';
 import type { WorldScene } from './WorldScene';
+import { canEnter } from '../boutique/data';
 
 /* The Watch Mall on the Floor tab: four sections, boutiques for the major brands, cases in
    display areas for the rest. Everything here follows world_mall()'s stored places, so a
@@ -261,6 +262,7 @@ export class MallLayer {
       c.setInteractive({ useHandCursor: true, pixelPerfect: true, alphaTolerance: 1 });
       s.tag(c, sel, 0);
     }
+    if (canEnter(b.brand)) this.door(g, plan, b.brand);
     // the name on the shop's wall: high on the back wall in the back row; in the front row on the
     // name plate of the low wall that faces the camera (over the walkway it would cover the islands)
     const [x, y] = toWorld(g.x + plan.sign, g.side === 'n' ? 0 : g.y + g.d);
@@ -280,6 +282,36 @@ export class MallLayer {
     // (moved only as far as keeps the whole sign inside a phone's width at the boutique zoom, about 620 units)
     const centre = { x: sb ? Phaser.Math.Clamp(mid.x, sb.right - 300, Math.max(sb.right - 300, sb.x + 300)) : mid.x, y: mid.y - 60 };
     this.targets.set(b.brand, { obj: sign as Phaser.GameObjects.Image | Phaser.GameObjects.Rectangle, cell: toWorld(plan.pavilion[0], plan.pavilion[1]), boutique: true, centre });
+  }
+
+  /* A boutique that can be entered has a lit doormat in its shop front, on the walkway side: the
+     way in. It sits on two free cells of the front row, as near the middle as the plan allows. */
+  private door(g: SlotGeo, plan: ReturnType<typeof boutiquePlan>, brand: string) {
+    const s = this.scene;
+    const row = g.side === 'n' ? g.y + g.d - 1 : g.y;
+    const taken = new Set<string>();
+    const take = ([x, y]: [number, number], w = 1, d = 1) => { for (let i = 0; i < w; i++) for (let j = 0; j < d; j++) taken.add(`${x + i},${y + j}`); };
+    take(plan.pavilion, 2, 2); plan.cases.forEach((c) => take(c)); plan.plants.forEach((c) => take(c));
+    if (plan.counter) take(plan.counter, 2, 1);
+    if (plan.bench) take(plan.bench, 2, 1);
+    take(plan.crate);
+    const mid = g.x + g.w / 2 - 1;
+    const xs = Array.from({ length: g.w - 1 }, (_, i) => g.x + i).filter((x) => !taken.has(`${x},${row}`) && !taken.has(`${x + 1},${row}`))
+      .sort((a, c) => Math.abs(a - mid) - Math.abs(c - mid));
+    if (!xs.length) return;
+    const x0 = xs[0];
+    const P = (lx: number, ly: number) => { const p = iso(...toWorld(lx, ly)); return new Phaser.Math.Vector2(p.x, p.y); };
+    const glow = this.keep(s.add.graphics().setDepth(-7.4e5));
+    glow.fillStyle(0xffe6a8, 0.55).fillPoints([P(x0 - 0.25, row - 0.25), P(x0 + 2.25, row - 0.25), P(x0 + 2.25, row + 1.25), P(x0 - 0.25, row + 1.25)], true);
+    const mat = this.keep(s.add.graphics().setDepth(-7.3e5));
+    const q = [P(x0 + 0.1, row + 0.15), P(x0 + 1.9, row + 0.15), P(x0 + 1.9, row + 0.85), P(x0 + 0.1, row + 0.85)];
+    mat.fillStyle(0x22304d, 1).fillPoints(q, true);
+    mat.lineStyle(3, 0xc79b4a, 1).strokePoints(q, true);
+    if (!s.reducedMotion) s.tweens.add({ targets: glow, alpha: { from: 1, to: 0.35 }, duration: 1100, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+    const c = P(x0 + 1, row + 0.5);
+    const hit = this.keep(s.add.rectangle(c.x, c.y, 200, 90, 0xffffff, 0.001).setDepth(-7.2e5));
+    hit.setInteractive({ useHandCursor: true });
+    s.tag(hit, { type: 'boutique-door', brand }, 0);
   }
 
   /* The brand's name painted on a plaque, for a brand without a logo file. Sized by its writing

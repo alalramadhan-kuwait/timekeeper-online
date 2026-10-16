@@ -19,7 +19,8 @@
     "world:art": "node scripts/world-art-check.mjs",
     "world:geometry": "node scripts/world-mall-geometry.mjs",
     "world:beta": "vite build --config vite.world-beta.config.ts",
-    "world:mall": "WORLD_SITE=world-mall vite build --config vite.world-beta.config.ts"
+    "world:mall": "WORLD_SITE=world-mall vite build --config vite.world-beta.config.ts",
+    "world:pilot": "vite --config vite.world-pilot.config.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.106.0",

@@ -13,7 +13,7 @@ import type { DockView } from './dock/DockSheet';
    straight from the snapshot or the PO functions; nothing is recalculated. */
 
 export type View = Selection | DockView | { type: 'search' } | { type: 'mission'; key: string }
-  | { type: 'brands' } | { type: 'mall-settings' } | { type: 'move'; brand: string };
+  | { type: 'brands' } | { type: 'mall-settings' } | { type: 'move'; brand: string } | { type: 'browse' };
 
 export interface Ctx {
   s: Snapshot;
@@ -21,6 +21,7 @@ export interface Ctx {
   open: (v: View) => void;
   refresh: () => Promise<void>;
   focusBrand: (brand: string) => void;
+  enterBoutique?: (brand: string) => void;
 }
 
 /* ── small parts ─────────────────────────────────────────────────────── */
