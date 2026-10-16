@@ -1,15 +1,16 @@
 import Phaser from 'phaser';
 import { ASSET } from '../assets/manifest';
 import { BRAND_LOGOS, type BrandLogo } from '../assets/brandLogos';
-import { ARCHES, FIGURE_SCALE, MALL, PILLARS, PLANTERS, SECTIONS, SLOT_GEO, WALK, WALL_HEIGHT, bayDecor, boutiquePlan, kioskCell, mallBlocked, toWorld, type SlotGeo } from '../mall/layout';
+import { ARCHES, FIGURE_SCALE, MALL, PILLARS, PLANTERS, SECTIONS, SLOT_GEO, WALK, WALL_HEIGHT, bayDecor, boutiquePlan, kioskCell, mallBlocked, tileOf, toWorld, type SlotGeo } from '../mall/layout';
 import { displayName, type MallBrand, type MallModel, type MallSpot } from '../mall/model';
+import type { SectionKey } from '../mall/data';
 import { CORRIDORS } from '../model';
 import type { Ownership, StockClass } from '../types';
 import { FloorBatch } from './FloorBatch';
 import { depthAt, iso } from './iso';
 import type { WorldScene } from './WorldScene';
 
-/* The Watch Mall on the Floor tab: three sections, boutiques for the major brands, cases in
+/* The Watch Mall on the Floor tab: four sections, boutiques for the major brands, cases in
    display areas for the rest. Everything here follows world_mall()'s stored places, so a
    brand stands where an owner put it, whatever its stock does.
 
@@ -27,7 +28,8 @@ const PLINTH: Record<Ownership, string> = {
 /* Pale tints, so each boutique's pavilion has its own finish (an owner's colour wins). */
 const FINISH = [0xffe4b5, 0xd6ecff, 0xffd8de, 0xe4dcff, 0xd8f5e2, 0xfff0c2, 0xf0e0d0];
 const ACCENT = [0x22304d, 0x7a2e35, 0x2d6f7a, 0x5a4a8a, 0x8a6a2e, 0x3f6b4a, 0x6b3f5a];
-const SECTION_RUG = [0xffffff, 0xe8d8ff, 0xd8f0e8];
+/* A display area's rug, by section (the Promenade has no display area yet). */
+const SECTION_RUG: Record<SectionKey, number> = { promenade: 0xffffff, grand_gallery: 0xffffff, collectors_arcade: 0xe8d8ff, discovery_court: 0xd8f0e8 };
 
 /* Where a wall's drawn feature piece starts inside a wall n cells long. */
 const featureOffset = (n: number, len: number) => Math.floor((n - len) / 2);
@@ -73,7 +75,7 @@ export class MallLayer {
       if (ARCHES.includes(lx)) tile('mall-tile-arch', lx, ly);
       else if (g?.kind === 'boutique') tile('mall-tile-boutique', lx, ly);
       else if (g?.kind === 'bay') tile('mall-tile-bay', lx, ly);
-      else tile(SECTIONS.find((x) => lx >= x.x0 && lx < x.x1)!.tiles[(lx + ly) % 2], lx, ly);
+      else tile(SECTIONS.find((x) => lx >= x.x0 && lx < x.x1)!.tiles[tileOf(lx, ly)], lx, ly);
     }
     floor.draw();
     // a display area's brass border inlay (drawn for 3 x 4), centred in its 4 x 6
@@ -189,7 +191,7 @@ export class MallLayer {
         else { this.place('bench', g.x, g.y, 2, 1, 0, true); this.place('plant', g.x + 3, g.y, 1, 1, 0, true); }
       } else {
         const d = bayDecor(g);
-        this.flat('rug', d.rug[0], d.rug[1], -8.5e5).setTint(SECTION_RUG[g.section]).setAlpha(0.9);
+        this.flat('rug', d.rug[0], d.rug[1], -8.5e5).setTint(SECTION_RUG[SECTIONS[g.section].key]).setAlpha(0.9);
         const fx = this.place(d.kind === 'cabinet' ? 'wall-cabinet' : 'plant', d.fixture[0], d.fixture[1], 1, 1, 0, true);
         if (here.length) { fx.setInteractive({ useHandCursor: true, pixelPerfect: true, alphaTolerance: 1 }); this.scene.tag(fx, { type: 'display', slot: g.slot }, 0); }
       }
@@ -311,13 +313,22 @@ export class MallLayer {
      the front row it is a low fascia on the low front wall. The logo is only scaled, evenly, and the
      plaque is just big enough for the brand's name to read at a section's zoom (about 8 CSS px a
      letter on a phone): a logo whose name is a small part of it gets a taller plaque, a word mark a
-     slim one. It is part of the building, so it is drawn in the scene's depth order and never slid. */
+     slim one. An emblem with no name in it (West End's) gets the name painted beside it, in the
+     painted-name signs' lettering, its capitals about 15 units tall (8-9 CSS px at a section's
+     zoom). It is part of the building, so it is drawn in the scene's depth order and never slid. */
   private logoSign(logo: BrandLogo, b: MallBrand, x: number, wallY: number, side: SlotGeo['side'], sel: { type: 'brand'; brand: string }, wx: number, wy: number) {
     const s = this.scene;
-    const band = logo.aspect > 12.5;                       // one long line of small words (West End)
-    const maxW = band ? 470 : side === 'n' ? 300 : 260;
-    let lh = Math.max(22, 13.3 / logo.nameShare), lw = lh * logo.aspect;
-    if (lw > maxW) { lw = maxW; lh = lw / logo.aspect; }
+    let lh: number, lw: number, gap = 0, name: Phaser.GameObjects.Text | null = null;
+    if (logo.paintedName) {
+      name = this.text(0, 0, b.brand.toUpperCase(), { size: 22, colour: logo.plate === 'dark' ? '#f3e7cf' : '#22304d', bold: true, depth: 0 }).setOrigin(0, 0.5);
+      lh = 44; gap = 10;
+      lw = lh * logo.aspect + gap + name.width;
+    } else {
+      const band = logo.aspect > 12.5;                     // one long line of small words
+      const maxW = band ? 470 : side === 'n' ? 300 : 260;
+      lh = Math.max(22, 13.3 / logo.nameShare); lw = lh * logo.aspect;
+      if (lw > maxW) { lw = maxW; lh = lw / logo.aspect; }
+    }
     const padX = 14, padY = 10, w = lw + 2 * padX, h = lh + 2 * padY;
     const cy = side === 'n' ? wallY - WALL_HEIGHT + 18 - h / 2 : wallY - 8 - h / 2;
     // the front row's fascia is drawn after the whole low wall it is fixed to (each wall run sorts by its far end)
@@ -333,12 +344,19 @@ export class MallLayer {
     const plate = this.keep(s.add.rectangle(x, cy, w, h, logo.plate === 'dark' ? 0x17233b : 0xf6f1e6)
       .setStrokeStyle(3, 0xcba454).setRounded(Math.min(10, h * 0.18)).setDepth(depth + 0.02));
     const img = this.keep(s.add.image(x, cy, logo.key).setDepth(depth + 0.03));
-    img.setScale(Math.min(lw / img.width, lh / img.height));
+    const items: Obj[] = [plate, img];
+    if (name) {
+      // the emblem at the plaque's left, the name after it
+      const ew = lh * logo.aspect;
+      img.setScale(Math.min(ew / img.width, lh / img.height)).setX(x - w / 2 + padX + ew / 2);
+      name.setPosition(x - w / 2 + padX + ew + gap, cy).setDepth(depth + 0.03);
+      items.push(name);
+    } else img.setScale(Math.min(lw / img.width, lh / img.height));
     plate.setInteractive({ useHandCursor: true }); s.tag(plate, sel, 0);
     const bd = plate.getBounds();
     const bar = this.healthBar(b, bd.x + 10, bd.bottom + 3, bd.width - 20, 5, depth + 0.04);
     plate.setData('panel', new Phaser.Geom.Rectangle(bd.x, top - 10, bd.width, bd.height + 20));
-    return { sign: plate as Obj, items: [plate, img, bar, shadow, mount] as Obj[], r: { x: bd.x + 4, y: bd.y + 4, w: bd.width - 8, h: bd.height - 8 } };
+    return { sign: plate as Obj, items: [...items, bar, shadow, mount] as Obj[], r: { x: bd.x + 4, y: bd.y + 4, w: bd.width - 8, h: bd.height - 8 } };
   }
 
   /* A display case: the base by ownership, watches by units, the glass over them. */
@@ -595,8 +613,9 @@ export class MallLayer {
       (gr.items[0] as Phaser.GameObjects.Text).setScale(badgeScale);
       this.followChip(gr);
     }
-    // in the whole-mall view the section signs keep a readable size: they are the way in
-    const sk = Phaser.Math.Clamp(0.36 / Math.max(css, 0.02), 1, 4);
+    // in the whole-mall view the section signs keep a readable size: they are the way in (up to 6x, so
+    // they stay as large on screen as before the Promenade made the whole mall smaller)
+    const sk = Phaser.Math.Clamp(0.36 / Math.max(css, 0.02), 1, 6);
     for (let k = 0; k < this.sectionSigns.length; k += 2) {
       const sign = this.sectionSigns[k] as Phaser.GameObjects.Image, t = this.sectionSigns[k + 1] as Phaser.GameObjects.Text;
       const base = (sign.getData('base') as number | undefined) ?? sign.scale;
@@ -643,10 +662,13 @@ export class MallLayer {
   target(brand: string) { return this.targets.get(brand) ?? null; }
 
   /* A section's extent on screen, in world units: its floor, and its back wall and signs. */
-  /* The point a section view centres on: the walkway's middle, raised half a wall. */
+  /* The point a section view centres on: the walkway's middle row, raised half a wall, 8 cells in
+     from the section's west end. That is the middle of a 16-cell section; in the wider Promenade it
+     is the join of its first two boutiques, so its view opens on shop signs as the others' do
+     (centred, the 24-cell Promenade's signs all fall just outside a phone's screen). */
   sectionCentre(i: number) {
     const sec = SECTIONS[i];
-    const p = iso(...toWorld((sec.x0 + sec.x1) / 2, MALL.d / 2));
+    const p = iso(...toWorld(Math.min(sec.x0 + 8, (sec.x0 + sec.x1) / 2), MALL.d / 2));
     return { x: p.x, y: p.y - WALL_HEIGHT / 2 };
   }
 

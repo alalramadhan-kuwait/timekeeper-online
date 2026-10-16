@@ -638,6 +638,26 @@
    0
   ]
  },
+ "mall-tile-pr-a": {
+  "px": [
+   256,
+   128
+  ],
+  "origin": [
+   0.5,
+   0
+  ]
+ },
+ "mall-tile-pr-b": {
+  "px": [
+   256,
+   128
+  ],
+  "origin": [
+   0.5,
+   0
+  ]
+ },
  "mall-tile-boutique": {
   "px": [
    256,

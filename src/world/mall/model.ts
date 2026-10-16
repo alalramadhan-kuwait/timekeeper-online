@@ -102,7 +102,7 @@ export function buildMall(s: Snapshot, m: MallData): MallModel {
   }
 
   // shoppers are illustrative: about six in the whole mall, shared out by the last 30 days' units sold
-  const perSection = [0, 0, 0];
+  const perSection = SECTIONS.map(() => 0);
   for (const sp of spots) perSection[sp.slot.section] += Math.max(0, sp.brand.sold30);
   const total = perSection.reduce((a, b) => a + b, 0);
   const shoppers = perSection.map((n) => (total > 0 && n > 0 ? Math.max(1, Math.round((n / total) * 6)) : 0));
@@ -120,8 +120,9 @@ export const placeLabel = (sp: MallSpot | undefined | null): string => {
   return `${sec} · ${displayName(sp.slot.slot)}, kiosk ${sp.position + 1}`;
 };
 
-/* Display areas are numbered in walking order: 1 and 2 on the Grand Gallery's islands … */
-const DISPLAY_ORDER = ['GG-I1', 'GG-I2', 'CA-I1', 'CA-S2', 'CA-S3', 'DC-N1', 'DC-N2', 'DC-N3', 'DC-N4', 'DC-S1', 'DC-S2', 'DC-S3', 'DC-S4', 'CA-I2', 'DC-I1', 'DC-I2'];
+/* Display areas are numbered in walking order: 1 and 2 on the Grand Gallery's islands … The
+   Promenade's two spare islands came later and are numbered last, so no number changed. */
+const DISPLAY_ORDER = ['GG-I1', 'GG-I2', 'CA-I1', 'CA-S2', 'CA-S3', 'DC-N1', 'DC-N2', 'DC-N3', 'DC-N4', 'DC-S1', 'DC-S2', 'DC-S3', 'DC-S4', 'CA-I2', 'DC-I1', 'DC-I2', 'PR-I1', 'PR-I2'];
 export const displayName = (slot: string) => {
   const i = DISPLAY_ORDER.indexOf(slot);
   return i < 0 ? slot : `Display ${i + 1}`;

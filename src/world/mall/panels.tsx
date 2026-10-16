@@ -246,6 +246,9 @@ function MovePanel({ name, ctx }: { name: string; ctx: Ctx }) {
   const from = spotOf(ctx, name);
   const occupant = (slot: string, position: number) => ctx.mall.spots.find((sp) => sp.slot.slot === slot && sp.position === position) ?? null;
   const target = pick ? occupant(pick.slot, pick.position) : null;
+  // only places the database has: one drawn before its database row exists cannot take a brand yet
+  const known = new Set(ctx.mall.data.slots.map((s) => s.slot));
+  const placesIn = (si: number) => Object.values(SLOT_GEO).filter((g) => g.section === si && known.has(g.slot));
   const confirm = async () => {
     if (!pick) return;
     const moves = [{ brand: name, slot: pick.slot, position: pick.position }];
@@ -262,10 +265,10 @@ function MovePanel({ name, ctx }: { name: string; ctx: Ctx }) {
     <div>
       <Head title={`Move ${name}`} sub={`Now: ${placeLabel(from)}`} />
       <p className="mt-2 text-xs text-slate-500">Pick a place. An empty one moves the brand; a taken one swaps the two brands. Nothing changes until you confirm.</p>
-      {SECTIONS.map((sec, si) => (
+      {SECTIONS.map((sec, si) => placesIn(si).length > 0 && (
         <Section key={sec.key} title={sec.name}>
           <div className="flex flex-col gap-1.5">
-            {Object.values(SLOT_GEO).filter((g) => g.section === si).map((g) => {
+            {placesIn(si).map((g) => {
               const cap = g.kind === 'boutique' ? 1 : 4;
               return (
                 <div key={g.slot} className="rounded-xl border border-slate-200 p-2">

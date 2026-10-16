@@ -4,7 +4,7 @@ import { supabase } from '../../lib/supabase';
    database checks the caller is an owner before reading anything. */
 
 export type SlotKind = 'boutique' | 'bay' | 'island';
-export type SectionKey = 'grand_gallery' | 'collectors_arcade' | 'discovery_court';
+export type SectionKey = 'promenade' | 'grand_gallery' | 'collectors_arcade' | 'discovery_court';
 export type Look = 'neutral' | 'man' | 'woman' | 'woman_hijab';
 export type DutyState = 'on' | 'unclosed' | 'off';
 
