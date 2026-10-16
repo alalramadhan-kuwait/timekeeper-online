@@ -358,3 +358,10 @@ These need a synonym in scripts or the fine-tune.
   - Several of these are text fixes that the general lexicon already holds or now holds: امبارح → أمس, قدام → جدام, أشيك → اتشيك.
   - Pages 2–3 (u05–t01) were not answered yet.
 - Real Kuwaiti text: 5 of Ali's own verified sentences, OmniVoice next to his real recording (artifact PRBmT92TLjWK7XBEBc6HwB). The model is about 1.4× slower than Ali (e.g. 21.6 s vs 14.1 s).
+- **Real Kuwaiti text result (2026-10-16).**
+  - Close to Ali: «قريب وايد» in 4 of 5, «قريب» in 1. Words: 17 of 128 wrong (**86.7%**).
+  - The user names three causes:
+    1. Words misspelled in the transcript: كولكيوم, وكلة, شفناني.
+    2. Words that need diacritics: سمك / سمكها (thickness, not fish), صايرة, شغلة.
+    3. English words written in Arabic letters come out wrong (سبشيال, جيرارد, كمبليكيتد, الكمبليكيشن). Write them in English.
+  - Next: fix the text and regenerate.
