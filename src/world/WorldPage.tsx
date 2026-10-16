@@ -308,7 +308,8 @@ export default function WorldPage({ onClose }: { onClose?: () => void }) {
       {/* details: a side panel on wide screens, a sheet from the bottom on phones */}
       {dockView && dock && (
         <DockSheet key={stack.length} view={dockView} dock={dock} canGoBack={stack.length > 1} panelRef={panelRef}
-          open={(v: DockView) => open(v)} back={() => setStack((s) => s.slice(0, -1))} close={closePanel} />
+          open={(v: DockView) => open(v)} back={() => setStack((s) => s.slice(0, -1))} close={closePanel}
+          onChanged={() => (snap ? readDock(snap) : undefined)} />
       )}
       {view && !dockView && snap && (
         <aside ref={panelRef} className="tk-sheet-enter absolute inset-x-0 bottom-0 z-40 flex max-h-[60%] flex-col rounded-t-3xl bg-white shadow-2xl sm:inset-x-auto sm:bottom-3 sm:right-3 sm:top-3 sm:max-h-none sm:w-[400px] sm:rounded-3xl"
