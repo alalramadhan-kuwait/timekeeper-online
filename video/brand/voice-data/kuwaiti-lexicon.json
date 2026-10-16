@@ -320,8 +320,9 @@
     "أشيك"
    ],
    "meaning": "I check",
-   "status": "confirmed",
-   "source": "the user, OmniVoice pronunciation check u01 (2026-10-16): أشيك is not said that way"
+   "status": "proposed",
+   "source": "the user, OmniVoice pronunciation check u01 (2026-10-16): أشيك is not said that way",
+   "note": "the user is not sure اتشيك is right either (2026-10-16); test on real Kuwaiti text"
   },
   "موديل": {
    "say": "model (English)",

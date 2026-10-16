@@ -13,6 +13,12 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 SENT = [("u06", "عيل خلنا نطلب شوي زيادة باجر قبل لا تخلص."), ("t01", "جاسم راح البقالة وشرا عصير بطاط وطماط. شلونك شخبارك؟")]
 OUT = ROOT / "voice-src/compare/omnivoice"
+if "--ali" in sys.argv:    # Ali's own verified sentences (real Kuwaiti text), to hear the model next to Ali saying the same words
+    sys.path.insert(0, str(ROOT / "video/brand"))
+    from tk_pilot0 import texts
+    T = texts()
+    SENT = [(k, T[k]) for k in ["1DL9LBbCuiY-u001", "TlGXbHWi-vU-u008", "JtVZPG9Jxqk-u025", "F1-HaUKtkkQ-u010", "TlGXbHWi-vU-u000"]]
+    OUT = ROOT / "voice-src/compare/omni-ali"
 if "--full" in sys.argv:   # the 11-sentence test set of pilot 0 (ckkw-unseen-10 + the user's sentence)
     import json
     SENT = [(it["id"], it["text"]) for it in json.loads((ROOT / "video/brand/voice-data/ckkw-unseen-10.json").read_text())["items"]] + \
