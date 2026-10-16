@@ -1,7 +1,7 @@
 import { NavLink, Outlet, useLocation, useSearchParams } from 'react-router-dom';
 import {
   LayoutDashboard, Briefcase, TrendingUp, Hourglass, Truck, Handshake,
-  Star, Users, CalendarRange, LogOut, Watch, Menu, Contact, Settings, Gem, ClipboardCheck, PhoneCall, Boxes, History, UserRound, Wrench, Instagram, Megaphone, Target, Sparkles, Activity, Gauge, Inbox, ClipboardList, ChevronDown, BellRing, Bell, Download, Share, Castle, type LucideIcon,
+  Star, Users, CalendarRange, LogOut, Watch, Menu, Contact, Settings, Gem, ClipboardCheck, PhoneCall, Boxes, History, UserRound, Wrench, Instagram, Megaphone, Target, Sparkles, Activity, Gauge, Inbox, ClipboardList, ChevronDown, BellRing, Bell, Download, Share, Castle, Wallet, type LucideIcon,
 } from 'lucide-react';
 import { Suspense, useEffect, useRef, useState } from 'react';
 import { useAuth, Role } from '../context/AuthContext';
@@ -19,6 +19,8 @@ interface NavItem {
   to: string;
   label: string;
   icon: LucideIcon;
+  /* Shown only to the owners on stock_ai_access, whatever their role. */
+  owners?: boolean;
   roles: Role[];
 }
 
@@ -65,6 +67,8 @@ const NAV_GROUPS: NavGroup[] = [
       { to: '/attendance', label: 'Attendance', icon: ClipboardCheck, roles: ['admin', 'manager', 'hr'] },
       { to: '/hr', label: 'Employees', icon: Users, roles: ['admin', 'manager', 'hr'] },
       { to: '/leave', label: 'Leave Tracking', icon: CalendarRange, roles: ['admin', 'manager', 'hr'] },
+      // salaries, increments, bonuses and commission: the three owners only (the database checks again)
+      { to: '/payroll', label: 'Payroll', icon: Wallet, roles: ['admin'], owners: true },
       // Company Documents hidden from the menu while unused (module + data kept; direct URL still works)
     ],
   },
@@ -97,7 +101,7 @@ const NAV_GROUPS: NavGroup[] = [
 /** Flat catalogue of every page, for the per-user access editor in Settings. */
 export interface PageDef { to: string; label: string; group: string }
 export const PAGES: PageDef[] = NAV_GROUPS.flatMap((g) =>
-  g.items.filter((i) => i.to !== '/settings' && i.to !== '/me' && i.to !== '/' && i.to !== '/inbox' && i.to !== '/notifications').map((i) => ({ to: i.to, label: i.label, group: g.title ?? 'Main' })),
+  g.items.filter((i) => !i.owners && i.to !== '/settings' && i.to !== '/me' && i.to !== '/' && i.to !== '/inbox' && i.to !== '/notifications').map((i) => ({ to: i.to, label: i.label, group: g.title ?? 'Main' })),
 );
 
 /** Whether a user may open a page, honouring per-user overrides then role defaults. */
@@ -108,6 +112,8 @@ export function canAccessPath(to: string, role: Role | null, pageAccess: string[
   // hidden from the menu but still reachable by URL for HR (module kept per cleanup decision)
   if (to === '/company-documents') return ['admin', 'manager', 'hr'].includes(role ?? '');
   if (to === '/content') return ['admin', 'manager', 'marketing'].includes(role ?? '');
+  // the owners' pages: the page and the database check the owner list itself
+  if (to === '/payroll') return role === 'admin';
   if (role === 'admin') return true;
   // an explicit list — even an empty one — replaces the role defaults, so a
   // salesperson can be limited to Dashboard, My Portal, Inbox and Notifications
@@ -116,9 +122,9 @@ export function canAccessPath(to: string, role: Role | null, pageAccess: string[
   return !!(item && role && item.roles.includes(role));
 }
 
-function groupsFor(role: Role | null, pageAccess: string[] | null): NavGroup[] {
+function groupsFor(role: Role | null, pageAccess: string[] | null, owner = false): NavGroup[] {
   return NAV_GROUPS
-    .map((g) => ({ ...g, items: g.items.filter((n) => canAccessPath(n.to, role, pageAccess)) }))
+    .map((g) => ({ ...g, items: g.items.filter((n) => canAccessPath(n.to, role, pageAccess) && (!n.owners || owner)) }))
     .filter((g) => g.items.length > 0);
 }
 
@@ -151,7 +157,7 @@ export default function Layout() {
     if (!user) return;
     supabase.rpc('stock_ai_allowed').then(({ data }) => setAskAllowed(!!data), () => setAskAllowed(false));
   }, [user?.id]);
-  const groups = groupsFor(role, pageAccess);
+  const groups = groupsFor(role, pageAccess, askAllowed);
 
   // which section contains the current route (so it opens automatically)
   const activeGroup = groups.find((g) => g.title && g.items.some((n) => n.to !== '/' && location.pathname.startsWith(n.to)))?.title ?? null;

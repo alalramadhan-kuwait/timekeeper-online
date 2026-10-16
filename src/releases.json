@@ -1,5 +1,15 @@
 [
   {
+    "version": "3.10.0",
+    "date": "2026-10-16",
+    "title": "Payroll",
+    "changes": [
+      "A new Payroll page for the owners: each person's salary and allowances, every increment with its date, bonuses and deductions, and the month's total to pay.",
+      "Commission is worked out from Lightspeed: 2.5% once Avenues reaches 45,000 KD or Time Gallery 10,000 KD in the month, on each salesperson's own sales.",
+      "Approve a month to lock it, then mark it as paid."
+    ]
+  },
+  {
     "version": "3.9.1",
     "date": "2026-10-16",
     "title": "Logos on the new boutiques",
