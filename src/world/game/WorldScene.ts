@@ -375,6 +375,7 @@ export class WorldScene extends Phaser.Scene {
     if (b) { this.owner.fx = b.owner[0] + 0.5; this.owner.fy = b.owner[1] + 0.5; this.section = b.section; }
     this.showAreaLabels();
     const cam = this.cameras.main;
+    cam.panEffect.reset(); cam.zoomEffect.reset(); cam.resetFX();
     if (b) { cam.setZoom(b.zoom); cam.centerOn(b.x, b.y); this.zoomTarget = b.zoom; }
     else this.focus('floor', false);
   }
@@ -384,12 +385,15 @@ export class WorldScene extends Phaser.Scene {
     this.room = 'boutique';
     this.revealTo = null;
     const cam = this.cameras.main, px = this.dpr;
-    const z = Phaser.Math.Clamp(BOUTIQUE_ZOOM * px, this.minZoom(), this.maxZoom());
-    // the owner just inside the door, a little low in the free part of the screen
-    const o = iso(this.owner.fx, this.owner.fy);
+    // the view a customer has from the door: the back wall with the brand's sign, the left wall
+    // running towards the viewer and the cases in between, close enough to know the watches
+    const z = Phaser.Math.Clamp(Math.min(BOUTIQUE_ZOOM * px, cam.width / 1000), this.minZoom(), this.maxZoom());
     const top = this.insets.top * px, bottom = this.insets.bottom * px;
-    const cx = o.x - 120, cy = o.y - 170 - (top - bottom) / 2 / z;
+    const r = this.boutique.bounds();
+    const cx = r.x + r.w / 2, cy = r.y + r.h * 0.5 - (top - bottom) / 2 / z;
     this.zoomTarget = z;
+    // a glide still under way in the mall (to the brand just tapped) would carry the view back out
+    cam.panEffect.reset(); cam.zoomEffect.reset();
     if (animate && !this.reduced) {
       cam.fadeOut(160, 29, 24, 20);
       cam.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => { cam.setZoom(z); cam.centerOn(cx, cy); cam.fadeIn(260, 29, 24, 20); });

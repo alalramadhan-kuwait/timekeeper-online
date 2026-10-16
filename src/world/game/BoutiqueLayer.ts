@@ -16,9 +16,10 @@ import type { WorldScene } from './WorldScene';
 
 const CARD = 56;          // a watch's card, world units
 const PHOTO = 52;
+const CASE_CARD = 40;     // smaller, lying under a pedestal's glass
 const FONT = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
 
-type Item = { watch: Watch; card: Phaser.GameObjects.Rectangle; photo: Phaser.GameObjects.Image | null; text: Phaser.GameObjects.Text | null; ring: Phaser.GameObjects.Rectangle; box: Phaser.GameObjects.Image | null; at: { x: number; y: number } };
+type Item = { watch: Watch; card: Phaser.GameObjects.Rectangle; shade: Phaser.GameObjects.Rectangle; photo: Phaser.GameObjects.Image | null; text: Phaser.GameObjects.Text | null; ring: Phaser.GameObjects.Rectangle; box: Phaser.GameObjects.Image | null; at: { x: number; y: number } };
 
 export class BoutiqueLayer {
   private fixed: Phaser.GameObjects.GameObject[] = [];
@@ -68,13 +69,23 @@ export class BoutiqueLayer {
     // a cap along the walls' top edge
     g.lineStyle(6, 0x3a2a1e, 1).lineBetween(P(0, ROOM.D).x, P(0, ROOM.D).y - WALL_H, P(0, 0).x, P(0, 0).y - WALL_H);
     g.lineBetween(P(0, 0).x, P(0, 0).y - WALL_H, P(ROOM.W, 0).x, P(ROOM.W, 0).y - WALL_H);
-    // the niches: one per cell and shelf, recessed and lit from above
-    for (const spot of displaySpots()) {
-      if (spot.kind === 'pedestal') continue;
-      const q = this.nicheQuad(spot);
-      g.fillStyle(spot.kind === 'back' ? 0xe6d8bf : 0xd6c4a3, 1).fillPoints(q, true);
-      g.fillStyle(0xfff6e0, 0.55).fillPoints([q[0], q[1], new Phaser.Math.Vector2(q[1].x, q[1].y + 10), new Phaser.Math.Vector2(q[0].x, q[0].y + 10)], true);
-      g.lineStyle(3, 0x6b4a2f, 1).lineBetween(q[3].x, q[3].y, q[2].x, q[2].y);   // the shelf's edge
+    // the wall vitrines: a walnut frame along each wall, a lit cream recess for each shelf, a brass
+    // shelf edge the watches stand on, and a warm light at the top of each recess
+    const V = (t: number, h: number, side: 'back' | 'left') => {
+      const [wx, wy] = side === 'back' ? toWorldB(t, 0) : toWorldB(0, t);
+      const p = iso(wx, wy);
+      return new Phaser.Math.Vector2(p.x, p.y - h);
+    };
+    for (const side of ['back', 'left'] as const) {
+      const [t0, t1] = side === 'back' ? [0.7, ROOM.W - 0.2] : [0.7, ROOM.D - 0.2];
+      const lo = SHELVES[0] - 14, hi = SHELVES[SHELVES.length - 1] + NICHE_H + 12;
+      g.fillStyle(0x4a2f1f, 1).fillPoints([V(t0, hi, side), V(t1, hi, side), V(t1, lo, side), V(t0, lo, side)], true);
+      for (const h0 of SHELVES) {
+        const h1 = h0 + NICHE_H;
+        g.fillStyle(side === 'back' ? 0xf7eedc : 0xeadcc0, 1).fillPoints([V(t0 + 0.08, h1, side), V(t1 - 0.08, h1, side), V(t1 - 0.08, h0, side), V(t0 + 0.08, h0, side)], true);
+        g.fillStyle(0xfff8e6, 0.9).fillPoints([V(t0 + 0.08, h1, side), V(t1 - 0.08, h1, side), V(t1 - 0.08, h1 - 8, side), V(t0 + 0.08, h1 - 8, side)], true);
+        g.lineStyle(4, 0xc79b4a, 1).lineBetween(V(t0 + 0.08, h0, side).x, V(t0 + 0.08, h0, side).y, V(t1 - 0.08, h0, side).x, V(t1 - 0.08, h0, side).y);
+      }
     }
     this.fixed.push(g);
 
@@ -126,12 +137,13 @@ export class BoutiqueLayer {
     if (spot.kind === 'pedestal') {
       const [x, y] = toWorldB(...PEDESTALS[spot.index]);
       const p = iso(x + 1, y + 1);
-      return { x: p.x - 64 + (spot.side ? 34 : -34) + 64, y: p.y - 112, depth: depthAt(x + 1, y + 1, 0.6) };
+      return { x: p.x + (spot.side ? 24 : -24), y: p.y - 96 + (spot.side ? -2 : 2), depth: depthAt(x + 1, y + 1, 0.6) };
     }
+    // standing on the shelf's edge: the card's foot on the brass line where the card's middle is
     const q = this.nicheQuad(spot);
-    const cx = (q[0].x + q[1].x + q[2].x + q[3].x) / 4, cy = (q[0].y + q[1].y + q[2].y + q[3].y) / 4;
+    const cx = (q[2].x + q[3].x) / 2, foot = (q[2].y + q[3].y) / 2;
     const [wx, wy] = spot.kind === 'back' ? toWorldB(spot.cell + 1, 0.4) : toWorldB(0.4, spot.cell + 1);
-    return { x: cx, y: cy + 2, depth: depthAt(wx, wy, -5) };
+    return { x: cx, y: foot - CARD / 2 - 3, depth: depthAt(wx, wy, -5) };
   }
 
   /* ── a boutique's watches ─────────────────────────────────────────────── */
@@ -170,31 +182,34 @@ export class BoutiqueLayer {
       const spot = spots[i];
       if (!spot) { this.overflow.push(w); return; }
       const at = this.placeOf(spot);
-      const card = s.add.rectangle(at.x, at.y, CARD, CARD, 0xffffff).setStrokeStyle(1.5, 0xd8c8a8).setDepth(at.depth);
-      const ring = s.add.rectangle(at.x, at.y, CARD + 10, CARD + 10).setStrokeStyle(4, 0xe0b04a).setDepth(at.depth - 0.01).setVisible(false);
+      const size = spot.kind === 'pedestal' ? CASE_CARD : CARD;
+      const card = s.add.rectangle(at.x, at.y, size, size, 0xffffff).setStrokeStyle(1, 0xe8dcc4).setDepth(at.depth);
+      const shade = s.add.rectangle(at.x + 3, at.y + 4, size, size, 0x3a2414, 0.18).setDepth(at.depth - 0.02);
+      const ring = s.add.rectangle(at.x, at.y, size + 8, size + 8).setStrokeStyle(4, 0xe0b04a).setDepth(at.depth - 0.01).setVisible(false);
       card.setInteractive({ useHandCursor: true });
       s.tag(card, { type: 'watch', id: w.product_id }, 0);
       let photo: Phaser.GameObjects.Image | null = null, text: Phaser.GameObjects.Text | null = null;
       const key = `w:${w.product_id}`;
       if (w.image) {
         photo = s.add.image(at.x, at.y, s.textures.exists(key) ? key : '__WHITE').setDepth(at.depth + 0.01);
+        photo.setData('size', size - 4);
         if (s.textures.exists(key)) this.fitPhoto(photo); else { photo.setVisible(false); toLoad.push(w); }
         photo.setInteractive({ useHandCursor: true });
         s.tag(photo, { type: 'watch', id: w.product_id }, 0);
       } else {
         // no verified picture: the card carries the name instead, never a stand-in drawing
         text = s.add.text(at.x, at.y, w.name.replace(/\s+-\s+/g, '\n').slice(0, 40), {
-          fontFamily: FONT, fontSize: '8px', color: '#5b4a35', align: 'center', wordWrap: { width: CARD - 6 }, resolution: 3,
+          fontFamily: FONT, fontSize: '8px', color: '#5b4a35', align: 'center', wordWrap: { width: size - 6 }, resolution: 3,
         }).setOrigin(0.5).setDepth(at.depth + 0.01);
       }
       let box: Phaser.GameObjects.Image | null = null;
       if (w.open_pos.some((p) => p.outstanding > 0)) {
-        box = s.add.image(at.x + CARD / 2 - 6, at.y + CARD / 2 - 6, 'box-sealed').setDepth(at.depth + 0.02);
+        box = s.add.image(at.x + size / 2 - 6, at.y + size / 2 - 6, 'box-sealed').setDepth(at.depth + 0.02);
         box.setScale(20 / box.width);
       }
-      const item: Item = { watch: w, card, photo, text, ring, box, at: { x: at.x, y: at.y } };
+      const item: Item = { watch: w, card, shade, photo, text, ring, box, at: { x: at.x, y: at.y } };
       this.items.set(w.product_id, item);
-      this.dyn.push(card, ring, ...(photo ? [photo] : []), ...(text ? [text] : []), ...(box ? [box] : []));
+      this.dyn.push(card, shade, ring, ...(photo ? [photo] : []), ...(text ? [text] : []), ...(box ? [box] : []));
     });
     // the glass over each pedestal goes on last, over its watches
     for (const c of PEDESTALS) {
@@ -228,7 +243,8 @@ export class BoutiqueLayer {
   }
 
   private fitPhoto(photo: Phaser.GameObjects.Image) {
-    photo.setScale(Math.min(PHOTO / photo.width, PHOTO / photo.height));
+    const size = (photo.getData('size') as number | undefined) ?? PHOTO;
+    photo.setScale(Math.min(size / photo.width, size / photo.height));
   }
 
   /* ── the optional discovery filters ──────────────────────────────────── */
@@ -241,9 +257,10 @@ export class BoutiqueLayer {
     const on = matches(it.watch, this.lens);
     const soldOut = shelfOf(it.watch) !== 'in_stock';
     // a sold-out watch keeps its place, its picture faint, as an empty case looks
-    const base = soldOut ? 0.32 : 1;
+    const base = soldOut ? 0.28 : 1;
     const k = this.lens === 'all' || on ? 1 : 0.14;
-    it.card.setAlpha((soldOut ? 0.55 : 1) * k);
+    it.card.setAlpha((soldOut ? 0 : 1) * k);
+    it.shade.setAlpha(soldOut ? 0 : k);
     it.photo?.setAlpha(base * k);
     it.text?.setAlpha(base * k);
     it.box?.setAlpha(k);
