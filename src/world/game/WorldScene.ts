@@ -150,6 +150,7 @@ export class WorldScene extends Phaser.Scene {
   private dockArea: DockArea = 'orders';                  // the part of the dock framed last
   private boutique!: BoutiqueLayer;
   private beforeBoutique: { room: Room; x: number; y: number; zoom: number; section: number | null; owner: [number, number] } | null = null;
+  private stepOut: WorldScene['beforeBoutique'] = null;   // where the owner came in from, kept over a step out
 
   constructor() { super('world'); }
 
@@ -351,10 +352,14 @@ export class WorldScene extends Phaser.Scene {
   /* Steps through a boutique's door: its watches are put in the room, the owner stands just
      inside, and the view opens close enough to recognise the watches. Where the camera stood in
      the mall is kept, so leaving puts it back exactly there. */
-  enterBoutique(data: BoutiqueData, animate = true) {
+  enterBoutique(data: BoutiqueData, animate = true, resume = false) {
+    // back from a step out (to an order at the dock): leaving later still returns to the mall
+    // view the owner first came in from
+    const kept = resume ? this.stepOut : null;
+    this.stepOut = null;
     if (this.room !== 'boutique') {
       const cam = this.cameras.main;
-      this.beforeBoutique = { room: this.room, x: cam.midPoint.x, y: cam.midPoint.y, zoom: cam.zoom, section: this.section, owner: this.owner.cell };
+      this.beforeBoutique = kept ?? { room: this.room, x: cam.midPoint.x, y: cam.midPoint.y, zoom: cam.zoom, section: this.section, owner: this.owner.cell };
     }
     if (this.boutique.data !== data) this.boutique.build(data);
     this.selectRing.setVisible(false);
@@ -368,9 +373,10 @@ export class WorldScene extends Phaser.Scene {
   }
 
   /* Back out into the mall, the camera where it was before. */
-  exitBoutique() {
+  exitBoutique(stepOut = false) {
     const b = this.beforeBoutique;
     this.beforeBoutique = null;
+    this.stepOut = stepOut ? b : null;
     this.room = b?.room && b.room !== 'boutique' ? b.room : 'floor';
     if (b) { this.owner.fx = b.owner[0] + 0.5; this.owner.fy = b.owner[1] + 0.5; this.section = b.section; }
     this.showAreaLabels();

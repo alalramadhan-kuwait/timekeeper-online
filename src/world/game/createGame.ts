@@ -15,8 +15,8 @@ export interface WorldGame {
   reveal: (top: number, right: number, bottom: number) => void;
   frameDock: (area: DockArea, fitOnly?: boolean) => void;
   showDock: (sel: { bay?: number; area?: 'recv' | 'pay' } | null) => void;
-  enterBoutique: (data: BoutiqueData) => void;
-  exitBoutique: () => void;
+  enterBoutique: (data: BoutiqueData, resume?: boolean) => void;
+  exitBoutique: (stepOut?: boolean) => void;
   setLens: (lens: Lens) => void;
   focusWatch: (id: string) => void;
   destroy: () => void;
@@ -72,8 +72,8 @@ export function createGame(parent: HTMLElement, model: WorldModel, hooks: SceneH
     reveal: (t, r, b) => withScene((s) => s.reveal(t, r, b)),
     frameDock: (a, f) => withScene((s) => s.frameDock(a, f)),
     showDock: (sel) => withScene((s) => s.showDock(sel)),
-    enterBoutique: (d) => withScene((s) => s.enterBoutique(d)),
-    exitBoutique: () => withScene((s) => s.exitBoutique()),
+    enterBoutique: (d, resume) => withScene((s) => s.enterBoutique(d, true, resume)),
+    exitBoutique: (stepOut) => withScene((s) => s.exitBoutique(stepOut)),
     setLens: (l) => withScene((s) => s.setLens(l)),
     focusWatch: (id) => withScene((s) => s.focusWatch(id)),
     destroy: () => { ro.disconnect(); game.destroy(true); },

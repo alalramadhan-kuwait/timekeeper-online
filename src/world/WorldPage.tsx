@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, ChevronLeft, LayoutGrid, Maximize2, Minus, Plus, RefreshCw, RotateCcw, Scan, Search, Settings2, Store, X } from 'lucide-react';
+import { ArrowLeft, BookMarked, ChevronLeft, LayoutGrid, Maximize2, Minus, Plus, RefreshCw, RotateCcw, Scan, Search, Settings2, Store, X } from 'lucide-react';
 import avatar from '../assets/ask-mohammed.webp';
 import { loadSnapshot } from './api';
 import { buildModel, missionTitle, type Room } from './model';
@@ -149,7 +149,7 @@ export default function WorldPage({ onClose }: { onClose?: () => void }) {
   }, [model]);
   // from a watch to its order at the dock; the boutique is kept, so going back returns inside
   const toDockPo = useCallback((poId: string) => {
-    game.current?.exitBoutique();
+    game.current?.exitBoutique(true);
     setRoom('dock');
     game.current?.frameDock('orders');
     setStack((st) => [...st, { type: 'dock-po', id: poId }]);
@@ -159,7 +159,7 @@ export default function WorldPage({ onClose }: { onClose?: () => void }) {
     const under = stack[stack.length - 2];
     setStack((s) => s.slice(0, -1));
     if (boutique && under && (under.type === 'watch' || under.type === 'browse') && room !== 'boutique') {
-      setRoom('boutique'); game.current?.enterBoutique(boutique); game.current?.setLens(lens);
+      setRoom('boutique'); game.current?.enterBoutique(boutique, true); game.current?.setLens(lens);
       if (under.type === 'watch') setTimeout(() => game.current?.focusWatch(under.id), 450);
     }
   }, [stack, boutique, room, lens]);
@@ -326,6 +326,12 @@ export default function WorldPage({ onClose }: { onClose?: () => void }) {
               </button>
             ))}
           </nav>
+          {room === 'office' && (
+            <button onClick={() => setStack([{ type: 'desk' }])}
+              className="pointer-events-auto ml-auto flex h-10 items-center gap-1.5 rounded-full bg-[#22304d] px-3.5 text-[13px] font-medium text-white shadow-lg">
+              <BookMarked size={16} /> Manager's Desk
+            </button>
+          )}
           {room === 'dock' && (
             <div className="pointer-events-auto ml-auto flex gap-1.5">
               <button onClick={() => goDock(dockArea, true)} aria-label="Fit area" title="Fit area"
