@@ -29,6 +29,14 @@ export const loadPo = (id: string) => call<PoDetail>('world_po_detail', { p_po_i
 export interface StatusChange { po_id: string; po_number: string; supplier: string | null; brand: string | null; status: string; at: string; timestamp_basis: 'first_detected' }
 export const loadStatusLog = () => call<StatusChange[]>('world_po_status_log');
 
+/* The expected-arrival dates the owners set themselves, by purchase order id. Lightspeed's own due
+   date is a separate field the sync rewrites; this one only the owners change. */
+export interface OwnerExpected { on: string; note: string | null; by: string; at: string }
+export const loadExpected = () => call<Record<string, OwnerExpected>>('world_po_expected');
+/* A null date clears it. Every change is kept in the database's log. */
+export const setExpected = (poId: string, on: string | null, note?: string | null) =>
+  call<unknown>('world_po_expected_set', { p_po_id: poId, p_expected_on: on, p_note: note ?? null });
+
 export const missionHistory = (key: string) => call<MissionEvent[]>('world_mission_history', { p_mission_key: key });
 
 export const actOnMission = (a: {

@@ -1,5 +1,5 @@
 import { supabase } from '../../lib/supabase';
-import { loadPo, loadStatusLog, type StatusChange } from '../api';
+import { loadExpected, loadPo, loadStatusLog, type OwnerExpected, type StatusChange } from '../api';
 import type { PoDetail, ReceiptEvent, Snapshot } from '../types';
 
 /* The Loading Dock's records: every open purchase order and every one with a recorded unpaid
@@ -30,6 +30,8 @@ export interface DockPo {
   ordered: number; received: number; outstandingUnits: number; outstanding: number;
   cost: number; paid: number; unpaid: number; pay: PayState; paidOn: string | null; method: string | null; invoice: boolean | null;
   paidUnreliable: boolean; expected: string | null; shipment: string | null;
+  /* The owners' own expected date, when one is set; it is the one a delay is judged by. */
+  ownerExpected: OwnerExpected | null;
   lines: DockLine[]; history: DockReceipt[]; flags: DockFlag[];
 }
 export interface DockSupplier { key: string; name: string; pos: DockPo[]; value: number }
@@ -47,6 +49,7 @@ export interface DockRaw {
   lines: { po_id: string; sku: string | null; name: string | null; brand: string | null; ordered_qty: number | null; received_qty: number | null; cost: number | null }[] | null;
   methods: Record<string, string | null>;
   statusLog: StatusChange[];
+  expected: Record<string, OwnerExpected>;
 }
 
 /* ── the plan: four rows of four bays ─────────────────────────────────── */
@@ -62,8 +65,9 @@ export const DOCK_PLAN = (() => {
 
 export async function loadDock(s: Snapshot): Promise<DockRaw> {
   const ids = [...new Set([...s.commitments.list.map((p) => p.po_id), ...s.payments.list.map((p) => p.po_id)])];
-  if (!ids.length) return { details: [], lines: [], methods: {}, statusLog: await loadStatusLog().catch(() => []) };
-  const [details, lines, methods, statusLog] = await Promise.all([
+  const expected = loadExpected().catch(() => ({} as Record<string, OwnerExpected>));
+  if (!ids.length) return { details: [], lines: [], methods: {}, statusLog: await loadStatusLog().catch(() => []), expected: await expected };
+  const [details, lines, methods, statusLog, owners] = await Promise.all([
     Promise.all(ids.map((id) => loadPo(id))),
     // the names come from the same view the Purchase Orders page uses; without it the lines still show
     supabase.from('purchase_order_items_view').select('po_id, sku, name, brand, ordered_qty, received_qty, cost').in('po_id', ids)
@@ -72,8 +76,10 @@ export async function loadDock(s: Snapshot): Promise<DockRaw> {
       .then(({ data, error }) => Object.fromEntries(error ? [] : ((data ?? []) as { id: string; payment_method: string | null }[]).map((r) => [r.id, r.payment_method]))),
     // without the log the history keeps Lightspeed's times and the receiving log's
     loadStatusLog().catch(() => [] as StatusChange[]),
+    // without the owners' dates the order keeps Lightspeed's due date
+    expected,
   ]);
-  return { details, lines, methods, statusLog };
+  return { details, lines, methods, statusLog, expected: owners };
 }
 
 /* ── words ───────────────────────────────────────────────────────────── */
@@ -91,6 +97,11 @@ export const kwDate = (iso: string | null | undefined, withTime = true, now = ne
     ...(withTime && iso.length > 10 ? { hour: '2-digit', minute: '2-digit', hour12: false } : {}),
   });
 };
+/* The date a delay is judged by: the owners' own when they set one, otherwise Lightspeed's due
+   date. `by` is empty for Lightspeed's. */
+export const expectedOf = (p: Pick<DockPo, 'expected' | 'ownerExpected'>): { on: string; by: string } | null =>
+  p.ownerExpected ? { on: p.ownerExpected.on, by: p.ownerExpected.by } : p.expected ? { on: p.expected, by: '' } : null;
+
 const humanCode = (code: string) => code.replace(/_/g, ' ').replace(/^./, (c) => c.toUpperCase());
 
 function flagsOf(p: DockPo, issues: PoDetail['issues'], today: Date): DockFlag[] {
@@ -100,12 +111,14 @@ function flagsOf(p: DockPo, issues: PoDetail['issues'], today: Date): DockFlag[]
     if (p.age > REVIEW.paidPendingDays) f.push({ level: 'review', title: 'Paid, still Pending Approval', action: `Paid, ${p.age} days old. Check it was sent.`, detail: `Created ${p.age} days ago and paid (${kdW(p.paid)}), but Lightspeed still shows it as Pending Approval. Worth checking it was sent.` });
     else f.push({ level: 'note', title: 'Paid before it was sent', action: 'Status kept as Lightspeed has it.', detail: 'The status is kept as Lightspeed has it; the payment is shown separately.' });
   }
-  if (p.expected && p.received < p.ordered && since(p.expected) > 0) {
-    f.push({ level: 'review', title: 'Expected date passed', action: `Due ${kwDate(p.expected, false, today)} · ${(p.ordered - p.received).toLocaleString('en-US')} pcs not in. Ask the supplier.`, detail: `Expected ${kwDate(p.expected, false, today)} (${since(p.expected)} days ago); ${(p.ordered - p.received).toLocaleString('en-US')} pcs not yet received.` });
+  const due = expectedOf(p);
+  if (due && p.received < p.ordered && since(due.on) > 0) {
+    const whose = due.by ? ` (set by ${due.by})` : ' (Lightspeed’s due date)';
+    f.push({ level: 'review', title: 'Expected date passed', action: `Due ${kwDate(due.on, false, today)} · ${(p.ordered - p.received).toLocaleString('en-US')} pcs not in. Ask the supplier.`, detail: `Expected ${kwDate(due.on, false, today)}${whose}, ${since(due.on)} days ago; ${(p.ordered - p.received).toLocaleString('en-US')} pcs not yet received.` });
   }
   if (p.open && p.received > 0 && p.received < p.ordered && p.age > REVIEW.partialDays) {
     const left = `${(p.ordered - p.received).toLocaleString('en-US')} of ${p.ordered.toLocaleString('en-US')} pcs not received, ${p.age} days after the order.`;
-    f.push({ level: 'review', title: 'Part still open', action: `${(p.ordered - p.received).toLocaleString('en-US')} pcs open after ${p.age} days. Chase the rest.`, detail: p.expected ? left : `${left} No arrival date is recorded, so this is a prompt to check, not a delay.` });
+    f.push({ level: 'review', title: 'Part still open', action: `${(p.ordered - p.received).toLocaleString('en-US')} pcs open after ${p.age} days. Chase the rest.`, detail: due ? left : `${left} No arrival date is recorded, so this is a prompt to check, not a delay.` });
   }
   if (p.lines.some((l) => !l.sku && !l.name)) f.push({ level: 'review', title: 'Line without product', action: 'Add its SKU in Lightspeed.', detail: 'One line has a quantity and cost but no SKU or name.' });
   if (/^others?$/i.test(shortName(p.supplier))) f.push({ level: 'note', title: 'Supplier “Others”', action: 'Name the supplier in Lightspeed.', detail: 'The real supplier is not named on this order.' });
@@ -137,6 +150,7 @@ export function buildDock(s: Snapshot, raw: DockRaw): DockData {
       pay: ps === 'Paid' ? 'paid' : ps === 'Partial' ? 'part' : 'unpaid',
       paidOn: r.payment_date ?? null, method: raw.methods[r.id] ?? null, invoice: r.invoice_received ?? null,
       paidUnreliable: !!r.paid_unreliable, expected: r.expected_arrival ?? null, shipment: r.shipment_status ?? null,
+      ownerExpected: raw.expected?.[r.id] ?? null,
       lines, history: [], flags: [],
     };
     // receipts on record: Lightspeed's receiving time, and what the receiving log first saw

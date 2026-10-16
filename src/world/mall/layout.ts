@@ -1,22 +1,46 @@
 import type { SectionKey, SlotKind } from './data';
 
 /* The Watch Mall's plan, in mall cells (one cell is one floor tile).
-   50 cells along, 17 across: a back row 6 deep (y 0-5), a walkway 5 wide (y 6-10) and a
-   front row 6 deep (y 11-16). Three sections of 16 cells, joined by 1-cell archway strips.
-   A boutique is 8 x 6 and a display area 4 x 6, so a section holds two boutiques or four
-   display areas on each side. The places (slots) are the database's own (world.mall_slots);
-   this file only says where each one stands, so the plan can change without moving a brand.
+   75 cells along, 17 across: a back row 6 deep (y 0-5), a walkway 5 wide (y 6-10) and a
+   front row 6 deep (y 11-16). Four sections joined by 1-cell archway strips, west to east:
+   The Promenade (24 cells, three boutiques a side), then the Grand Gallery, the Collectors'
+   Arcade and the Discovery Court (16 cells each). A boutique is 8 x 6 and a display area
+   4 x 6. The places (slots) are the database's own (world.mall_slots); this file only says
+   where each one stands, so the plan can change without moving a brand. A place listed here
+   that the database does not have yet stands empty; one the database has and this file does
+   not is left out (model.ts, panels.tsx).
    The mall sits in the World at MALL.x0, MALL.y0: its east end opens onto the corridor to
-   the loading dock, and its near side stays clear of the office wall.
+   the loading dock, and its near side stays clear of the office wall. The Promenade was added
+   at the west end (16 Oct 2026) so that every older place kept its spot in the World: the
+   Grand Gallery's west end still stands at GALLERY_AT.
 
    Why so deep: on a phone held upright the mall is seen as a band sloping down the screen.
    At 17 cells the band is taller than the screen at the section view's scale, so a section
    fills the screen instead of leaving empty corners. */
 
-const BACK = 6, WALK_W = 5, FRONT = 6, SEC_W = 16;
+const BACK = 6, WALK_W = 5, FRONT = 6, ARCH_W = 1;
 const BQ: [number, number] = [8, 6], BAY: [number, number] = [4, 6];
+const GALLERY_AT = -37;                                 // world x of the Grand Gallery's west end
 
-export const MALL = { x0: -37, y0: -8, w: 3 * SEC_W + 2, d: BACK + WALK_W + FRONT };
+export interface Section { key: SectionKey; name: string; short: string; x0: number; x1: number; tiles: [string, string] }
+const PLAN: [SectionKey, string, string, number, [string, string]][] = [
+  ['promenade', 'The Promenade', 'Promenade', 24, ['mall-tile-pr-a', 'mall-tile-pr-b']],
+  ['grand_gallery', 'Grand Gallery', 'Gallery', 16, ['mall-tile-gg-a', 'mall-tile-gg-b']],
+  ['collectors_arcade', 'Collectors’ Arcade', 'Arcade', 16, ['mall-tile-ca-a', 'mall-tile-ca-b']],
+  ['discovery_court', 'Discovery Court', 'Court', 16, ['mall-tile-dc-a', 'mall-tile-dc-b']],
+];
+/* Sections west to east, each but the last followed by a one-cell archway strip. */
+export const SECTIONS: Section[] = PLAN.reduce<Section[]>((list, [key, name, short, w, tiles]) => {
+  const x0 = list.length ? list[list.length - 1].x1 + ARCH_W : 0;
+  return [...list, { key, name, short, x0, x1: x0 + w, tiles }];
+}, []);
+const secOf = (key: SectionKey) => SECTIONS.findIndex((s) => s.key === key);
+const PR = secOf('promenade'), GG = secOf('grand_gallery'), CA = secOf('collectors_arcade'), DC = secOf('discovery_court');
+/* The section the Floor tab opens on, as before the Promenade. */
+export const HOME_SECTION = GG;
+export const ARCHES = SECTIONS.slice(0, -1).map((s) => s.x1);   // the archway strips, one cell wide
+
+export const MALL = { x0: GALLERY_AT - SECTIONS[GG].x0, y0: -8, w: SECTIONS[SECTIONS.length - 1].x1, d: BACK + WALK_W + FRONT };
 export const WALK = { y0: BACK, y1: BACK + WALK_W };
 /* The back walls' height, in world units, for framing. */
 export const WALL_HEIGHT = 160;
@@ -24,14 +48,12 @@ export const WALL_HEIGHT = 160;
    plan has room for them, and they read better on a phone. */
 export const FIGURE_SCALE = 1.2;
 
-export interface Section { key: SectionKey; name: string; short: string; x0: number; x1: number; tiles: [string, string] }
-const secX = (i: number) => i * (SEC_W + 1);
-export const SECTIONS: Section[] = [
-  { key: 'grand_gallery', name: 'Grand Gallery', short: 'Gallery', x0: secX(0), x1: secX(0) + SEC_W, tiles: ['mall-tile-gg-a', 'mall-tile-gg-b'] },
-  { key: 'collectors_arcade', name: 'Collectors’ Arcade', short: 'Arcade', x0: secX(1), x1: secX(1) + SEC_W, tiles: ['mall-tile-ca-a', 'mall-tile-ca-b'] },
-  { key: 'discovery_court', name: 'Discovery Court', short: 'Court', x0: secX(2), x1: secX(2) + SEC_W, tiles: ['mall-tile-dc-a', 'mall-tile-dc-b'] },
-];
-export const ARCHES = [SEC_W, 2 * SEC_W + 1];          // the archway strips, one cell wide
+/* Which of its section's two floor tiles a cell takes (0 or 1): a checkerboard anchored on the
+   Grand Gallery's corner, so the floors laid before the Promenade are unchanged. */
+export const tileOf = (lx: number, ly: number) => (lx - SECTIONS[GG].x0 + ly) & 1;
+/* A mall column, counted from the Grand Gallery's west end (where the plan began before the
+   Promenade): for what stood at a fixed spot in the mall, such as the owner's first step. */
+export const fromGallery = (n: number) => SECTIONS[GG].x0 + n;
 
 export interface SlotGeo { slot: string; kind: SlotKind; side: 'n' | 's' | 'mid'; section: number; x: number; y: number; w: number; d: number }
 
@@ -40,19 +62,27 @@ const g = (slot: string, kind: SlotKind, side: SlotGeo['side'], section: number,
 const [BW, BD] = BQ, [YW, YD] = BAY;
 const S_ROW = BACK + WALK_W;                          // the front row's first cell
 const I_ROW = BACK + Math.floor(WALK_W / 2);           // the islands stand in the walkway's middle row
-const islandX = (sec: number, k: number) => secX(sec) + (k ? 10 : 2);
+const sx = (i: number) => SECTIONS[i].x0;
+/* Walkway islands: in a 16-cell section 2 cells in from each end; in the Promenade's 24, cells
+   4-8 and 16-20, so the walkway round them is as wide at both ends. */
+const islandX = (i: number, k: number) => sx(i) + (i === PR ? (k ? 16 : 4) : k ? 10 : 2);
 
+/* In the order the boutiques' default colours follow (MallLayer): the Promenade's places come
+   last, so the older boutiques keep theirs. */
 export const SLOT_GEO: Record<string, SlotGeo> = Object.fromEntries([
-  g('GG-N1', 'boutique', 'n', 0, secX(0), 0, BW, BD), g('GG-N2', 'boutique', 'n', 0, secX(0) + BW, 0, BW, BD),
-  g('GG-S1', 'boutique', 's', 0, secX(0), S_ROW, BW, BD), g('GG-S2', 'boutique', 's', 0, secX(0) + BW, S_ROW, BW, BD),
-  g('CA-N1', 'boutique', 'n', 1, secX(1), 0, BW, BD), g('CA-N2', 'boutique', 'n', 1, secX(1) + BW, 0, BW, BD),
-  g('CA-S1', 'boutique', 's', 1, secX(1), S_ROW, BW, BD),
-  g('CA-S2', 'bay', 's', 1, secX(1) + BW, S_ROW, YW, YD), g('CA-S3', 'bay', 's', 1, secX(1) + BW + YW, S_ROW, YW, YD),
-  ...[0, 1, 2, 3].map((i) => g(`DC-N${i + 1}`, 'bay', 'n', 2, secX(2) + YW * i, 0, YW, YD)),
-  ...[0, 1, 2, 3].map((i) => g(`DC-S${i + 1}`, 'bay', 's', 2, secX(2) + YW * i, S_ROW, YW, YD)),
-  g('GG-I1', 'island', 'mid', 0, islandX(0, 0), I_ROW, 4, 1), g('GG-I2', 'island', 'mid', 0, islandX(0, 1), I_ROW, 4, 1),
-  g('CA-I1', 'island', 'mid', 1, islandX(1, 0), I_ROW, 4, 1), g('CA-I2', 'island', 'mid', 1, islandX(1, 1), I_ROW, 4, 1),
-  g('DC-I1', 'island', 'mid', 2, islandX(2, 0), I_ROW, 4, 1), g('DC-I2', 'island', 'mid', 2, islandX(2, 1), I_ROW, 4, 1),
+  g('GG-N1', 'boutique', 'n', GG, sx(GG), 0, BW, BD), g('GG-N2', 'boutique', 'n', GG, sx(GG) + BW, 0, BW, BD),
+  g('GG-S1', 'boutique', 's', GG, sx(GG), S_ROW, BW, BD), g('GG-S2', 'boutique', 's', GG, sx(GG) + BW, S_ROW, BW, BD),
+  g('CA-N1', 'boutique', 'n', CA, sx(CA), 0, BW, BD), g('CA-N2', 'boutique', 'n', CA, sx(CA) + BW, 0, BW, BD),
+  g('CA-S1', 'boutique', 's', CA, sx(CA), S_ROW, BW, BD),
+  g('CA-S2', 'bay', 's', CA, sx(CA) + BW, S_ROW, YW, YD), g('CA-S3', 'bay', 's', CA, sx(CA) + BW + YW, S_ROW, YW, YD),
+  ...[0, 1, 2, 3].map((i) => g(`DC-N${i + 1}`, 'bay', 'n', DC, sx(DC) + YW * i, 0, YW, YD)),
+  ...[0, 1, 2, 3].map((i) => g(`DC-S${i + 1}`, 'bay', 's', DC, sx(DC) + YW * i, S_ROW, YW, YD)),
+  g('GG-I1', 'island', 'mid', GG, islandX(GG, 0), I_ROW, 4, 1), g('GG-I2', 'island', 'mid', GG, islandX(GG, 1), I_ROW, 4, 1),
+  g('CA-I1', 'island', 'mid', CA, islandX(CA, 0), I_ROW, 4, 1), g('CA-I2', 'island', 'mid', CA, islandX(CA, 1), I_ROW, 4, 1),
+  g('DC-I1', 'island', 'mid', DC, islandX(DC, 0), I_ROW, 4, 1), g('DC-I2', 'island', 'mid', DC, islandX(DC, 1), I_ROW, 4, 1),
+  ...[0, 1, 2].map((i) => g(`PR-N${i + 1}`, 'boutique', 'n', PR, sx(PR) + BW * i, 0, BW, BD)),
+  ...[0, 1, 2].map((i) => g(`PR-S${i + 1}`, 'boutique', 's', PR, sx(PR) + BW * i, S_ROW, BW, BD)),
+  g('PR-I1', 'island', 'mid', PR, islandX(PR, 0), I_ROW, 4, 1), g('PR-I2', 'island', 'mid', PR, islandX(PR, 1), I_ROW, 4, 1),
 ].map((s) => [s.slot, s]));
 
 /* The cell a kiosk stands on, by its position (0-3) in a display area. Position 0 holds
@@ -91,9 +121,14 @@ const PLANS: Plan[] = [
   // a long counter: the pavilion in the other corner, cases grouped on the open side
   { pavilion: [6, 0], cases: [[0, 1], [2, 1], [1, 3]], counter: [4, 3], bench: [6, 4], plants: [[5, 0]], rug: [3, 1], crate: [3, 2], sign: 4.5 },
 ];
+/* Each boutique's arrangement: no two side by side, across an archway or face to face across
+   the walkway are alike. */
+const VARIANT: Record<string, number> = {
+  'PR-N1': 0, 'PR-N2': 1, 'PR-N3': 2, 'PR-S1': 1, 'PR-S2': 2, 'PR-S3': 0,
+  'GG-N1': 0, 'GG-N2': 1, 'GG-S1': 2, 'GG-S2': 0, 'CA-N1': 1, 'CA-N2': 2, 'CA-S1': 0,
+};
 export function boutiquePlan(s: SlotGeo): BoutiquePlan {
-  const order = ['GG-N1', 'GG-N2', 'GG-S1', 'GG-S2', 'CA-N1', 'CA-N2', 'CA-S1'];
-  const variant = Math.max(0, order.indexOf(s.slot)) % PLANS.length;
+  const variant = (VARIANT[s.slot] ?? 0) % PLANS.length;
   const p = PLANS[variant];
   const at = ([x, y]: [number, number]): [number, number] => [s.x + x, s.y + y];
   return {
@@ -117,8 +152,10 @@ export const PLANTERS: [number, number][] = ARCHES.flatMap((x) => [[x, 0], [x, M
 export const toWorld = (lx: number, ly: number): [number, number] => [lx + MALL.x0, ly + MALL.y0];
 export const toLocal = (wx: number, wy: number): [number, number] => [wx - MALL.x0, wy - MALL.y0];
 
+/* The section a mall column belongs to; an archway strip counts with the section west of it. */
 export function sectionOfLocalX(lx: number): number {
-  return lx < ARCHES[0] + 0.5 ? 0 : lx < ARCHES[1] + 0.5 ? 1 : 2;
+  const i = ARCHES.findIndex((a) => lx < a + 0.5);
+  return i < 0 ? SECTIONS.length - 1 : i;
 }
 
 /* Cells something stands on, in mall cells. */

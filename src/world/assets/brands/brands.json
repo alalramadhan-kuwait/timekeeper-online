@@ -15,13 +15,14 @@
   "file": "west-end.png",
   "plate": "dark",
   "px": [
-   1028,
-   75
+   152,
+   152
   ],
   "official_site": "https://www.westendwatchco.ch/",
-  "source_url": "https://www.westendwatchco.ch/templates/westend-watch/img/logo.png",
-  "source_sha256": "d2e434267f43cbbf4b9f4869db82f2b8c524e227e44b97fb08cc19b8516393ac",
-  "name_share": 0.299
+  "source_url": "https://www.westendwatchco.ch/apple-touch-icon-180x180.png",
+  "source_sha256": "b30bc40ea73d00cdafb88131e50c9fb242fdf44e03919d9680a70b387850cae2",
+  "source_note": "The site's own app icon, its compact emblem (largest size published), white on black: the black made transparent (alpha from brightness) and the margin trimmed. The emblem has no name in it, so the game paints the name beside it.",
+  "painted_name": true
  },
  "Dennison": {
   "file": "dennison.png",

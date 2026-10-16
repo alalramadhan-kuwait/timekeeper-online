@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { ChevronLeft, X } from 'lucide-react';
-import { bayOf, hasReview, kdW, kwDate, shortName, sumOf, type DockData, type DockPo } from './data';
+import { bayOf, expectedOf, hasReview, kdW, kwDate, shortName, sumOf, type DockData, type DockPo } from './data';
+import { setExpected } from '../api';
 import { num } from '../format';
 
 /* The Loading Dock's sheets, as approved in the v3 design: a supplier (or a shared bay), an
@@ -39,10 +40,11 @@ const PAY_TONE = { paid: 'bg-[#e7f3eb] text-[#2f7a4a]', part: 'bg-[#fbefd9] text
 type Tip = { text: string; x: number; y: number } | null;
 
 function StatusIcons({ p, onTip }: { p: DockPo; onTip: (t: Tip) => void }) {
+  const due = expectedOf(p);
   const ship = p.shipment
     ? `Shipment: ${p.shipment}`
-    : p.expected
-      ? `Shipment: unknown. No shipment is recorded; the expected date on record is ${kwDate(p.expected, false)}.`
+    : due
+      ? `Shipment: unknown. No shipment is recorded; the expected date ${due.by ? `${due.by} set` : 'on record'} is ${kwDate(due.on, false)}.`
       : 'Shipment: unknown. No shipment or arrival date has been recorded for this order.';
   const items: [string, string, ReactNode][] = [
     [`Order status in Lightspeed: ${p.status}`, ORDER_TONE[p.status] ?? 'bg-[#eceff4] text-[#7a869c]', ICON.order],
@@ -146,6 +148,57 @@ function KV({ rows }: { rows: [string, ReactNode, boolean?][] }) {
   );
 }
 
+/* The owners' own expected date for an order: set, changed or cleared here, kept apart from
+   Lightspeed's due date (which the sync rewrites), and logged by the database each time. */
+function ExpectedEditor({ p, onChanged }: { p: DockPo; onChanged?: () => Promise<unknown> | void }) {
+  const own = p.ownerExpected;
+  const [editing, setEditing] = useState(false);
+  const [on, setOn] = useState(own?.on ?? p.expected ?? '');
+  const [note, setNote] = useState(own?.note ?? '');
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const save = async (date: string | null) => {
+    setBusy(true); setErr(null);
+    try { await setExpected(p.id, date, date ? note : null); await onChanged?.(); setEditing(false); }
+    catch (e) { setErr(e instanceof Error ? e.message : 'Could not save the date.'); }
+    finally { setBusy(false); }
+  };
+  const btn = 'min-h-[44px] rounded-xl px-3.5 text-[13.5px] font-semibold disabled:opacity-50';
+  if (!editing) return (
+    <div className="mt-1 rounded-xl bg-[#f7f3ea] px-3 py-2.5">
+      {own ? (<>
+        <div className="flex items-baseline justify-between gap-3">
+          <span className="text-[13px] text-[#667085]">Owners’ date</span>
+          <b className="text-[15px] tabular-nums" style={{ color: NAVY }}>{kwDate(own.on, false)}</b>
+        </div>
+        <div className="mt-0.5 text-[12px] text-[#8a8270]">Set by {own.by}, {kwDate(own.at, false)}{own.note ? ` · “${own.note}”` : ''}</div>
+        <div className="mt-2 flex gap-2">
+          <button type="button" onClick={() => setEditing(true)} className={`${btn} bg-white text-[#22304d]`}>Change</button>
+          <button type="button" disabled={busy} onClick={() => save(null)} className={`${btn} text-[#a1392a]`}>Clear</button>
+        </div>
+      </>) : (
+        <button type="button" onClick={() => setEditing(true)} className={`${btn} w-full bg-white text-[#22304d]`}>Set an expected date</button>
+      )}
+      {err && <div className="mt-1.5 text-[12.5px] text-[#a1392a]">{err}</div>}
+    </div>
+  );
+  return (
+    <form className="mt-1 rounded-xl bg-[#f7f3ea] px-3 py-2.5" onSubmit={(e) => { e.preventDefault(); if (on) void save(on); }}>
+      <label className="block text-[13px] text-[#667085]" htmlFor={`exp-${p.id}`}>Expected to arrive</label>
+      <input id={`exp-${p.id}`} type="date" required value={on} onChange={(e) => setOn(e.target.value)}
+        className="mt-1 min-h-[44px] w-full rounded-lg border border-[#e2dacb] bg-white px-3 text-[15px]" />
+      <label className="mt-2 block text-[13px] text-[#667085]" htmlFor={`exp-note-${p.id}`}>Note (optional)</label>
+      <input id={`exp-note-${p.id}`} value={note} maxLength={300} onChange={(e) => setNote(e.target.value)} placeholder="e.g. supplier confirmed by email"
+        className="mt-1 min-h-[44px] w-full rounded-lg border border-[#e2dacb] bg-white px-3 text-[14px]" />
+      {err && <div className="mt-1.5 text-[12.5px] text-[#a1392a]">{err}</div>}
+      <div className="mt-2.5 flex gap-2">
+        <button type="submit" disabled={busy || !on} className={`${btn} text-white`} style={{ background: NAVY }}>{busy ? 'Saving…' : 'Save'}</button>
+        <button type="button" disabled={busy} onClick={() => { setEditing(false); setErr(null); }} className={`${btn} bg-white text-[#22304d]`}>Cancel</button>
+      </div>
+    </form>
+  );
+}
+
 const Tiny = ({ children }: { children: ReactNode }) => <div className="mt-3.5 text-[12px] text-[#9a917f]">{children}</div>;
 const Legend = () => (
   <div className="mb-2.5 mt-1.5 flex flex-wrap gap-3.5 text-[12px] text-[#667085]">
@@ -161,9 +214,11 @@ export interface DockSheetProps {
   view: DockView; dock: DockData; canGoBack: boolean;
   open: (v: DockView) => void; back: () => void; close: () => void;
   panelRef: React.Ref<HTMLElement>;
+  /* Reload the dock's records after an owner changes one (an expected date). */
+  onChanged?: () => Promise<unknown> | void;
 }
 
-export function DockSheet({ view, dock, canGoBack, open, back, close, panelRef }: DockSheetProps) {
+export function DockSheet({ view, dock, canGoBack, open, back, close, panelRef, onChanged }: DockSheetProps) {
   const [tip, setTip] = useState<Tip>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
   const full = isFullDockView(view);
@@ -192,7 +247,7 @@ export function DockSheet({ view, dock, canGoBack, open, back, close, panelRef }
     }
   } else if (view.type === 'dock-po') {
     const p = dock.pos.find((x) => x.id === view.id);
-    if (p) return <PoSheet key={p.id} p={p} dock={dock} tab0={view.tab ?? 'items'} canGoBack={canGoBack} back={back} close={close} panelRef={panelRef} />;
+    if (p) return <PoSheet key={p.id} p={p} dock={dock} tab0={view.tab ?? 'items'} canGoBack={canGoBack} back={back} close={close} panelRef={panelRef} onChanged={onChanged} />;
     title = 'Order not found';
   } else if (view.type === 'dock-recv') {
     return <ReceivingSheet key="recv" dock={dock} tab0={view.tab ?? 'part'} canGoBack={canGoBack} back={back} close={close} panelRef={panelRef} openPo={openPo} />;
@@ -228,7 +283,7 @@ function Frame({ title, sub, pin, body, full, canGoBack, back, close, panelRef, 
 
 type SheetBase = { canGoBack: boolean; back: () => void; close: () => void; panelRef: React.Ref<HTMLElement> };
 
-function PoSheet({ p, dock, tab0, ...f }: SheetBase & { p: DockPo; dock: DockData; tab0: PoTab }) {
+function PoSheet({ p, dock, tab0, onChanged, ...f }: SheetBase & { p: DockPo; dock: DockData; tab0: PoTab; onChanged?: () => Promise<unknown> | void }) {
   const [tab, setTab] = useState<PoTab>(tab0);
   const [tip, setTip] = useState<Tip>(null);
   const [all, setAll] = useState(false);
@@ -300,7 +355,8 @@ function PoSheet({ p, dock, tab0, ...f }: SheetBase & { p: DockPo; dock: DockDat
         )}
       </>))}
       {pane('recv', (<>
-        <KV rows={[['Shipment', p.shipment ?? 'Unknown', !p.shipment], ['Expected', p.expected ? kwDate(p.expected, false) : 'Not recorded', !p.expected]]} />
+        <KV rows={[['Shipment', p.shipment ?? 'Unknown', !p.shipment], ['Lightspeed due date', p.expected ? kwDate(p.expected, false) : 'Not recorded', !p.expected]]} />
+        <ExpectedEditor p={p} onChanged={onChanged} />
         {p.history.length ? (<>
           <Legend />
           {p.history.map((h, i) => (
