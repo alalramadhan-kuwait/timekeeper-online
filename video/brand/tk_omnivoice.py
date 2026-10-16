@@ -2,7 +2,7 @@
 sentences of tk_compare_all.py, cloned from Ali's 7.5 s reference (voice-src/ref8.wav + ref8.txt), language Gulf
 Arabic (afb). Local inference on CPU; nothing is uploaded. Weights in /root/omnivoice-w, venv /root/omni (reuses
 tkvoice's torch through a .pth, its own transformers 5.20).
-Output: voice-src/compare/omnivoice/<id>.wav.  Run: HF_HUB_OFFLINE=1 /root/omni/bin/python video/brand/tk_omnivoice.py"""
+Output: voice-src/compare/omnivoice/<id>.wav.  Run: HF_HUB_OFFLINE=1 /root/omni/bin/python video/brand/tk_omnivoice.py [--full]   (--full: the 11 test sentences -> voice-src/compare/omni11/)"""
 import sys
 from pathlib import Path
 
@@ -13,6 +13,11 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 SENT = [("u06", "عيل خلنا نطلب شوي زيادة باجر قبل لا تخلص."), ("t01", "جاسم راح البقالة وشرا عصير بطاط وطماط. شلونك شخبارك؟")]
 OUT = ROOT / "voice-src/compare/omnivoice"
+if "--full" in sys.argv:   # the 11-sentence test set of pilot 0 (ckkw-unseen-10 + the user's sentence)
+    import json
+    SENT = [(it["id"], it["text"]) for it in json.loads((ROOT / "video/brand/voice-data/ckkw-unseen-10.json").read_text())["items"]] + \
+           [("t01", "جاسم راح البقالة وشرا عصير بطاط وطماط. شلونك شخبارك؟")]
+    OUT = ROOT / "voice-src/compare/omni11"
 
 if __name__ == "__main__":
     from omnivoice import OmniVoice
