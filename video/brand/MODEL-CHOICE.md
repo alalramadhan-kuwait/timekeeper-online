@@ -357,3 +357,4 @@ These need a synonym in scripts or the fine-tune.
   - The user's note on u02: قدام is جدام in Kuwaiti. It was not tapped, but it is a word-choice fix.
   - Several of these are text fixes that the general lexicon already holds or now holds: امبارح → أمس, قدام → جدام, أشيك → اتشيك.
   - Pages 2–3 (u05–t01) were not answered yet.
+- Real Kuwaiti text: 5 of Ali's own verified sentences, OmniVoice next to his real recording (artifact PRBmT92TLjWK7XBEBc6HwB). The model is about 1.4× slower than Ali (e.g. 21.6 s vs 14.1 s).
