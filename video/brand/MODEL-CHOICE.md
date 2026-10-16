@@ -331,3 +331,16 @@ These need a synonym in scripts or the fine-tune.
   - Whisper heard sentence 1 word-perfect, «باجر» included.
   - Speaker similarity to `ref.wav` was 0.92 and 0.91, the same range as the other Ali clones.
 - **Blind A/B against the Chatterbox_Kuwaiti clone:** artifact 6L7qAYHYxUJGFCuYpiDBwq.
+- **Result (the user's ear, 2026-10-16): OmniVoice won both sentences.**
+
+  | | OmniVoice | Chatterbox_Kuwaiti clone |
+  |---|---|---|
+  | Better (A/B) | 2 of 2 | 0 |
+  | Dialect | 100% (كويتية ×2) | 50% (مو كويتية, كويتية) |
+  | Rhythm | 100% (طبيعي ×2) | 25% (آلي, مقبول) |
+  | Is Ali | 2/2 | 2/2 |
+  | Wrong words | 1 of 17 (باجر, 94%) | 0 of 17 |
+
+  The user's note on sentence 1: «مو عارف يقولها عدل», which refers to باجر.
+  - The six-model page (9tRX4nrPhTLsojm68H8tQN) was only partly answered: V5 was rated مو كويتية and آلي in sentence 1, and the Chatterbox_Kuwaiti clone was picked best in sentence 2.
+  - Pilot 0's before/after page has no answers yet.
