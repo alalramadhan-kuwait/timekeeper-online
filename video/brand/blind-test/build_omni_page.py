@@ -34,11 +34,15 @@ for n, (sid, text) in enumerate(SENT):
         qs += [{"key": f"dial_{k}", "label": f"{l}: اللهجة", "options": DIAL}, {"key": f"flow_{k}", "label": f"{l}: الإيقاع", "options": FLOW},
                {"key": f"ali_{k}", "label": f"{l}: صوت علي؟", "options": YES}]
     qs.append({"key": "better", "label": "أيهم أحسن؟", "options": [["A", "أ"], ["B", "ب"], ["same", "نفس الشي"]]})
-    cards.append({"id": sid, "part": n // 3 + 1, "title": f"جملة {n + 1}", "text": text, "players": players, "questions": qs,
-                  "words": [{"key": "wrong_a", "label": "في أ: اضغط على أي كلمة غلط"}, {"key": "wrong_b", "label": "في ب: اضغط على أي كلمة غلط"}]})
+    card = {"id": sid, "part": n // 3 + 1, "title": f"جملة {n + 1}", "text": text, "players": players, "questions": qs,
+            "words": [{"key": "wrong_a", "label": "في أ: اضغط على أي كلمة غلط"}, {"key": "wrong_b", "label": "في ب: اضغط على أي كلمة غلط"}]}
+    if FULL:   # the user asked for one question only: which is better (pronunciation is looked at afterwards)
+        card["questions"], card.pop("words")
+        card["questions"] = qs[-1:]
+    cards.append(card)
 KEYF.write_text(json.dumps(key))
 page = (Path(__file__).parent / "listen-template.html").read_text()
-page = page.replace("__TITLE__", "موديل جديد").replace("__KEY__", "tk-omni11" if FULL else "tk-omni").replace(
-    "__LEDE__", ("كل جملة بموديلين، كلهم بصوت علي. الترتيب عشوائي لكل جملة. قيّم كل نسخة، بعدين قول أيهم أحسن. 4 صفحات، كل صفحة 3 جمل." if FULL else "نفس الجملتين بموديلين، كلهم بصوت علي: واحد منهم جديد (من VoiceStudio). الترتيب عشوائي. قيّم كل نسخة، بعدين قول أيهم أحسن."))
+page = page.replace("__TITLE__", "أيهم أحسن؟" if FULL else "موديل جديد").replace("__KEY__", "tk-omni11" if FULL else "tk-omni").replace(
+    "__LEDE__", ("كل جملة بنسختين، كلهم بصوت علي، والترتيب عشوائي. سؤال واحد بس: أيهم أحسن؟ 4 صفحات، كل صفحة 3 جمل." if FULL else "نفس الجملتين بموديلين، كلهم بصوت علي: واحد منهم جديد (من VoiceStudio). الترتيب عشوائي. قيّم كل نسخة، بعدين قول أيهم أحسن."))
 (OUT / "index.html").write_text(page.replace("__CARDS__", json.dumps(cards, ensure_ascii=False)))
 print(len(cards), "cards ->", OUT)
