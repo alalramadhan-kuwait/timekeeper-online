@@ -5,7 +5,7 @@ import avatar from '../assets/ask-mohammed.webp';
 import { loadSnapshot } from './api';
 import { buildModel, missionTitle, type Room } from './model';
 import { createGame, type WorldGame } from './game/createGame';
-import type { Selection } from './game/WorldScene';
+import type { MallView, Selection } from './game/WorldScene';
 import { Loading, PanelBody, type View } from './panels';
 import { loadMall, type MallData } from './mall/data';
 import { HOME_SECTION, SECTIONS } from './mall/layout';
@@ -126,26 +126,34 @@ export default function WorldPage({ onClose }: { onClose?: () => void }) {
   useEffect(() => { if (model && ready) game.current?.setModel(model); }, [model, ready]);
 
   /* ── boutiques ── */
+  // how the mall stood when the owner stepped in (the view, and the panel that was open), taken
+  // at the tap, before anything moves, so leaving puts both back exactly
+  const cameFrom = useRef<{ view: MallView | null; stack: View[]; room: Room } | null>(null);
   const enterBoutique = useCallback(async (brand: string, then?: (d: BoutiqueData) => void) => {
+    const from = { view: game.current?.mallView() ?? null, stack, room };
     setEntering(brand); setBqErr(null);
     try {
       const d = boutique?.brand === brand ? boutique : await loadBoutique(brand);
       setBoutique(d);
+      if (from.room !== 'boutique') cameFrom.current = from;
       setStack([]);
       setRoom('boutique');
-      game.current?.enterBoutique(d);
+      game.current?.enterBoutique(d, false, from.room !== 'boutique' && from.view ? from.view : undefined);
       let seen = false;
       try { seen = localStorage.getItem('tk-world-board-hint') === '1'; } catch { /* not remembered */ }
       if (!seen) setHintOn(true);
       then?.(d);
     } catch (e) { setBqErr((e as Error).message); }
     setEntering(null);
-  }, [boutique]);
+  }, [boutique, stack, room]);
   const exitBoutique = useCallback(() => {
     setHintOn(false); setHint(null);
     game.current?.exitBoutique();
-    setStack([]);
-    setRoom('floor');
+    const back = cameFrom.current;
+    cameFrom.current = null;
+    // the panel that was open comes back with the view (the brand's own, from 'Step inside')
+    setStack(back?.stack.filter((v) => !isBoutiqueView(v)) ?? []);
+    setRoom(back?.room && back.room !== 'boutique' ? back.room : 'floor');
   }, []);
   const selectRef = useRef<(s: Selection | null) => void>(() => {});
   useEffect(() => {

@@ -179,17 +179,16 @@ export class BoutiqueLayer {
     const B = BOARD;
     const sel = { type: 'collection' as const };
     const boardDepth = depthAt(...toWorldB(B.x1, 0.3), -6);
-    const tagBoard = (o: Phaser.GameObjects.GameObject & { setInteractive: (...a: never[]) => unknown }) => {
-      (o as unknown as Phaser.GameObjects.Image).setInteractive({ useHandCursor: true });
-      s.tag(o, sel, 0);
-      this.dyn.push(o);
-      return o;
-    };
-    // the whole board answers a tap, wherever it is touched
+    // the whole board answers a tap wherever it is touched, and only the board: its own slanted
+    // outline (frame included) is the hit area, not the box round it, which would take in the floor
     {
-      const a = this.onWall(B.x0, B.hi), b = this.onWall(B.x1, B.lo);
-      const hit = s.add.zone((a.x + b.x) / 2, (a.y + b.y) / 2, Math.abs(b.x - a.x), Math.abs(b.y - a.y) + 40).setDepth(boardDepth - 0.5);
-      tagBoard(hit);
+      const c = [this.onWall(B.x0, B.hi), this.onWall(B.x1, B.hi), this.onWall(B.x1, B.lo), this.onWall(B.x0, B.lo)];
+      const x0 = c[0].x, y0 = c[0].y, w = c[1].x - x0, h = c[2].y - y0;
+      const hit = s.add.zone(x0 + w / 2, y0 + h / 2, w, h).setDepth(boardDepth + 5);
+      const poly = new Phaser.Geom.Polygon(c.flatMap((p) => [p.x - x0, p.y - y0]));
+      hit.setInteractive({ hitArea: poly, hitAreaCallback: Phaser.Geom.Polygon.Contains, useHandCursor: true });
+      s.tag(hit, sel, 0);
+      this.dyn.push(hit);
     }
     // its title: the brand's logo where we have it, then the collection's size
     // the board's face is laid out flat (u along the wall, v down from its top edge), then set onto
@@ -276,7 +275,23 @@ export class BoutiqueLayer {
       });
       s.load.image(key, w.image!.thumb);
     }
+    // a picture that cannot be fetched leaves a quiet word in its place, never an empty white card
+    const keys = new Set(list.map((w) => `w:${w.product_id}`));
+    const failed = (file: Phaser.Loader.File) => {
+      if (!keys.has(file.key)) return;
+      const id = file.key.slice(2);
+      for (const photo of [this.items.get(id)?.photo, this.bandPhotos.get(id)]) if (photo?.active) this.noPhoto(photo);
+    };
+    s.load.on(Phaser.Loader.Events.FILE_LOAD_ERROR, failed);
+    s.load.once(Phaser.Loader.Events.COMPLETE, () => s.load.off(Phaser.Loader.Events.FILE_LOAD_ERROR, failed));
     s.load.start();
+  }
+
+  private noPhoto(photo: Phaser.GameObjects.Image) {
+    const t = this.scene.add.text(photo.x, photo.y, 'No photo', { fontFamily: FONT, fontSize: '9px', color: '#8a7a62', resolution: 3 })
+      .setOrigin(0.5).setDepth(photo.depth).setVisible(this.shown);
+    if (photo.parentContainer) photo.parentContainer.add(t); else this.dyn.push(t);
+    photo.setVisible(false);
   }
 
   private fitPhoto(photo: Phaser.GameObjects.Image) {

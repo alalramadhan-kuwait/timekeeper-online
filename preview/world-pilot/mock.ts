@@ -8,6 +8,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type Fixture = Record<string, any>;
 const DESK_KEY = 'world-pilot-desk';
+const PAUSE = Number(new URLSearchParams(location.search).get('slow') ?? 120);
+// ?fail=world_boutique (comma-separated) makes those functions answer with an error, as a dropped connection would
+const FAIL = new Set((new URLSearchParams(location.search).get('fail') ?? '').split(',').filter(Boolean));
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } });
@@ -59,9 +62,10 @@ export function installMock(fx: Fixture) {
       if (url.origin === location.origin) return real(input, init);
       return refuse(`The preview does not go online (${url.hostname}).`);
     }
-    await new Promise((r) => setTimeout(r, 120));       // a little of a real network's pause
+    await new Promise((r) => setTimeout(r, PAUSE));     // a real network's pause (?slow=ms for a slow one)
     const m = url.pathname.match(/^\/rest\/v1\/rpc\/(\w+)$/);
     if (m) {
+      if (FAIL.has(m[1])) return json({ code: '08006', message: 'The connection was lost. Try again.', details: null, hint: null }, 503);
       const f = rpc[m[1]];
       if (!f) return refuse('The preview is read-only: nothing is changed.');
       return f(init?.body ? JSON.parse(String(init.body)) : {});

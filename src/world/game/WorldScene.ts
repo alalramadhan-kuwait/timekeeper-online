@@ -15,6 +15,13 @@ import { BoutiqueLayer } from './BoutiqueLayer';
 import { ENTRY, blockedB, toWorldB } from '../boutique/layout';
 import type { BoutiqueData, Lens } from '../boutique/data';
 
+/* Exactly how the mall stood before stepping into a boutique: where the camera was (or was gliding
+   to), how much of the screen a panel covered, and what was selected. */
+export interface MallView {
+  room: Room; x: number; y: number; zoom: number; section: number | null; owner: [number, number];
+  cover: { right: number; bottom: number }; sel: Selection | null;
+}
+
 export type Selection =
   | { type: 'brand'; brand: string }
   | { type: 'display'; slot: string }
@@ -150,7 +157,7 @@ export class WorldScene extends Phaser.Scene {
   private dockFocus: { x: number; y: number } | null = null;   // what an open dock sheet keeps in view
   private dockArea: DockArea = 'orders';                  // the part of the dock framed last
   private boutique!: BoutiqueLayer;
-  private beforeBoutique: { room: Room; x: number; y: number; zoom: number; section: number | null; owner: [number, number] } | null = null;
+  private beforeBoutique: MallView | null = null;
   private stepOut: WorldScene['beforeBoutique'] = null;   // where the owner came in from, kept over a step out
 
   constructor() { super('world'); }
@@ -353,15 +360,21 @@ export class WorldScene extends Phaser.Scene {
   /* Steps through a boutique's door: its watches are put in the room, the owner stands just
      inside, and the view opens close enough to recognise the watches. Where the camera stood in
      the mall is kept, so leaving puts it back exactly there. */
-  enterBoutique(data: BoutiqueData, animate = true, resume = false) {
+  /* The mall as it is on screen now, to come back to. What is on screen, not where a glide was
+     heading: beside an open panel the camera can be held short of its target by the mall's edge. */
+  mallView(): MallView {
+    const cam = this.cameras.main;
+    const at = { x: cam.midPoint.x, y: cam.midPoint.y }, zoom = cam.zoom;
+    const sel = (this.chosen?.active ? this.chosen.getData('sel') : null) as Selection | null;
+    return { room: this.room, x: at.x, y: at.y, zoom, section: this.section, owner: this.owner.cell, cover: { ...this.cover }, sel };
+  }
+
+  enterBoutique(data: BoutiqueData, animate = true, resume = false, from?: MallView) {
     // back from a step out (to an order at the dock): leaving later still returns to the mall
     // view the owner first came in from
     const kept = resume ? this.stepOut : null;
     this.stepOut = null;
-    if (this.room !== 'boutique') {
-      const cam = this.cameras.main;
-      this.beforeBoutique = kept ?? { room: this.room, x: cam.midPoint.x, y: cam.midPoint.y, zoom: cam.zoom, section: this.section, owner: this.owner.cell };
-    }
+    if (this.room !== 'boutique') this.beforeBoutique = kept ?? from ?? this.mallView();
     if (this.boutique.data !== data) this.boutique.build(data);
     this.selectRing.setVisible(false);
     this.chosen = null;
@@ -383,8 +396,14 @@ export class WorldScene extends Phaser.Scene {
     this.showAreaLabels();
     const cam = this.cameras.main;
     cam.panEffect.reset(); cam.zoomEffect.reset(); cam.resetFX();
-    if (b) { cam.setZoom(b.zoom); cam.centerOn(b.x, b.y); this.zoomTarget = b.zoom; }
-    else this.focus('floor', false);
+    if (!b) { this.focus('floor', false); return; }
+    // the panel's room back first, so the camera may stand exactly where it stood beside it
+    this.cover = { ...b.cover };
+    this.revealTo = null;
+    cam.setZoom(b.zoom); cam.centerOn(b.x, b.y); this.zoomTarget = b.zoom;
+    // and what was selected, marked again without moving the view
+    const t = b.sel?.type === 'brand' ? this.mall.target(b.sel.brand) : null;
+    if (t) this.markChosen(t.obj as Phaser.GameObjects.Image, 0);
   }
 
   /* The view inside: the door end of the room, the walls of watches beyond it. */

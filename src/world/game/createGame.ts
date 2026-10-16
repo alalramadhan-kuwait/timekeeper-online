@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import type { Room, WorldModel } from '../model';
 import type { DockArea } from './DockLayer';
 import type { BoutiqueData, Lens } from '../boutique/data';
-import { WorldScene, type SceneHooks } from './WorldScene';
+import { WorldScene, type MallView, type SceneHooks } from './WorldScene';
 
 export interface WorldGame {
   setModel: (m: WorldModel) => void;
@@ -15,7 +15,8 @@ export interface WorldGame {
   reveal: (top: number, right: number, bottom: number) => void;
   frameDock: (area: DockArea, fitOnly?: boolean) => void;
   showDock: (sel: { bay?: number; area?: 'recv' | 'pay' } | null) => void;
-  enterBoutique: (data: BoutiqueData, resume?: boolean) => void;
+  enterBoutique: (data: BoutiqueData, resume?: boolean, from?: MallView) => void;
+  mallView: () => MallView | null;
   exitBoutique: (stepOut?: boolean) => void;
   boardOnScreen: () => { x: number; y: number } | null;
   setLens: (lens: Lens) => void;
@@ -73,7 +74,8 @@ export function createGame(parent: HTMLElement, model: WorldModel, hooks: SceneH
     reveal: (t, r, b) => withScene((s) => s.reveal(t, r, b)),
     frameDock: (a, f) => withScene((s) => s.frameDock(a, f)),
     showDock: (sel) => withScene((s) => s.showDock(sel)),
-    enterBoutique: (d, resume) => withScene((s) => s.enterBoutique(d, true, resume)),
+    enterBoutique: (d, resume, from) => withScene((s) => s.enterBoutique(d, true, resume, from)),
+    mallView: () => scene?.mallView() ?? null,
     exitBoutique: (stepOut) => withScene((s) => s.exitBoutique(stepOut)),
     boardOnScreen: () => scene?.boardOnScreen() ?? null,
     setLens: (l) => withScene((s) => s.setLens(l)),

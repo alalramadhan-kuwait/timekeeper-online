@@ -61,9 +61,17 @@ function clean(w: Watch): Watch {
   };
 }
 
+/* Which products a boutique shows is Lightspeed's own product type: Watches, Consignment Watches and
+   Pre-owned Watches, never Straps or Accessories. A name alone never hides a product ("ALD – Shades
+   Of Blue – Bracelet" is a watch on a bracelet, 255 KD). Where Lightspeed's type is wrong, the owners
+   list the product here once they have checked it: it is left out of the World's display only, and
+   Lightspeed, stock and sales are untouched. The 16 Oct 2026 audit found no such Dennison product;
+   four Rapport London watch winders typed Consignment Watches are waiting to be checked. */
+export const NOT_A_WATCH: Record<string, { why: string; checked_by: string; on: string }> = {};
+
 export async function loadBoutique(brand: string): Promise<BoutiqueData> {
   const d = await call<BoutiqueData>('world_boutique', { p_brand: brand });
-  return { ...d, products: (d.products ?? []).map(clean) };
+  return { ...d, products: (d.products ?? []).filter((w) => !NOT_A_WATCH[w.product_id]).map(clean) };
 }
 
 export const loadDesk = () => call<Discovery[]>('world_discoveries').then((list) => (list ?? []).map((d) => ({
