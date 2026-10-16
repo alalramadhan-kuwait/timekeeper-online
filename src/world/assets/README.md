@@ -73,6 +73,12 @@ People and display cases are drawn 20% larger than the floor grid
 Every floor tile, in the mall and in the other areas, is drawn through
 `game/FloorBatch.ts`: one GPU layer per tile picture instead of one image per tile.
 
+The Promenade (16 Oct): a fourth section, 24 cells, added at the mall's west end, so
+the mall is now 75 × 17 and nothing older moved. Its walkway tiles, `mall-tile-pr-a`
+and `mall-tile-pr-b`, are the Grand Gallery's two tiles recoloured to a rose stone
+(each pixel's red, green and blue scaled by 0.985, 0.94 and 0.995; shape, lines and
+transparency unchanged), with contract and geometry entries copied from the Gallery's.
+
 ## Replacement specs for the pieces still to come
 
 All pictures: one object per PNG, transparent background, no text labels, 2:1
@@ -253,3 +259,12 @@ Charles 8.7 px, Dennison 11.9, Delugs 21.1, Nivada Grenchen 10.7, Time Keeper 10
 Behrens 13.3, West End 5.8 (11.6 close up; its only official logo is one long line,
 so it reads only when zoomed in). In the whole-mall view shop signs stay hidden: at
 that zoom a logo would be 1-3 px tall.
+
+West End (16 Oct): its file is now the brand's compact emblem, the W in a circle the
+site publishes as its app icon (`apple-touch-icon-180x180.png`, the largest size, white
+on black). The black was made transparent (alpha from brightness, so the edge's
+smoothing stays) and the margin trimmed; nothing redrawn. The emblem holds no name, so
+`brands.json` marks it `painted_name` and the plaque shows the emblem with the name
+painted beside it in the painted-name signs' lettering: a 199 × 64 plaque (113 × 36 CSS
+px at a section's zoom), the name's capitals about 9 CSS px tall (20 close up), where
+the one-line logo read at 6.

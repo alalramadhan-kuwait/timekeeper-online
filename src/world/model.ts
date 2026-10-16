@@ -1,7 +1,7 @@
 import type { Mission, Snapshot, SupplierUnpaid } from './types';
 import type { MallData, MallStaff } from './mall/data';
 import { buildMall, type MallModel } from './mall/model';
-import { MALL, WALK, toWorld } from './mall/layout';
+import { MALL, WALK, fromGallery, toWorld } from './mall/layout';
 import { DOCK_PLAN, type DockData } from './dock/data';
 
 /* Turns a snapshot into the things the scene draws. Pure and deterministic: the
@@ -136,7 +136,8 @@ export function lookKey(family: Family, look: MallStaff['look']): string {
 }
 
 const HOMES: Record<Room, [number, number][]> = {
-  floor: ([[3, 0], [9, 1], [16, 0], [22, 1], [29, 0], [35, 1], [6, 1]] as [number, number][]).map(([x, y]) => toWorld(Math.round((x * MALL.w) / 38), y ? WALK.y1 - 1 : WALK.y0)),
+  // spread along the Grand Gallery, Arcade and Court as before the Promenade was added, so no one moved
+  floor: ([[3, 0], [9, 1], [16, 0], [22, 1], [29, 0], [35, 1], [6, 1]] as [number, number][]).map(([x, y]) => toWorld(fromGallery(Math.round((x * (MALL.w - fromGallery(0))) / 38)), y ? WALK.y1 - 1 : WALK.y0)),
   dock: ([[2, DOCK_PLAN.MAIN], [6, DOCK_PLAN.MAIN + 1], [4, DOCK_PLAN.MAIN - 4], [9, DOCK_PLAN.SOUTH]] as [number, number][]).map(([x, y]) => dockCell(x, y)),
   office: [[2, 15], [9, 15], [7, 17], [3, 17]],
 };

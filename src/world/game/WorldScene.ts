@@ -7,7 +7,7 @@ import {
 } from '../model';
 import { DOCK_PLAN } from '../dock/data';
 import { AREA_FOCUS, DOCK_AREAS, DOCK_BOUNDS, DockLayer, bayFocus, type DockArea } from './DockLayer';
-import { FIGURE_SCALE, MALL, SECTIONS, WALK, WALL_HEIGHT, sectionOfLocalX, toLocal, toWorld } from '../mall/layout';
+import { FIGURE_SCALE, HOME_SECTION, MALL, SECTIONS, WALK, WALL_HEIGHT, fromGallery, sectionOfLocalX, toLocal, toWorld } from '../mall/layout';
 import { FloorBatch } from './FloorBatch';
 import { cellAt, depthAt, findPath, iso } from './iso';
 import { MallLayer } from './MallLayer';
@@ -133,7 +133,7 @@ export class WorldScene extends Phaser.Scene {
   private mall!: MallLayer;
   private areaLabels: { t: Phaser.GameObjects.Text; room: Room | null }[] = [];   // the dock's and office's labels
   private labelRoom: Room | null = null;                 // the area labels being made now belong to
-  private section: number | null = 0;                    // the mall section framed on the Floor tab (null: the whole mall)
+  private section: number | null = HOME_SECTION;         // the mall section framed on the Floor tab (null: the whole mall)
   private dock!: DockLayer;
   private dockFocus: { x: number; y: number } | null = null;   // what an open dock sheet keeps in view
   private dockArea: DockArea = 'orders';                  // the part of the dock framed last
@@ -540,7 +540,7 @@ export class WorldScene extends Phaser.Scene {
     // raised clear of the filing cabinet's flag and count, which stand in front of it
     sign('sign-office', R.office.x0, R.office.y0 + 2, 250);
 
-    // the wall clock tells real Kuwait time, on the Grand Gallery's end wall
+    // the wall clock tells real Kuwait time, on the mall's west end wall (the Promenade's since 16 Oct; the Grand Gallery's before)
     const cp = iso(R.floor.x0, 5.5);
     this.clockAt = { x: cp.x - 32, y: cp.y - 100 };
     this.fit(this.add.image(this.clockAt.x, this.clockAt.y, 'wall-clock'), 'wall-clock', 0.9).setDepth(depthAt(R.floor.x0, 5, -1));
@@ -705,7 +705,7 @@ export class WorldScene extends Phaser.Scene {
     }
     this.buildMallDelivery();
     // the owner: whoever is looking, in a dishdasha, ghutra and agal
-    const prev = this.owner?.cell ?? toWorld(5, WALK.y0 + 1);
+    const prev = this.owner?.cell ?? toWorld(fromGallery(5), WALK.y0 + 1);
     this.owner = new Walker(this, 'char-owner', prev, 210, 'You');
     this.owner.setInteractive({ type: 'owner' });
     this.walkers.push(this.owner);

@@ -8,7 +8,7 @@ import { createGame, type WorldGame } from './game/createGame';
 import type { Selection } from './game/WorldScene';
 import { Loading, PanelBody, type View } from './panels';
 import { loadMall, type MallData } from './mall/data';
-import { SECTIONS } from './mall/layout';
+import { HOME_SECTION, SECTIONS } from './mall/layout';
 import { clock, day, kd, kd0, num } from './format';
 import type { Snapshot } from './types';
 import { buildDock, loadDock, type DockRaw } from './dock/data';
@@ -46,7 +46,17 @@ export default function WorldPage({ onClose }: { onClose?: () => void }) {
   const [dockArea, setDockArea] = useState<DockArea>('orders');
   const areasRef = useRef<HTMLDivElement>(null);
   const frameDockNext = useRef(false);
-  const [section, setSection] = useState<number | null>(0);
+  const [section, setSection] = useState<number | null>(HOME_SECTION);
+  // the section buttons: on a phone the row is wider than the screen and scrolls sideways, so the
+  // chosen section's button is brought into sight whenever the section changes (a tap, or a brand found)
+  const chipsRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const row = chipsRef.current, chip = section === null ? null : (row?.children[section] as HTMLElement | undefined);
+    if (!row || !chip) return;
+    const r = row.getBoundingClientRect(), c = chip.getBoundingClientRect();
+    if (c.left < r.left + 4) row.scrollBy({ left: c.left - r.left - 4 });
+    else if (c.right > r.right - 4) row.scrollBy({ left: c.right - r.right + 4 });
+  }, [section]);
   const [err, setErr] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
   const [room, setRoom] = useState<Room>('floor');
@@ -247,19 +257,21 @@ export default function WorldPage({ onClose }: { onClose?: () => void }) {
           )}
         </div>
         {room === 'floor' && model && (
-          <div className={`pointer-events-auto -mx-1 ${view ? 'hidden sm:flex' : 'flex'} items-center gap-1.5 overflow-x-auto px-1 pb-0.5 [scrollbar-width:none]`} aria-label="Mall sections">
+          // each button's tap area reaches 7 px above and below it (and 6 px beside the round ones), so it
+          // is at least 44 px; the row's padding holds those areas, its negative margins keep its place
+          <div ref={chipsRef} className={`pointer-events-auto -mx-1 -mb-[5px] -mt-[7px] ${view ? 'hidden sm:flex' : 'flex'} items-center gap-1.5 overflow-x-auto px-1 py-[7px] [scrollbar-width:none]`} aria-label="Mall sections">
             {SECTIONS.map((sec, i) => (
-              <button key={sec.key} onClick={() => pickSection(i)}
-                className={`shrink-0 rounded-full px-3 py-1.5 text-[12.5px] font-medium shadow-md ${section === i ? 'bg-[#b8893b] text-white' : 'bg-white/95 text-[#22304d]'}`}>
+              <button key={sec.key} onClick={() => pickSection(i)} aria-pressed={section === i}
+                className={`relative shrink-0 rounded-full px-3 py-1.5 text-[12.5px] font-medium shadow-md after:absolute after:inset-x-0 after:-inset-y-[7px] after:content-[''] ${section === i ? 'bg-[#b8893b] text-white' : 'bg-white/95 text-[#22304d]'}`}>
                 <span className="hidden sm:inline">{sec.name}</span><span className="sm:hidden">{sec.short}</span>
               </button>
             ))}
-            <button onClick={() => pickSection(null)} aria-label="Whole mall"
-              className={`grid h-8 w-8 shrink-0 place-items-center rounded-full shadow-md ${section === null ? 'bg-[#b8893b] text-white' : 'bg-white/95 text-[#22304d]'}`}><Maximize2 size={15} /></button>
+            <button onClick={() => pickSection(null)} aria-label="Whole mall" aria-pressed={section === null}
+              className={`relative grid h-8 w-8 shrink-0 place-items-center rounded-full shadow-md after:absolute after:-inset-x-[6px] after:-inset-y-[7px] after:content-[''] ${section === null ? 'bg-[#b8893b] text-white' : 'bg-white/95 text-[#22304d]'}`}><Maximize2 size={15} /></button>
             <button onClick={() => setStack([{ type: 'brands' }])}
-              className="flex shrink-0 items-center gap-1.5 rounded-full bg-[#22304d] px-3 py-1.5 text-[12.5px] font-medium text-white shadow-md"><Store size={14} /> Find a brand</button>
+              className="relative flex shrink-0 items-center gap-1.5 rounded-full bg-[#22304d] px-3 py-1.5 text-[12.5px] font-medium text-white shadow-md after:absolute after:inset-x-0 after:-inset-y-[7px] after:content-['']"><Store size={14} /> Find a brand</button>
             <button onClick={() => setStack([{ type: 'mall-settings' }])} aria-label="Mall settings"
-              className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-white/95 text-[#22304d] shadow-md"><Settings2 size={15} /></button>
+              className="relative grid h-8 w-8 shrink-0 place-items-center rounded-full bg-white/95 text-[#22304d] shadow-md after:absolute after:-inset-x-[6px] after:-inset-y-[7px] after:content-['']"><Settings2 size={15} /></button>
           </div>
         )}
         {snap && (
