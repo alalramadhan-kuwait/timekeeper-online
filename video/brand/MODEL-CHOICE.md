@@ -315,3 +315,19 @@ These need a synonym in scripts or the fine-tune.
 **Untested risk:** words where Ali says a real q (موقع، أعتقد، فقط، الطاقة) may now come out with g.
 
 **Consequence for any fine-tune of this model:** its training transcripts must follow *its* convention (ق for g), not ours (گ for g). Otherwise the model has to unlearn a spelling it already reads correctly.
+
+## VoiceStudio / OmniVoice (2026-10-16, the user asked to try github.com/debpalash/VoiceStudio)
+
+- **What it is.** VoiceStudio is a desktop app (Electron, AGPL-3.0) that wraps several speech engines.
+  - Its default engine is **k2-fsa/OmniVoice**: zero-shot cloning in 600+ languages.
+  - **Gulf Arabic (afb) has 98 h** of training data; Najdi (ars) has 204 h.
+  - Licence: the code is Apache-2.0, but the **weights are CC-BY-NC**, so this is research only.
+- **Setup.** The app itself was not installed. It needs about 5 GB and a GUI; the engine is what matters, so only the engine was run:
+  - venv `/root/omni` reuses tkvoice's torch and adds its own transformers 5.20; tkvoice is untouched.
+  - Weights are in `/root/omnivoice-w` (3.1 GB).
+  - To make room, the re-downloadable Habibi-TTS cache (1.3 GB, a rejected model) and the uv/pip caches were cleared.
+- **Test.** The two comparison sentences, cloned from `ref8.wav` with language afb, on CPU (`tk_omnivoice.py`).
+- **Diagnostics only** (the user's ear decides):
+  - Whisper heard sentence 1 word-perfect, «باجر» included.
+  - Speaker similarity to `ref.wav` was 0.92 and 0.91, the same range as the other Ali clones.
+- **Blind A/B against the Chatterbox_Kuwaiti clone:** artifact 6L7qAYHYxUJGFCuYpiDBwq.
