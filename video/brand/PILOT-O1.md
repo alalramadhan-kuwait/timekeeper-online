@@ -62,3 +62,4 @@ Research only: the OmniVoice weights are CC-BY-NC.
   - Dev loss: 3.05 at step 150, 4.43 at step 300. The second figure looks like memorising 22 clips, as in pilot 0. Diagnostic only.
   - Adapters are 114 MB each in `voice-src/pilotO1/exp/`.
 - Stage pick page (u06 + script, step 150 vs 300): artifact RgAGh6nDonSX3w86LgpvkL.
+- Stage pick: step 300 won the script; u06 was a tie. Full before/after page (12 items, step 300): artifact 5vV6umCFwasvCmP4TForJY.
