@@ -384,3 +384,8 @@ These need a synonym in scripts or the fine-tune.
     1. afb with `ref8` (as now).
     2. afb with a Kuwaiti-rich reference of Ali (TlGXbHWi-vU-u008: وايد، مو صايرة، موايد).
     3. No language tag with that reference.
+- **Accent test (artifact S76XtVDTkUeJdbXVnSsv1n, 2026-10-17).**
+  - The most Kuwaiti was **afb with ref8**, the original setting. Swapping in a Kuwaiti-rich reference, or dropping the language tag, did not help.
+  - Rated «قريب».
+  - The user's note: the accent, especially at the ends of sentences, sounds like another Gulf dialect (Emirati or Saudi), not Kuwaiti. Kuwaitis have a known tone and their own way of saying some words.
+  - **Conclusion:** settings and references cannot reach the Kuwaiti tone. It is in the model's Gulf data, so only training on Kuwaiti speech can move it.
