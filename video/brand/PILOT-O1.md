@@ -63,3 +63,19 @@ Research only: the OmniVoice weights are CC-BY-NC.
   - Adapters are 114 MB each in `voice-src/pilotO1/exp/`.
 - Stage pick page (u06 + script, step 150 vs 300): artifact RgAGh6nDonSX3w86LgpvkL.
 - Stage pick: step 300 won the script; u06 was a tie. Full before/after page (12 items, step 300): artifact 5vV6umCFwasvCmP4TForJY.
+
+## Result (the user's ear, 2026-10-17, blind)
+
+| | Count |
+|---|---|
+| After (step 300) more Kuwaiti | **7 of 12** (58%) |
+| Before more Kuwaiti | 4 |
+| Same | 1 |
+
+- After won t01, u03, u04, u05, u09, u10 and the Time Keeper script.
+- Before won u01, u02, u06 and u08. u07 was a tie.
+- **The Time Keeper script after training was rated «يصلح لفيديو: إي».** This is the first «usable» for any automatic voice.
+- **Decision by the pre-fixed rule:** 7 falls in the «no clear signal» band (5–7), one short of «the model learns» (8 or more).
+  - It leans positive (7 against 4), but 3.6 minutes is too little to call it.
+  - Next, by the rule: more data first, the user's call.
+  - No second run without a new approval.
