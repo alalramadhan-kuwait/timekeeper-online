@@ -27,6 +27,8 @@ if __name__ == "__main__" and "--accent" in __import__("sys").argv:
                    json.loads((ROOT / "video/brand/voice-data/omni-fixed-texts.json").read_text())["texts"]["TlGXbHWi-vU-u008"])}
     gap = np.zeros(int(0.35 * 24000), dtype=np.float32)
     for name, (lang, r) in VARIANTS.items():
+        if (OUT / f"accent-{name}.wav").exists():
+            continue
         parts = []
         for i, line in enumerate(LINES):
             torch.manual_seed(i)
