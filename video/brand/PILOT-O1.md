@@ -50,3 +50,11 @@ Research only: the OmniVoice weights are CC-BY-NC.
 1. **Backups:** the user decides again, as for pilot 0. Training only reads copies.
 2. **The user approves this page.**
 - 2026-10-17: the user approved ("موافق"), covering the plan and running before the backup check, as for pilot 0.
+
+## Run notes (2026-10-17)
+
+- The pip release of OmniVoice (0.2.1) has no LoRA code: `use_lora` was silently ignored. Its 20-step timing check was a full fine-tune that needed 14 GB of memory (12 s/step, then out of disk when saving).
+- Installed the GitHub main branch (same version number, with `omnivoice/utils/lora.py`).
+- Checkpoints keep the adapter only. The optimizer state is skipped because the run is never resumed and disk is tight.
+- Freed the re-downloadable faster-whisper turbo cache (1.6 GB).
+- Settings: 300 steps, batch up to 2048 tokens, checkpoints at 150 and 300, CPU, $0.

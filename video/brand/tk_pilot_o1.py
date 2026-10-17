@@ -38,5 +38,30 @@ def data():
     print({s: len(r) for s, r in rows.items()})
 
 
+
+
+def train():
+    """LoRA training with OmniVoice's own trainer. Checkpoints keep only the adapter (save_pretrained): the
+    optimizer/RNG state (accelerator.save_state) is skipped because disk is tight and the run is never resumed."""
+    import omnivoice.training.checkpoint as ck
+    import omnivoice.training.trainer as tr
+    orig = ck.save_checkpoint
+
+    def adapter_only(accelerator, model, tokenizer, output_dir, step, keep_last_n=3):
+        accelerator.save_state = lambda *a, **k: None
+        return orig(accelerator, model, tokenizer, output_dir, step, keep_last_n=-1)
+    ck.save_checkpoint = adapter_only
+    tr.engine_save_checkpoint = adapter_only   # the trainer imported it under this name
+    cfg = json.loads((D / "train_config_finetune_lora.json").read_text())
+    cfg.update({"init_from_checkpoint": "/root/omnivoice-w", "llm_name_or_path": "/root/omnivoice-w", "steps": 300,
+                "logging_steps": 10, "eval_steps": 150, "save_steps": 150, "keep_last_n_checkpoints": -1,
+                "mixed_precision": "no", "allow_tf32": False, "num_workers": 1, "batch_tokens": 2048, "max_batch_size": 4,
+                "max_sample_tokens": 1000})
+    (D / "o1-train.json").write_text(json.dumps(cfg, indent=1))
+    sys.argv = ["train", "--train_config", str(D / "o1-train.json"), "--data_config", str(D / "o1-data.json"), "--output_dir", str(D / "exp")]
+    from omnivoice.cli.train import main
+    main()
+
+
 if __name__ == "__main__":
-    {"data": data}[sys.argv[1]]()
+    {"data": data, "train": train}[sys.argv[1]]()
