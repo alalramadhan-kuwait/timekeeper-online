@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight, Lock, Plus, Trash2, TrendingUp } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Lock, Pencil, Plus, Trash2, TrendingUp } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Modal, Spinner } from '../components/ui';
 import { formatKD } from '../lib/format';
@@ -7,7 +7,8 @@ import { formatKD } from '../lib/format';
 /* Payroll, for the three owners only. Every figure comes from the database's pay functions,
    which refuse anyone else: salaries (a history, an increment is a new entry), bonuses and
    deductions, and commission worked out from the shops' Lightspeed sales. An approved month is
-   a frozen copy. Nothing is calculated here beyond what is shown. */
+   a frozen copy. Shop costs put each shop's month next to its rent and its staff's pay.
+   Nothing is calculated here beyond what is shown. */
 
 interface Shop { code: string; name: string; sales: number; target: number; rate: number; reached: boolean; commission: number; uncredited_sales: number; uncredited_commission: number }
 interface Line {
@@ -23,6 +24,11 @@ interface PayMonth {
   shops: Shop[]; lines: Line[]; adjustments: Adjustment[]; totals: Totals;
 }
 interface HistoryMonth { month: string; totals: Totals; approved: boolean }
+interface RentEntry { from: string; rent: number; every: number; note: string | null; by: string | null; at: string }
+interface ShopCost {
+  code: string; name: string; sales: number; rent: number; has_rent: boolean; rent_every: number | null; rent_note: string | null;
+  staff: number; people: number; left: number; rent_history: RentEntry[];
+}
 interface SalaryEntry { id: number; effective_from: string; basic: number; housing: number; transport: number; other: number; total: number; reason: string; note: string | null; by: string; at: string }
 
 async function rpc<T>(fn: string, args?: Record<string, unknown>): Promise<T> {
@@ -45,6 +51,8 @@ export default function PayrollPage() {
   const [month, setMonth] = useState(() => monthKey(kwNow()));
   const [data, setData] = useState<PayMonth | null>(null);
   const [history, setHistory] = useState<HistoryMonth[]>([]);
+  const [costs, setCosts] = useState<ShopCost[]>([]);
+  const [rentFor, setRentFor] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [sel, setSel] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -57,8 +65,11 @@ export default function PayrollPage() {
   const load = useCallback(async () => {
     setErr(null);
     try {
-      const [m, h] = await Promise.all([rpc<PayMonth>('pay_month', { p_month: month }), rpc<HistoryMonth[]>('pay_history', { p_months: 6 })]);
-      setData(m); setHistory(h);
+      const [m, h, c] = await Promise.all([
+        rpc<PayMonth>('pay_month', { p_month: month }), rpc<HistoryMonth[]>('pay_history', { p_months: 6 }),
+        rpc<{ shops: ShopCost[] }>('pay_shop_costs', { p_month: month }),
+      ]);
+      setData(m); setHistory(h); setCosts(c.shops);
     } catch (e) { setErr(e instanceof Error ? e.message : 'Could not load payroll.'); }
   }, [month]);
   useEffect(() => { if (allowed) void load(); }, [allowed, load]);
@@ -111,6 +122,10 @@ export default function PayrollPage() {
           </Card>
         </div>
 
+        <Card title="Shop costs" hint="Sales after rent and staff pay, before the cost of goods">
+          <ShopCosts shops={costs} onRent={setRentFor} />
+        </Card>
+
         <Card title="People" hint={missing ? `${missing} without a salary yet. Tap to set it.` : 'Tap a name to see or change their pay'}>
           <div className="-mx-1 divide-y divide-slate-100">
             {data.lines.map((l) => (
@@ -144,6 +159,10 @@ export default function PayrollPage() {
           )}
         </div>
       </>)}
+
+      {rentFor && costs.find((c) => c.code === rentFor) && (
+        <RentSheet shop={costs.find((c) => c.code === rentFor)!} onClose={() => setRentFor(null)} onChanged={load} />
+      )}
 
       {person && data && (
         <PersonSheet line={person} month={data} onClose={() => setSel(null)} onChanged={load} />
@@ -248,6 +267,112 @@ const Legend = () => (
     <span className="inline-flex items-center gap-1.5"><i className="h-2.5 w-2.5 rounded-sm bg-amber-400" />Bonus</span>
   </div>
 );
+
+/* Each shop's month as one bar, on one scale for all shops: rent, then staff pay, then what is
+   left of its sales. When rent and pay come to more than the shop sold, the bar is the costs and
+   a mark shows where its sales reached. */
+function ShopCosts({ shops, onRent }: { shops: ShopCost[]; onRent: (code: string) => void }) {
+  if (!shops.length) return <p className="text-sm text-slate-400">No shops yet.</p>;
+  const max = Math.max(1, ...shops.map((s) => Math.max(s.sales, s.rent + s.staff)));
+  const sum = (k: 'sales' | 'rent' | 'staff' | 'left') => shops.reduce((t, s) => t + s[k], 0);
+  return (
+    <div className="space-y-5">
+      {shops.map((s) => {
+        const w = (v: number) => `${(Math.max(0, v) / max) * 100}%`;
+        const over = s.left < 0;
+        return (
+          <div key={s.code}>
+            <div className="flex items-baseline justify-between gap-2">
+              <span className="font-medium text-slate-800">{shopShort(s.name)}</span>
+              <span className={`font-semibold tabular-nums ${over ? 'text-rose-600' : 'text-emerald-700'}`}>{kd0(Math.abs(s.left))} {over ? 'short' : 'left'}</span>
+            </div>
+            <div className="relative mt-1.5 h-3.5 overflow-hidden rounded-full bg-slate-100">
+              <div className="absolute inset-y-0 left-0 flex" style={{ width: w(Math.max(s.sales, s.rent + s.staff)) }}>
+                <div className="h-full bg-rose-400" style={{ flexGrow: s.rent }} />
+                <div className="h-full bg-slate-700" style={{ flexGrow: s.staff }} />
+                <div className="h-full bg-emerald-500" style={{ flexGrow: Math.max(0, s.left) }} />
+              </div>
+              {over && <div className="absolute inset-y-0 w-0.5 bg-slate-900" style={{ left: w(s.sales) }} title={`Sales ${kd0(s.sales)}`} />}
+            </div>
+            <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs tabular-nums text-slate-500">
+              <span>{kd0(s.sales)} sold</span>
+              <button onClick={() => onRent(s.code)} className="inline-flex min-h-[32px] items-center gap-1 rounded-md px-1 text-slate-600 hover:bg-slate-100">
+                <i className="h-2 w-2 rounded-sm bg-rose-400" />{s.has_rent ? `Rent ${kd0(s.rent)}` : 'Set rent'}<Pencil size={11} className="text-slate-400" />
+              </button>
+              <span className="inline-flex items-center gap-1"><i className="h-2 w-2 rounded-sm bg-slate-700" />Staff {kd0(s.staff)} · {s.people}</span>
+            </div>
+          </div>
+        );
+      })}
+      <div className="grid grid-cols-2 gap-2 border-t border-slate-100 pt-3 text-sm sm:grid-cols-4">
+        {([['Sold', sum('sales')], ['Rent', sum('rent')], ['Staff pay', sum('staff')], ['Left', sum('left')]] as const).map(([k, v]) => (
+          <div key={k}><div className="text-xs text-slate-500">{k}</div><div className={`font-semibold tabular-nums ${k === 'Left' ? (v < 0 ? 'text-rose-600' : 'text-emerald-700') : 'text-slate-900'}`}>{v < 0 ? '−' : ''}{kd0(Math.abs(v))}</div></div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* A shop's rent: the one in force and its history. A change is a new entry from the month it starts. */
+function RentSheet({ shop, onClose, onChanged }: { shop: ShopCost; onClose: () => void; onChanged: () => Promise<void> }) {
+  const [editing, setEditing] = useState(!shop.has_rent);
+  const [from, setFrom] = useState(() => monthKey(kwNow()));
+  const [rent, setRent] = useState(shop.has_rent ? String(shop.rent) : '');
+  const [every, setEvery] = useState(String(shop.rent_every ?? 1));
+  const [note, setNote] = useState('');
+  const [err, setErr] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  async function save(e: React.FormEvent) {
+    e.preventDefault(); setErr(null); setBusy(true);
+    try {
+      await rpc('pay_rent_set', { p_scope: shop.code, p_effective_from: from, p_monthly_rent: Number(rent), p_paid_every_months: Number(every) || 1, p_note: note || null });
+      setEditing(false); await onChanged();
+    } catch (x) { setErr(x instanceof Error ? x.message : 'Could not save.'); }
+    finally { setBusy(false); }
+  }
+  return (
+    <Modal title={`Rent · ${shopShort(shop.name)}`} onClose={onClose}>
+      <div className="space-y-5">
+        <div>
+          <div className="text-xs text-slate-500">A month</div>
+          <div className="text-3xl font-bold tabular-nums text-slate-900">{shop.has_rent ? kd(shop.rent) : '—'}</div>
+          {shop.rent_every && shop.rent_every > 1 && <div className="text-xs text-slate-500">Paid every {shop.rent_every} months ({kd0(shop.rent * shop.rent_every)} each time)</div>}
+        </div>
+        {editing ? (
+          <form onSubmit={save} className="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Monthly rent (KD)"><input inputMode="decimal" required value={rent} onChange={(e) => setRent(e.target.value)} className={input} /></Field>
+              <Field label="Starts on"><input type="date" required value={from} onChange={(e) => setFrom(e.target.value)} className={input} /></Field>
+              <Field label="Paid every"><select value={every} onChange={(e) => setEvery(e.target.value)} className={input}>{[1, 2, 3, 4, 6, 12].map((n) => <option key={n} value={n}>{n === 1 ? 'Month' : `${n} months`}</option>)}</select></Field>
+              <Field label="Note (optional)"><input value={note} onChange={(e) => setNote(e.target.value)} className={input} /></Field>
+            </div>
+            <div className="flex justify-end gap-2">
+              {shop.has_rent && <button type="button" onClick={() => setEditing(false)} className="min-h-[44px] rounded-lg bg-white px-4 text-sm font-semibold text-slate-700">Cancel</button>}
+              <button type="submit" disabled={busy || !(Number(rent) >= 0) || rent === ''} className="min-h-[44px] rounded-lg bg-slate-900 px-4 text-sm font-semibold text-white disabled:opacity-40">Save</button>
+            </div>
+          </form>
+        ) : (
+          <button onClick={() => setEditing(true)} className="min-h-[44px] rounded-lg bg-slate-100 px-4 text-sm font-semibold text-slate-800">Change rent</button>
+        )}
+        {shop.rent_history.length > 0 && (
+          <ol className="space-y-2">
+            {shop.rent_history.map((h, i) => (
+              <li key={`${h.from}-${i}`} className="rounded-lg bg-slate-50 px-3 py-2.5">
+                <div className="flex items-baseline justify-between gap-2">
+                  <span className="font-semibold tabular-nums text-slate-900">{kd(h.rent)}</span>
+                  <span className="text-xs text-slate-500">from {day(h.from)}</span>
+                </div>
+                {h.note && <div className="text-xs italic text-slate-500">“{h.note}”</div>}
+                <div className="text-[11px] text-slate-400">{h.every > 1 ? `Paid every ${h.every} months · ` : ''}Set by {h.by ?? 'Owner'}, {day(h.at)}</div>
+              </li>
+            ))}
+          </ol>
+        )}
+        {err && <div className="rounded-lg bg-rose-50 p-3 text-sm text-rose-700">{err}</div>}
+      </div>
+    </Modal>
+  );
+}
 
 const REASONS = ['Starting salary', 'Increment', 'Promotion', 'Correction'] as const;
 const input = 'min-h-[44px] w-full rounded-lg border border-slate-300 bg-white px-3 text-[15px] tabular-nums';

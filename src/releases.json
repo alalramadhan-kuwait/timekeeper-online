@@ -1,5 +1,14 @@
 [
   {
+    "version": "3.11.0",
+    "date": "2026-10-17",
+    "title": "Shop costs",
+    "changes": [
+      "Payroll now shows each shop's month next to its rent and its staff's pay, with what is left of its sales before the cost of goods. Online and WhatsApp sales count with the head office.",
+      "Tap a shop's rent to change it from a given month; the earlier rents stay listed."
+    ]
+  },
+  {
     "version": "3.10.0",
     "date": "2026-10-16",
     "title": "Payroll",
