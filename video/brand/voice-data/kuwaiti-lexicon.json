@@ -392,5 +392,10 @@
  "word_choice_rules": [
   "Write Kuwaiti words, not MSA or Saudi/Egyptian ones: امبارح → أمس, كذا → جذي, أبغى → أبي, مين → منو, ليه → ليش.",
   "فقط in speech is usually بس; keep فقط only when the script is formal."
+ ],
+ "writing_rules_omnivoice": [
+  "English words in English letters (special, complicated, Maestro); Arabic-letter transliteration comes out wrong (user, 2026-10-16/17).",
+  "Kuwaiti spelling and word choice from this lexicon.",
+  "Diacritics only where a word is truly ambiguous (سُمك thickness vs سَمَك fish), one vowel, never full diacritics: heavy diacritics make it sound formal (الْـكُـوَيْـتُ), and on words already said right they can break them (شَغْلة)."
  ]
 }

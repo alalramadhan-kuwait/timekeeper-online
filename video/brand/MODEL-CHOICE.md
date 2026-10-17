@@ -366,3 +366,13 @@ These need a synonym in scripts or the fine-tune.
     3. English words written in Arabic letters come out wrong (سبشيال, جيرارد, كمبليكيتد, الكمبليكيشن). Write them in English.
   - Next: fix the text and regenerate.
 - Corrected-text regeneration (4 sentences; the user's text in voice-data/omni-fixed-texts.json), blind before/after with Ali's real recording as reference: artifact AcduP8s6YwyZfJPB6EZXtm.
+- **Corrected text vs original (blind, Ali's real recording as reference, 2026-10-17): the corrected text was closer to Ali in 4 of 4.**
+  The user's notes:
+  - u010: heavy diacritics on الكويت (الْـكُـوَيْـتُ) made it sound formal, not Kuwaiti. Diacritics should be light.
+  - u025: ضعيفة and مرتبة are still said or vowelled wrong.
+  - u000: in the corrected version الجدامنا came out as القدامنا and شَغْلة was wrong. The original version said both right, so the diacritics on شغلة hurt.
+- **Writing rules for OmniVoice scripts (from these tests):**
+  1. English words in English letters (special, complicated, Maestro), never transliterated.
+  2. Kuwaiti spelling and word choice from the general lexicon (أمس, جدام, …).
+  3. Diacritics only on a word that is truly ambiguous (سُمك, thickness, not سَمَك, fish), and only the vowel that matters.
+     No full diacritics, no diacritics on words the model already says right.
