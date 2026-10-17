@@ -19,6 +19,10 @@ if "--ali" in sys.argv:    # Ali's own verified sentences (real Kuwaiti text), t
     T = texts()
     SENT = [(k, T[k]) for k in ["1DL9LBbCuiY-u001", "TlGXbHWi-vU-u008", "JtVZPG9Jxqk-u025", "F1-HaUKtkkQ-u010", "TlGXbHWi-vU-u000"]]
     OUT = ROOT / "voice-src/compare/omni-ali"
+if "--ali-fixed" in sys.argv:   # the same sentences with the user's corrected text (voice-data/omni-fixed-texts.json)
+    import json
+    SENT = list(json.loads((ROOT / "video/brand/voice-data/omni-fixed-texts.json").read_text())["texts"].items())
+    OUT = ROOT / "voice-src/compare/omni-ali-fixed"
 if "--full" in sys.argv:   # the 11-sentence test set of pilot 0 (ckkw-unseen-10 + the user's sentence)
     import json
     SENT = [(it["id"], it["text"]) for it in json.loads((ROOT / "video/brand/voice-data/ckkw-unseen-10.json").read_text())["items"]] + \
