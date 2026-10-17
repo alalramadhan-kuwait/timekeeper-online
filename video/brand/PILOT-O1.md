@@ -58,3 +58,6 @@ Research only: the OmniVoice weights are CC-BY-NC.
 - Checkpoints keep the adapter only. The optimizer state is skipped because the run is never resumed and disk is tight.
 - Freed the re-downloadable faster-whisper turbo cache (1.6 GB).
 - Settings: 300 steps, one clip per step (2048-token batches ran out of memory at the first epoch boundary), checkpoints at 150 and 300, CPU, $0.
+- **Training finished (30 min, CPU, $0).**
+  - Dev loss: 3.05 at step 150, 4.43 at step 300. The second figure looks like memorising 22 clips, as in pilot 0. Diagnostic only.
+  - Adapters are 114 MB each in `voice-src/pilotO1/exp/`.
