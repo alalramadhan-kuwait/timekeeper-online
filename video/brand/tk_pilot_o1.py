@@ -63,5 +63,38 @@ def train():
     main()
 
 
+
+def sample():
+    """The frozen test set with each adapter, the same way as the base runs (Gulf Arabic, ref8, same seeds): the 11
+    sentences -> voice-src/pilotO1/gen/<step>/<id>.wav (base: compare/omni11), the 4-line script ->
+    gen/<step>/script.wav (base: compare/script1/speed-1.0.wav)."""
+    import numpy as np
+    import soundfile as sf
+    import torch
+    from omnivoice import OmniVoice
+    from omnivoice.utils.lora import load_lora_adapter
+    torch.set_num_threads(4)
+    sent = [(it["id"], it["text"]) for it in json.loads((VD / "ckkw-unseen-10.json").read_text())["items"]] + \
+           [("t01", "جاسم راح البقالة وشرا عصير بطاط وطماط. شلونك شخبارك؟")]
+    lines = json.loads((VD / "omni-script-1.json").read_text())["lines"]
+    ref, ref_text = str(ROOT / "voice-src/ref8.wav"), (ROOT / "voice-src/ref8.txt").read_text().strip()
+    steps = sys.argv[2:] or ["150", "300"]
+    for st in steps:
+        out = D / "gen" / st
+        out.mkdir(parents=True, exist_ok=True)
+        m = OmniVoice.from_pretrained("/root/omnivoice-w", device_map="cpu", dtype=torch.float32)
+        m = load_lora_adapter(m, str(D / "exp" / f"checkpoint-{st}"))
+        for k, t in sent:
+            torch.manual_seed(0)
+            sf.write(out / f"{k}.wav", m.generate(text=t, language="afb", ref_audio=ref, ref_text=ref_text)[0], 24000)
+        gap, parts = np.zeros(int(0.35 * 24000), dtype=np.float32), []
+        for i, line in enumerate(lines):
+            torch.manual_seed(i)
+            parts += [m.generate(text=line, language="afb", ref_audio=ref, ref_text=ref_text)[0].astype(np.float32), gap]
+        sf.write(out / "script.wav", np.concatenate(parts[:-1]), 24000)
+        print("step", st, "done", flush=True)
+        del m
+
+
 if __name__ == "__main__":
-    {"data": data, "train": train}[sys.argv[1]]()
+    {"data": data, "train": train, "sample": sample}[sys.argv[1]]()
