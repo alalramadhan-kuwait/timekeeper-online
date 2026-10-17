@@ -365,3 +365,4 @@ These need a synonym in scripts or the fine-tune.
     2. Words that need diacritics: سمك / سمكها (thickness, not fish), صايرة, شغلة.
     3. English words written in Arabic letters come out wrong (سبشيال, جيرارد, كمبليكيتد, الكمبليكيشن). Write them in English.
   - Next: fix the text and regenerate.
+- Corrected-text regeneration (4 sentences; the user's text in voice-data/omni-fixed-texts.json), blind before/after with Ali's real recording as reference: artifact AcduP8s6YwyZfJPB6EZXtm.
