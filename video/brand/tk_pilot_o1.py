@@ -55,7 +55,7 @@ def train():
     cfg = json.loads((D / "train_config_finetune_lora.json").read_text())
     cfg.update({"init_from_checkpoint": "/root/omnivoice-w", "llm_name_or_path": "/root/omnivoice-w", "steps": 300,
                 "logging_steps": 10, "eval_steps": 150, "save_steps": 150, "keep_last_n_checkpoints": -1,
-                "mixed_precision": "no", "allow_tf32": False, "num_workers": 1, "batch_tokens": 2048, "max_batch_size": 4,
+                "mixed_precision": "no", "allow_tf32": False, "num_workers": 1, "batch_tokens": 1024, "max_batch_size": 1,
                 "max_sample_tokens": 1000})
     (D / "o1-train.json").write_text(json.dumps(cfg, indent=1))
     sys.argv = ["train", "--train_config", str(D / "o1-train.json"), "--data_config", str(D / "o1-data.json"), "--output_dir", str(D / "exp")]

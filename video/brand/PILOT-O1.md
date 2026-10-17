@@ -57,4 +57,4 @@ Research only: the OmniVoice weights are CC-BY-NC.
 - Installed the GitHub main branch (same version number, with `omnivoice/utils/lora.py`).
 - Checkpoints keep the adapter only. The optimizer state is skipped because the run is never resumed and disk is tight.
 - Freed the re-downloadable faster-whisper turbo cache (1.6 GB).
-- Settings: 300 steps, batch up to 2048 tokens, checkpoints at 150 and 300, CPU, $0.
+- Settings: 300 steps, one clip per step (2048-token batches ran out of memory at the first epoch boundary), checkpoints at 150 and 300, CPU, $0.
