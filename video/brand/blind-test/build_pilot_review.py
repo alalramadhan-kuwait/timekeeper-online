@@ -35,7 +35,7 @@ for c in batch:
     n = len(cards)
     cards.append({"id": c["id"], "part": n // 3 + 1, "title": f"مقطع {n + 1}", "players": [{"label": "علي", "src": f"audio/{name}"}],
                   "edit": {"key": "text", "value": ANS.get(c["id"], {}).get("text") or c["draft"], "marks": [toks[i] for i in c["marks"] if i < len(toks)],
-                           "label": "إذا فيه غلط، عدّل النص هني (ق حتى لو قالها گ. الأرقام خلها أرقام، أنا أحولها)."},
+                           "label": "إذا فيه غلط، عدّل النص هني (الكلمات الإنجليزية اكتبها بالإنجليزي، والأرقام خلها أرقام، أنا أحولها)."},
                   "questions": [{"key": "text_ok", "label": "النص؟", "options": [["yes", "صح"], ["fixed", "عدّلته"], ["unsure", "مو متأكد"]]},
                                 {"key": "clip", "label": "المقطع؟", "options": [["ok", "سليم"], ["cut", "مقطوع"], ["noise", "فيه صوت ثاني أو موسيقى"]]}]})
 page = (Path(__file__).parent / "listen-template.html").read_text()

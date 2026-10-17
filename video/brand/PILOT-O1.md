@@ -79,3 +79,4 @@ Research only: the OmniVoice weights are CC-BY-NC.
   - It leans positive (7 against 4), but 3.6 minutes is too little to call it.
   - Next, by the rule: more data first, the user's call.
   - No second run without a new approval.
+- Review batch 3 for the next run (artifact TqcwKHymLxLxTdwU6itHph). The edit hint now says English words in English letters, the OmniVoice convention.
