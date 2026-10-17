@@ -1,3 +1,4 @@
+import { money } from '../format';
 import Phaser from 'phaser';
 import { ASSETS, ASSET, settleArt } from '../assets/manifest';
 import { BRAND_LOGOS } from '../assets/brandLogos';
@@ -780,7 +781,7 @@ export class WorldScene extends Phaser.Scene {
       const c = iso(r.cell[0] + 0.5, r.cell[1] + 0.5);
       // the balance, rounded (the visitor's panel has it to the fils); neighbours sit a cell
       // apart, so alternate ones carry theirs above the head rather than at the feet
-      const kd = `${Math.round(r.supplier.recorded_unpaid).toLocaleString('en-US')} KD`;
+      const kd = money.hidden ? '—' : `${Math.round(r.supplier.recorded_unpaid).toLocaleString('en-US')} KD`;
       const above = i % 2 === 1;
       const t = this.label(c.x, above ? w.sprite.getBounds().top - 26 : c.y + 12, kd, r.mood === 'review' ? 'review' : 'money').setScale(0.78);
       this.dyn.push(t);

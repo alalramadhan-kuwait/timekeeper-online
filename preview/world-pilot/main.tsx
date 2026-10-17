@@ -19,6 +19,9 @@ async function start() {
     for (const p of names) p.image = null;
   }
   installMock(fx);
+  // the preview carries no money: its figures were removed, and no total may read as zero
+  const { money } = await import('../../src/world/format');
+  money.hidden = true;
   const [{ createRoot }, { HashRouter }, { default: WorldPage }] = await Promise.all([
     import('react-dom/client'), import('react-router-dom'), import('../../src/world/WorldPage'),
   ]);

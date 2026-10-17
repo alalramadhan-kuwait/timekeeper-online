@@ -5,7 +5,7 @@ import reactRefresh from 'eslint-plugin-react-refresh';
 import globals from 'globals';
 
 export default ts.config(
-  { ignores: ['dist', 'node_modules', 'supabase/functions'] },
+  { ignores: ['dist', 'dist-*', 'node_modules', 'supabase/functions', 'preview/world-pilot/qa.mjs'] },
   js.configs.recommended,
   ...ts.configs.recommended,
   {

@@ -1,8 +1,12 @@
 /* Numbers and dates the way the World shows them: Kuwaiti dinars to the fils,
    dates and times in Kuwait. */
 
+/* A preview shared outside the owners' sign-in shows no money at all: every amount reads '—',
+   totals included (a sum of withheld figures must not read as zero). Off in the World itself. */
+export const money = { hidden: false };
+
 export const kd = (n: number | null | undefined, digits = 3) =>
-  n === null || n === undefined || Number.isNaN(n)
+  money.hidden || n === null || n === undefined || Number.isNaN(n)
     ? '—'
     : `${n.toLocaleString('en-US', { minimumFractionDigits: digits, maximumFractionDigits: digits })} KD`;
 

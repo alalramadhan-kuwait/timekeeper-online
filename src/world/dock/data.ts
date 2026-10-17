@@ -1,3 +1,4 @@
+import { money } from '../format';
 import { supabase } from '../../lib/supabase';
 import { loadExpected, loadPo, loadStatusLog, type OwnerExpected, type StatusChange } from '../api';
 import type { PoDetail, ReceiptEvent, Snapshot } from '../types';
@@ -86,7 +87,7 @@ export async function loadDock(s: Snapshot): Promise<DockRaw> {
 
 const n = (v: unknown) => Number(v ?? 0) || 0;
 export const kdW = (v: number | null | undefined, digits = 0) =>
-  v === null || v === undefined ? '—' : `${v.toLocaleString('en-US', { minimumFractionDigits: digits, maximumFractionDigits: digits })} KD`;
+  money.hidden || v === null || v === undefined ? '—' : `${v.toLocaleString('en-US', { minimumFractionDigits: digits, maximumFractionDigits: digits })} KD`;
 export const shortName = (s: string | null | undefined) => String(s ?? '').replace(/[\s,]+$/, '');
 export const kwDate = (iso: string | null | undefined, withTime = true, now = new Date()) => {
   if (!iso) return '—';
