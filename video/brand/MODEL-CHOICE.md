@@ -376,3 +376,11 @@ These need a synonym in scripts or the fine-tune.
   2. Kuwaiti spelling and word choice from the general lexicon (أمس, جدام, …).
   3. Diacritics only on a word that is truly ambiguous (سُمك, thickness, not سَمَك, fish), and only the vowel that matters.
      No full diacritics, no diacritics on words the model already says right.
+- **First Time Keeper script (artifact 4gwtZuS9ibuJdjHEvBR5vh, 2026-10-17): «قريب، يحتاج تعديل بسيط».**
+  - Wrong: «هلا والله». The user's note: «انقالت بنبرة سعودية».
+  - No speed was picked.
+  - The accent may come from the Gulf-Arabic data (likely mostly Saudi) or from the reference clip, whose tone OmniVoice carries over.
+  - Next: one small test of three settings on the same script.
+    1. afb with `ref8` (as now).
+    2. afb with a Kuwaiti-rich reference of Ali (TlGXbHWi-vU-u008: وايد، مو صايرة، موايد).
+    3. No language tag with that reference.
