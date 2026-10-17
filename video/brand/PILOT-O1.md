@@ -1,4 +1,4 @@
-# Pilot O1: can OmniVoice learn the Kuwaiti tone from Ali? (plan, waiting for approval)
+# Pilot O1: can OmniVoice learn the Kuwaiti tone from Ali? (approved 2026-10-17)
 
 The user chose option 1 on 2026-10-17: train OmniVoice on Ali's Kuwaiti speech.
 
@@ -49,3 +49,4 @@ Research only: the OmniVoice weights are CC-BY-NC.
 
 1. **Backups:** the user decides again, as for pilot 0. Training only reads copies.
 2. **The user approves this page.**
+- 2026-10-17: the user approved ("موافق"), covering the plan and running before the backup check, as for pilot 0.
