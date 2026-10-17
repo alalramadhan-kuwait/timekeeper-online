@@ -80,3 +80,10 @@ Research only: the OmniVoice weights are CC-BY-NC.
   - Next, by the rule: more data first, the user's call.
   - No second run without a new approval.
 - Review batch 3 for the next run (artifact TqcwKHymLxLxTdwU6itHph). The edit hint now says English words in English letters, the OmniVoice convention.
+
+## Direction change (the user, 2026-10-17)
+
+The user does not want more training or more clip review. The decisions:
+- **Production voice:** OmniVoice with the O1 adapter (step 300). Its Time Keeper script was rated usable.
+- **Batch 3 is dropped.** No more training runs.
+- **From here, only the word dictionary.** Each test, the user taps the wrong words. Claude generates the word in several spellings, and the user picks the right one. The spelling that wins goes into the OmniVoice spelling map, and the word is retested until it is right.
