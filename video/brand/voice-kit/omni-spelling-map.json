@@ -39,26 +39,66 @@
    "confirmed": "confirmed in new sentences, round 2, 2026-10-18 (artifact Nfo4Eqd5VC26trz577FQM4)"
   },
   "موديل": {
-   "write": "model",
+   "write": "الـmodel",
    "status": "testing",
    "source": "variants round 1, 2026-10-18 (artifact DwjC1hdypd4UX1LDb8iBkb)",
-   "note": "model was right in «موديل جديد من Omega» (round 1) but wrong in «هذا model نادر» (round 2): not applied until it passes again"
+   "note": "«هذا الـmodel» won round 3 variants (4 tried); confirm in a new sentence before applying"
   },
   "مرتبة": {
-   "write": null,
-   "status": "unsolved",
-   "source": "variants round 1, 2026-10-18 (artifact DwjC1hdypd4UX1LDb8iBkb)",
-   "note": "wrong in 8 spellings over two rounds; needs the user's spelling or another word"
+   "write": "امْرَتِّبَه",
+   "status": "chosen",
+   "source": "round 3, 2026-10-18 (artifact 1AVwf3MMtMLgZUzQvdSwbz) (the user's spelling; امْرَتِّبَه beat مْرَتِّبَه)"
   },
   "هالموديل": {
    "write": "هالـmodel",
-   "status": "chosen",
-   "source": "round 2 variants (4 tried)"
+   "status": "testing",
+   "source": "round 2 variants (4 tried)",
+   "note": "هالـmodel won 4 variants in round 2 but was marked wrong in «هالموديل طلع هالسنة» (round 3)"
   },
   "ينلقى": {
    "write": null,
+   "status": "unsolved",
+   "source": "round 2: marked wrong in «وما ينلقى بسهولة»",
+   "note": "8 spellings wrong over rounds 2-3 (ينلگى، يِنْلِقى، ينلقي، تنلقى…); use another wording"
+  },
+  "ملمومة": {
+   "write": "ملمومة",
+   "status": "keep",
+   "source": "round 3, 2026-10-18 (artifact 1AVwf3MMtMLgZUzQvdSwbz)",
+   "note": "said right as written"
+  },
+  "مَلْمُومَة": {
+   "write": "مَلْمُومَة",
+   "status": "keep",
+   "source": "round 3, 2026-10-18 (artifact 1AVwf3MMtMLgZUzQvdSwbz)",
+   "note": "said right as written"
+  },
+  "مضبوطة": {
+   "write": "مضبوطة",
+   "status": "keep",
+   "source": "round 3, 2026-10-18 (artifact 1AVwf3MMtMLgZUzQvdSwbz)",
+   "note": "said right as written"
+  },
+  "ذربة": {
+   "write": "ذِرْبَة",
+   "status": "chosen",
+   "source": "round 3, 2026-10-18 (artifact 1AVwf3MMtMLgZUzQvdSwbz)",
+   "note": "said right with these diacritics"
+  },
+  "كشخة": {
+   "write": null,
    "status": "testing",
-   "source": "round 2: marked wrong in «وما ينلقى بسهولة»"
+   "source": "round 3, 2026-10-18 (artifact 1AVwf3MMtMLgZUzQvdSwbz): marked wrong in «والله إنها كشخة على اليد»"
+  },
+  "الدوام": {
+   "write": null,
+   "status": "testing",
+   "source": "round 3, 2026-10-18 (artifact 1AVwf3MMtMLgZUzQvdSwbz): marked wrong in «وتناسب الدوام والطلعات»"
+  },
+  "الطلعات": {
+   "write": null,
+   "status": "testing",
+   "source": "round 3, 2026-10-18 (artifact 1AVwf3MMtMLgZUzQvdSwbz): marked wrong in the same sentence"
   }
  },
  "phrases": {

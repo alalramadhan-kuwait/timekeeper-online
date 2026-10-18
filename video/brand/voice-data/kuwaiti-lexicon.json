@@ -331,15 +331,6 @@
    "status": "proposed",
    "note": "the user: هالموديل may be better said as the English word"
   },
-  "مْرَتِّبَه": {
-   "say": "mratteba",
-   "instead_of": [
-    "مرتبة"
-   ],
-   "meaning": "neat, nice, well-proportioned",
-   "status": "confirmed",
-   "source": "the user, 2026-10-18: written مْرَتِّبَه or امْرَتِّبَه, sukun on the m, kasra on the t"
-  },
   "ذربة": {
    "meaning": "elegant and neat (strong Kuwaiti word)",
    "status": "confirmed",
@@ -369,6 +360,15 @@
    "meaning": "proper workmanship",
    "status": "confirmed",
    "source": "the user, 2026-10-18: Kuwaiti alternatives to مرتبة, chosen by the feel of the scene"
+  },
+  "امْرَتِّبَه": {
+   "say": "imratteba",
+   "instead_of": [
+    "مرتبة"
+   ],
+   "meaning": "neat, nice, well-proportioned",
+   "status": "confirmed",
+   "source": "the user, 2026-10-18 (picked by ear over مْرَتِّبَه)"
   }
  },
  "sounds": {
