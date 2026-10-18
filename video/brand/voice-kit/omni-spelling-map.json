@@ -1,2 +1,56 @@
-{"_note": "How to write words for the production voice: OmniVoice + pilot O1 adapter (step 300), Gulf Arabic, ref8. Layer 2 after the general Kuwaiti lexicon (kuwaiti-lexicon.json). Built word by word from the user's picks: a word is 'chosen' only after the user heard it said right. 'testing' entries are not applied.",
- "words": {}}
+{
+ "_note": "How to write words for the production voice: OmniVoice + pilot O1 adapter (step 300), Gulf Arabic, ref8. Layer 2 after the general Kuwaiti lexicon (kuwaiti-lexicon.json). Built word by word from the user's picks: a word is 'chosen' only after the user heard it said right. 'testing' entries are not applied. 'phrases' are replaced before words (for words that are ambiguous alone, e.g. هم).",
+ "words": {
+  "باجر": {
+   "write": "باچِر",
+   "status": "chosen",
+   "source": "variants round 1, 2026-10-18 (artifact DwjC1hdypd4UX1LDb8iBkb)",
+   "note": "the user: the ج should be lighter"
+  },
+  "باچر": {
+   "write": "باچِر",
+   "status": "chosen",
+   "source": "variants round 1, 2026-10-18 (artifact DwjC1hdypd4UX1LDb8iBkb)"
+  },
+  "تتأخرون": {
+   "write": "تتأخرونْ",
+   "status": "chosen",
+   "source": "variants round 1, 2026-10-18 (artifact DwjC1hdypd4UX1LDb8iBkb)"
+  },
+  "حجزتها": {
+   "write": "حِجَزْتها",
+   "status": "chosen",
+   "source": "variants round 1, 2026-10-18 (artifact DwjC1hdypd4UX1LDb8iBkb)"
+  },
+  "سمكها": {
+   "write": "سُمْكها",
+   "status": "chosen",
+   "source": "variants round 1, 2026-10-18 (artifact DwjC1hdypd4UX1LDb8iBkb)"
+  },
+  "سُمكها": {
+   "write": "سُمْكها",
+   "status": "chosen",
+   "source": "variants round 1, 2026-10-18 (artifact DwjC1hdypd4UX1LDb8iBkb)"
+  },
+  "موديل": {
+   "write": "model",
+   "status": "chosen",
+   "source": "variants round 1, 2026-10-18 (artifact DwjC1hdypd4UX1LDb8iBkb)",
+   "note": "standalone only; الموديل / هالموديل forms are being tested"
+  },
+  "مرتبة": {
+   "write": null,
+   "status": "unsolved",
+   "source": "variants round 1, 2026-10-18 (artifact DwjC1hdypd4UX1LDb8iBkb)",
+   "note": "مرتّبة، مْرتّبة، مِرَتّبة، مُرَتَّبة all wrong"
+  }
+ },
+ "phrases": {
+  "تشيل هم": {
+   "write": "تشيل همّ",
+   "status": "chosen",
+   "source": "variants round 1, 2026-10-18 (artifact DwjC1hdypd4UX1LDb8iBkb)",
+   "note": "هم alone also means 'they', so only this phrase is changed"
+  }
+ }
+}

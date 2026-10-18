@@ -32,6 +32,10 @@ def swap(w, t):
 
 def prepare(text):
     choice, spell = tables()
+    m = json.loads((KIT / "omni-spelling-map.json").read_text()) if "KIT" in globals() else json.loads((VD / "omni-spelling-map.json").read_text())
+    for a, e in m.get("phrases", {}).items():   # multi-word entries first (a word that is ambiguous alone, e.g. هم)
+        if e.get("status") == "chosen":
+            text = text.replace(a, e["write"])
     return WORD.sub(lambda m: swap(swap(m.group(0), choice), spell), text)
 
 
