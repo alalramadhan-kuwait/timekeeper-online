@@ -55,10 +55,15 @@ if __name__ == "__main__":
     m = load_lora_adapter(OmniVoice.from_pretrained("/root/omnivoice-w", device_map="cpu", dtype=torch.float32), str(ADAPTER))
     ref, ref_text = str(ROOT / "voice-src/ref8.wav"), (ROOT / "voice-src/ref8.txt").read_text().strip()
     read = {}
+    prev = json.loads((out / "texts.json").read_text()) if (out / "texts.json").exists() else {}
+    read = dict(prev)
     for it in items:
         t = it["text"] if it.get("raw") else prepare(it["text"])
+        if (out / f"{it['id']}.wav").exists() and prev.get(it["id"]) == t:
+            continue   # already made with the same text (a resumed run)
         torch.manual_seed(0)
         sf.write(out / f"{it['id']}.wav", m.generate(text=t, language="afb", ref_audio=ref, ref_text=ref_text)[0], 24000)
         read[it["id"]] = t
+        (out / "texts.json").write_text(json.dumps(read, ensure_ascii=False, indent=1))
         print(it["id"], t, flush=True)
     (out / "texts.json").write_text(json.dumps(read, ensure_ascii=False, indent=1))
