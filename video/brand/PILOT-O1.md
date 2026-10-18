@@ -94,3 +94,4 @@ The user does not want more training or more clip review. The decisions:
   - The kit's default is therefore the adapter with `--voice me`.
 - Word round 2 (confirm + مرتبة / هالموديل variants): artifact Nfo4Eqd5VC26trz577FQM4.
 - Word round 3 (هالـmodel confirm, ذربة/ملمومة/مضبوطة/كشخة, موديل/ينلقى/مْرَتِّبَه variants): artifact 1AVwf3MMtMLgZUzQvdSwbz.
+- Word round 4 (confirm امْرَتِّبَه, «هذا الـmodel»; كشخة/الدوام/الطلعات variants): artifact BYPr4VdCctcTah1tEPraC2.
