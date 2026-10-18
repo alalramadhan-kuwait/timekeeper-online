@@ -25,7 +25,7 @@ def swap(w, t):
     if w in t:
         return t[w]
     for p in PREFIXES:
-        if w.startswith(p) and w[len(p):] in t:
+        if w.startswith(p) and len(w) - len(p) >= 3 and w[len(p):] in t:
             return p + t[w[len(p):]]
     return w
 

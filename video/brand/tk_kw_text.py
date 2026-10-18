@@ -2,7 +2,7 @@
   1. general Kuwaiti word choice (voice-data/kuwaiti-lexicon.json): confirmed entries only, e.g. امبارح -> أمس.
   2. the model's own spelling map (e.g. voice-data/ckkw-spelling-map.json): entries with status chosen or closest,
      e.g. كم -> چم for Genarabia Chatterbox_Kuwaiti. Another model gets its own map; the lexicon stays the same.
-Whole words only; a word also matches after the prefixes و ف ب ل ال وال بال فال. Nothing else is touched.
+Whole words only; a word of 3+ letters also matches after the prefixes و ف ب ل ال وال بال فال. Nothing else is touched.
 Run: python3 tk_kw_text.py ckkw-spelling-map "نص"   (prints the changed text and each change)"""
 import json
 import re
@@ -30,7 +30,7 @@ def swap(word, table):
     if word in table:
         return table[word]
     for p in PREFIXES:
-        if word.startswith(p) and word[len(p):] in table:
+        if word.startswith(p) and len(word) - len(p) >= 3 and word[len(p):] in table:
             return p + table[word[len(p):]]
     return word
 
