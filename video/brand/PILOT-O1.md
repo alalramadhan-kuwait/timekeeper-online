@@ -98,3 +98,6 @@ The user does not want more training or more clip review. The decisions:
 
 ### Word round 4 (2026-10-18)
 Both confirmation sentences were right: امْرَتِّبَه and «هذا الـmodel» (now applied through the key الموديل). Picks: كَشْخة, الدوام as written, الطَّلْعَات. Round 5 (`voice-data/omni-words-5.json`) confirms them in new plain sentences with the dictionary applied, tries «تلقاها/تحصله» in place of ينلقى, and tests the bare word موديل in four spellings.
+
+### Word round 5 (2026-10-18)
+22 of 24 words right (91.7%); all five words under test were right in plain sentences with the dictionary applied: كَشْخة, الدوام, بالطَّلْعَات, الـmodel, and «تحصله/تلقاها» in place of ينلقى. Bare موديل: English «model» won. Newly wrong: لبستها, بالسوق (sentence end). Round 6 (`voice-data/omni-words-6.json`) tests those two and confirms bare «model».

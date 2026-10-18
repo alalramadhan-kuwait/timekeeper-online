@@ -39,10 +39,10 @@
    "confirmed": "confirmed in new sentences, round 2, 2026-10-18 (artifact Nfo4Eqd5VC26trz577FQM4)"
   },
   "موديل": {
-   "write": "الـmodel",
-   "status": "testing",
-   "source": "variants round 1, 2026-10-18 (artifact DwjC1hdypd4UX1LDb8iBkb)",
-   "note": "«هذا الـmodel» confirmed (round 4) — applied through the key الموديل. Bare موديل (no ال) not tested yet"
+   "write": "model",
+   "status": "chosen",
+   "source": "variants round 1, 2026-10-18 (artifact DwjC1hdypd4UX1LDb8iBkb); round 5, 2026-10-18 (artifact E9pz1ZwK4eBpxmaWxEjWCo): «عندنا model جديد» won 4 variants",
+   "note": "bare موديل → English «model»; with ال → «الـmodel» (key الموديل)"
   },
   "مرتبة": {
    "write": "امْرَتِّبَه",
@@ -60,7 +60,7 @@
    "write": null,
    "status": "unsolved",
    "source": "round 2: marked wrong in «وما ينلقى بسهولة»",
-   "note": "8 spellings wrong over rounds 2-3 (ينلگى، يِنْلِقى، ينلقي، تنلقى…); use another wording"
+   "note": "8 spellings wrong over rounds 2-3 (ينلگى، يِنْلِقى، ينلقي، تنلقى…); use another wording. Round 5: «ما تحصله بسهولة» and «صعب تلقاها» were said right — write those instead"
   },
   "ملمومة": {
    "write": "ملمومة",
@@ -89,29 +89,43 @@
   "كشخة": {
    "write": "كَشْخة",
    "status": "chosen",
-   "source": "round 3, 2026-10-18 (artifact 1AVwf3MMtMLgZUzQvdSwbz): marked wrong in «والله إنها كشخة على اليد»; round 4, 2026-10-18 (artifact BYPr4VdCctcTah1tEPraC2): كَشْخة won 4 variants"
+   "source": "round 3, 2026-10-18 (artifact 1AVwf3MMtMLgZUzQvdSwbz): marked wrong in «والله إنها كشخة على اليد»; round 4, 2026-10-18 (artifact BYPr4VdCctcTah1tEPraC2): كَشْخة won 4 variants",
+   "confirmed": "confirmed in a new sentence, round 5, 2026-10-18 (artifact E9pz1ZwK4eBpxmaWxEjWCo)"
   },
   "الدوام": {
    "write": "الدوام",
    "status": "keep",
    "source": "round 3, 2026-10-18 (artifact 1AVwf3MMtMLgZUzQvdSwbz): marked wrong in «وتناسب الدوام والطلعات»",
-   "note": "round 4, 2026-10-18 (artifact BYPr4VdCctcTah1tEPraC2): plain spelling won 4 variants (it was marked wrong in round 3 next to الطلعات)"
+   "note": "round 4, 2026-10-18 (artifact BYPr4VdCctcTah1tEPraC2): plain spelling won 4 variants (it was marked wrong in round 3 next to الطلعات)",
+   "confirmed": "confirmed in a new sentence, round 5, 2026-10-18 (artifact E9pz1ZwK4eBpxmaWxEjWCo)"
   },
   "الطلعات": {
    "write": "الطَّلْعَات",
    "status": "chosen",
-   "source": "round 3, 2026-10-18 (artifact 1AVwf3MMtMLgZUzQvdSwbz): marked wrong in the same sentence; round 4, 2026-10-18 (artifact BYPr4VdCctcTah1tEPraC2): الطَّلْعَات won 4 variants"
+   "source": "round 3, 2026-10-18 (artifact 1AVwf3MMtMLgZUzQvdSwbz): marked wrong in the same sentence; round 4, 2026-10-18 (artifact BYPr4VdCctcTah1tEPraC2): الطَّلْعَات won 4 variants",
+   "confirmed": "confirmed in a new sentence, round 5, 2026-10-18 (artifact E9pz1ZwK4eBpxmaWxEjWCo)"
   },
   "الموديل": {
    "write": "الـmodel",
    "status": "chosen",
    "source": "round 3 variants (artifact 1AVwf3MMtMLgZUzQvdSwbz)",
-   "confirmed": "confirmed in a new sentence, round 4, 2026-10-18 (artifact BYPr4VdCctcTah1tEPraC2)"
+   "confirmed": "confirmed in a new sentence, round 4, 2026-10-18 (artifact BYPr4VdCctcTah1tEPraC2); again in round 5, 2026-10-18 (artifact E9pz1ZwK4eBpxmaWxEjWCo)"
   },
   "كشخه": {
    "write": "كَشْخة",
    "status": "chosen",
-   "source": "round 4, 2026-10-18 (artifact BYPr4VdCctcTah1tEPraC2)"
+   "source": "round 4, 2026-10-18 (artifact BYPr4VdCctcTah1tEPraC2)",
+   "confirmed": "confirmed in a new sentence, round 5, 2026-10-18 (artifact E9pz1ZwK4eBpxmaWxEjWCo)"
+  },
+  "لبستها": {
+   "write": null,
+   "status": "testing",
+   "source": "round 5, 2026-10-18 (artifact E9pz1ZwK4eBpxmaWxEjWCo): marked wrong in «لبستها بالعرس وكانت كشخة»"
+  },
+  "السوق": {
+   "write": null,
+   "status": "testing",
+   "source": "round 5, 2026-10-18 (artifact E9pz1ZwK4eBpxmaWxEjWCo): marked wrong at the end of «صعب تلقاها بالسوق.»"
   }
  },
  "phrases": {
