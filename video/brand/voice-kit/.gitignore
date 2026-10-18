@@ -1,0 +1,5 @@
+adapter/
+ref8.wav
+weights/
+.venv/
+*.zip

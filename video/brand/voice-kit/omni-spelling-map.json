@@ -1,0 +1,2 @@
+{"_note": "How to write words for the production voice: OmniVoice + pilot O1 adapter (step 300), Gulf Arabic, ref8. Layer 2 after the general Kuwaiti lexicon (kuwaiti-lexicon.json). Built word by word from the user's picks: a word is 'chosen' only after the user heard it said right. 'testing' entries are not applied.",
+ "words": {}}
