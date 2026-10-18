@@ -88,3 +88,7 @@ The user does not want more training or more clip review. The decisions:
 - **Batch 3 is dropped.** No more training runs.
 - **From here, only the word dictionary.** Each test, the user taps the wrong words. Claude generates the word in several spellings, and the user picks the right one. The spelling that wins goes into the OmniVoice spelling map, and the word is retested until it is right.
 - Word round 1 (10 sentences, production voice): artifact MZgnAfGxJ47y5JRKRca6i8.
+- **The owner's own voice («me», 2026-10-18).**
+  - The reference is 9.8 s cut from the owner's recording, kept locally in `voice-src/me/`.
+  - In a blind choice between plain OmniVoice and OmniVoice with the O1 adapter, both with the owner's reference, the owner picked **with the adapter**.
+  - The kit's default is therefore the adapter with `--voice me`.
