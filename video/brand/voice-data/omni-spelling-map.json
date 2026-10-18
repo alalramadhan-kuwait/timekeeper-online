@@ -42,12 +42,13 @@
    "write": "الـmodel",
    "status": "testing",
    "source": "variants round 1, 2026-10-18 (artifact DwjC1hdypd4UX1LDb8iBkb)",
-   "note": "«هذا الـmodel» won round 3 variants (4 tried); confirm in a new sentence before applying"
+   "note": "«هذا الـmodel» confirmed (round 4) — applied through the key الموديل. Bare موديل (no ال) not tested yet"
   },
   "مرتبة": {
    "write": "امْرَتِّبَه",
    "status": "chosen",
-   "source": "round 3, 2026-10-18 (artifact 1AVwf3MMtMLgZUzQvdSwbz) (the user's spelling; امْرَتِّبَه beat مْرَتِّبَه)"
+   "source": "round 3, 2026-10-18 (artifact 1AVwf3MMtMLgZUzQvdSwbz) (the user's spelling; امْرَتِّبَه beat مْرَتِّبَه)",
+   "confirmed": "confirmed in a new sentence, round 4, 2026-10-18 (artifact BYPr4VdCctcTah1tEPraC2)"
   },
   "هالموديل": {
    "write": "هالـmodel",
@@ -86,19 +87,31 @@
    "note": "said right with these diacritics"
   },
   "كشخة": {
-   "write": null,
-   "status": "testing",
-   "source": "round 3, 2026-10-18 (artifact 1AVwf3MMtMLgZUzQvdSwbz): marked wrong in «والله إنها كشخة على اليد»"
+   "write": "كَشْخة",
+   "status": "chosen",
+   "source": "round 3, 2026-10-18 (artifact 1AVwf3MMtMLgZUzQvdSwbz): marked wrong in «والله إنها كشخة على اليد»; round 4, 2026-10-18 (artifact BYPr4VdCctcTah1tEPraC2): كَشْخة won 4 variants"
   },
   "الدوام": {
-   "write": null,
-   "status": "testing",
-   "source": "round 3, 2026-10-18 (artifact 1AVwf3MMtMLgZUzQvdSwbz): marked wrong in «وتناسب الدوام والطلعات»"
+   "write": "الدوام",
+   "status": "keep",
+   "source": "round 3, 2026-10-18 (artifact 1AVwf3MMtMLgZUzQvdSwbz): marked wrong in «وتناسب الدوام والطلعات»",
+   "note": "round 4, 2026-10-18 (artifact BYPr4VdCctcTah1tEPraC2): plain spelling won 4 variants (it was marked wrong in round 3 next to الطلعات)"
   },
   "الطلعات": {
-   "write": null,
-   "status": "testing",
-   "source": "round 3, 2026-10-18 (artifact 1AVwf3MMtMLgZUzQvdSwbz): marked wrong in the same sentence"
+   "write": "الطَّلْعَات",
+   "status": "chosen",
+   "source": "round 3, 2026-10-18 (artifact 1AVwf3MMtMLgZUzQvdSwbz): marked wrong in the same sentence; round 4, 2026-10-18 (artifact BYPr4VdCctcTah1tEPraC2): الطَّلْعَات won 4 variants"
+  },
+  "الموديل": {
+   "write": "الـmodel",
+   "status": "chosen",
+   "source": "round 3 variants (artifact 1AVwf3MMtMLgZUzQvdSwbz)",
+   "confirmed": "confirmed in a new sentence, round 4, 2026-10-18 (artifact BYPr4VdCctcTah1tEPraC2)"
+  },
+  "كشخه": {
+   "write": "كَشْخة",
+   "status": "chosen",
+   "source": "round 4, 2026-10-18 (artifact BYPr4VdCctcTah1tEPraC2)"
   }
  },
  "phrases": {

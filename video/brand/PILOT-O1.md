@@ -95,3 +95,6 @@ The user does not want more training or more clip review. The decisions:
 - Word round 2 (confirm + مرتبة / هالموديل variants): artifact Nfo4Eqd5VC26trz577FQM4.
 - Word round 3 (هالـmodel confirm, ذربة/ملمومة/مضبوطة/كشخة, موديل/ينلقى/مْرَتِّبَه variants): artifact 1AVwf3MMtMLgZUzQvdSwbz.
 - Word round 4 (confirm امْرَتِّبَه, «هذا الـmodel»; كشخة/الدوام/الطلعات variants): artifact BYPr4VdCctcTah1tEPraC2.
+
+### Word round 4 (2026-10-18)
+Both confirmation sentences were right: امْرَتِّبَه and «هذا الـmodel» (now applied through the key الموديل). Picks: كَشْخة, الدوام as written, الطَّلْعَات. Round 5 (`voice-data/omni-words-5.json`) confirms them in new plain sentences with the dictionary applied, tries «تلقاها/تحصله» in place of ينلقى, and tests the bare word موديل in four spellings.
