@@ -2,7 +2,9 @@
 Text goes through the Kuwaiti lexicon and the spelling map (words the owner chose by ear) before the model reads it.
 Usage:  python say.py "النص" out.wav            (one line)
         python say.py --file script.txt out.wav  (one sentence per line, joined with short pauses)
-Options: --speed 1.0 (1.1-1.2 is closer to Ali's pace)
+Options: --speed 1.0 (1.1-1.2 is a little faster)
+         --voice me (default: the owner's own voice) | ali (Ali Alyousifi)
+         --no-adapter (plain OmniVoice, without the training on Ali's Kuwaiti speech)
 Licence: OmniVoice weights are CC-BY-NC (non-commercial) until the owner settles it."""
 import json
 import re
@@ -46,18 +48,23 @@ def main():
     from omnivoice import OmniVoice
     from omnivoice.utils.lora import load_lora_adapter
     args = sys.argv[1:]
-    speed = 1.0
+    speed, voice, adapter = 1.0, "me", True
     if "--speed" in args:
         i = args.index("--speed"); speed = float(args[i + 1]); del args[i:i + 2]
+    if "--voice" in args:
+        i = args.index("--voice"); voice = args[i + 1]; del args[i:i + 2]
+    if "--no-adapter" in args:
+        args.remove("--no-adapter"); adapter = False
     if args[0] == "--file":
         lines = [l.strip() for l in Path(args[1]).read_text().splitlines() if l.strip()]; out = args[2]
     else:
         lines, out = [args[0]], args[1]
     torch.set_num_threads(4)
     weights = str(KIT / "weights") if (KIT / "weights" / "model.safetensors").exists() else "k2-fsa/OmniVoice"
-    m = load_lora_adapter(OmniVoice.from_pretrained(weights, device_map="cuda" if torch.cuda.is_available() else "cpu", dtype=torch.float32),
-                          str(KIT / "adapter"))
-    ref, ref_text = str(KIT / "ref8.wav"), (KIT / "ref8.txt").read_text().strip()
+    m = OmniVoice.from_pretrained(weights, device_map="cuda" if torch.cuda.is_available() else "cpu", dtype=torch.float32)
+    if adapter:
+        m = load_lora_adapter(m, str(KIT / "adapter"))
+    ref, ref_text = str(KIT / "voices" / voice / "ref.wav"), (KIT / "voices" / voice / "ref.txt").read_text().strip()
     gap, parts = np.zeros(int(0.35 * 24000), dtype=np.float32), []
     for i, line in enumerate(lines):
         t = prepare(line)

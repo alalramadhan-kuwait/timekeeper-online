@@ -1,9 +1,9 @@
 ---
 name: ali-voice-auto
-description: Automatic narration in Ali Alyousifi's Kuwaiti voice (Time Keeper) from text, no recording. Use when the user wants a voice-over, narration or app/feature explainer "بصوت علي" from a script.
+description: Automatic Kuwaiti narration from text, no recording, in the owner's own voice (default, «me») or Ali Alyousifi's. Use when the user wants a voice-over, narration or app/feature explainer from a script.
 ---
 
-# Ali's automatic voice (صوت علي التلقائي)
+# Automatic Kuwaiti voice: the owner's (me) or Ali's
 
 This kit turns Arabic (Kuwaiti) text into Ali Alyousifi's voice.
 - **Model:** OmniVoice, the voice model, plus a small adapter trained on Ali's real speech. Gulf Arabic mode.
@@ -16,7 +16,8 @@ This kit turns Arabic (Kuwaiti) text into Ali Alyousifi's voice.
 | `say.py` | Generates the audio |
 | `setup.sh` | One-time setup |
 | `adapter/` | Ali's trained adapter. **Private: never upload or share it, never commit it to a public repo.** |
-| `ref8.wav` + `ref8.txt` | Ali's 7.5 s reference and its text. Private. |
+| `voices/me/` | The owner's own voice: 9.8 s reference + its text. **Default.** Private. |
+| `voices/ali/` | Ali Alyousifi's 7.5 s reference + its text. Private. |
 | `kuwaiti-lexicon.json` | General Kuwaiti word choice (أمس not امبارح, جدام, …) |
 | `omni-spelling-map.json` | How to write words so this model says them right. Built by the owner's ear, word by word. |
 
@@ -29,6 +30,7 @@ This kit turns Arabic (Kuwaiti) text into Ali Alyousifi's voice.
    - No diacritics, except one vowel on a truly ambiguous word (سُمك = thickness). Heavy diacritics sound formal and Saudi.
    - Avoid words known to fail until they are fixed in the map. Check `omni-spelling-map.json` for words marked `testing` or `unsolved`.
 3. **Generate:** `.venv/bin/python say.py --file script.txt voice.wav --speed 1.1`.
+   - The owner's voice is the default. Add `--voice ali` for Ali's voice, and `--no-adapter` only if the owner asks for it.
    - The text is passed through the lexicon and the spelling map automatically.
 4. **Always send the audio to the owner for approval before using it in a video.** The owner marks any wrong word.
    - Send those words back to the main voice chat (timekeeper-online), where they are fixed in the spelling map and retested.
@@ -37,5 +39,5 @@ This kit turns Arabic (Kuwaiti) text into Ali Alyousifi's voice.
 
 ## Do not
 - Do not train or fine-tune anything.
-- Do not upload `adapter/` or `ref8.wav` to any service, or publish them.
-- Do not change the voice settings (Gulf Arabic, `ref8`, adapter): they were chosen by blind listening tests.
+- Do not upload `adapter/` or anything in `voices/` to any service, or publish them.
+- Do not change the voice settings (Gulf Arabic, the references, the adapter): they were chosen by blind listening tests.

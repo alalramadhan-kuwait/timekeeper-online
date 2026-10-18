@@ -1,5 +1,5 @@
 adapter/
-ref8.wav
+voices/*/ref.wav
 weights/
 .venv/
 *.zip
