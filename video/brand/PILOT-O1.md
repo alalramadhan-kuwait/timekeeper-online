@@ -93,3 +93,4 @@ The user does not want more training or more clip review. The decisions:
   - In a blind choice between plain OmniVoice and OmniVoice with the O1 adapter, both with the owner's reference, the owner picked **with the adapter**.
   - The kit's default is therefore the adapter with `--voice me`.
 - Word round 2 (confirm + مرتبة / هالموديل variants): artifact Nfo4Eqd5VC26trz577FQM4.
+- Word round 3 (هالـmodel confirm, ذربة/ملمومة/مضبوطة/كشخة, موديل/ينلقى/مْرَتِّبَه variants): artifact 1AVwf3MMtMLgZUzQvdSwbz.
