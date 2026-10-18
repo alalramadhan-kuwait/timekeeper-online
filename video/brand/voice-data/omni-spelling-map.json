@@ -5,44 +5,60 @@
    "write": "باچِر",
    "status": "chosen",
    "source": "variants round 1, 2026-10-18 (artifact DwjC1hdypd4UX1LDb8iBkb)",
-   "note": "the user: the ج should be lighter"
+   "note": "the user: the ج should be lighter",
+   "confirmed": "confirmed in new sentences, round 2, 2026-10-18 (artifact Nfo4Eqd5VC26trz577FQM4)"
   },
   "باچر": {
    "write": "باچِر",
    "status": "chosen",
-   "source": "variants round 1, 2026-10-18 (artifact DwjC1hdypd4UX1LDb8iBkb)"
+   "source": "variants round 1, 2026-10-18 (artifact DwjC1hdypd4UX1LDb8iBkb)",
+   "confirmed": "confirmed in new sentences, round 2, 2026-10-18 (artifact Nfo4Eqd5VC26trz577FQM4)"
   },
   "تتأخرون": {
    "write": "تتأخرونْ",
    "status": "chosen",
-   "source": "variants round 1, 2026-10-18 (artifact DwjC1hdypd4UX1LDb8iBkb)"
+   "source": "variants round 1, 2026-10-18 (artifact DwjC1hdypd4UX1LDb8iBkb)",
+   "confirmed": "confirmed in new sentences, round 2, 2026-10-18 (artifact Nfo4Eqd5VC26trz577FQM4)"
   },
   "حجزتها": {
    "write": "حِجَزْتها",
    "status": "chosen",
-   "source": "variants round 1, 2026-10-18 (artifact DwjC1hdypd4UX1LDb8iBkb)"
+   "source": "variants round 1, 2026-10-18 (artifact DwjC1hdypd4UX1LDb8iBkb)",
+   "confirmed": "confirmed in new sentences, round 2, 2026-10-18 (artifact Nfo4Eqd5VC26trz577FQM4)"
   },
   "سمكها": {
    "write": "سُمْكها",
    "status": "chosen",
-   "source": "variants round 1, 2026-10-18 (artifact DwjC1hdypd4UX1LDb8iBkb)"
+   "source": "variants round 1, 2026-10-18 (artifact DwjC1hdypd4UX1LDb8iBkb)",
+   "confirmed": "confirmed in new sentences, round 2, 2026-10-18 (artifact Nfo4Eqd5VC26trz577FQM4)"
   },
   "سُمكها": {
    "write": "سُمْكها",
    "status": "chosen",
-   "source": "variants round 1, 2026-10-18 (artifact DwjC1hdypd4UX1LDb8iBkb)"
+   "source": "variants round 1, 2026-10-18 (artifact DwjC1hdypd4UX1LDb8iBkb)",
+   "confirmed": "confirmed in new sentences, round 2, 2026-10-18 (artifact Nfo4Eqd5VC26trz577FQM4)"
   },
   "موديل": {
    "write": "model",
-   "status": "chosen",
+   "status": "testing",
    "source": "variants round 1, 2026-10-18 (artifact DwjC1hdypd4UX1LDb8iBkb)",
-   "note": "standalone only; الموديل / هالموديل forms are being tested"
+   "note": "model was right in «موديل جديد من Omega» (round 1) but wrong in «هذا model نادر» (round 2): not applied until it passes again"
   },
   "مرتبة": {
    "write": null,
    "status": "unsolved",
    "source": "variants round 1, 2026-10-18 (artifact DwjC1hdypd4UX1LDb8iBkb)",
-   "note": "مرتّبة، مْرتّبة، مِرَتّبة، مُرَتَّبة all wrong"
+   "note": "wrong in 8 spellings over two rounds; needs the user's spelling or another word"
+  },
+  "هالموديل": {
+   "write": "هالـmodel",
+   "status": "chosen",
+   "source": "round 2 variants (4 tried)"
+  },
+  "ينلقى": {
+   "write": null,
+   "status": "testing",
+   "source": "round 2: marked wrong in «وما ينلقى بسهولة»"
   }
  },
  "phrases": {
@@ -50,7 +66,8 @@
    "write": "تشيل همّ",
    "status": "chosen",
    "source": "variants round 1, 2026-10-18 (artifact DwjC1hdypd4UX1LDb8iBkb)",
-   "note": "هم alone also means 'they', so only this phrase is changed"
+   "note": "هم alone also means 'they', so only this phrase is changed",
+   "confirmed": "confirmed in new sentences, round 2, 2026-10-18 (artifact Nfo4Eqd5VC26trz577FQM4)"
   }
  }
 }
