@@ -22,7 +22,7 @@ This kit turns Arabic (Kuwaiti) text into Ali Alyousifi's voice.
 | `omni-spelling-map.json` | How to write words so this model says them right. Built by the owner's ear, word by word. |
 
 ## Steps
-1. **Setup, once:** `bash setup.sh`. The first run downloads the 3 GB base model from Hugging Face.
+1. **Setup, once:** put `adapter-part1` and `adapter-part2` next to `setup.sh`, then `bash setup.sh`. It joins the two parts into `adapter/adapter_model.safetensors`. The first run downloads the 3 GB base model from Hugging Face.
 2. **Write the script by these rules:**
    - Kuwaiti dialect, short sentences, one per line.
    - English names and words in English letters: Time Keeper, Rolex, app, login, dashboard. Never transliterate them into Arabic letters.
