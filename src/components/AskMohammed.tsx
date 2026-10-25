@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { Send, Plus, ThumbsUp, ThumbsDown, AlertTriangle, X } from 'lucide-react';
+import { Send, Plus, ThumbsUp, ThumbsDown, AlertTriangle, X, Copy, Check } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import avatar from '../assets/ask-mohammed.webp';
+import { plainText } from '../lib/answerText';
 
 /**
- * Ask Mohammed: the owners' stock analyst, a face in the corner of every page.
+ * Ask Mohammed: the owners' business advisor, a face in the corner of every page.
  * Answers come from the stock-assistant backend, which only runs fixed
  * calculations; this screen never sees an API key or queries stock itself. The
  * strip above each answer (period, freshness, gaps) is written by the backend,
@@ -27,6 +28,7 @@ interface Msg {
 interface Status { enabled: boolean; has_key: boolean; budget?: { warn: boolean; blocked: boolean } }
 
 const SUGGESTIONS = [
+  'عطني خطة بلاك فرايدي: شنو نعرض وبكم؟',
   'شكثر عندنا بضاعة، ملكنا والأمانة؟',
   'شنو أكثر شي انباع آخر ٣ شهور؟',
   'شنو أطلب هالشهر؟',
@@ -228,6 +230,11 @@ function Answer({ msg, onVerdict }: { msg: Msg; onVerdict: (v: 'right' | 'wrong'
   const [reasons, setReasons] = useState<string[]>([]);
   const [note, setNote] = useState('');
   const [saved, setSaved] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  async function copy() {
+    if (await copyText(plainText(msg.content))) { setCopied(true); setTimeout(() => setCopied(false), 1500); }
+  }
 
   async function send(verdict: 'right' | 'wrong', rs: string[] = [], n = '') {
     if (!msg.id) return;
@@ -245,15 +252,20 @@ function Answer({ msg, onVerdict }: { msg: Msg; onVerdict: (v: 'right' | 'wrong'
       {msg.model === 'data-only' && (
         <div className="mt-2 text-[11px] text-amber-700">Shown as the raw figures: no reading passed the checks.</div>
       )}
-      {msg.id && (
-        <div className="mt-3 flex items-center gap-1 text-slate-400">
+      <div className="mt-3 flex items-center gap-1 text-slate-400">
+        <button aria-label="Copy answer" onClick={copy}
+          className={`p-1.5 rounded-lg hover:bg-slate-50 flex items-center gap-1 ${copied ? 'text-emerald-600' : ''}`}>
+          {copied ? <Check size={15} /> : <Copy size={15} />}
+          {copied && <span className="text-[11px]">Copied</span>}
+        </button>
+        {msg.id && (<>
           <button aria-label="Right" onClick={() => send('right')}
             className={`p-1.5 rounded-lg hover:bg-slate-50 ${msg.verdict === 'right' ? 'text-emerald-600' : ''}`}><ThumbsUp size={15} /></button>
           <button aria-label="Wrong" onClick={() => setAsking((a) => !a)}
             className={`p-1.5 rounded-lg hover:bg-slate-50 ${msg.verdict === 'wrong' ? 'text-red-600' : ''}`}><ThumbsDown size={15} /></button>
           {saved && <span className="text-[11px] ml-1">{saved}</span>}
-        </div>
-      )}
+        </>)}
+      </div>
       {asking && (
         <div className="mt-2 space-y-2">
           <div className="flex flex-wrap gap-1.5">
@@ -273,6 +285,16 @@ function Answer({ msg, onVerdict }: { msg: Msg; onVerdict: (v: 'right' | 'wrong'
       )}
     </div>
   );
+}
+
+async function copyText(text: string): Promise<boolean> {
+  try { await navigator.clipboard.writeText(text); return true; } catch { /* older browsers below */ }
+  const ta = document.createElement('textarea');
+  ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+  document.body.appendChild(ta); ta.select();
+  const ok = document.execCommand('copy');
+  document.body.removeChild(ta);
+  return ok;
 }
 
 /** A small, safe renderer for the answer's markdown: headings, bold, bullets and tables. */
