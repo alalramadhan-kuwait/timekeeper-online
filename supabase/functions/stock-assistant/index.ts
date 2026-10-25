@@ -31,11 +31,13 @@ const PRICE: Record<string, [number, number, number, number]> = {
   "claude-haiku-5-5": [0.10, 0.01, 0.125, 0.50],
   "claude-sonnet-5-5": [2.00, 0.10, 2.50, 10.00],
 };
-const MAX_TOKENS = 4000;
+const MAX_TOKENS = 6000;
 const MAX_ROUNDS = 8;
 const HISTORY_TURNS = 10;
 
 const OUTLETS = ["avenues", "time_gallery", "hq", "online", "whatsapp"];
+// the thresholds the prompt and calculations set, which an answer may quote
+const RULE_FIGURES = "20% 7% 3% 25%";
 
 const TOOLS: Anthropic.Tool[] = [
   {
@@ -98,7 +100,7 @@ const TOOLS: Anthropic.Tool[] = [
   },
   {
     name: "promo_candidates",
-    description: "The raw material for a promotion or clearance (Black Friday, a sale, a bundle): owned slow and dead stock to clear with cost, price, margin, profit per unit and the deepest discount that keeps the margin floor; the best sellers to keep at full price; cheap owned gift items in stock; consignment stock that needs the supplier's agreement; totals. Call it first for any offer, sale or clearance question.",
+    description: "The raw material for a promotion or clearance (Black Friday, a sale, a bundle): owned slow and dead stock to clear with cost, price, margin, profit per unit and the deepest discount that keeps the margin floor; the best sellers to keep at full price; owned gift items in value tiers with their brand; consignment stock that needs the supplier's agreement; totals. Call it first for any offer, sale or clearance question.",
     input_schema: { type: "object", properties: {
       brand: { type: "string" }, product_type: { type: "string" },
       floor: { type: "number", minimum: 0, maximum: 0.9, description: "Lowest margin an offer may leave, as a fraction; default 0.25" },
@@ -106,7 +108,7 @@ const TOOLS: Anthropic.Tool[] = [
   },
   {
     name: "offer_plan",
-    description: "Prices a proposed offer exactly. For each product: offer price, discount, gift and its cost, profit per unit now and after the offer, margin after, planned revenue and profit, profit given up, and flags (below_cost, below_margin_floor, consignment_needs_supplier_agreement, discounting_a_good_seller, not_enough_gifts, cost_unknown, more_units_than_stock). Plus totals. Call it for every offer you recommend, and again after every change to the plan.",
+    description: "Prices a proposed offer exactly. For each product: offer price, discount, gift and its cost, profit per unit now and after the offer, margin after, planned revenue and profit, profit given up, the product's sales evidence (sold in 90 and 365 days, last sale, days since), the gift's value as a share of the price, and flags (below_cost, below_margin_floor, consignment_needs_supplier_agreement, discounting_a_good_seller, deep_discount_for_the_brand, discount_too_small_to_notice, gift_too_small_for_the_watch, not_enough_gifts, cost_unknown, more_units_than_stock). Plus totals, which are the maximum if every planned unit sells. Call it for every offer you recommend, and again after every change to the plan.",
     input_schema: { type: "object", properties: {
       items: { type: "array", minItems: 1, maxItems: 40, items: { type: "object", properties: {
         product_id: { type: "string" },
@@ -144,12 +146,23 @@ Data and numbers
 
 Ownership and brands
 - Owned stock is the company's money. Consignment stock belongs to the supplier: never suggest buying it; any discount or gift on it needs the supplier's agreement, so say so. Pre-owned pieces are one-offs. Keep the three apart.
-- Respect supplier rules and brand positioning. Prefer a gift, a bundle or a private offer to loyal clients over a public price cut on higher-priced brands. Do not discount fast or healthy sellers to bring people in; they sell anyway. If the owner states a brand rule (for example, no discounts on a brand), follow it for the rest of the conversation.
+- If the owner states a brand rule (for example, no discounts on a brand), follow it for the rest of the conversation.
+
+Commercial judgement (for every recommendation, not only promotions)
+Think like a premium watch retailer, not a clearance analyst. A recommendation that is profitable can still be wrong.
+1. Brand value first. A deep public price cut teaches customers to wait for sales and cheapens the brand, whatever the margin. Public discounts above 20% need strong evidence: no sale in more than a year, several pieces stuck, and a smaller offer unlikely to move them. Otherwise offer it privately (VIP clients, WhatsApp) or not at all.
+2. Justify every discount. Start from the smallest offer a customer would notice (around 10%, or a gift of real value). Go deeper only when the evidence supports it, and name that evidence: days since the last sale, sales in the last year, time on the shelf, stock count.
+3. Gifts must fit the watch and the customer. A gift is an incentive when it is of the same brand (a Gerald Charles strap for a Gerald Charles watch) or worth about 3% of the price or more. A token gift on an expensive watch is not an offer; do not force one. If no suitable gift exists, say so and suggest a private offer, a service (sizing, engraving, strap fitting) the owner can decide on, or no offer.
+4. The margin floor is a safety limit, not a target. Choose the offer that keeps the most profit while still giving the customer a reason to buy. Never push a price toward the floor without a reason.
+5. Keep possible and expected apart. Plan totals are the maximum if every planned unit sells; call them that, never expected sales. Recent sales are evidence you may cite. If the data cannot support a forecast of what the offer will sell, say plainly that a forecast cannot be supported.
+6. Customer appeal. An offer has to be worth noticing: a 3-5% cut is not one. Balance a few clear headline offers on pieces that can take them with gifts or bundles on mid-range pieces and private offers on premium ones.
+7. Challenge, then recommend. After pricing, review every line and reject weak ones: too small to notice, too deep for the brand, a gift that is not credible, a piece that sells anyway, or an offer the evidence does not justify. Rejecting an offer is a valid result.
+8. Describe sales truthfully. Say a product "sells" or "still sells" only if it sold in the last 90 days. Otherwise say when it last sold, or that it has not sold since sales records began if there is no last sale.
 
 Offers, sales and clearance (Black Friday, Ramadan, end of season, bundles)
 - Call promo_candidates first, then build a concrete plan from real products: which pieces, what offer on each (a discount in percent, an offer price, or a gift from the gift options), and how many.
-- Never recommend a discount or gift without pricing it with offer_plan. Keep every item at or above the margin floor; if the owner asks for deeper cuts, show the loss and the flag. Fix or drop items offer_plan flags as below_cost or below_margin_floor before recommending them.
-- Choose the offer by what it achieves: deep enough to move dead stock, light or gift-only on slow stock that still sells, nothing on best sellers.
+- Price every offer with offer_plan before recommending it, then apply the commercial judgement above to the result. Treat the flags as prompts to reconsider: change or drop any line flagged below cost, below the margin floor, too deep for the brand without strong evidence, too small to notice, or with a gift too small for the watch, and price the plan again.
+- Never discount best sellers. Never recommend an offer on consignment stock without saying it needs the supplier.
 
 Buying and reasons
 - Buy, avoid or "your call" advice comes only from reorder_advice, budget_plan or explain_product, with the reasons they give. Never advise buying or avoiding from total sales alone.
@@ -161,7 +174,8 @@ Follow-ups
 
 How the answer looks
 - First line: the answer or decision in one or two short sentences, in bold.
-- Then the few numbers that matter, in a compact table (at most five columns and ten rows; product, offer, and profit columns for a plan) or two or three short bullets.
+- Then the few numbers that matter, in a compact table or two or three short bullets.
+- A plan or product list has one product per row, never several products in one row, with these columns: Product | Was KD | Now KD | Offer | Stock | Profit after KD (for the planned units). Then a short "Left out" list: products considered and rejected, each with its reason in a few words. Then the maximum possible revenue and profit, labelled as the maximum, and what the evidence says about expected sales.
 - Then the actions, numbered, each one concrete: what to do, to which product, at what price or quantity.
 - Keep facts, estimates and recommendations apart: the table holds facts and calculated results; mark any assumption or estimate as such in one line ("Assumes all 6 sell" / "على افتراض…"); the actions are your recommendation.
 - No long explanations, no repeating the same point, no warnings that do not affect the decision. No database or system terms: never name tools, functions, fields or flags; say "below cost" rather than below_cost. If figures could not be fetched, say plainly that they are not available right now.
@@ -428,7 +442,7 @@ function knownNumbers(results: Json[], extra: string[]): { nums: number[]; dates
 /** The reply may only use numbers the calculations gave (or the owner typed). */
 function groundingCheck(reply: string, results: Json[], question: string, history: Anthropic.MessageParam[]) {
   const said = history.filter((m) => m.role === "user").map((m) => String(m.content));
-  const { nums, dates } = knownNumbers(results, [question, ...said]);
+  const { nums, dates } = knownNumbers(results, [question, ...said, RULE_FIGURES]);
   let text = toLatin(reply);
   // dates are checked whole, then removed so their parts are not checked again
   const badDates: string[] = [];
