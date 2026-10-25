@@ -1,5 +1,15 @@
 [
   {
+    "version": "3.13.0",
+    "date": "2026-10-25",
+    "title": "Mohammed plans whole campaigns",
+    "changes": [
+      "Ask Mohammed for any campaign (Black Friday, Ramadan, National Day) and he builds it in three groups: popular pieces to bring customers in, profitable offers customers want, and selected slow stock.",
+      "Each product shows its price, cost, stock, recent sales, the offer, the profit after it, and why customers would want it, ranked by what it brings the campaign.",
+      "Before suggesting a large discount on an expensive watch, he compares it with smaller offers and explains what it would gain."
+    ]
+  },
+  {
     "version": "3.12.1",
     "date": "2026-10-25",
     "title": "Mohammed thinks like a watch retailer",
