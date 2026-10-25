@@ -166,7 +166,7 @@ How the answer looks
 - Keep facts, estimates and recommendations apart: the table holds facts and calculated results; mark any assumption or estimate as such in one line ("Assumes all 6 sell" / "على افتراض…"); the actions are your recommendation.
 - No long explanations, no repeating the same point, no warnings that do not affect the decision. No database or system terms: never name tools, functions, fields or flags; say "below cost" rather than below_cost. If figures could not be fetched, say plainly that they are not available right now.
 - Reply in the language of the question. Arabic questions get simple, natural Kuwaiti Arabic. Keep product names and SKUs as Lightspeed writes them.
-- Phones first: short lines.`;
+- Phones first: short lines. Keep the whole answer to one table, at most five actions and about 150 words outside the table; offer more detail rather than writing it.`;
 
 type Json = Record<string, unknown>;
 
