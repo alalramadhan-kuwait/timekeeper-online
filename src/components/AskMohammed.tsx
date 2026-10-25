@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Send, Plus, ThumbsUp, ThumbsDown, AlertTriangle, X, Copy, Check } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import avatar from '../assets/ask-mohammed.webp';
-import { plainText } from '../lib/answerText';
+import { plainText, copyText } from '../lib/answerText';
 
 /**
  * Ask Mohammed: the owners' business advisor, a face in the corner of every page.
@@ -285,16 +285,6 @@ function Answer({ msg, onVerdict }: { msg: Msg; onVerdict: (v: 'right' | 'wrong'
       )}
     </div>
   );
-}
-
-async function copyText(text: string): Promise<boolean> {
-  try { await navigator.clipboard.writeText(text); return true; } catch { /* older browsers below */ }
-  const ta = document.createElement('textarea');
-  ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
-  document.body.appendChild(ta); ta.select();
-  const ok = document.execCommand('copy');
-  document.body.removeChild(ta);
-  return ok;
 }
 
 /** A small, safe renderer for the answer's markdown: headings, bold, bullets and tables. */

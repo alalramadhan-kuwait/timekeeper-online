@@ -32,3 +32,14 @@ export function plainText(md: string): string {
   }
   return out.join('\n').replace(/\n{3,}/g, '\n\n').trim();
 }
+
+/** Copies to the clipboard; older browsers fall back to a hidden textarea. */
+export async function copyText(text: string): Promise<boolean> {
+  try { await navigator.clipboard.writeText(text); return true; } catch { /* older browsers below */ }
+  const ta = document.createElement('textarea');
+  ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+  document.body.appendChild(ta); ta.select();
+  const ok = document.execCommand('copy');
+  document.body.removeChild(ta);
+  return ok;
+}
