@@ -1,5 +1,16 @@
 [
   {
+    "version": "3.12.0",
+    "date": "2026-10-25",
+    "title": "Mohammed gives advice",
+    "changes": [
+      "Ask Mohammed now answers like a business partner: the decision first, the key numbers in a short table, then exactly what to do.",
+      "Ask him for an offer plan (Black Friday, a sale, clearing slow stock) and he picks real products, sets the discount or gift on each and shows the profit after the offer.",
+      "Follow-ups change the last plan instead of starting again: \"less discount\", \"gifts instead\", \"only Hoffman\".",
+      "Every answer has a Copy button that copies clean text ready for WhatsApp or email."
+    ]
+  },
+  {
     "version": "3.11.0",
     "date": "2026-10-17",
     "title": "Shop costs",

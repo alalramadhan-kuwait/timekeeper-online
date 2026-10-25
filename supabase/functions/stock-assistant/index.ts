@@ -1,10 +1,12 @@
-// Ask: the owners' stock analyst chat.
+// Ask: the owners' business advisor chat ("Ask Mohammed").
 //
 // The model never writes SQL. It may only call the fixed, tested calculations
-// below (Phase 2 migration 20261008133553), which run as the service role.
+// below (Phase 2 migration 20261008133553, offers 20261025084821), which run as
+// the service role. Offer maths (discounts, gifts, profit after an offer) comes
+// from offer_plan, so a recommendation's numbers pass the same check as facts.
 // Every reply is checked before it is shown: each number in it must appear in
-// what the calculations returned. A reply that fails gets one retry on the
-// stronger model; if that fails too, the owner gets the data without a reading.
+// what the calculations returned. A reply that fails gets one retry, told
+// which figures failed; if that fails too, the owner gets the data without a reading.
 //
 // Callers:
 //   - an owner listed in stock_ai_access, with their own session (JWT);
@@ -22,7 +24,7 @@ const CORS = {
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json", ...CORS } });
 
-const PRIMARY = "claude-haiku-5-5";
+const PRIMARY = "claude-sonnet-5-5";
 const RETRY = "claude-sonnet-5-5";
 // USD per million tokens: input, cached input read, cache write, output
 const PRICE: Record<string, [number, number, number, number]> = {
@@ -30,7 +32,7 @@ const PRICE: Record<string, [number, number, number, number]> = {
   "claude-sonnet-5-5": [2.00, 0.10, 2.50, 10.00],
 };
 const MAX_TOKENS = 4000;
-const MAX_ROUNDS = 6;
+const MAX_ROUNDS = 8;
 const HISTORY_TURNS = 10;
 
 const OUTLETS = ["avenues", "time_gallery", "hq", "online", "whatsapp"];
@@ -94,38 +96,78 @@ const TOOLS: Anthropic.Tool[] = [
       budget: { type: "number", minimum: 1 }, brand: { type: "string" }, product_type: { type: "string" },
       target_months: { type: "number", minimum: 1, maximum: 12 } }, required: ["budget"] },
   },
+  {
+    name: "promo_candidates",
+    description: "The raw material for a promotion or clearance (Black Friday, a sale, a bundle): owned slow and dead stock to clear with cost, price, margin, profit per unit and the deepest discount that keeps the margin floor; the best sellers to keep at full price; cheap owned gift items in stock; consignment stock that needs the supplier's agreement; totals. Call it first for any offer, sale or clearance question.",
+    input_schema: { type: "object", properties: {
+      brand: { type: "string" }, product_type: { type: "string" },
+      floor: { type: "number", minimum: 0, maximum: 0.9, description: "Lowest margin an offer may leave, as a fraction; default 0.25" },
+      limit: { type: "integer", minimum: 1, maximum: 40 } } },
+  },
+  {
+    name: "offer_plan",
+    description: "Prices a proposed offer exactly. For each product: offer price, discount, gift and its cost, profit per unit now and after the offer, margin after, planned revenue and profit, profit given up, and flags (below_cost, below_margin_floor, consignment_needs_supplier_agreement, discounting_a_good_seller, not_enough_gifts, cost_unknown, more_units_than_stock). Plus totals. Call it for every offer you recommend, and again after every change to the plan.",
+    input_schema: { type: "object", properties: {
+      items: { type: "array", minItems: 1, maxItems: 40, items: { type: "object", properties: {
+        product_id: { type: "string" },
+        discount_pct: { type: "number", minimum: 0, maximum: 90, description: "Percent off the price, 20 = 20%" },
+        offer_price: { type: "number", minimum: 0, description: "A set offer price in KD instead of a discount" },
+        gift_product_id: { type: "string", description: "A product given free with each one sold" },
+        units: { type: "integer", minimum: 0, description: "Pieces the plan assumes will sell; default all on hand" } },
+        required: ["product_id"] } },
+      floor: { type: "number", minimum: 0, maximum: 0.9 } }, required: ["items"] },
+  },
 ];
 
 const RPC: Record<string, string> = {
   find_products: "find_products", explain_product: "explain_product", stock_summary: "stock_summary",
   sales_ranking: "sales_ranking", brand_performance: "brand_performance", explain_change: "explain_change",
   reorder_advice: "reorder_advice", budget_plan: "budget_plan",
+  promo_candidates: "promo_candidates", offer_plan: "offer_plan",
 };
 
-const SYSTEM = `You are the stock analyst for Time Keeper, a watch retailer in Kuwait, answering its owners. Money is in Kuwaiti dinars (KD).
+const SYSTEM = `You are Mohammed, a business partner to the owners of Time Keeper, a watch retailer in Kuwait. You know retail: brands, stock, sales, margins and customers. Money is in Kuwaiti dinars (KD). Your job is to help the owners decide, not to describe data.
 
-Data
-- Answer only from the results of the tools. Call a tool for every question about stock, sales, brands, products or buying. Never answer figures from memory or from earlier turns without calling again when the question changes.
-- Quote numbers exactly as the tools give them. You may round KD to whole dinars and fractions to whole percent (0.589 = 59%). Never add, subtract, average or otherwise compute a figure the tools did not return.
-- For a named product, call find_products first. If it matches more than one product and the question does not settle which, list the matches with their stock and ask which one.
-- Lightspeed names brands and products in English. When the owner writes a name in Arabic letters (نيفادا, دنيسون, هوفمان), use its English spelling in tool calls (Nivada, Dennison, Hoffman). If a brand finds nothing, look it up with find_products in English before saying it is not there.
+How you think (do this silently; show only the result)
+- Work out the decision behind the question: what the owner is really trying to achieve.
+- Fetch the data that decision needs yourself. Do not ask questions the data can answer. When something is unclear but not critical, make a sensible assumption, say it in one line, and go on. Ask only when a product name matches several products and the answer depends on which.
+- Weigh the options, pick the best one and say why in a sentence.
+- Put profit first, then freeing cash tied up in slow stock, then the brand's long-term reputation. Challenge weak ideas plainly: if a plan loses money, discounts a best seller or cheapens a brand, say so and offer a better one.
+
+Data and numbers
+- Every figure you write must come from the tools in this turn or from the owner's own words. Quote numbers as the tools give them; you may round KD to whole dinars and fractions to whole percent (0.587 = 59%). Never add, subtract, multiply, average or otherwise work out a figure yourself. If you need a figure the tools did not return, call the tool that returns it; for anything about an offer, that is offer_plan.
+- For a named product, call find_products first.
+- Lightspeed names brands and products in English. When the owner writes a name in Arabic letters (نيفادا, دنيسون, هوفمان), use its English spelling in tool calls (Nivada, Dennison, Hoffman). If a brand finds nothing, look it up with find_products before saying it is not there.
 - Outlets: avenues (Time Keeper - Avenues), time_gallery (Time Gallery), hq (the HQ stock, which online and WhatsApp orders ship from).
-- Stock is as of the morning sync; sales are through yesterday. The app shows these dates above your answer, so do not repeat them at length.
+- Stock is as of the morning sync; sales are through yesterday. The app shows these dates above your answer; do not repeat them.
+- Mention missing or unreliable data (no cost, negative stock, estimated shelf age) only when it changes the decision.
 
-Ownership
-- Owned stock is the company's money. Consignment stock belongs to the supplier: never suggest buying it; suggest asking the supplier for more, or to swap or take back. Pre-owned pieces are one-offs. Keep the three apart.
+Ownership and brands
+- Owned stock is the company's money. Consignment stock belongs to the supplier: never suggest buying it; any discount or gift on it needs the supplier's agreement, so say so. Pre-owned pieces are one-offs. Keep the three apart.
+- Respect supplier rules and brand positioning. Prefer a gift, a bundle or a private offer to loyal clients over a public price cut on higher-priced brands. Do not discount fast or healthy sellers to bring people in; they sell anyway. If the owner states a brand rule (for example, no discounts on a brand), follow it for the rest of the conversation.
 
-Advice and reasons
+Offers, sales and clearance (Black Friday, Ramadan, end of season, bundles)
+- Call promo_candidates first, then build a concrete plan from real products: which pieces, what offer on each (a discount in percent, an offer price, or a gift from the gift options), and how many.
+- Never recommend a discount or gift without pricing it with offer_plan. Keep every item at or above the margin floor; if the owner asks for deeper cuts, show the loss and the flag. Fix or drop items offer_plan flags as below_cost or below_margin_floor before recommending them.
+- Choose the offer by what it achieves: deep enough to move dead stock, light or gift-only on slow stock that still sells, nothing on best sellers.
+
+Buying and reasons
 - Buy, avoid or "your call" advice comes only from reorder_advice, budget_plan or explain_product, with the reasons they give. Never advise buying or avoiding from total sales alone.
-- For "why" questions call explain_change. Give as causes only signals marked present, with their numbers. If none is present, say the data does not show why, and name what the data cannot see.
-- Say so when a figure is estimated (shelf age, rebuilt past stock, pace while out of stock) or when data is missing (products without a type, negative stock).
+- For "why" questions call explain_change. Give as causes only signals marked present, with their numbers. If none is present, say the data does not show why.
 
-Form
-- Separate what the data says from your reading of it. In English use the headings "Facts" and "Reading"; in Arabic "الأرقام" and "قراءتي". Leave out "Reading" when there is nothing to interpret.
-- Reply in the language of the question. Arabic questions get simple Kuwaiti Arabic. Keep product names and SKUs as Lightspeed writes them.
-- Phones first: short lines, short bullet lists, tables of at most four columns and ten rows.
-- Follow-up questions continue the conversation: keep the brand, product, outlet and period from before unless the owner changes them.
-- Never mention tools, functions, queries or system errors by name. If figures could not be fetched, say plainly that they are not available right now.`;
+Follow-ups
+- The conversation continues. When the owner adjusts a plan ("less discount", "gifts instead of discounts", "only Hoffman", "add Dennison"), start from the last plan, change only what was asked, price it again with offer_plan and show the updated plan. Do not start the analysis over. The last plan's items are in the note about what the owner was looking at.
+- Keep the brand, product, outlet and period from before unless the owner changes them.
+
+How the answer looks
+- First line: the answer or decision in one or two short sentences, in bold.
+- Then the few numbers that matter, in a compact table (at most five columns and ten rows; product, offer, and profit columns for a plan) or two or three short bullets.
+- Then the actions, numbered, each one concrete: what to do, to which product, at what price or quantity.
+- Keep facts, estimates and recommendations apart: the table holds facts and calculated results; mark any assumption or estimate as such in one line ("Assumes all 6 sell" / "على افتراض…"); the actions are your recommendation.
+- No long explanations, no repeating the same point, no warnings that do not affect the decision. No database or system terms: never name tools, functions, fields or flags; say "below cost" rather than below_cost. If figures could not be fetched, say plainly that they are not available right now.
+- Reply in the language of the question. Arabic questions get simple, natural Kuwaiti Arabic. Keep product names and SKUs as Lightspeed writes them.
+- Fit the length to the question. A normal question gets a short answer: one table, at most five actions, about 150 words outside the table; offer more detail rather than writing it. When the owner asks for a detailed list or a full plan (say, 15 to 25 products with prices, costs and margins), give all of it: every product they asked for in the table, with the columns they asked for, and as many actions as the plan needs. Phones first: short lines either way.
+- Your plans are recommendations. You cannot change prices or start promotions; the owner decides and acts.`;
 
 type Json = Record<string, unknown>;
 
@@ -220,10 +262,14 @@ Deno.serve(async (req: Request) => {
   }
   const ledgerIds = [...run.ledger];
   if (run.error || !checks?.ok) {
-    // one retry on the stronger model, told what failed
-    const why = run.error ? "" : `\n\n[Your previous answer used figures that are not in the tool results: ${checks!.ungrounded.join(", ")}. Use only figures the tools return.]`;
-    const retry = await converse(client, admin, RETRY, purpose === "test" ? "test" : "retry", userId,
-      [...history, { role: "user", content: question + contextNote + langNote + why }]);
+    // one retry, told what failed; after a failed check it goes on from the figures already fetched
+    const retry = run.error
+      ? await converse(client, admin, RETRY, purpose === "test" ? "test" : "retry", userId, [...history, firstTurn])
+      : await converse(client, admin, RETRY, purpose === "test" ? "test" : "retry", userId, [...run.msgs,
+          { role: "assistant", content: run.reply },
+          { role: "user", content: `[That answer used figures that are not in the tool results: ${checks!.ungrounded.join(", ")}. Write it again using only figures the tools returned; call a tool if you need another figure. Reply with the corrected answer only.]` }],
+        run.results, run.context);
+    if (!run.error) retry.calls.unshift(...run.calls);
     ledgerIds.push(...retry.ledger);
     const retryChecks = retry.error ? null : groundingCheck(retry.reply, retry.results, question, history);
     attempts.push({ model: RETRY, checks: retryChecks, error: retry.error, cost_usd: retry.cost });
@@ -263,14 +309,17 @@ Deno.serve(async (req: Request) => {
 interface Call { name: string; input: Json; ms: number; error?: string }
 interface Run {
   reply: string; calls: Call[]; results: Json[]; context: Json; cost: number; ledger: number[];
+  msgs: Anthropic.MessageParam[];
   error?: "budget" | "model" | "rounds";
 }
 
-/** One model's attempt at an answer: the tool loop, every call reserved and settled. */
+/** One model's attempt at an answer: the tool loop, every call reserved and settled.
+ *  A retry passes the results and context it continues from. */
 async function converse(client: Anthropic, admin: SupabaseClient, model: string, purpose: string,
-                        userId: string, messages: Anthropic.MessageParam[]): Promise<Run> {
-  const calls: Call[] = []; const results: Json[] = []; const ledger: number[] = [];
-  let context: Json = {}; let cost = 0;
+                        userId: string, messages: Anthropic.MessageParam[],
+                        prior: Json[] = [], priorContext: Json = {}): Promise<Run> {
+  const calls: Call[] = []; const results: Json[] = [...prior]; const ledger: number[] = [];
+  let context: Json = { ...priorContext }; let cost = 0;
   const msgs = [...messages];
   const [pin, pcache, pwrite, pout] = PRICE[model];
 
@@ -280,7 +329,7 @@ async function converse(client: Anthropic, admin: SupabaseClient, model: string,
     const { data: ledgerId, error: resErr } = await admin.rpc("ai_budget_reserve", {
       p_provider: "anthropic", p_model: model, p_purpose: purpose, p_max_usd: maxUsd, p_user: userId, p_message: null,
     });
-    if (resErr || ledgerId === null) return { reply: "", calls, results, context, cost, ledger, error: "budget" };
+    if (resErr || ledgerId === null) return { reply: "", calls, results, context, cost, ledger, msgs, error: "budget" };
     ledger.push(ledgerId as number);
 
     let response: Anthropic.Message;
@@ -293,7 +342,7 @@ async function converse(client: Anthropic, admin: SupabaseClient, model: string,
     } catch (e) {
       await admin.rpc("ai_budget_settle", { p_id: ledgerId, p_cost_usd: 0, p_input: 0, p_cached: 0, p_cache_write: 0, p_output: 0, p_ok: false });
       console.error("model call failed", model, String(e));
-      return { reply: "", calls, results, context, cost, ledger, error: "model" };
+      return { reply: "", calls, results, context, cost, ledger, msgs, error: "model" };
     }
     const u = response.usage;
     const cached = u.cache_read_input_tokens ?? 0, written = u.cache_creation_input_tokens ?? 0;
@@ -306,7 +355,7 @@ async function converse(client: Anthropic, admin: SupabaseClient, model: string,
     const uses = response.content.filter((b): b is Anthropic.ToolUseBlock => b.type === "tool_use");
     if (response.stop_reason !== "tool_use" || uses.length === 0) {
       const reply = response.content.filter((b): b is Anthropic.TextBlock => b.type === "text").map((b) => b.text).join("\n").trim();
-      return { reply, calls, results, context, cost, ledger };
+      return { reply, calls, results, context, cost, ledger, msgs };
     }
 
     msgs.push({ role: "assistant", content: response.content });
@@ -329,13 +378,22 @@ async function converse(client: Anthropic, admin: SupabaseClient, model: string,
     }
     msgs.push({ role: "user", content: out });
   }
-  return { reply: "", calls, results, context, cost, ledger, error: "rounds" };
+  return { reply: "", calls, results, context, cost, ledger, msgs, error: "rounds" };
 }
 
-/** What a follow-up question should keep: brand, product, outlet, period. */
+/** What a follow-up question should keep: brand, product, outlet, period, the last offer plan. */
 function remember(tool: string, input: Json, data: unknown): Json {
   const c: Json = { last_question_type: tool };
-  for (const k of ["brand", "outlet", "product_type", "days", "months", "compare", "ownership", "budget"]) if (input[k] !== undefined) c[k] = input[k];
+  for (const k of ["brand", "outlet", "product_type", "days", "months", "compare", "ownership", "budget", "floor"]) if (input[k] !== undefined) c[k] = input[k];
+  if (tool === "offer_plan") {
+    // the plan as priced, so "less discount" or "only Hoffman" can refine it
+    const items = ((data as Json)?.items ?? []) as Json[];
+    c.last_offer_plan = items.filter((i) => i.name).map((i) => ({
+      product_id: i.product_id, name: i.name, brand: i.brand, discount_pct: i.discount_pct,
+      ...(i.gift ? { gift_product_id: (i.gift as Json).product_id, gift: (i.gift as Json).name } : {}),
+      units: i.units_planned,
+    }));
+  }
   if (tool === "explain_product" || (tool === "explain_change" && input.product_id)) {
     c.product_id = input.product_id;
     const name = (data as Json)?.product && ((data as Json).product as Json).name;
