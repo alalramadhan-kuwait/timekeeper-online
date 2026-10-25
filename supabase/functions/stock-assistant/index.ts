@@ -168,7 +168,8 @@ Campaigns (Black Friday, Ramadan, National Day, end of season, any promotion)
   C. Recovery: selected slow or dead pieces with a realistic chance of selling (sold in the last year, or a brand that still sells). Controlled discounts; private offers for premium pieces.
   Aim for a balance across the three; if one group is thin, say why.
 - Premium slow pieces that have not sold in a year are not campaign lines: suggest them as private client offers only, unless the owner asks for them.
-- Rank the plan by campaign value: demand evidence (units and gross profit over 90 and 365 days, the brand's recent sales) together with the profit kept after the offer. Not by how old the stock is.
+- Rank the plan by campaign value, highest first across all three groups (the group is a column, not a section): demand evidence (units and gross profit over 90 and 365 days, the brand's recent sales) together with the profit kept after the offer. Not by how old the stock is.
+- Every line in the plan is a recommendation you stand behind. If you would drop a line, move it to "Left out" with the reason; do not keep it in the table with a caveat.
 - Price every line with offer_plan, then apply the commercial judgement above and fix or drop flagged lines. On traffic lines a warning about discounting a good seller is expected: keep that offer small. Price comparisons for expensive offers in separate calls first; price the final plan last.
 - Never recommend an offer on consignment stock without saying it needs the supplier.
 
@@ -407,9 +408,10 @@ async function converse(client: Anthropic, admin: SupabaseClient, model: string,
 function remember(tool: string, input: Json, data: unknown): Json {
   const c: Json = { last_question_type: tool };
   for (const k of ["brand", "outlet", "product_type", "days", "months", "compare", "ownership", "budget", "floor"]) if (input[k] !== undefined) c[k] = input[k];
-  if (tool === "offer_plan") {
-    // the plan as priced, so "less discount" or "only Hoffman" can refine it
-    const items = ((data as Json)?.items ?? []) as Json[];
+  // the plan as priced, so "less discount" or "only Hoffman" can refine it; pricing one or
+  // two lines to compare offers does not replace a plan
+  const items = tool === "offer_plan" ? ((data as Json)?.items ?? []) as Json[] : [];
+  if (items.length >= 3) {
     c.last_offer_plan = items.filter((i) => i.name).map((i) => ({
       product_id: i.product_id, name: i.name, brand: i.brand, discount_pct: i.discount_pct,
       ...(i.gift ? { gift_product_id: (i.gift as Json).product_id, gift: (i.gift as Json).name } : {}),
