@@ -1,5 +1,15 @@
 [
   {
+    "version": "3.14.0",
+    "date": "2026-10-26",
+    "title": "Black Friday forecast",
+    "changes": [
+      "For Black Friday, Mohammed now shows what you can realistically expect to sell next to the most you could sell, as a low, likely and high range.",
+      "The forecast comes from each product's recent sales and how the shop sold in past Black Friday weeks. Products with no recent sales are not counted on.",
+      "Plans are ranked by the profit you can expect, so the products most likely to pay off come first."
+    ]
+  },
+  {
     "version": "3.13.0",
     "date": "2026-10-25",
     "title": "Mohammed plans whole campaigns",

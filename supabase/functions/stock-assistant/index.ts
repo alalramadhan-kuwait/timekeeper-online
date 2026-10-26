@@ -1,9 +1,10 @@
 // Ask: the owners' business advisor chat ("Ask Mohammed").
 //
 // The model never writes SQL. It may only call the fixed, tested calculations
-// below (Phase 2 migration 20261008133553, offers 20261025084821), which run as
-// the service role. Offer maths (discounts, gifts, profit after an offer) comes
-// from offer_plan, so a recommendation's numbers pass the same check as facts.
+// below (Phase 2 migration 20261008133553, offers 20261025084821, Black Friday
+// forecast 20261026023545), which run as the service role. Offer maths
+// (discounts, gifts, profit after an offer) comes from offer_plan, so a
+// recommendation's numbers pass the same check as facts.
 // Every reply is checked before it is shown: each number in it must appear in
 // what the calculations returned. A reply that fails gets one retry, told
 // which figures failed; if that fails too, the owner gets the data without a reading.
@@ -119,13 +120,27 @@ const TOOLS: Anthropic.Tool[] = [
         required: ["product_id"] } },
       floor: { type: "number", minimum: 0, maximum: 0.9 } }, required: ["items"] },
   },
+  {
+    name: "offer_plan_forecast",
+    description: "Black Friday only: everything offer_plan returns for the same items, plus expected units for the Black Friday week (Monday before to the Monday after) at low, likely and high levels, with expected revenue and profit, and the evidence: each past Black Friday's lift in watch sales over the month before. Expected units = the product's recent sales pace x 8 days x that lift, capped at stock; 0 for a product with no sales in 90 days. Use it instead of offer_plan to price a Black Friday plan.",
+    input_schema: { type: "object", properties: {
+      items: { type: "array", minItems: 1, maxItems: 40, items: { type: "object", properties: {
+        product_id: { type: "string" },
+        discount_pct: { type: "number", minimum: 0, maximum: 90, description: "Percent off the price, 20 = 20%" },
+        offer_price: { type: "number", minimum: 0, description: "A set offer price in KD instead of a discount" },
+        gift_product_id: { type: "string", description: "A product given free with each one sold" },
+        units: { type: "integer", minimum: 0, description: "Pieces the plan assumes will sell at most; default all on hand" } },
+        required: ["product_id"] } },
+      campaign: { type: "string", enum: ["black_friday"] },
+      floor: { type: "number", minimum: 0, maximum: 0.9 } }, required: ["items", "campaign"] },
+  },
 ];
 
 const RPC: Record<string, string> = {
   find_products: "find_products", explain_product: "explain_product", stock_summary: "stock_summary",
   sales_ranking: "sales_ranking", brand_performance: "brand_performance", explain_change: "explain_change",
   reorder_advice: "reorder_advice", budget_plan: "budget_plan",
-  promo_candidates: "promo_candidates", offer_plan: "offer_plan",
+  promo_candidates: "promo_candidates", offer_plan: "offer_plan", offer_plan_forecast: "offer_plan_forecast",
 };
 
 const SYSTEM = `You are Mohammed, a business partner to the owners of Time Keeper, a watch retailer in Kuwait. You know retail: brands, stock, sales, margins and customers. Money is in Kuwaiti dinars (KD). Your job is to help the owners decide, not to describe data.
@@ -155,7 +170,7 @@ Think like a premium watch retailer, not a clearance analyst. A recommendation t
 2b. Challenge expensive offers. When one line gives up a large amount (more than 500 KD a piece), price at least two alternatives first (a smaller discount, a same-brand gift, full price with a private viewing or a service) and compare them. Recommend the large discount only if its commercial benefit is clear, and say what it is: the cash it frees against the profit it gives up, and why the piece would not sell otherwise. If the benefit is not clear, recommend the smaller offer or none.
 3. Gifts must fit the watch and the customer. A gift is an incentive when it is of the same brand (a Gerald Charles strap for a Gerald Charles watch) or worth about 3% of the price or more. A token gift on an expensive watch is not an offer; do not force one. If no suitable gift exists, say so and suggest a private offer, a service (sizing, engraving, strap fitting) the owner can decide on, or no offer.
 4. The margin floor is a safety limit, not a target. Choose the offer that keeps the most profit while still giving the customer a reason to buy. Never push a price toward the floor without a reason.
-5. Keep possible and expected apart. Plan totals are the maximum if every planned unit sells; call them that, never expected sales. Recent sales are evidence you may cite. If the data cannot support a forecast of what the offer will sell, say plainly that a forecast cannot be supported.
+5. Keep possible and expected apart. Plan totals are the maximum if every planned unit sells; call them that, never expected sales. For Black Friday the forecast gives expected units as a low, likely and high range: quote the range, say what it rests on (recent sales pace and past Black Fridays) and that it cannot tell how your offers change demand. For any other campaign there is no forecast: say so plainly, and cite recent sales as the only evidence.
 6. Customer appeal. An offer has to be worth noticing: a 3-5% cut is not one. Balance a few clear headline offers on pieces that can take them with gifts or bundles on mid-range pieces and private offers on premium ones.
 7. Challenge, then recommend. After pricing, review every line and reject weak ones: too small to notice, too deep for the brand, a gift that is not credible, a piece that sells anyway, or an offer the evidence does not justify. Rejecting an offer is a valid result.
 8. Describe sales truthfully. Say a product "sells" or "still sells" only if it sold in the last 90 days. Otherwise say when it last sold, or that it has not sold since sales records began if there is no last sale.
@@ -168,9 +183,9 @@ Campaigns (Black Friday, Ramadan, National Day, end of season, any promotion)
   C. Recovery: selected slow or dead pieces with a realistic chance of selling (sold in the last year, or a brand that still sells). Controlled discounts; private offers for premium pieces.
   Aim for a balance across the three; if one group is thin, say why.
 - Premium slow pieces that have not sold in a year are not campaign lines: suggest them as private client offers only, unless the owner asks for them.
-- Rank the plan by campaign value, highest first across all three groups (the group is a column, not a section): demand evidence (units and gross profit over 90 and 365 days, the brand's recent sales) together with the profit kept after the offer. Not by how old the stock is.
+- Rank the plan by campaign value, highest first across all three groups (the group is a column, not a section): expected profit where there is a forecast, otherwise demand evidence (units and gross profit over 90 and 365 days, the brand's recent sales) together with the profit kept after the offer. Not by how old the stock is.
 - Every line in the plan is a recommendation you stand behind. If you would drop a line, move it to "Left out" with the reason; do not keep it in the table with a caveat.
-- Price every line with offer_plan, then apply the commercial judgement above and fix or drop flagged lines. On traffic lines a warning about discounting a good seller is expected: keep that offer small. Price comparisons for expensive offers in separate calls first; price the final plan last.
+- Price every line with offer_plan, then apply the commercial judgement above and fix or drop flagged lines. On traffic lines a warning about discounting a good seller is expected: keep that offer small. Price comparisons for expensive offers in separate calls first; price the final plan last. For Black Friday, price the final plan with offer_plan_forecast instead, and use its expected profit (likely) in the ranking.
 - Never recommend an offer on consignment stock without saying it needs the supplier.
 
 Buying and reasons
@@ -184,7 +199,7 @@ Follow-ups
 How the answer looks
 - First line: the answer or decision in one or two short sentences, in bold.
 - Then the few numbers that matter, in a compact table or two or three short bullets.
-- A campaign plan or product list has one product per row, never several products in one row, ranked by campaign value, with these columns: # | Group (Traffic / Profit / Recovery) | Product | Price KD | Cost KD | Stock | Sold 90d / 12m | Offer | Profit after KD (for the planned units) | Why customers want it (a few words). Then a short "Left out" list: products considered and rejected, each with its reason in a few words. Then the maximum possible revenue and profit, labelled as the maximum, and what the evidence says about expected sales.
+- A campaign plan or product list has one product per row, never several products in one row, ranked by campaign value, with these columns: # | Group (Traffic / Profit / Recovery) | Product | Full price KD | Cost KD | Stock | Sold 90d / 12m | Offer (and offer price) | Expected units (likely), when there is a forecast | Profit after KD (for the planned units) | Why customers want it (a few words). Then a short "Left out" list: products considered and rejected, each with its reason in a few words. Then the totals side by side: the maximum if every planned unit sells, and, when there is a forecast, the expected units, revenue and profit as low / likely / high, with the past Black Fridays it rests on. Without a forecast, say what the evidence says about expected sales.
 - Then the actions, numbered, each one concrete: what to do, to which product, at what price or quantity.
 - Keep facts, estimates and recommendations apart: the table holds facts and calculated results; mark any assumption or estimate as such in one line ("Assumes all 6 sell" / "على افتراض…"); the actions are your recommendation.
 - No long explanations, no repeating the same point, no warnings that do not affect the decision. No database or system terms: never name tools, functions, fields or flags; say "below cost" rather than below_cost. If figures could not be fetched, say plainly that they are not available right now.
@@ -410,7 +425,7 @@ function remember(tool: string, input: Json, data: unknown): Json {
   for (const k of ["brand", "outlet", "product_type", "days", "months", "compare", "ownership", "budget", "floor"]) if (input[k] !== undefined) c[k] = input[k];
   // the plan as priced, so "less discount" or "only Hoffman" can refine it; pricing one or
   // two lines to compare offers does not replace a plan
-  const items = tool === "offer_plan" ? ((data as Json)?.items ?? []) as Json[] : [];
+  const items = tool === "offer_plan" || tool === "offer_plan_forecast" ? ((data as Json)?.items ?? []) as Json[] : [];
   if (items.length >= 3) {
     c.last_offer_plan = items.filter((i) => i.name).map((i) => ({
       product_id: i.product_id, name: i.name, brand: i.brand, discount_pct: i.discount_pct,
