@@ -59,11 +59,17 @@ Deno.serve(async (req: Request) => {
   if ((body.action ?? "check") === "check") {
     try {
       const { token, scope } = await accessToken();
-      const d = await gql(token, `{ shop { name currencyCode } }`);
       const scopes = scope.split(",").filter(Boolean);
-      const needed = ["read_orders", "read_products", "read_inventory", "read_customers", "read_reports"];
-      return json({ ok: true, shop: d.shop.name, currency: d.shop.currencyCode, scopes,
-        missing: needed.filter((n) => !scopes.includes(n)) });
+      // a write scope includes its read scope
+      const has = (n: string) => scopes.includes(n) || scopes.includes(n.replace(/^read_/, "write_"));
+      const needed = ["read_orders", "read_all_orders", "read_products", "read_inventory", "read_customers", "read_reports"];
+      const d = await gql(token, `{ shop { name currencyCode } ordersCount(limit: null) { count }
+        orders(first: 1, sortKey: CREATED_AT, reverse: true) { nodes { name customer { id } phone email } } }`);
+      const o = d.orders.nodes[0];
+      // only whether customer details are readable, never the details themselves
+      return json({ ok: true, shop: d.shop.name, currency: d.shop.currencyCode, orders: d.ordersCount.count,
+        latest_order: o?.name ?? null, customer_details_readable: !!(o && (o.customer?.id || o.phone || o.email)),
+        missing: needed.filter((n) => !has(n)) });
     } catch (e) {
       return json({ ok: false, error: String(e) }, 502);
     }
