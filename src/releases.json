@@ -1,5 +1,14 @@
 [
   {
+    "version": "3.17.0",
+    "date": "2026-10-29",
+    "title": "Share the valuation questions",
+    "changes": [
+      "Owners can share a link to the valuation questions with anyone, even without an account. They tap their answers and send them.",
+      "Answers sent through the link appear on the Business Valuation page under Questions, newest first for each person."
+    ]
+  },
+  {
     "version": "3.16.0",
     "date": "2026-10-29",
     "title": "Business Valuation for the owners",

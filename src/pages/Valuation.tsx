@@ -24,6 +24,7 @@ interface Snapshot {
   customers: { buyers: number; repeat: number };
   monthly_sales: { m: string; rev: number }[];
 }
+interface Submission { id: number; token: string; respondent: string | null; answers: Record<string, string | string[]>; submitted_at: string }
 
 const TABS = ['Summary', 'Questions', 'Assumptions', 'Data'] as const;
 type Tab = typeof TABS[number];
@@ -45,6 +46,8 @@ export default function ValuationPage() {
   const [lines, setLines] = useState<Line[]>([]);
   const [inputs, setInputs] = useState<Input[]>([]);
   const [snap, setSnap] = useState<Snapshot | null>(null);
+  const [subs, setSubs] = useState<Submission[]>([]);
+  const [formTokens, setFormTokens] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<Tab>('Summary');
 
@@ -65,10 +68,14 @@ export default function ValuationPage() {
         all.push(...((data ?? []) as Line[]));
         if (!data || data.length < 1000) break;
       }
-      const [{ data: inp }, { data: s }] = await Promise.all([
+      const [{ data: inp }, { data: s }, { data: sb }, { data: ft }] = await Promise.all([
         supabase.from('val_inputs').select('*').order('sort'),
         supabase.rpc('val_operational_snapshot'),
+        supabase.from('val_submissions').select('*').order('submitted_at', { ascending: false }),
+        supabase.from('val_form').select('token').eq('active', true),
       ]);
+      setSubs((sb ?? []) as Submission[]);
+      setFormTokens((ft ?? []).map((x: { token: string }) => x.token));
       setLines(dedupe(all));
       setInputs((inp ?? []) as Input[]);
       setSnap((s ?? null) as Snapshot | null);
@@ -123,7 +130,12 @@ export default function ValuationPage() {
         ))}
       </div>
       {tab === 'Summary' && <Summary m={model} onGo={() => setTab('Questions')} openCount={qs.length - done} />}
-      {tab === 'Questions' && <Questions items={qs} save={save} />}
+      {tab === 'Questions' && (
+        <div className="space-y-4">
+          <SharedForm tokens={formTokens} subs={subs} />
+          <Questions items={qs} save={save} />
+        </div>
+      )}
       {tab === 'Assumptions' && <Assumptions items={inputs.filter((i) => i.kind === 'assumption')} save={save} />}
       {tab === 'Data' && <DataView m={model} snap={snap} />}
     </div>
@@ -270,6 +282,46 @@ function Summary({ m, onGo, openCount }: { m: Model; onGo: () => void; openCount
         ))}
       </div>
     </div>
+  );
+}
+
+function SharedForm({ tokens, subs }: { tokens: string[]; subs: Submission[] }) {
+  const [copied, setCopied] = useState(false);
+  const [open, setOpen] = useState<number | null>(null);
+  if (!tokens.length && !subs.length) return null;
+  const link = tokens[0] ? `${location.origin}${import.meta.env.BASE_URL}answer.html?t=${tokens[0]}` : '';
+  // subs are newest first, so the first row per person is their latest answer
+  const seen = new Set<string>();
+  const people = subs.filter((x) => { const k = (x.respondent ?? 'Unnamed').toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; });
+  return (
+    <Panel className="p-4 space-y-3">
+      <div>
+        <div className="font-semibold text-slate-800">Answers from the shared link</div>
+        <div className="text-xs text-slate-500">Anyone with this link can answer the questions without an account. They cannot see any figures or other answers.</div>
+      </div>
+      {link && (
+        <div className="flex flex-col sm:flex-row gap-2">
+          <input readOnly value={link} className="flex-1 min-w-0 text-xs border border-slate-200 rounded-lg p-2 bg-slate-50" onFocus={(e) => e.target.select()} />
+          <button onClick={() => navigator.clipboard?.writeText(link).then(() => setCopied(true), () => {})}
+            className="px-3 py-1.5 text-sm rounded-lg bg-slate-800 text-white whitespace-nowrap">{copied ? 'Copied ✓' : 'Copy link'}</button>
+        </div>
+      )}
+      {people.length === 0 ? <p className="text-sm text-slate-400">No answers yet.</p> : people.map((x) => (
+        <div key={x.id} className="border-t border-slate-100 pt-2">
+          <button onClick={() => setOpen(open === x.id ? null : x.id)} className="w-full flex justify-between text-sm text-left">
+            <span className="font-medium text-slate-700">{x.respondent || 'Unnamed'}</span>
+            <span className="text-slate-400 text-xs">{Object.keys(x.answers).length} answers · {new Date(x.submitted_at).toLocaleString('en-GB')} {open === x.id ? '▲' : '▼'}</span>
+          </button>
+          {open === x.id && (
+            <dl className="mt-2 text-xs grid grid-cols-1 sm:grid-cols-[minmax(0,14rem)_1fr] gap-x-3 gap-y-1">
+              {Object.entries(x.answers).map(([k, v]) => (
+                <div key={k} className="contents"><dt className="text-slate-400 break-words">{k.replace(/_/g, ' ').replace(/\./g, ' · ')}</dt><dd className="text-slate-700 break-words">{[].concat(v as never).join(', ')}</dd></div>
+              ))}
+            </dl>
+          )}
+        </div>
+      ))}
+    </Panel>
   );
 }
 
