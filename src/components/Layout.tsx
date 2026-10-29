@@ -1,7 +1,7 @@
 import { NavLink, Outlet, useLocation, useSearchParams } from 'react-router-dom';
 import {
   LayoutDashboard, Briefcase, TrendingUp, Hourglass, Truck, Handshake,
-  Star, Users, CalendarRange, LogOut, Watch, Menu, Contact, Settings, Gem, ClipboardCheck, PhoneCall, Boxes, History, UserRound, Wrench, Instagram, Megaphone, Target, Sparkles, Activity, Gauge, Inbox, ClipboardList, ChevronDown, BellRing, Bell, Download, Share, Castle, Wallet, type LucideIcon,
+  Star, Users, CalendarRange, LogOut, Watch, Menu, Contact, Settings, Gem, ClipboardCheck, PhoneCall, Boxes, History, UserRound, Wrench, Instagram, Megaphone, Target, Sparkles, Activity, Gauge, Inbox, ClipboardList, ChevronDown, BellRing, Bell, Download, Share, Castle, Wallet, Landmark, type LucideIcon,
 } from 'lucide-react';
 import { Suspense, useEffect, useRef, useState } from 'react';
 import { useAuth, Role } from '../context/AuthContext';
@@ -88,6 +88,8 @@ const NAV_GROUPS: NavGroup[] = [
   {
     title: 'Admin',
     items: [
+      // the accountant's monthly reports (P&L, balance sheet, cash): the three owners only (the database checks again)
+      { to: '/financials', label: 'Financial Reports', icon: Landmark, roles: ['admin'], owners: true },
       { to: '/tasks', label: 'Assign Tasks', icon: ClipboardList, roles: ['admin', 'manager'] },
       { to: '/activity', label: 'User Activity', icon: Activity, roles: ['admin', 'manager'] },
       { to: '/performance', label: 'Employee Performance', icon: Gauge, roles: ['admin', 'manager'] },
@@ -113,7 +115,7 @@ export function canAccessPath(to: string, role: Role | null, pageAccess: string[
   if (to === '/company-documents') return ['admin', 'manager', 'hr'].includes(role ?? '');
   if (to === '/content') return ['admin', 'manager', 'marketing'].includes(role ?? '');
   // the owners' pages: the page and the database check the owner list itself
-  if (to === '/payroll') return role === 'admin';
+  if (to === '/payroll' || to === '/financials') return role === 'admin';
   if (role === 'admin') return true;
   // an explicit list — even an empty one — replaces the role defaults, so a
   // salesperson can be limited to Dashboard, My Portal, Inbox and Notifications

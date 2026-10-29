@@ -1,5 +1,15 @@
 [
   {
+    "version": "3.15.0",
+    "date": "2026-10-29",
+    "title": "Financial Reports for the owners",
+    "changes": [
+      "Owners now have a Financial Reports page under Admin with the accountant's monthly reports from June 2024 to May 2026 in one place.",
+      "See profit and loss month by month, each shop's results, the balance sheet, cash, targets against actual, and the top products, customers and suppliers.",
+      "When the accountant corrects an earlier month in a later report, the page shows the corrected figure. Only the three owners can open it."
+    ]
+  },
+  {
     "version": "3.14.0",
     "date": "2026-10-26",
     "title": "Black Friday forecast",
