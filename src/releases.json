@@ -1,5 +1,15 @@
 [
   {
+    "version": "3.16.0",
+    "date": "2026-10-29",
+    "title": "Business Valuation for the owners",
+    "changes": [
+      "Owners have a new Business Valuation page under Admin that values the company five ways from the accountant reports and live Lightspeed stock and sales.",
+      "A list of questions tracks what is still needed; answer them on the page and the value range updates.",
+      "Change the assumptions (multiples, manager salary, growth) and see the effect straight away. Only the three owners can open it."
+    ]
+  },
+  {
     "version": "3.15.0",
     "date": "2026-10-29",
     "title": "Financial Reports for the owners",

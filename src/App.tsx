@@ -53,6 +53,7 @@ const SettingsPage = page(() => import('./pages/Settings'));
 const LeavePage = page(() => import('./pages/Leave'));
 const PayrollPage = page(() => import('./pages/Payroll'));
 const FinancialsPage = page(() => import('./pages/Financials'));
+const ValuationPage = page(() => import('./pages/Valuation'));
 const AttendancePage = page(() => import('./pages/Attendance'));
 const OpenShiftsPage = page(() => import('./pages/OpenShifts'));
 const InfluencerProfilePage = page(() => import('./pages/InfluencerProfile'));
@@ -113,6 +114,7 @@ function Shell() {
         <Route path="/leave" element={g('/leave', <LeavePage />)} />
         <Route path="/payroll" element={g('/payroll', <PayrollPage />)} />
         <Route path="/financials" element={g('/financials', <FinancialsPage />)} />
+        <Route path="/valuation" element={g('/valuation', <ValuationPage />)} />
         <Route path="/limited-projects" element={g('/limited-projects', <LimitedProjectsPage />)} />
         <Route path="/repairs" element={g('/repairs', <RepairWatchesPage />)} />
         <Route path="/instagram" element={g('/instagram', <InstagramPage />)} />
