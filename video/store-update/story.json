@@ -162,6 +162,7 @@
   },
   {
    "id": "s02",
+   "voice": "voice/s02.wav",
    "theme": "tk-linen",
    "banner": "الجوال هو المحل",
    "transition": "slide",
@@ -233,11 +234,11 @@
    ],
    "captions": "ثمانية وثمانين بالمية من زوارنا يدخلون من الجوال. يعني الجوال هو المحل.",
    "voiceAt": 0.1,
-   "pad": 0.2,
-   "dur": 7.1
+   "pad": 0.2
   },
   {
    "id": "s03",
+   "voice": "voice/s03.wav",
    "theme": "tk-bone",
    "banner": "الواتساب تحت زر الشراء",
    "transition": "slide",
@@ -286,13 +287,32 @@
      "y": 640
     },
     {
+     "type": "shape",
+     "kind": "arrow",
+     "w": 100,
+     "h": 60,
+     "color": "#B3261E",
+     "x": 665,
+     "y": 540,
+     "rot": 180,
+     "depth": 0,
+     "in": {
+      "type": "pop",
+      "at": 2.5
+     },
+     "idle": {
+      "type": "bob",
+      "amp": 5
+     }
+    },
+    {
      "type": "bubble",
      "text": "مرحبا، أبي أستفسر عن…",
-     "w": 300,
+     "w": 320,
      "h": 80,
-     "x": 380,
-     "y": 420,
-     "tail": "b",
+     "x": 400,
+     "y": 790,
+     "tail": "t",
      "size": 26,
      "depth": 0,
      "in": {
@@ -303,11 +323,11 @@
    ],
    "captions": "صفحة الساعة: زر الواتساب صار تحت زر الشراء على طول، والرسالة توصلكم فيها اسم الساعة.",
    "voiceAt": 0.1,
-   "pad": 0.2,
-   "dur": 8.2
+   "pad": 0.2
   },
   {
    "id": "s04",
+   "voice": "voice/s04.wav",
    "theme": "tk-linen",
    "banner": "زر الشراء ينزل وياك",
    "transition": "slide",
@@ -351,11 +371,11 @@
    ],
    "captions": "ولما العميل ينزل يقرا المواصفات، زر الشراء ينزل وياه.",
    "voiceAt": 0.1,
-   "pad": 0.2,
-   "dur": 5.4
+   "pad": 0.2
   },
   {
    "id": "s05",
+   "voice": "voice/s05.wav",
    "theme": "tk-graphite",
    "banner": "فوق 1,000 د.ك: موعد مشاهدة",
    "transition": "slide",
@@ -463,11 +483,11 @@
    ],
    "captions": "الساعات اللي فوق الألف دينار: زر جديد، احجز موعد مشاهدة في الأفنيوز.",
    "voiceAt": 0.1,
-   "pad": 0.2,
-   "dur": 6.8
+   "pad": 0.2
   },
   {
    "id": "s06",
+   "voice": "voice/s06.wav",
    "theme": "tk-bone",
    "banner": "تسوق حسب الميزانية",
    "transition": "slide",
@@ -510,11 +530,11 @@
    ],
    "captions": "الرئيسية: تسوق حسب الميزانية، وجديدنا ساعة من كل براند.",
    "voiceAt": 0.1,
-   "pad": 0.2,
-   "dur": 5.6
+   "pad": 0.2
   },
   {
    "id": "s07",
+   "voice": "voice/s07.wav",
    "theme": "tk-linen",
    "banner": "السعر رجع بالعربي",
    "transition": "slide",
@@ -572,11 +592,11 @@
    ],
    "captions": "وبالعربي، بعض الساعات كان سعرها ما يطلع. الحين يطلع.",
    "voiceAt": 0.1,
-   "pad": 0.2,
-   "dur": 5.3
+   "pad": 0.2
   },
   {
    "id": "s08",
+   "voice": "voice/s08.wav",
    "theme": "tk-bone",
    "banner": "جاهزة… وقريب على الموقع",
    "transition": "slide",
@@ -618,8 +638,7 @@
    ],
    "captions": "التعديلات جاهزة، وقريب تنزل على الموقع.",
    "voiceAt": 0.1,
-   "pad": 0.2,
-   "dur": 4.1
+   "pad": 0.2
   },
   {
    "theme": "tk-ink",
