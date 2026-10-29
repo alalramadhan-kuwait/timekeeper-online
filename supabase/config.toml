@@ -10,6 +10,10 @@ verify_jwt = true
 [functions.admin-users]
 verify_jwt = true
 
+# The video studio signs the owner in with its own passcode (no auth user, so no staff profile).
+[functions.studio]
+verify_jwt = false
+
 # Lightspeed functions authorise themselves (cron's x-sync-key, or an
 # admin/manager JWT checked in code), so the gateway must not require a JWT.
 [functions.lightspeed-sales-sync]
