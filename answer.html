@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Time Keeper — Questions</title>
+<meta name="robots" content="noindex">
+<style>
+  :root { --bg:#f8fafc; --card:#fff; --ink:#1e293b; --mute:#64748b; --line:#e2e8f0; --acc:#0f766e; --accbg:#ccfbf1; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#0f172a; --card:#1e293b; --ink:#e2e8f0; --mute:#94a3b8; --line:#334155; --acc:#5eead4; --accbg:#134e4a; } }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.45 -apple-system, system-ui, sans-serif; }
+  main { max-width:760px; margin:0 auto; padding:16px 16px 120px; }
+  h1 { font-size:22px; margin:8px 0 4px; }
+  .sub { color:var(--mute); font-size:13px; margin-bottom:16px; }
+  .q { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px; margin:12px 0; }
+  .q h2 { font-size:15px; margin:0 0 4px; }
+  .q .n { color:var(--mute); font-size:12px; }
+  .hint { color:var(--mute); font-size:12px; margin:2px 0 10px; }
+  .opts { display:flex; flex-wrap:wrap; gap:6px; }
+  .opts label { border:1px solid var(--line); border-radius:999px; padding:6px 12px; cursor:pointer; user-select:none; font-size:14px; }
+  .opts input { display:none; }
+  .opts label:has(input:checked) { background:var(--accbg); border-color:var(--acc); color:var(--acc); font-weight:600; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th, td { border-top:1px solid var(--line); padding:6px 4px; text-align:left; vertical-align:middle; }
+  th { color:var(--mute); font-weight:500; }
+  .scroll { overflow-x:auto; }
+  select, input[type=text], input[type=number], input[type=month], textarea {
+    width:100%; font:inherit; color:var(--ink); background:var(--bg); border:1px solid var(--line); border-radius:8px; padding:6px 8px; }
+  textarea { margin-top:8px; min-height:44px; }
+  td select { min-width:110px; }
+  .row { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px; }
+  .row label { font-size:12px; color:var(--mute); }
+  .bar { position:fixed; left:0; right:0; bottom:0; background:var(--card); border-top:1px solid var(--line); padding:10px 16px; }
+  .bar > div { max-width:760px; margin:0 auto; display:flex; gap:10px; align-items:center; }
+  .prog { flex:1; font-size:13px; color:var(--mute); }
+  button.ghost { background:transparent; color:var(--acc); border:1px solid var(--acc); }
+  #status { font-size:13px; }
+  button { font:inherit; font-weight:600; border:0; border-radius:10px; padding:10px 16px; background:var(--acc); color:var(--card); cursor:pointer; }
+  #out { display:none; width:100%; min-height:200px; margin-top:12px; font:12px/1.4 ui-monospace, monospace; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Time Keeper — a few questions</h1>
+  <div class="sub">Tap the options that fit. Write only where there's a box. Skip anything you don't know. Answers are kept on this device as you go. When finished, tap <b>Send answers</b>.</div>
+  <div class="q"><h2>Your name</h2><input type="text" id="who" placeholder="So we know who answered"></div>
+  <form id="f" onsubmit="return false"></form>
+  <textarea id="out" readonly></textarea>
+</main>
+<div class="bar"><div><span class="prog"><span id="prog">Loading…</span><br><span id="status"></span></span><button type="button" class="ghost" id="copy">Copy</button><button type="button" id="send">Send answers</button></div></div>
+
+<script>
+const SB = 'https://ttshgrujnycapugrmyxs.supabase.co', KEY = 'sb_publishable_R49Hbogb0gEQ46drzVizqg_wSnQSgMG';
+const TOKEN = new URLSearchParams(location.search).get('t') || '';
+const rpc = (fn, body) => fetch(`${SB}/rest/v1/rpc/${fn}`, { method: 'POST', headers: { apikey: KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+  .then(async r => { const j = await r.json().catch(() => null); if (!r.ok) throw new Error(j?.message || 'Could not connect'); return j; });
+let Q = [];
+(async () => {
+  try {
+    const form = TOKEN ? await rpc('val_form_get', { p_token: TOKEN }) : null;
+    if (!form) { document.querySelector('main').innerHTML = '<h1>This link is not active</h1><div class="sub">Ask the person who sent it for a new link.</div>'; document.querySelector('.bar').hidden = true; return; }
+    Q = form.questions; render();
+  } catch (e) { document.getElementById('f').innerHTML = '<div class="q">Could not load the questions. Check your connection and refresh.</div>'; }
+})();
+const f = document.getElementById('f');
+const KEYSTORE = 'tk-val-' + TOKEN;
+const store = (() => { try { return JSON.parse(localStorage.getItem(KEYSTORE) || '{}'); } catch { return {}; } })();
+const pills = (name, opts, many) => `<div class="opts">${opts.map(o => `<label><input type="${many ? 'checkbox' : 'radio'}" name="${name}" value="${o.replace(/"/g, '&quot;')}">${o}</label>`).join('')}</div>`;
+const sel = (name, opts) => `<select name="${name}"><option value=""></option>${opts.map(o => `<option>${o}</option>`).join('')}</select>`;
+const fieldsHtml = (q, fs) => `<div class="row">${fs.map(x => `<div><label>${x.label}</label><input type="${x.t}" name="${q.id}.${x.k}"${x.t === 'number' ? ' inputmode="decimal"' : ''}></div>`).join('')}</div>`;
+
+function render() {
+f.innerHTML = Q.map((q, i) => {
+  let h = `<div class="q" data-q="${q.id}"><div class="n">${i + 1} of ${Q.length}</div><h2>${q.title}</h2>${q.hint ? `<div class="hint">${q.hint}</div>` : ''}`;
+  if (q.type === 'one' || q.type === 'many') h += pills(q.id, q.opts, q.type === 'many');
+  if (q.type === 'grid') h += `<div class="scroll"><table><tr><th></th>${q.cols.map(c => `<th>${c.label}</th>`).join('')}</tr>${q.rows.map(r => `<tr><td>${r}</td>${q.cols.map(c => `<td>${sel(`${q.id}.${r}.${c.k}`, c.opts)}</td>`).join('')}</tr>`).join('')}</table></div>`;
+  if (q.type === 'fields') h += fieldsHtml(q, q.fields);
+  if (q.type !== 'fields' && q.fields) h += fieldsHtml(q, q.fields);
+  if (q.then) h += `${q.then.title ? `<div class="hint" style="margin-top:10px">${q.then.title}</div>` : '<div style="height:8px"></div>'}${pills(`${q.id}.${q.then.id}`, q.then.opts, q.then.many)}`;
+  if (q.note) h += `<textarea name="${q.id}.note" placeholder="${q.note}"></textarea>`;
+  return h + '</div>';
+}).join('');
+
+// restore + autosave
+for (const el of f.elements) {
+  const v = store[el.name];
+  if (v == null) continue;
+  if (el.type === 'checkbox' || el.type === 'radio') el.checked = [].concat(v).includes(el.value);
+  else el.value = v;
+}
+f.addEventListener('input', update); f.addEventListener('change', update);
+document.getElementById('who').addEventListener('input', update);
+try { document.getElementById('who').value = localStorage.getItem(KEYSTORE + '-name') || ''; } catch {}
+update();
+}
+function collect() {
+  const d = {};
+  for (const el of f.elements) {
+    if (!el.name) continue;
+    if (el.type === 'checkbox') { if (el.checked) (d[el.name] ||= []).push(el.value); }
+    else if (el.type === 'radio') { if (el.checked) d[el.name] = el.value; }
+    else if (el.value.trim()) d[el.name] = el.value.trim();
+  }
+  return d;
+}
+function update() {
+  const d = collect();
+  try { localStorage.setItem(KEYSTORE, JSON.stringify(d)); localStorage.setItem(KEYSTORE + '-name', document.getElementById('who').value); } catch {}
+  const answered = Q.filter(q => Object.keys(d).some(k => k === q.id || k.startsWith(q.id + '.'))).length;
+  document.getElementById('prog').textContent = `${answered} of ${Q.length} answered`;
+  return d;
+}
+document.getElementById('send').onclick = async () => {
+  const btn = document.getElementById('send'), st = document.getElementById('status');
+  const d = update();
+  if (!Object.keys(d).length) { st.textContent = 'Answer at least one question first.'; return; }
+  btn.disabled = true; btn.textContent = 'Sending…';
+  try {
+    await rpc('val_form_submit', { p_token: TOKEN, p_respondent: document.getElementById('who').value, p_answers: d });
+    btn.textContent = 'Sent ✓'; st.textContent = 'Thank you — your answers were received. You can change them and send again.';
+  } catch (e) { btn.textContent = 'Send answers'; st.textContent = e.message + '. Try again, or use Copy.'; }
+  btn.disabled = false;
+};
+
+document.getElementById('copy').onclick = async () => {
+  const d = update(), lines = ['VALUATION ANSWERS'];
+  for (const q of Q) {
+    const keys = Object.keys(d).filter(k => k === q.id || k.startsWith(q.id + '.'));
+    if (!keys.length) continue;
+    lines.push('', `## ${q.id}`);
+    for (const k of keys) lines.push(`${k.slice(q.id.length + 1) || 'answer'}: ${[].concat(d[k]).join('; ')}`);
+  }
+  const text = lines.join('\n'), out = document.getElementById('out');
+  out.value = text; out.style.display = 'block';
+  try { await navigator.clipboard.writeText(text); document.getElementById('status').textContent = 'Copied'; }
+  catch { out.select(); document.getElementById('status').textContent = 'Select the text below and copy it'; }
+};
+</script>
+</body>
+</html>
