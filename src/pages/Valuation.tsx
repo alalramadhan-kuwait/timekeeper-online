@@ -17,6 +17,8 @@ interface Input {
 interface Snapshot {
   as_of: string; sales_12m: number;
   aging: { bucket: string; cost: number; retail: number; units: number }[];
+  idle?: { band: 'low' | 'mid' | 'high'; months_idle: number; sold_before: boolean; cost: number; units: number; models: number }[];
+  zero_cost_units?: number;
   ownership: { own: string; cost: number; retail: number }[];
   stock_brands: { brand: string; cost: number }[];
   sales_brands: { brand: string; rev: number }[];
@@ -189,8 +191,23 @@ function buildModel(lines: Line[], inputs: Input[], snap: Snapshot | null) {
   const debt = loanIn?.status === 'answered' && loanIn.value != null ? loanIn.value : ncl;
   const debtIsEstimate = !(loanIn?.status === 'answered' && loanIn.value != null);
 
-  const ag = (b: string) => snap?.aging?.find((x) => x.bucket === b)?.cost ?? 0;
-  const writeDown = ag('Over 12 months') * (1 - a('recovery_old', 50) / 100) + ag('Never sold') * (1 - a('recovery_never', 40) / 100);
+  // Slow stock: each price band has its own "slow after" limit (months since the last sale, or since
+  // the model was added if it never sold). Stock past the limit keeps recovery_slow of its cost; stock
+  // a further 12 months past it keeps recovery_very_slow. Every stock row sits in one band and one idle
+  // month, so nothing is written down twice. If the accountant already provides for slow stock, the
+  // balance sheet carries the write-down and it is not deducted again here.
+  const keepSlow = a('recovery_slow', 75) / 100, keepVerySlow = a('recovery_very_slow', 50) / 100;
+  const stockBands = STOCK_BANDS.map((b) => {
+    const limit = a(b.limitKey, b.limitDefault);
+    const rs = (snap?.idle ?? []).filter((x) => x.band === b.band);
+    const total = rs.reduce((s, x) => s + x.cost, 0);
+    const slow = rs.filter((x) => x.months_idle >= limit && x.months_idle < limit + 12).reduce((s, x) => s + x.cost, 0);
+    const verySlow = rs.filter((x) => x.months_idle >= limit + 12).reduce((s, x) => s + x.cost, 0);
+    return { ...b, limit, total, slow, verySlow, writeDown: slow * (1 - keepSlow) + verySlow * (1 - keepVerySlow) };
+  });
+  const provision = inputs.find((i) => i.key === 'stock_provision');
+  const provisionInBooks = provision?.status === 'answered' && /^\s*(yes|نعم|اي)/i.test(provision.answer ?? '');
+  const writeDown = provisionInBooks ? 0 : stockBands.reduce((s, b) => s + b.writeDown, 0);
 
   const excessCash = Math.max(0, cash - a('operating_cash', 50000));
   const toEquity = (ev: number) => ev + excessCash - debt;
@@ -207,7 +224,7 @@ function buildModel(lines: Line[], inputs: Input[], snap: Snapshot | null) {
       low: toEquity(adjEbitda * a('ebitda_mult_low', 3)), high: toEquity(adjEbitda * a('ebitda_mult_high', 5)),
       note: 'How buyers price a profitable, established retailer. The owner-manager salary is deducted first.' },
     { key: 'assets', name: 'Adjusted net assets', fit: 'Floor',
-      basis: `Net assets ${kd(netAssets)} less slow-stock write-down ${kd(writeDown)}`,
+      basis: provisionInBooks ? `Net assets ${kd(netAssets)} (the accountant already writes down slow stock)` : `Net assets ${kd(netAssets)} less slow-stock write-down ${kd(writeDown)}`,
       low: netAssets - writeDown, high: netAssets,
       note: 'What the business is worth if it stopped trading tomorrow. The price should not go below this.' },
     { key: 'sde', name: "Owner's earnings (SDE)", fit: 'Owner-operator buyer',
@@ -225,9 +242,20 @@ function buildModel(lines: Line[], inputs: Input[], snap: Snapshot | null) {
   ];
   const e = methods[0], floor = methods[1].low;
   const recLow = Math.max(e.low, floor), recHigh = Math.max(e.high, floor);
+  const formula = {
+    multLow: a('ebitda_mult_low', 3), multHigh: a('ebitda_mult_high', 5), operatingCash: a('operating_cash', 50000),
+    evLow: adjEbitda * a('ebitda_mult_low', 3), evHigh: adjEbitda * a('ebitda_mult_high', 5),
+    earningsLow: e.low, earningsHigh: e.high, floor, lowFromFloor: floor > e.low, highFromFloor: floor > e.high,
+  };
 
-  return { rows, ttm, excessCash, last, runRateEbitda, ebitdaBase, adjEbitda, mgr, bs, netAssets, cash, debt, debtIsEstimate, ncl, writeDown, methods, recLow, recHigh, w };
+  return { rows, ttm, excessCash, last, runRateEbitda, ebitdaBase, adjEbitda, mgr, bs, netAssets, cash, debt, debtIsEstimate, ncl, writeDown, stockBands, provisionInBooks, keepSlow, keepVerySlow, formula, methods, recLow, recHigh, w };
 }
+
+const STOCK_BANDS = [
+  { band: 'low', label: 'Under 500 KD', limitKey: 'slow_months_low', limitDefault: 12 },
+  { band: 'mid', label: '500–999 KD', limitKey: 'slow_months_mid', limitDefault: 18 },
+  { band: 'high', label: '1,000 KD and over', limitKey: 'slow_months_high', limitDefault: 24 },
+] as const;
 
 // ---------- views ----------
 function Panel({ className = '', children }: { className?: string; children: React.ReactNode }) {
@@ -256,6 +284,7 @@ function Summary({ m, onGo, openCount }: { m: Model; onGo: () => void; openCount
           {openCount > 0 && <button onClick={onGo} className="ml-2 underline text-white">Answer questions →</button>}
         </div>
       </div>
+      <Formula m={m} />
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <Stat label="Sales, last 12 months" value={kd(m.ttm.income)} sub={m.ttm.filled.length ? `no report for ${m.ttm.filled.join(', ')} (used a year earlier)` : m.ttm.months < 12 ? `${m.ttm.months} reported months, scaled to 12` : undefined} />
         <Stat label="Adjusted EBITDA" value={kd(m.adjEbitda)} sub={`after ${kd(m.mgr)} manager pay · ${Math.round(m.w * 100)}% weight on recent pace`} />
@@ -282,6 +311,51 @@ function Summary({ m, onGo, openCount }: { m: Model; onGo: () => void; openCount
         ))}
       </div>
     </div>
+  );
+}
+
+// The recommended range, step by step, so it is clear what feeds it and what does not.
+function Row({ n, label, low, high, note, strong }: { n?: string; label: string; low: string; high?: string; note?: string; strong?: boolean }) {
+  return (
+    <div className={`grid grid-cols-[1.5rem_1fr_auto] gap-x-2 py-1.5 border-t border-slate-100 ${strong ? 'font-semibold text-slate-800' : 'text-slate-700'}`}>
+      <span className="text-slate-400 text-xs pt-0.5">{n}</span>
+      <div className="min-w-0">
+        <div className="text-sm">{label}</div>
+        {note && <div className="text-xs text-slate-400 font-normal">{note}</div>}
+      </div>
+      <div className="text-sm tabular-nums text-right whitespace-nowrap">{high === undefined ? low : `${low} – ${high}`}</div>
+    </div>
+  );
+}
+
+function Formula({ m }: { m: Model }) {
+  const f = m.formula;
+  const floorBinds = f.lowFromFloor || f.highFromFloor;
+  return (
+    <Panel className="p-4">
+      <div className="font-semibold text-slate-800">How the range is built</div>
+      <div className="text-xs text-slate-500 mb-2">Each end of the range is the higher of the earnings value and the floor.</div>
+      <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide mt-2">Earnings value</div>
+      <Row n="1" label={`Adjusted EBITDA × ${f.multLow}–${f.multHigh}`} low={kd(f.evLow)} high={kd(f.evHigh)}
+        note={`${kd(m.adjEbitda)} a year, after ${kd(m.mgr)} manager pay`} />
+      <Row n="2" label="+ spare cash" low={kd(m.excessCash)} note={`bank ${kd(m.cash)} less ${kd(f.operatingCash)} kept for running the shops`} />
+      <Row n="3" label="− debt" low={kd(m.debt)} note={m.debtIsEstimate ? 'long-term liabilities on the balance sheet' : 'loan balance you gave'} />
+      <Row label="= earnings value" low={kd(f.earningsLow)} high={kd(f.earningsHigh)} strong />
+      <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide mt-3">Floor</div>
+      <Row n="4" label="Net assets (accountant's balance sheet)" low={kd(m.netAssets)} note="stock is inside this, at the accountant's value" />
+      <Row n="5" label="− slow-stock write-down" low={kd(m.writeDown)}
+        note={m.provisionInBooks ? 'none: the accountant already provides for slow stock' : 'per price band, see Data → Stock'} />
+      <Row label="= floor" low={kd(f.floor)} strong />
+      <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide mt-3">Result</div>
+      <Row label="Recommended range" low={kd(m.recLow)} high={kd(m.recHigh)} strong
+        note={`low end from the ${f.lowFromFloor ? 'floor' : 'earnings value'}, high end from the ${f.highFromFloor ? 'floor' : 'earnings value'}`} />
+      <div className="text-xs text-slate-600 bg-amber-50 rounded-lg p-2 mt-3">
+        Stock is not added on top of the earnings value: the stock is what produces those earnings, so adding it again would count it twice.
+        It counts through the floor only. {floorBinds
+          ? 'Right now the floor sets part of the range, so the stock write-down moves the final number.'
+          : 'Right now the earnings value is higher at both ends, so the stock write-down does not change the final number.'}
+      </div>
+    </Panel>
   );
 }
 
@@ -406,6 +480,52 @@ function Assumptions({ items, save }: { items: Input[]; save: (k: string, p: Par
   );
 }
 
+function StockTable({ m, zeroCost }: { m: Model; zeroCost: number }) {
+  const [sort, setSort] = useState<{ k: string; d: number }>({ k: 'limit', d: 1 });
+  const cols = [['label', 'Shelf price'], ['limit', 'Slow after'], ['total', 'Owned stock (cost)'], ['slow', 'Past the limit'],
+    ['verySlow', '12+ months past'], ['writeDown', 'Write-down']] as const;
+  const rows = [...m.stockBands].sort((a, b) => {
+    const x = a[sort.k as keyof typeof a], y = b[sort.k as keyof typeof b];
+    return (typeof x === 'number' ? (x as number) - (y as number) : String(x).localeCompare(String(y))) * sort.d;
+  });
+  const cell = (r: typeof rows[number], k: typeof cols[number][0]) =>
+    k === 'label' ? r.label : k === 'limit' ? `${r.limit} months` : kd(r[k]);
+  return (
+    <div>
+      <h2 className="font-semibold text-slate-700 mb-1">Stock: how the write-down is worked out</h2>
+      <p className="text-xs text-slate-500 mb-2">
+        Months idle = since the last sale, or since the model was added if it never sold, so new arrivals are not counted as slow.
+        Past the limit keeps {Math.round(m.keepSlow * 100)}% of cost; a further 12 months past keeps {Math.round(m.keepVerySlow * 100)}%.
+        Change the limits and percentages on the Assumptions tab.
+        {m.provisionInBooks && ' The accountant already provides for slow stock, so none of this is deducted.'}
+      </p>
+      <div className="overflow-x-auto bg-white rounded-xl border border-slate-200">
+        <table className="text-sm min-w-full">
+          <thead className="bg-slate-50 text-slate-500 text-xs"><tr>
+            {cols.map(([k, l]) => (
+              <th key={k} onClick={() => setSort(sort.k === k ? { k, d: -sort.d } : { k, d: -1 })}
+                className={`px-3 py-2 cursor-pointer select-none whitespace-nowrap ${k === 'label' ? 'text-left' : 'text-right'}`}>
+                {l}{sort.k === k ? (sort.d < 0 ? ' ↓' : ' ↑') : ''}
+              </th>))}
+          </tr></thead>
+          <tbody>
+            {rows.map((r) => (
+              <tr key={r.band} className="border-t border-slate-100">
+                {cols.map(([k]) => <td key={k} className={`px-3 py-1.5 whitespace-nowrap ${k === 'label' ? '' : 'text-right tabular-nums'}`}>{cell(r, k)}</td>)}
+              </tr>))}
+            <tr className="border-t border-slate-200 font-semibold">
+              <td className="px-3 py-1.5">Total</td><td />
+              {(['total', 'slow', 'verySlow', 'writeDown'] as const).map((k) => (
+                <td key={k} className="px-3 py-1.5 text-right tabular-nums">{kd(m.stockBands.reduce((s, b) => s + b[k], 0))}</td>))}
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      {zeroCost > 0 && <p className="text-xs text-amber-700 mt-1">{zeroCost} units have no cost in Lightspeed, so they count as zero here.</p>}
+    </div>
+  );
+}
+
 function DataView({ m, snap }: { m: Model; snap: Snapshot | null }) {
   const [sort, setSort] = useState<{ k: string; d: number }>({ k: 'period', d: -1 });
   const cols = [['month', 'Month'], ['income', 'Sales'], ['gross', 'Gross profit'], ['np', 'Net profit'], ['dep', 'Depr. + amort.'], ['int', 'Interest'], ['ebitda', 'EBITDA']] as const;
@@ -442,8 +562,9 @@ function DataView({ m, snap }: { m: Model; snap: Snapshot | null }) {
             <Stat label="Till sales, last 12 months" value={kd(snap.sales_12m)} sub="Lightspeed" />
             <Stat label="Buyers, last 12 months" value={snap.customers.buyers.toLocaleString()} sub={`${pctRepeat}% bought more than once`} />
             <Stat label="Owned stock at cost" value={kd(snap.aging.reduce((s, x) => s + x.cost, 0))} sub={`as of ${snap.as_of}`} />
-            <Stat label="Slow-stock write-down" value={kd(m.writeDown)} sub="from your recovery assumptions" />
+            <Stat label="Slow-stock write-down" value={kd(m.writeDown)} sub={m.provisionInBooks ? 'none: the accountant already provides for it' : 'per price band, see below'} />
           </div>
+          <StockTable m={m} zeroCost={snap.zero_cost_units ?? 0} />
           <div className="grid lg:grid-cols-2 gap-4">
             <ChartCard title="Owned stock by last sale (cost)">
               <BarChart data={snap.aging.map((x) => ({ label: x.bucket, value: x.cost }))} />

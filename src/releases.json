@@ -1,5 +1,16 @@
 [
   {
+    "version": "3.18.0",
+    "date": "2026-10-30",
+    "title": "Fairer stock in the valuation",
+    "changes": [
+      "Slow stock is judged by price: cheaper watches count as slow after 12 months, 500–999 KD after 18, 1,000 KD and over after 24. Owners can change these on the Assumptions tab.",
+      "Watches past their limit lose a quarter of their cost, and half only once they are a full year past it. New arrivals are never counted as slow.",
+      "The Summary now shows step by step how the value range is built, and that stock counts through the floor only.",
+      "A new question asks whether the accountant already writes down slow stock; if yes, the page stops deducting it again."
+    ]
+  },
+  {
     "version": "3.17.0",
     "date": "2026-10-29",
     "title": "Share the valuation questions",
