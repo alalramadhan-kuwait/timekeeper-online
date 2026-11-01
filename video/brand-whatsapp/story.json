@@ -1,0 +1,709 @@
+{
+ "width": 720,
+ "height": 1280,
+ "fps": 30,
+ "dir": "rtl",
+ "style": {
+  "banner": {
+   "paper": "#F3F0E8",
+   "ink": "#111111",
+   "upper": false,
+   "ls": 0,
+   "tape": "rgba(186,182,172,.88)",
+   "torn": 0.5,
+   "size": 34
+  },
+  "caption": {
+   "font": "var(--f-banner)"
+  },
+  "grain": 0.42,
+  "vignette": 0.8
+ },
+ "themes": {
+  "tk-bone": {
+   "bg": "#E4DFD3",
+   "blot": [
+    "#EFEBE1",
+    "#D5CFC1"
+   ],
+   "floor": "#C9C3B4",
+   "floorTop": "#DDD7C9",
+   "capBg": "#111111",
+   "capInk": "#FFFFFF"
+  },
+  "tk-linen": {
+   "bg": "#CFC7B5",
+   "blot": [
+    "#DDD6C6",
+    "#BDB5A2"
+   ],
+   "floor": "#B3AB98",
+   "floorTop": "#C7BFAD",
+   "capBg": "#111111",
+   "capInk": "#FFFFFF"
+  },
+  "tk-graphite": {
+   "bg": "#34373E",
+   "blot": [
+    "#43474F",
+    "#25272C"
+   ],
+   "floor": "#222428",
+   "floorTop": "#383B42",
+   "capBg": "#F3F0E8",
+   "capInk": "#111111"
+  },
+  "tk-ink": {
+   "bg": "#16181C",
+   "blot": [
+    "#22252B",
+    "#0D0E11"
+   ],
+   "floor": "#0F1013",
+   "floorTop": "#272A31",
+   "capBg": "#F3F0E8",
+   "capInk": "#111111"
+  },
+  "tk-black": {
+   "bg": "#050505",
+   "blot": [
+    "#0B0B0B",
+    "#000000"
+   ],
+   "floor": "#050505",
+   "floorTop": "#111111",
+   "capBg": "#F3F0E8",
+   "capInk": "#111111"
+  }
+ },
+ "audio": {
+  "musicGain": -20
+ },
+ "scenes": [
+  {
+   "id": "s01",
+   "theme": "tk-bone",
+   "banner": "وصلت دنيسون… منو نبلغ؟",
+   "transition": "cut",
+   "elements": [
+    {
+     "type": "card",
+     "w": 420,
+     "h": 250,
+     "x": 360,
+     "y": 520,
+     "rot": -3,
+     "tex": "card",
+     "edge": "cut",
+     "tape": true,
+     "header": "شحنة جديدة",
+     "headerColor": "#111111",
+     "headerInk": "#F3F0E8",
+     "headerSize": 40,
+     "label": "Dennison",
+     "titleSize": 64
+    },
+    {
+     "type": "burst",
+     "size": 210,
+     "text": "؟",
+     "color": "#F9BE2A",
+     "x": 560,
+     "y": 760,
+     "idle": "pulse"
+    },
+    {
+     "type": "bubble",
+     "text": "منو اشترى دنيسون قبل؟",
+     "w": 380,
+     "h": 96,
+     "x": 300,
+     "y": 820,
+     "size": 32,
+     "tail": "l",
+     "in": {
+      "type": "pop",
+      "at": 1.0
+     }
+    }
+   ],
+   "captions": "وصلت شحنة دنيسون جديدة… منو نبلغ؟",
+   "voiceAt": 0.05,
+   "pad": 0.2,
+   "dur": 3.6,
+   "bannerAt": -1
+  },
+  {
+   "id": "s02",
+   "theme": "tk-linen",
+   "banner": "اختار الماركة",
+   "transition": "slide",
+   "elements": [
+    {
+     "type": "phone",
+     "src": "assets/1-picker.png",
+     "w": 400,
+     "h": 668,
+     "x": 360,
+     "y": 620,
+     "in": {
+      "type": "rise",
+      "at": 0.1
+     }
+    },
+    {
+     "type": "shape",
+     "kind": "arrow",
+     "w": 100,
+     "h": 60,
+     "color": "#B3261E",
+     "x": 640,
+     "y": 772,
+     "rot": 180,
+     "in": {
+      "type": "pop",
+      "at": 1.6
+     },
+     "idle": {
+      "type": "bob",
+      "amp": 5
+     }
+    }
+   ],
+   "captions": "من اليوم، في صفحة العملاء، اضغطوا ماركة، واختاروا دنيسون.",
+   "voiceAt": 0.1,
+   "pad": 0.2,
+   "dur": 5.8
+  },
+  {
+   "id": "s03",
+   "theme": "tk-bone",
+   "banner": "أو اكتبها بالعربي",
+   "transition": "slide",
+   "camera": {
+    "zoom": [
+     [
+      0,
+      1
+     ],
+     [
+      0.8,
+      1
+     ],
+     [
+      1.8,
+      1.55,
+      "inOutCubic"
+     ]
+    ],
+    "y": [
+     [
+      0.8,
+      620
+     ],
+     [
+      1.8,
+      455,
+      "inOutCubic"
+     ]
+    ],
+    "x": [
+     [
+      0.8,
+      360
+     ]
+    ]
+   },
+   "floor": false,
+   "elements": [
+    {
+     "type": "phone",
+     "src": "assets/2-search.png",
+     "w": 400,
+     "h": 668,
+     "x": 360,
+     "y": 620
+    },
+    {
+     "type": "sparkles",
+     "count": 10,
+     "radius": 120,
+     "color": "#F9BE2A",
+     "at": 1.9,
+     "x": 360,
+     "y": 470,
+     "depth": 1
+    }
+   ],
+   "captions": "أو اكتبوها بالعربي في البحث، وتطلع لكم على طول.",
+   "voiceAt": 0.1,
+   "pad": 0.2,
+   "dur": 4.9
+  },
+  {
+   "id": "s04",
+   "theme": "tk-linen",
+   "banner": "654 عميل اشتروا دنيسون",
+   "transition": "slide",
+   "elements": [
+    {
+     "type": "phone",
+     "src": "assets/3-list.png",
+     "w": 330,
+     "h": 549,
+     "x": 250,
+     "y": [
+      [
+       0,
+       680
+      ],
+      [
+       1.0,
+       620,
+       "outCubic"
+      ]
+     ],
+     "rot": -3
+    },
+    {
+     "type": "burst",
+     "size": 200,
+     "text": "654",
+     "color": "#F9BE2A",
+     "x": 555,
+     "y": 470,
+     "in": {
+      "type": "pop",
+      "at": 0.6
+     },
+     "idle": "pulse"
+    },
+    {
+     "type": "text",
+     "text": "عميل",
+     "x": 555,
+     "y": 610,
+     "size": 40,
+     "color": "#111111",
+     "font": "banner",
+     "in": {
+      "type": "pop",
+      "at": 1.0
+     }
+    },
+    {
+     "type": "text",
+     "text": "226,244 د.ك",
+     "x": 560,
+     "y": 680,
+     "size": 30,
+     "color": "#333",
+     "font": "banner",
+     "in": {
+      "type": "fade",
+      "at": 1.4
+     }
+    },
+    {
+     "type": "text",
+     "text": "على دنيسون",
+     "x": 560,
+     "y": 722,
+     "size": 26,
+     "color": "#555",
+     "font": "banner",
+     "in": {
+      "type": "fade",
+      "at": 1.4
+     }
+    }
+   ],
+   "captions": "ستمية وأربعة وخمسين عميل اشتروا دنيسون، مرتبين من أكثرهم شراء.",
+   "voiceAt": 0.1,
+   "pad": 0.2,
+   "dur": 6.2
+  },
+  {
+   "id": "s05",
+   "theme": "tk-bone",
+   "banner": "الرسالة جاهزة",
+   "transition": "slide",
+   "camera": {
+    "zoom": [
+     [
+      0,
+      1
+     ],
+     [
+      1.2,
+      1
+     ],
+     [
+      2.4,
+      1.45,
+      "inOutCubic"
+     ]
+    ],
+    "y": [
+     [
+      1.2,
+      620
+     ],
+     [
+      2.4,
+      610,
+      "inOutCubic"
+     ]
+    ],
+    "x": [
+     [
+      1.2,
+      360
+     ]
+    ]
+   },
+   "floor": false,
+   "elements": [
+    {
+     "type": "phone",
+     "src": "assets/4-sheet.png",
+     "w": 420,
+     "h": 702,
+     "x": 360,
+     "y": 620
+    }
+   ],
+   "captions": "اضغطوا واتساب، والرسالة جاهزة باسمكم واسم الماركة. اقروها وأرسلوها.",
+   "voiceAt": 0.1,
+   "pad": 0.2,
+   "dur": 6.7
+  },
+  {
+   "id": "s06",
+   "theme": "tk-linen",
+   "banner": "واحد ورا الثاني",
+   "transition": "slide",
+   "elements": [
+    {
+     "type": "phone",
+     "src": "assets/5-sent.png",
+     "w": 370,
+     "h": 617,
+     "x": 320,
+     "y": [
+      [
+       0,
+       700
+      ],
+      [
+       1.0,
+       600,
+       "outCubic"
+      ]
+     ]
+    },
+    {
+     "type": "shape",
+     "kind": "arrow",
+     "w": 100,
+     "h": 60,
+     "color": "#1F9D55",
+     "x": 610,
+     "y": 432,
+     "rot": 180,
+     "in": {
+      "type": "pop",
+      "at": 1.0
+     },
+     "idle": {
+      "type": "bob",
+      "amp": 5
+     }
+    },
+    {
+     "type": "stamp",
+     "text": "ما يتكرر",
+     "color": "#2E7D4F",
+     "size": 40,
+     "x": 580,
+     "y": 880,
+     "rot": -6,
+     "in": {
+      "type": "slam",
+      "at": 2.6
+     }
+    }
+   ],
+   "captions": "وزر التالي ياخذكم للعميل اللي بعده. واللي راسلتوه، ما يتكرر عليه خلال أسبوع.",
+   "voiceAt": 0.1,
+   "pad": 0.2,
+   "dur": 7.5
+  },
+  {
+   "id": "s07",
+   "theme": "tk-bone",
+   "banner": "ماركات العميل",
+   "transition": "slide",
+   "elements": [
+    {
+     "type": "phone",
+     "src": "assets/6-profile.png",
+     "w": 400,
+     "h": 668,
+     "x": 360,
+     "y": 620,
+     "in": {
+      "type": "rise",
+      "at": 0.1
+     }
+    },
+    {
+     "type": "shape",
+     "kind": "arrow",
+     "w": 100,
+     "h": 60,
+     "color": "#B3261E",
+     "x": 650,
+     "y": 462,
+     "rot": 180,
+     "in": {
+      "type": "pop",
+      "at": 1.4
+     },
+     "idle": {
+      "type": "bob",
+      "amp": 5
+     }
+    }
+   ],
+   "captions": "وفي صفحة العميل، تشوفون الماركات اللي اشتراها، وتراسلونه عنها بضغطة.",
+   "voiceAt": 0.1,
+   "pad": 0.2,
+   "dur": 6.8
+  },
+  {
+   "id": "s08",
+   "theme": "tk-graphite",
+   "banner": "حدّث التطبيق: 3.8.0",
+   "transition": "slide",
+   "elements": [
+    {
+     "type": "phone",
+     "src": "assets/3b-list-rows.png",
+     "w": 340,
+     "h": 566,
+     "x": 360,
+     "y": 620,
+     "in": {
+      "type": "rise",
+      "at": 0.1
+     }
+    },
+    {
+     "type": "stamp",
+     "text": "v3.8.0 ✓",
+     "color": "#2E7D4F",
+     "size": 52,
+     "x": 520,
+     "y": 330,
+     "rot": -8,
+     "in": {
+      "type": "slam",
+      "at": 1.6
+     }
+    },
+    {
+     "type": "sparkles",
+     "count": 16,
+     "radius": 220,
+     "color": "#F9BE2A",
+     "at": 1.6,
+     "x": 360,
+     "y": 600
+    }
+   ],
+   "captions": "وكل واحد يشوف عملاءه هو. حدّثوا التطبيق، ويلا نبلغ عملاءنا.",
+   "voiceAt": 0.1,
+   "pad": 0.2,
+   "dur": 6.0
+  },
+  {
+   "theme": "tk-ink",
+   "floor": false,
+   "elements": [
+    {
+     "type": "svg",
+     "w": 760,
+     "h": 1320,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"760\" height=\"1320\" viewBox=\"0 0 760 1320\"><rect width=\"760\" height=\"1320\" fill=\"#111111\"/></svg>",
+     "x": 360,
+     "y": 640,
+     "anchor": "c",
+     "z": 1,
+     "depth": 0,
+     "still": true
+    },
+    {
+     "type": "reveal",
+     "src": "../../public/icon-512.png",
+     "x": 360,
+     "y": 560,
+     "w": 380,
+     "h": 380,
+     "z": 20,
+     "reveal": [
+      [
+       0.3,
+       0
+      ],
+      [
+       2.3,
+       1,
+       "inOutSine"
+      ]
+     ]
+    },
+    {
+     "type": "svg",
+     "w": 40,
+     "h": 300,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"40\" height=\"300\" viewBox=\"0 0 40 300\"><rect x=\"16\" y=\"0\" width=\"8\" height=\"300\" rx=\"4\" fill=\"#C9A35F\"/><circle cx=\"20\" cy=\"290\" r=\"14\" fill=\"#C9A35F\"/></svg>",
+     "x": 360,
+     "y": 560,
+     "anchor": "b",
+     "z": 30,
+     "still": true,
+     "rot": [
+      [
+       0.3,
+       0
+      ],
+      [
+       2.3,
+       360,
+       "inOutSine"
+      ]
+     ],
+     "opacity": [
+      [
+       0.3,
+       0
+      ],
+      [
+       0.4,
+       1
+      ],
+      [
+       2.3,
+       1
+      ],
+      [
+       2.6,
+       0
+      ]
+     ]
+    },
+    {
+     "type": "svg",
+     "w": 760,
+     "h": 1320,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"760\" height=\"1320\" viewBox=\"0 0 760 1320\"><rect width=\"760\" height=\"1320\" fill=\"#000000\"/></svg>",
+     "x": 360,
+     "y": 640,
+     "anchor": "c",
+     "z": 90,
+     "depth": 0,
+     "still": true,
+     "opacity": [
+      [
+       3.6,
+       0
+      ],
+      [
+       4.5,
+       1
+      ]
+     ]
+    },
+    {
+     "type": "text",
+     "text": "الراوي: صوت ذكاء اصطناعي (OmniVoice) · أسماء العملاء مخفية",
+     "x": 360,
+     "y": 840,
+     "size": 20,
+     "color": "#D8D3C8",
+     "font": "banner",
+     "z": 40,
+     "in": {
+      "type": "fade",
+      "at": 0.6
+     }
+    }
+   ],
+   "dur": 4.5,
+   "silent": true,
+   "transition": "fade",
+   "endcard": "timekeeper",
+   "sfx": [
+    {
+     "at": 0.3,
+     "name": "tick",
+     "gain": -12
+    },
+    {
+     "at": 3.6,
+     "name": "tick_pair",
+     "gain": -8
+    }
+   ],
+   "camera": {
+    "zoom": [
+     [
+      0,
+      1.0
+     ],
+     [
+      4.5,
+      1.08
+     ]
+    ],
+    "x": [
+     [
+      0,
+      360
+     ]
+    ],
+    "y": [
+     [
+      0,
+      600
+     ]
+    ]
+   },
+   "banner": ""
+  },
+  {
+   "theme": "tk-ink",
+   "floor": false,
+   "elements": [
+    {
+     "type": "svg",
+     "w": 760,
+     "h": 1320,
+     "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"760\" height=\"1320\" viewBox=\"0 0 760 1320\"><rect width=\"760\" height=\"1320\" fill=\"#000000\"/></svg>",
+     "x": 360,
+     "y": 640,
+     "anchor": "c",
+     "z": 1,
+     "depth": 0,
+     "still": true
+    }
+   ],
+   "dur": 0.7,
+   "silent": true,
+   "transition": "cut",
+   "endcard": "timekeeper",
+   "banner": ""
+  }
+ ]
+}
