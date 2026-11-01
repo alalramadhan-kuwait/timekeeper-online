@@ -41,11 +41,11 @@ def v(n):
 scenes = []
 
 # 1 HOOK: the question from the floor, readable in frame 1
-scenes.append({"id": "s01", "voice": v(1), "theme": "tk-bone", "banner": "وصلت دنيسون… منو نبلغ؟", "transition": "cut", "elements": [
+scenes.append({"id": "s01", "voice": v(1), "theme": "tk-bone", "banner": "وصلت Dennison… منو نبلغ؟", "transition": "cut", "elements": [
     {"type": "card", "w": 420, "h": 250, "x": 360, "y": 520, "rot": -3, "tex": "card", "edge": "cut", "tape": True,
      "header": "شحنة جديدة", "headerColor": INK, "headerInk": CREAM, "headerSize": 40, "label": "Dennison", "titleSize": 64},
     {"type": "burst", "size": 210, "text": "؟", "color": YELLOW, "x": 560, "y": 760, "idle": "pulse"},
-    {"type": "bubble", "text": "منو اشترى دنيسون قبل؟", "w": 380, "h": 96, "x": 300, "y": 820, "size": 32, "tail": "l",
+    {"type": "bubble", "text": "منو اشترى Dennison قبل؟", "w": 380, "h": 96, "x": 300, "y": 820, "size": 32, "tail": "l",
      "in": {"type": "pop", "at": 1.0}},
   ]})
 
@@ -64,12 +64,12 @@ scenes.append({"id": "s03", "voice": v(3), "theme": "tk-bone", "banner": "أو �
   ]})
 
 # 4 THE LIST: 654 customers bought Dennison, biggest buyers first
-scenes.append({"id": "s04", "voice": v(4), "theme": "tk-linen", "banner": "654 عميل اشتروا دنيسون", "transition": "slide", "elements": [
+scenes.append({"id": "s04", "voice": v(4), "theme": "tk-linen", "banner": "654 عميل اشتروا Dennison", "transition": "slide", "elements": [
     phone("assets/3-list.png", 250, [[0, 680], [1.0, 620, "outCubic"]], 330, rot=-3),
     {"type": "burst", "size": 200, "text": "654", "color": YELLOW, "x": 555, "y": 470, "in": {"type": "pop", "at": 0.6}, "idle": "pulse"},
     txt("عميل", 555, 610, 40, INK, **{"in": {"type": "pop", "at": 1.0}}),
     txt("226,244 د.ك", 560, 680, 30, "#333", **{"in": {"type": "fade", "at": 1.4}}),
-    txt("على دنيسون", 560, 722, 26, "#555", **{"in": {"type": "fade", "at": 1.4}}),
+    txt("على Dennison", 560, 722, 26, "#555", **{"in": {"type": "fade", "at": 1.4}}),
   ]})
 
 # 5 THE MESSAGE: ready with your name and the brand, in Arabic

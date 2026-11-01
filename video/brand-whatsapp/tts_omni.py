@@ -31,7 +31,12 @@ tts = OmniVoice.from_pretrained('k2-fsa/OmniVoice', device_map='cpu', dtype=torc
 asr = WhisperModel('small', device='cpu', compute_type='int8')
 
 
+# English names in the script, as an Arabic transcript may spell them, so a take that says them is not marked down
+SPELL = {'dennison': 'دنيسون', 'whatsapp': 'واتساب'}
+
+
 def norm(s):
+    s = re.sub(r'[A-Za-z]+', lambda m: SPELL.get(m.group(0).lower(), m.group(0)), s)
     s = re.sub(r'[^؀-ۿ0-9 ]', ' ', s)
     s = re.sub('[أإآ]', 'ا', s).replace('ة', 'ه').replace('ى', 'ي')
     return ' '.join(s.split())
@@ -55,6 +60,10 @@ for k in keys:
         f = os.path.join(OUT, f'{k}-t{n}.wav')
         sf.write(f, a, 24000)
         heard = ' '.join(s.text.strip() for s in asr.transcribe(f, language='ar', beam_size=5)[0])
+        latin = re.findall(r'[A-Za-z]+', lines[k])
+        if latin:   # the English names should be heard as English
+            auto = ' '.join(s.text.strip() for s in asr.transcribe(f, beam_size=5)[0])
+            heard += f'  [auto: {auto}]'
         score = difflib.SequenceMatcher(None, norm(lines[k]), norm(heard)).ratio()
         print(k, n, f'{len(a) / 24000:.1f}s', f'{score:.2f}', heard, flush=True)
         if best is None or score > best[0]:
