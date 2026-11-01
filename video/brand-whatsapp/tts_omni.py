@@ -60,11 +60,9 @@ for k in keys:
         f = os.path.join(OUT, f'{k}-t{n}.wav')
         sf.write(f, a, 24000)
         heard = ' '.join(s.text.strip() for s in asr.transcribe(f, language='ar', beam_size=5)[0])
-        latin = re.findall(r'[A-Za-z]+', lines[k])
-        if latin:   # the English names should be heard as English
-            auto = ' '.join(s.text.strip() for s in asr.transcribe(f, beam_size=5)[0])
-            heard += f'  [auto: {auto}]'
         score = difflib.SequenceMatcher(None, norm(lines[k]), norm(heard)).ratio()
+        if re.search(r'[A-Za-z]', lines[k]):   # the English names, as a transcript with no language set hears them
+            heard += '  [auto: ' + ' '.join(s.text.strip() for s in asr.transcribe(f, beam_size=5)[0]) + ']'
         print(k, n, f'{len(a) / 24000:.1f}s', f'{score:.2f}', heard, flush=True)
         if best is None or score > best[0]:
             best = (score, f, heard, len(a) / 24000)
