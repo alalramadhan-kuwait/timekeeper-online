@@ -82,6 +82,7 @@
  "scenes": [
   {
    "id": "s01",
+   "voice": "voice/s01.wav",
    "theme": "tk-bone",
    "banner": "وصلت دنيسون… منو نبلغ؟",
    "transition": "cut",
@@ -130,11 +131,11 @@
    "captions": "وصلت شحنة دنيسون جديدة… منو نبلغ؟",
    "voiceAt": 0.05,
    "pad": 0.2,
-   "dur": 3.6,
    "bannerAt": -1
   },
   {
    "id": "s02",
+   "voice": "voice/s02.wav",
    "theme": "tk-linen",
    "banner": "اختار الماركة",
    "transition": "slide",
@@ -172,11 +173,11 @@
    ],
    "captions": "من اليوم، في صفحة العملاء، اضغطوا ماركة، واختاروا دنيسون.",
    "voiceAt": 0.1,
-   "pad": 0.2,
-   "dur": 5.8
+   "pad": 0.2
   },
   {
    "id": "s03",
+   "voice": "voice/s03.wav",
    "theme": "tk-bone",
    "banner": "أو اكتبها بالعربي",
    "transition": "slide",
@@ -237,11 +238,11 @@
    ],
    "captions": "أو اكتبوها بالعربي في البحث، وتطلع لكم على طول.",
    "voiceAt": 0.1,
-   "pad": 0.2,
-   "dur": 4.9
+   "pad": 0.2
   },
   {
    "id": "s04",
+   "voice": "voice/s04.wav",
    "theme": "tk-linen",
    "banner": "654 عميل اشتروا دنيسون",
    "transition": "slide",
@@ -320,11 +321,11 @@
    ],
    "captions": "ستمية وأربعة وخمسين عميل اشتروا دنيسون، مرتبين من أكثرهم شراء.",
    "voiceAt": 0.1,
-   "pad": 0.2,
-   "dur": 6.2
+   "pad": 0.2
   },
   {
    "id": "s05",
+   "voice": "voice/s05.wav",
    "theme": "tk-bone",
    "banner": "الرسالة جاهزة",
    "transition": "slide",
@@ -375,11 +376,11 @@
    ],
    "captions": "اضغطوا واتساب، والرسالة جاهزة باسمكم واسم الماركة. اقروها وأرسلوها.",
    "voiceAt": 0.1,
-   "pad": 0.2,
-   "dur": 6.7
+   "pad": 0.2
   },
   {
    "id": "s06",
+   "voice": "voice/s06.wav",
    "theme": "tk-linen",
    "banner": "واحد ورا الثاني",
    "transition": "slide",
@@ -424,9 +425,9 @@
      "type": "stamp",
      "text": "ما يتكرر",
      "color": "#2E7D4F",
-     "size": 40,
-     "x": 580,
-     "y": 880,
+     "size": 34,
+     "x": 520,
+     "y": 925,
      "rot": -6,
      "in": {
       "type": "slam",
@@ -436,11 +437,11 @@
    ],
    "captions": "وزر التالي ياخذكم للعميل اللي بعده. واللي راسلتوه، ما يتكرر عليه خلال أسبوع.",
    "voiceAt": 0.1,
-   "pad": 0.2,
-   "dur": 7.5
+   "pad": 0.2
   },
   {
    "id": "s07",
+   "voice": "voice/s07.wav",
    "theme": "tk-bone",
    "banner": "ماركات العميل",
    "transition": "slide",
@@ -478,11 +479,11 @@
    ],
    "captions": "وفي صفحة العميل، تشوفون الماركات اللي اشتراها، وتراسلونه عنها بضغطة.",
    "voiceAt": 0.1,
-   "pad": 0.2,
-   "dur": 6.8
+   "pad": 0.2
   },
   {
    "id": "s08",
+   "voice": "voice/s08.wav",
    "theme": "tk-graphite",
    "banner": "حدّث التطبيق: 3.8.0",
    "transition": "slide",
@@ -524,8 +525,7 @@
    ],
    "captions": "وكل واحد يشوف عملاءه هو. حدّثوا التطبيق، ويلا نبلغ عملاءنا.",
    "voiceAt": 0.1,
-   "pad": 0.2,
-   "dur": 6.0
+   "pad": 0.2
   },
   {
    "theme": "tk-ink",
