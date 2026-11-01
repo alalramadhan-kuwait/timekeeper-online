@@ -1,5 +1,14 @@
 [
   {
+    "version": "3.19.0",
+    "date": "2026-11-01",
+    "title": "Ask Mohammed by colour",
+    "changes": [
+      "Ask Mohammed for a watch by its dial colour, in Arabic or English (البيضة، السودة، التيفاني): he uses the colours from the online shop's colour filter and tells you which pieces have that colour and where they are.",
+      "If none comes in that colour, he says so and lists the colours that are in stock, instead of guessing."
+    ]
+  },
+  {
     "version": "3.18.1",
     "date": "2026-11-01",
     "title": "Mohammed knows brands written in Arabic",
