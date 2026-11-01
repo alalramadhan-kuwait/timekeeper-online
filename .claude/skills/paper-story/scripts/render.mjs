@@ -293,7 +293,7 @@ if (srcs.length || music) {
   args.push('-filter_complex', chains.join(';'), '-map', '0:v', '-map', '[a]');
 }
 args.push('-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', String(opt.crf), '-preset', 'medium', '-r', String(fps), '-movflags', '+faststart');
-if (srcs.length || music) args.push('-c:a', 'aac', '-b:a', '160k');
+if (srcs.length || music) args.push('-c:a', 'aac', '-b:a', '160k', '-ar', '48000', '-ac', '2');   // 48 kHz stereo: phones and WhatsApp play it; 96 kHz mono they may not
 args.push('-t', D.toFixed(3), out);
 const enc = spawnSync(ffmpeg, args, { stdio: 'inherit' });
 if (enc.status !== 0) die('ffmpeg encode failed');
