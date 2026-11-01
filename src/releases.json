@@ -1,5 +1,13 @@
 [
   {
+    "version": "3.18.1",
+    "date": "2026-11-01",
+    "title": "Mohammed knows brands written in Arabic",
+    "changes": [
+      "Ask Mohammed now finds a brand you write in Arabic letters, even a less common one like كوليكيوم (Kollokium), instead of guessing the spelling and saying it is not there."
+    ]
+  },
+  {
     "version": "3.18.0",
     "date": "2026-10-30",
     "title": "Fairer stock in the valuation",
