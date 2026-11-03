@@ -372,11 +372,12 @@ function itemLabel(f, tname) {
   return `${kind}${rest ? ' · ' + rest : ''}`;
 }
 function viewFilms() {
-  const waiting = films.filter(isWaiting).length, working = films.filter((f) => f.state === 'working').length;
+  const shown = films.filter((f) => !f.hidden), hidden = films.filter((f) => f.hidden);   // «شيله من القائمة» hides, never deletes
+  const waiting = shown.filter(isWaiting).length, working = shown.filter((f) => f.state === 'working').length;
   let h = `<div class="headrow" style="position:relative;z-index:1">${header('أفلامنا', ready ? `${waiting} بانتظارك · ${working} يشتغل` : 'جاري التحميل…')}${statusDot()}</div>` + nowLine() + problemBanner();
   if (ready && !films.length) h += `<div class="empty"><b style="font:800 18px var(--display)">ما فيه أفلام للحين</b><p class="note">أرسل لي فكرة في المحادثة، ويطلع الفلم هنا بنسبته ووقته.</p></div>`;
   const groups = {};
-  for (const f of films) (groups[topicOf(f)] ||= []).push(f);
+  for (const f of shown) (groups[topicOf(f)] ||= []).push(f);
   const rank = (f) => (isWaiting(f) ? 0 : f.state === 'working' ? 1 : 2);
   const order = Object.entries(groups).map(([id, list]) => [id, list.sort((a, b) => rank(a) - rank(b) || Date.parse(b.updated || 0) - Date.parse(a.updated || 0))])
     .sort(([a, x], [b, y]) => (topics[a]?.order ?? 99) - (topics[b]?.order ?? 99) || rank(x[0]) - rank(y[0]) || Date.parse(y[0].updated || 0) - Date.parse(x[0].updated || 0));
@@ -394,6 +395,7 @@ function viewFilms() {
     }
     h += `</section>`;
   });
+  if (hidden.length) h += `<details class="fold"><summary>المخفية <span>${hidden.length}</span></summary><div class="fin">${hidden.map((f) => `<div class="row"><a href="#film-${esc(f.id)}" style="color:var(--ink);font-weight:700;text-decoration:none">${esc(f.name)} <span class="note">${esc(f.version || '')}</span></a><button type="button" class="chip" data-act="unhide" data-id="${esc(f.id)}">رجّعه</button></div>`).join('')}</div></details>`;
   if (ready) h += viewBrief();
   h += `<div class="shortcuts"><a class="short" href="#recreate" style="background:var(--yellow);color:var(--ink)">ريل عجبك</a><a class="short" href="#library" style="background:var(--blue);color:#fff">فكرة جديدة</a></div>`;
   return h;
@@ -456,6 +458,8 @@ function viewFilm(id) {
     : `<button type="button" class="short" style="background:var(--yellow);color:var(--ink);width:100%" data-act="twin" data-id="${esc(f.id)}">سوّ منه ${other}</button>`;
   if (f.meta) h += `<p class="note">${esc(f.meta)}</p>`;
   if (f.versions?.length) h += `<div class="chips">${f.versions.map((v, k) => `<span class="chip${k === 0 ? ' on' : ''}">${esc(v)}</span>`).join('')}</div>`;
+  h += f.hidden ? `<button type="button" class="chip" style="justify-self:start" data-act="unhide" data-id="${esc(f.id)}">↩ رجّعه للقائمة</button>`
+    : `<button type="button" class="chip" style="justify-self:start;color:#8a1426" data-act="hide" data-id="${esc(f.id)}">شيله من القائمة</button>`;
   return h;
 }
 
@@ -642,7 +646,7 @@ async function loadIg(manual) {
   igState = 'loading'; if (manual) route();
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
-      const rows = await sql(`select public.studio_page(${dq({ films: films.filter((f) => f.posted?.at || ['waiting', 'done'].includes(f.state)).map(filmPayload) })}::jsonb) as page`);
+      const rows = await sql(`select public.studio_page(${dq({ films: films.filter((f) => f.posted?.at || (['waiting', 'done'].includes(f.state) && !f.hidden)).map(filmPayload) })}::jsonb) as page`);
       const page = rows[0]?.page;
       if (!page) throw { code: 'empty' };
       ig = page; igAt = page.at; igCached = false; igState = 'ok'; igErr = null;
@@ -1024,6 +1028,17 @@ async function act(b) {
     if (!db) { toast('يحتاج صلاحية تعديل الاستوديو.'); return; }
     try { await db.doc(`films/${id}`).update({ posted: { ...(f.posted || {}), permalink: link } }); toast('انحفظ الرابط ✓ ينربط أول ما ينقرا من إنستغرام.'); }
     catch (e) { toast('ما قدرت أحفظه.'); }
+    return;
+  }
+  if (kind === 'hide' || kind === 'unhide') {
+    if (!db || !f) { toast('يحتاج صلاحية تعديل الاستوديو.'); return; }
+    if (kind === 'hide' && b.dataset.sure !== '1') { b.dataset.sure = '1'; b.textContent = 'أكيد؟ اضغط مرة ثانية (تقدر ترجّعه)'; return; }
+    b.disabled = true;
+    try {
+      await db.doc(`films/${id}`).update(kind === 'hide' ? { hidden: true, hidden_at: new Date().toISOString() } : { hidden: false });
+      toast(kind === 'hide' ? 'انشال من القائمة ✓ تلقاه تحت «المخفية».' : 'رجع للقائمة ✓');
+      if (kind === 'hide') location.hash = 'films';
+    } catch (e) { toast('ما قدرت.'); b.disabled = false; }
     return;
   }
   if (kind === 'unpost') {
