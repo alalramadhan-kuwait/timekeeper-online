@@ -534,27 +534,41 @@ function qList(cls, title, items) {
   return `<div class="q ${cls}"><b>${title}</b><ul>${items.map(lineOf).map((x) => (x.lv ? `<li class="l">${mark(x.lv)}<span>${esc(x.t)}</span></li>` : `<li>${esc(x.t)}</li>`)).join('')}</ul></div>`;
 }
 const STAGE_AR = { latest: 'قراءة مبكرة', '48h': 'أول قراءة (48 ساعة)', '7d': 'القراءة النهائية (7 أيام)' };
-// One report: what worked, what did not, the evidence (unavailable is never shown as zero), what we learn for the next film.
-function report(ins, name) {
+// One report, short (the owner, 4 Nov 2026: «خل نخفف الكلام»): three lines (✓ what worked, ✗ what did not, ← one thing
+// for the next film), the evidence as bars, and every number and explanation folded under «كل الأرقام».
+const SHORT = { shares_pr: 'انرسل', saves_pr: 'انحفظ', likes_pr: 'لايكات', avg_watch_s: 'المشاهدة', comments_pr: 'تعليقات', follows_pr: 'متابعين', reach: 'الوصول', skip_rate: 'التخطي' };
+const xr = (r) => '×' + String(Math.round(r * 10) / 10);
+function shortLines(ins) {
+  const ev = Object.fromEntries((ins.evidence || []).map((e) => [e.k, e]));
+  const part = (x) => {
+    const k = x?.k, e = ev[k];
+    if (k === 'watch_ratio') { const m = String(e?.value || x?.t || '').match(/\((\d+)%\)/) || String(x?.t || '').match(/(\d+)%/); return m ? `شافوا ${m[1]}% بس من الفيلم` : null; }
+    return e?.ratio != null && SHORT[k] ? `${SHORT[k]} ${xr(e.ratio)}` : null;
+  };
+  const ok = (ins.worked || []).map(part).filter(Boolean).slice(0, 3);
+  const no = (ins.didnt || []).map(part).filter(Boolean).slice(0, 2);
+  return { ok: ok.join(' · '), no: no.join(' · '), next: lineOf(ins.try_next?.[0]).t || '' };
+}
+function linesBox(L) {
+  return (L.ok || L.no || L.next) ? `<section class="lines3" aria-label="الزبدة">${L.ok ? `<div><span class="ok">✓</span><span>${esc(L.ok)}</span></div>` : ''}${L.no ? `<div><span class="no">✗</span><span>${esc(L.no)}</span></div>` : ''}${L.next ? `<div><span class="nx">←</span><span>${esc(L.next)}</span></div>` : ''}</section>` : '';
+}
+function report(ins, name, noLines) {
   let h = `<div class="rep"><div class="row"><b style="font:800 15px var(--display)">${esc(name)}</b><span class="row" style="gap:6px"><span class="vd ${esc(ins.verdict || 'mid')}">${esc(ins.label || VERDICT[ins.verdict] || '')}</span>${ins.level ? mark(ins.level) : conf(ins.confidence, ins.confidence_ar)}</span></div>`;
-  if (ins.vs) h += `<p class="note" style="color:var(--ink)">${esc(ins.vs)}${ins.at ? ` · قراءة ${esc(when(ins.at))}` : ''}</p>`;
   if (ins.note) h += `<p class="note">${esc(ins.note)}</p>`;
   if (!ins.worked && !ins.evidence) {                               // a report written by hand from screenshots
     return h + (ins.numbers ? `<div class="nums">${Object.entries(ins.numbers).map(([k, v]) => `<div><span>${esc(k)}</span><b>${esc(v)}</b></div>`).join('')}</div>` : '')
       + qList('ok', 'وش تعلمنا', ins.lessons) + qList('try', 'الفيلم الياي', ins.next) + `</div>`;
   }
-  h += qList('ok', 'شنو نجح؟', ins.worked) + qList('no', 'شنو ما نجح؟', ins.didnt);
+  if (!noLines) h += linesBox(shortLines(ins));        // the film's top already shows these for its best reading
   const ev = ins.evidence || [], scored = ev.filter((e) => e.ratio != null);
-  if (ev.length) {
-    h += `<div class="q ev"><b>شنو الدليل؟</b>`;
-    if (scored.length) h += `<div class="bars">${scored.map((e) => `<span>${esc(e.label)}</span><span class="tr" aria-hidden="true"><i class="${e.state === 'bad' ? 'bad' : e.state === 'mid' ? 'mid' : ''}" style="width:${Math.round(Math.min(e.ratio / 2, 1) * 100)}%"></i><u></u></span><span class="x">×${esc(e.ratio)}</span>`).join('')}</div>
-      <p class="note">الخط الأسود = المعتاد لمنشوراتنا من نفس النوع. أطول من الخط = أحسن.</p>`;
-    h += `<details><summary class="note" style="cursor:pointer;color:var(--ink);font-weight:700">كل الأرقام</summary><div style="overflow-x:auto"><table class="evt"><thead><tr><th>المقياس</th><th>هالمنشور</th><th>المعتاد</th><th></th></tr></thead><tbody>`
-      + ev.map((e) => `<tr class="${esc(e.state || '')}"><td>${esc(e.label)}${e.note ? `<small>${esc(e.note)}</small>` : ''}</td><td>${esc(e.value)}</td><td>${esc(e.usual || '—')}</td><td class="r">${e.ratio != null ? '×' + esc(e.ratio) : ''}</td></tr>`).join('')
-      + `</tbody></table></div></details></div>`;
-  }
-  h += qList('try', 'شنو نتعلم للفيلم القادم؟', ins.try_next);
-  if (ins.caveat) h += `<p class="note">${esc(ins.caveat)}</p><p class="note">${mark('c')} مؤكد · ${mark('e')} ملاحظة أولية · ${mark('w')} دليل ضعيف</p>`;
+  if (scored.length) h += `<div class="bars">${scored.map((e) => `<span>${esc(e.label)}</span><span class="tr" aria-hidden="true"><i class="${e.state === 'bad' ? 'bad' : e.state === 'mid' ? 'mid' : ''}" style="width:${Math.round(Math.min(e.ratio / 2, 1) * 100)}%"></i><u></u></span><span class="x">${xr(e.ratio)}</span>`).join('')}</div>`;
+  if (ev.length) h += `<details><summary class="note" style="cursor:pointer;color:var(--ink);font-weight:700">كل الأرقام</summary>
+    <div style="overflow-x:auto"><table class="evt"><thead><tr><th>المقياس</th><th>هالمنشور</th><th>المعتاد</th><th></th></tr></thead><tbody>`
+    + ev.map((e) => `<tr class="${esc(e.state || '')}"><td>${esc(e.label)}${e.note ? `<small>${esc(e.note)}</small>` : ''}</td><td>${esc(e.value)}</td><td>${esc(e.usual || '—')}</td><td class="r">${e.ratio != null ? '×' + esc(e.ratio) : ''}</td></tr>`).join('')
+    + `</tbody></table></div>`
+    + `<p class="note">الخط الأسود بالخطوط = المعتاد لمنشوراتنا من نفس النوع، وأطول منه أحسن.${ins.vs ? ' ' + esc(ins.vs) : ''}${ins.at ? ` قراءة ${esc(when(ins.at))}.` : ''}</p>`
+    + (ins.caveat ? `<p class="note">${esc(ins.caveat)}</p>` : '')
+    + `<p class="note">${mark('c')} مؤكد · ${mark('e')} ملاحظة أولية · ${mark('w')} دليل ضعيف</p></details>`;
   return h + `</div>`;
 }
 const stageSel = {};                                               // per film: which reading is open
@@ -580,7 +594,7 @@ function viewAnalysis(f) {
   if (avail.length) {
     const cur = avail.includes(stageSel[f.id]) ? stageSel[f.id] : avail[avail.length - 1];
     h += `<div class="seg" role="group" aria-label="القراءة" style="margin-top:8px">${[['latest', 'مبكرة'], ['48h', '48 ساعة'], ['7d', '7 أيام']].map(([k, n]) => `<button type="button" data-act="stage" data-id="${esc(f.id)}" data-k="${k}" aria-pressed="${k === cur}" ${reps[k] ? '' : 'disabled'}>${n}</button>`).join('')}</div>`;
-    h += report(reps[cur], STAGE_AR[cur]);
+    h += report(reps[cur], STAGE_AR[cur], reps[cur] === bestReport(f));
   } else {
     for (const ins of (f.insights || []).slice().sort((a, b) => Date.parse(b.at || 0) - Date.parse(a.at || 0))) h += report(ins, CHECKS.find((c) => c.id === ins.stage)?.name || ins.stage);
     if (!(f.insights || []).length) h += `<p class="note">ما أحكم بالمشاهدات بروحها: أقارن كل منشور بوسيط منشوراتنا من نفس النوع بنفس الحساب، وبنفس العمر لما يتوفر (48 ساعة و7 أيام).</p>`;
@@ -777,10 +791,7 @@ function viewOutcome(f) {
       <div class="rl"><span>${done ? (p.within ? '✓ جا داخل المدى المتوقع' : 'جا برا المدى المتوقع') : `المدى ${fmtK(p.low)}–${fmtK(p.high)}`}</span><span>${done ? '' : 'الحكم النهائي ' + esc(dayAr(p.final_at))}</span></div>
       ${p.basis === 'after' ? '<span class="note">التوقع محسوب بعد النشر من مستوى الحساب وقتها.</span>' : ''}</section>`;
   }
-  if (rep && (rep.worked?.length || rep.didnt?.length)) {
-    const w = lineOf(rep.worked?.[0]), d = lineOf(rep.didnt?.[0]), t = lineOf(rep.try_next?.[0]);
-    h += `<section class="lines3" aria-label="الزبدة">${w.t ? `<div><span class="ok">✓</span><span>${esc(w.t)}</span></div>` : ''}${d.t ? `<div><span class="no">✗</span><span>${esc(d.t)}</span></div>` : ''}${t.t ? `<div><span class="nx">←</span><span>${esc(t.t)}</span></div>` : ''}</section>`;
-  }
+  if (rep && (rep.worked?.length || rep.didnt?.length)) h += linesBox(shortLines(rep));
   return h;
 }
 
