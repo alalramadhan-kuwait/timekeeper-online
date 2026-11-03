@@ -12,8 +12,10 @@
 //
 // Modes (POST body `mode`):
 //   (none) / "daily"  everything above, the last 50 posts per account. The 08:15 Kuwait cron.
-//   "fresh"           only posts from the last 8 days, so the first hours and the 48-hour read are caught.
-//                     Every 3 hours.
+//   "fresh"           only posts at the ages the reports read: under 26 hours (the early read), 40-62 hours (the
+//                     48-hour report) and 148-202 hours (the 7-day report). Every 3 hours. Pages back 8.5 days.
+//   "backfill"        every Reel the account still has (or `kinds`: ["REELS", "FEED"]), for the watch time and
+//                     skip rate the older posts were read without. Writes posts, not snapshots. Run by hand.
 //   "probe"           reads one recent Reel and one carousel and the account extras and returns what Instagram
 //                     answered, writing nothing. For checking which metrics the token gets.
 //
@@ -24,6 +26,11 @@
 //
 // It uses META_ADS_TOKEN, the System User token the ads sync uses (instagram_basic, instagram_manage_insights),
 // and finds the accounts through the Facebook pages that token manages.
+//
+// Each run writes instagram_sync_log.report: per account, how many posts were read, whether Instagram rate-limited
+// it, and any error; one account failing never stops the others, and status is "partial" when any did.
+// A failed read never wipes a post's earlier figures (the ig_keep_metrics trigger), and a second read of the same
+// post within 45 minutes adds no snapshot (ig_snapshot_once).
 //
 // Callers: pg_cron (x-sync-key, the key in instagram_auth) or an admin/manager/marketing JWT.
 import { createClient, SupabaseClient } from "jsr:@supabase/supabase-js@2";
@@ -115,7 +122,7 @@ function mediaRow(acc: Json, m: Json, ins: Record<string, number> | null) {
     profile_visits: ins?.profile_visits ?? null, follows: ins?.follows ?? null, reposts: ins?.reposts ?? null,
     avg_watch_time_ms: ins?.ig_reels_avg_watch_time ?? null, total_watch_time_ms: ins?.ig_reels_video_view_total_time ?? null,
     engagement: ins?.total_interactions ?? ((m.like_count ?? 0) + (m.comments_count ?? 0)),
-    insights: ins, synced_at: new Date().toISOString(),
+    insights: ins, synced_at: ins ? new Date().toISOString() : undefined,   // a failed read keeps the time of the last good one
   };
 }
 
@@ -153,7 +160,7 @@ async function audience(acc: Json, token: string, since: number, until: number) 
   return { out, errors };
 }
 
-async function readAccount(admin: SupabaseClient, acc: Json, token: string, mode: string, dropped: Record<string, Set<string>>) {
+async function readAccount(admin: SupabaseClient, acc: Json, token: string, mode: string, dropped: Record<string, Set<string>>, opts: Json = {}) {
   const one: Json = { username: acc.username };
   const since = Math.floor(new Date(`${kuwaitDate(-1)}T00:00:00+03:00`).getTime() / 1000);
   const until = since + 86400;
@@ -189,9 +196,23 @@ async function readAccount(admin: SupabaseClient, acc: Json, token: string, mode
     if (Object.keys(a.errors).length) one.audience_missing = a.errors;
   }
 
-  const media = await graph(`${acc.id}/media`, token, { fields: MEDIA_FIELDS, limit: mode === "fresh" ? "25" : "50" });
-  const cutoff = Date.now() - 8 * 86400_000;
-  const list = (media.data ?? []).filter((m: Json) => mode !== "fresh" || Date.parse(m.timestamp ?? "") >= cutoff);
+  // daily: the newest 50. fresh: back 8.5 days, keeping the ages the reports read. backfill: everything, by kind.
+  const all: Json[] = [];
+  const cutoff = Date.now() - 8.5 * 86400_000;
+  let page: Json = await graph(`${acc.id}/media`, token, { fields: MEDIA_FIELDS, limit: "50" });
+  for (let n = 0; ; n++) {
+    all.push(...(page.data ?? []));
+    const oldest = Date.parse(all[all.length - 1]?.timestamp ?? "");
+    const more = page.paging?.cursors?.after && page.paging?.next;
+    if (mode === "daily" || !more || n >= (mode === "backfill" ? 20 : 4) || (mode === "fresh" && oldest < cutoff)) break;
+    page = await graph(`${acc.id}/media`, token, { fields: MEDIA_FIELDS, limit: "50", after: page.paging.cursors.after });
+  }
+  const kinds: string[] = Array.isArray(opts.kinds) && opts.kinds.length ? opts.kinds : ["REELS"];
+  const ageH = (m: Json) => (Date.now() - Date.parse(m.timestamp ?? "")) / 3600_000;
+  const list = mode === "fresh" ? all.filter((m) => { const h = ageH(m); return h < 26 || (h >= 40 && h <= 62) || (h >= 148 && h <= 202); })
+    : mode === "backfill" ? all.filter((m) => kinds.includes(kindOf(m)))
+    : all.slice(0, 50);
+  one.listed = all.length;
   let posts = 0, withInsights = 0, watch = 0;
   const snaps: Json[] = [];
   for (const m of list) {
@@ -200,7 +221,7 @@ async function readAccount(admin: SupabaseClient, acc: Json, token: string, mode
     const { error } = await admin.from("instagram_media").upsert(mediaRow(acc, m, ins), { onConflict: "media_id" });
     if (error) throw new Error(`instagram_media: ${error.message}`);
     posts++;
-    if (ins) { withInsights++; snaps.push(snapshotRow(acc, m, ins, mode)); if (ins.ig_reels_avg_watch_time != null) watch++; }
+    if (ins) { withInsights++; if (mode !== "backfill") snaps.push(snapshotRow(acc, m, ins, mode)); if (ins.ig_reels_avg_watch_time != null) watch++; }
   }
   if (snaps.length) {
     const { error } = await admin.from("instagram_media_snapshots").insert(snaps);
@@ -240,7 +261,7 @@ Deno.serve(async (req: Request) => {
 
   let body: Json = {};
   try { body = await req.json(); } catch { /* no body */ }
-  const mode = ["fresh", "probe"].includes(body.mode) ? body.mode : "daily";
+  const mode = ["fresh", "probe", "backfill"].includes(body.mode) ? body.mode : "daily";
 
   const pages = await graph("me/accounts", token, { fields: "name,instagram_business_account{id,username}", limit: "50" });
   const accounts = (pages.data ?? []).map((p: Json) => p.instagram_business_account).filter((a: Json) => a?.id);
@@ -276,20 +297,23 @@ Deno.serve(async (req: Request) => {
   }
 
   const { data: logRow } = await admin.from("instagram_sync_log").insert({ status: "running" }).select("id").single();
-  const finish = async (status: string, error?: string) => {
+  const finish = async (status: string, error?: string, report?: Json) => {
     await admin.from("instagram_sync_log")
-      .update({ status, error: error?.slice(0, 500) ?? null, finished_at: new Date().toISOString() })
+      .update({ status, error: error?.slice(0, 500) ?? null, finished_at: new Date().toISOString(), report: report ?? null })
       .eq("id", logRow!.id);
   };
-  try {
-    const dropped = { REELS: new Set<string>(), FEED: new Set<string>() };
-    const report: Json[] = [];
-    for (const acc of accounts) report.push(await readAccount(admin, acc, token, mode, dropped));
-    await finish("ok");
-    return json({ ok: true, mode, accounts: report, metrics_left_out: { REELS: [...dropped.REELS], FEED: [...dropped.FEED] } });
-  } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e);
-    await finish("error", msg);
-    return json({ error: msg }, 500);
+  const dropped = { REELS: new Set<string>(), FEED: new Set<string>() };
+  const report: Json[] = [];
+  const only = typeof body.username === "string" ? body.username : null;
+  for (const acc of accounts) {
+    if (only && acc.username !== only) continue;
+    // one account failing (rate limit, a Graph error) is reported and the next account still runs
+    try { report.push(await readAccount(admin, acc, token, mode, dropped, { kinds: body.kinds })); }
+    catch (e) { report.push({ username: acc.username, error: (e instanceof Error ? e.message : String(e)).slice(0, 300), rate_limited: rateLimited(e) || undefined }); }
   }
+  const bad = report.filter((r) => r.error || r.rate_limited);
+  const summary = { mode, accounts: report, metrics_left_out: { REELS: [...dropped.REELS], FEED: [...dropped.FEED] } };
+  await finish(bad.length === report.length && report.length ? "error" : bad.length ? "partial" : "ok",
+    bad.map((r) => `${r.username}: ${r.error ?? "rate limited"}`).join("; ") || undefined, summary);
+  return json({ ok: bad.length < report.length, ...summary }, bad.length === report.length && report.length ? 502 : 200);
 });
