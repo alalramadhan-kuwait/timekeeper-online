@@ -17,6 +17,8 @@ iPhone size against a stub of the artifact runtime. The stub's data file can car
 | The 48-hour and 7-day reads | `instagram-sync` `mode:"fresh"`, cron `instagram-fresh-sync` | every 3 h at :40 |
 | Reports, learning, account numbers | `studio_refresh()`, crons `studio-refresh` and `studio-refresh-morning` | every 3 h at :50, and 08:30 |
 | Watchdog | `instagram_watchdog()`, cron `instagram-watchdog` | every hour at :25 |
+| Prediction models: a weekly check, replaced only when better | `ig_models_check()`, cron `ig-models-weekly` | Sunday 07:10 |
+| Instagram's official news | a Claude scheduled task (`Instagram updates weekly check`), writing through `ig_update_add` | Sunday 11:17 |
 | Showing it | the studio page, through the viewer's own Supabase connector | when the page is opened, then every 30 min while it is open |
 
 The watchdog does the following:
@@ -136,3 +138,104 @@ Write these on the film record, so the reports and the learning can use them:
 - `meta` and `topic` as before.
 
 Never invent one of these after the fact. A film without them is simply not counted for that dimension.
+
+## The numbers screen
+
+`ig_dash2(username)` (inside `studio_refresh`) gives each account:
+
+- **Two numbers.** Reach over the last 7 days against the week before. The second number depends on the account:
+  - timekeeperkw: shares per 1000 reach
+  - timegallerykw: saves per 1000 reach
+  - the shop: profile visits, plus website clicks
+  - The second number is not judged on fewer than 3 posts in a week.
+- **A chart** of daily reach over 35 days.
+- **The gist:** one note and one recommendation.
+  - The note names the format that moved, per post: posts 2 to 9 days old against posts 7 to 67 days old. Week totals are not used, because they punish young posts.
+  - The recommendation is the brief's first test for that format.
+- **Per format:** this week against usual.
+- **The models' accuracy.**
+- **A shift**, if one is open.
+
+Priorities: Timekeeper first and the default when the studio opens, the gallery second, the shop basic only.
+
+## Predictions
+
+The number is the expected reach after 7 days, with a range.
+
+**The model.** One per account and format (`ig_models`), for Timekeeper carousels, Timekeeper Reels and gallery images. Others are skipped until they have 20 final posts.
+
+- The base is the account's level: the median log reach of its last 10 final posts of the format (`ig_level`).
+- The post's features (opening line, content type, caption length, slide count, posting time, studio attributes such as style or brand) can move it. Each feature's effect is shrunk by n/(n+8).
+- How much the features count is chosen on the newest 30% of training posts (`lambda`). Features that do not help on unseen posts get 0.
+- The range is the 15th–85th percentile of errors, widened 10%.
+
+**Validation.** Every model is tested on posts it has not seen:
+
+- the median % error
+- the share of results inside the range
+- the level-alone error, for comparison
+
+On 3 Nov 2026 the features did not beat the level for any of the three models, so every v1 is level-only:
+
+| Model | Median error | Inside range | Posts tested |
+|-------|--------------|--------------|--------------|
+| Timekeeper carousels | 69% | 81% | 42 |
+| Timekeeper Reels | 37% | 77% | 22 |
+| Gallery images | 18% | 75% | 16 |
+
+**The weekly check** (`ig_models_check`, Sunday):
+
+1. It splits the posts the active model has never seen in two.
+2. A candidate trained up to the middle is tested on the second half against the active model.
+3. The candidate replaces it only with a median error 2 points lower and a range no further from 70%.
+
+Every version stays in `ig_models`, and every check in `ig_model_checks`.
+
+**For a film:**
+
+- A film waiting for approval or ready gets `studio_predict`: the number, the range, and 2–3 suggestions.
+  - Suggestions come only from patterns that passed the chance test at medium or high confidence, plus the brief's tests.
+  - No promised gains are shown.
+- The prediction is kept in `ig_predictions` as it stood when the film was last seen unposted (basis `before`).
+- A film posted before predictions existed gets one worked out from the level at its Instagram post time (basis `after`, said so on the page).
+- After 7 days `ig_predictions_settle` writes the actual reach and whether it fell in the range. Only confirmed links count.
+
+When an account's reach is in a detected drop, the card says the prediction may be high. The level lags by a week because it uses final posts.
+
+## Changes in our accounts
+
+`ig_detect_shifts` runs with each refresh, for Timekeeper and the gallery. A shift is recorded when the last 7 days' median daily reach is 30% below the 4 weeks before, with 5 or more days in the bottom quarter. A rise of 40% with 5 or more days in the top quarter counts too.
+
+Each shift is recorded in `ig_shifts` with:
+
+- the day it started
+- each format's median reach per post before and after
+- posts per week before and after
+- any official update announced from 14 days before to 3 days after
+
+On 3 Nov 2026 it found the drop from 25 Oct:
+
+- daily median 120 thousand down to 48 thousand
+- Reels 11.4 thousand per post down to 4.4 thousand
+- carousels unchanged at 12.5 thousand per post
+- the same posting rate
+
+## Instagram updates
+
+A Claude scheduled task (`Instagram updates weekly check`, Sunday 11:17 Kuwait, bound to the session that built it, since scheduled tasks cannot carry the Supabase connector in this organisation) reads:
+
+- Instagram's and Meta's official channels
+- the Graph API and Instagram Platform changelogs
+- reputable coverage
+
+It records each relevant item with `ig_update_add`:
+
+- **Source kind:** official, third party or unverified. Only an official item can be important.
+- **Affects:** which formats, and whether it affects us.
+- **Action:** at most one suggested test.
+
+It then logs the check with `ig_update_check_done`. The studio shows important items affecting us under الأرقام, and the recent list under التعلّم ← «تحديثات إنستغرام». Nothing changes a creative rule.
+
+If that session ends, create the same task from claude.ai with the Supabase connector added, using the prompt in the task.
+
+The first item recorded is official: Graph API v21.0 ends on 21 Jan 2027. The sync moved to v26.0 on 3 Nov 2026 after a full test on the three accounts: same figures, nothing lost, the same Reel metrics withheld as on v21.

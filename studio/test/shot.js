@@ -29,9 +29,9 @@ const data = JSON.parse(fs.readFileSync(data_, 'utf8'));
   await page.goto('http://x/');
   for (const h of hashes.length ? hashes : ['films']) {
     if (h.startsWith('click:')) { await page.evaluate((s) => { const el = document.querySelector(s); if (!el) throw new Error('no ' + s); el.click(); }, h.slice(6)); await page.waitForTimeout(700); const f = path.join(out, `${h.replace(/[^a-z0-9-]/gi, '_')}.png`); await page.screenshot({ path: f }); console.log(h, f); continue; }
-    await page.evaluate((h) => { location.hash = h; }, h);
+    await page.evaluate((h) => { location.hash = h.replace(/~$/, ''); }, h);
     await page.waitForTimeout(600);
-    await page.evaluate(() => document.querySelectorAll('details').forEach((d) => (d.open = true)));
+    if (!h.endsWith('~')) await page.evaluate(() => document.querySelectorAll('details').forEach((d) => (d.open = true)));
     await page.waitForTimeout(150);
     const w = await page.evaluate(() => ({ sw: document.documentElement.scrollWidth, cw: document.documentElement.clientWidth }));
     const f = path.join(out, `${h.replace(/[^a-z0-9-]/gi, '_')}.png`);

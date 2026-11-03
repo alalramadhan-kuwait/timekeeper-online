@@ -190,6 +190,52 @@ body:has(.sheet) nav.tabs,body:has(.sheet) #toast{display:none}
 .post:disabled{opacity:.5;cursor:default}
 .tag2{display:inline-block;border-radius:999px;padding:0 8px;font:700 11px var(--body);background:#E3F1E8;color:#1f6b3f}
 .sugg{border-radius:16px;padding:10px 12px;background:var(--card);box-shadow:inset 0 0 0 2px var(--ink);display:grid;gap:6px}
+
+/* v3, the approved iPhone design: the numbers in five seconds, one number before posting, the rest closed */
+.hero{background:var(--card);border-radius:24px;padding:14px 16px 10px;display:grid;gap:10px;box-shadow:0 1px 0 var(--line)}
+.hn{display:grid;grid-template-columns:1.25fr 1fr;gap:10px}
+.hn small{display:block;font:700 12.5px var(--body);color:var(--mute)}
+.hn b{display:block;font:800 34px/1.05 var(--display);font-variant-numeric:tabular-nums}
+.hn b.sm{font-size:27px}
+.pch{display:inline-block;font:800 12.5px var(--body);border-radius:999px;padding:1px 9px;margin-top:3px}
+.pch.down{background:#FBE3DF;color:#B3261E}.pch.ok{background:#E3F1E8;color:#1f6b3f}.pch.up{background:#DCEBFF;color:#1d4fa8}
+.chart svg{width:100%;height:auto;display:block}
+.b7{fill:var(--teal)}.bp{fill:#9FD9DA}.bo{fill:#DCD3C2}.gl{stroke:var(--line);stroke-width:1}.ax{font:500 9.5px var(--body);fill:var(--mute)}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font:600 11.5px var(--body);color:var(--mute)}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-inline-end:4px;vertical-align:-1px}
+.gist{border-radius:22px;padding:12px 14px;background:#FFF4D6;display:grid;gap:8px}
+.gist .gr{display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:start;font-size:14.5px;line-height:1.5}
+.gist .tg{font:800 11.5px var(--body);border-radius:999px;padding:1px 8px;background:var(--ink);color:var(--bg);white-space:nowrap;margin-top:2px}
+.gist .tg.t2{background:var(--teal);color:var(--ink)}
+.fold{background:var(--card);border-radius:18px;box-shadow:0 1px 0 var(--line)}
+details.fold>summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:8px;padding:11px 14px;font:800 15px var(--display)}
+details.fold>summary::-webkit-details-marker{display:none}
+details.fold>summary span{font:600 12.5px var(--body);color:var(--mute);text-align:end}
+details.fold>summary::after{content:"‹";font:800 18px var(--body);color:var(--mute);transform:rotate(-90deg);transition:transform .15s;flex:none}
+details.fold[open]>summary::after{transform:rotate(90deg)}
+.fin{padding:0 14px 12px;display:grid;gap:8px}
+.pred{background:var(--card);border-radius:24px;padding:14px 16px;display:grid;gap:6px;box-shadow:0 1px 0 var(--line)}
+.pred small{font:700 12.5px var(--body);color:var(--mute)}
+.pred .pbig{font:800 40px/1 var(--display);font-variant-numeric:tabular-nums}
+.range{position:relative;height:10px;border-radius:999px;background:var(--soft);margin:6px 0 2px}
+.range i{position:absolute;top:0;bottom:0;border-radius:999px;background:#9FD9DA}
+.range em{position:absolute;top:-4px;width:4px;height:18px;border-radius:2px;background:var(--ink);margin-inline-start:-2px}
+.rl{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font:600 11.5px var(--body);color:var(--mute);font-variant-numeric:tabular-nums}
+.sg{display:grid;gap:8px}.sg h3{margin:0;font:800 16px var(--display)}
+.sgi{background:var(--card);border-radius:18px;padding:11px 12px;display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;box-shadow:0 1px 0 var(--line)}
+.sgi p{margin:0;font-size:14px;line-height:1.5}.sgi p small{display:block;color:var(--mute);font-size:12px}
+.do{border:0;border-radius:999px;background:var(--ink);color:var(--bg);font:800 14px var(--display);padding:7px 14px;min-height:40px;cursor:pointer}
+.vs{display:grid;gap:8px}.vsrow{display:grid;grid-template-columns:56px 1fr auto;gap:8px;align-items:center;font-size:13px}
+.vsrow .bar{height:14px;border-radius:999px;background:var(--soft);overflow:hidden}.vsrow .bar i{display:block;height:100%;border-radius:999px}
+.vsrow b{font:800 15px var(--display);font-variant-numeric:tabular-nums}
+.lines3{background:var(--card);border-radius:20px;padding:10px 14px;display:grid;gap:6px;box-shadow:0 1px 0 var(--line)}
+.lines3 div{display:grid;grid-template-columns:22px 1fr;gap:6px;font-size:14px;line-height:1.5}
+.lines3 .ok{color:#1f6b3f;font-weight:800}.lines3 .no{color:#B3261E;font-weight:800}.lines3 .nx{color:#7A5A00;font-weight:800}
+.badge.off{background:#DCE5FA;color:#23408f}.badge.tp{background:var(--soft);color:var(--mute)}.badge.un{background:#FBE6E3;color:#8a1426}
+.ktab{width:100%;border-collapse:collapse;font-size:12.5px;font-variant-numeric:tabular-nums}
+.ktab th{font:700 11px var(--body);color:var(--mute);text-align:start;padding:3px}
+.ktab td{padding:6px 3px;border-top:1px solid var(--line);vertical-align:top}.ktab td small{display:block;color:var(--mute);font-size:11px}
+@media (prefers-reduced-motion:reduce){details.fold>summary::after{transition:none}}
 </style>
 
 <div class="app" dir="rtl" lang="ar">
@@ -364,22 +410,23 @@ function viewFilm(id) {
   }).join('');
   let h = `<header class="top fhead"><button type="button" class="back" aria-label="رجوع" data-go="films"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FBF7EF" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
     <h1 style="font-size:28px">${esc(f.name)}</h1>${f.version ? `<span class="tag" style="background:${c}">${esc(f.version)}${f.seconds ? ' · ' + f.seconds + 'ث' : ''}</span>` : ''}</header>`;
-  h += `<ol class="steps" aria-label="المراحل">${dots}</ol><p class="stepname">${esc(STEPS[step - 1])}</p>`;
-  h += `<div class="prog"><b class="big">${p}%</b><span class="track" aria-hidden="true"><i style="width:${p}%"></i></span>
-    <span class="row"><span class="state">${s.icon} ${esc(s.text)}</span><span class="note">${s.eta != null ? 'باقي ' + eta(s.eta) : f.after_min != null && f.state === 'waiting' ? 'بعدها ' + eta(f.after_min) : ''}</span></span></div>`;
-  if (f.updated || f.changes?.length) {
-    const ch = f.changes || [];
-    h += `<section class="group" aria-label="آخر تحديث"><div class="row"><b>آخر تحديث</b><span class="note" style="color:var(--ink)">${esc(f.version || '')} · ${esc(when(f.updated))} (${esc(ago(f.updated))})</span></div>`
-      + (ch.length ? `<ul class="chg">${ch[0].what.map((w) => `<li>${esc(w)}</li>`).join('')}</ul>` + (ch.length > 1 ? `<details><summary class="note" style="cursor:pointer;color:var(--ink);font-weight:700">النسخ اللي قبل</summary>${ch.slice(1).map((c) => `<p class="note" style="color:var(--ink);font-weight:700;margin-top:6px">${esc(c.v)} · ${esc(when(c.at))}</p><ul class="chg">${c.what.map((w) => `<li>${esc(w)}</li>`).join('')}</ul>`).join('')}</details>` : '') : '<p class="note">ما فيه سجل تغييرات لهالنسخة.</p>')
-      + `</section>`;
-  }
-  { const rs = ruleState(f), n = rs.filter((r) => !r.ok).length;
-    h += `<section class="group" aria-label="القواعد"><div class="row"><b>القواعد الجديدة</b><span class="note" style="color:var(--ink)">${n ? `${n} مو مطبّقة بهالنسخة` : 'كلها مطبّقة ✓'}</span></div>
-      <ul class="rules">${rs.map((r) => `<li class="${r.ok ? 'rok' : 'rold'}">${r.ok ? '✓' : '⚠'} ${esc(r.name)}</li>`).join('')}</ul>${n ? '<p class="note">انسوت هالنسخة قبل هالقواعد. قل لي إذا تبي أعيدها عليها.</p>' : ''}</section>`; }
+  const pr = f.state !== 'posted' ? ig?.predictions?.[f.id] : null, slim = !!pr || f.state === 'posted';
+  if (!slim) {
+    h += `<ol class="steps" aria-label="المراحل">${dots}</ol><p class="stepname">${esc(STEPS[step - 1])}</p>`;
+    h += `<div class="prog"><b class="big">${p}%</b><span class="track" aria-hidden="true"><i style="width:${p}%"></i></span>
+      <span class="row"><span class="state">${s.icon} ${esc(s.text)}</span><span class="note">${s.eta != null ? 'باقي ' + eta(s.eta) : f.after_min != null && f.state === 'waiting' ? 'بعدها ' + eta(f.after_min) : ''}</span></span></div>`;
+  } else h += `<p class="state" style="margin:0">${s.icon} ${esc(s.text)}</p>`;
+  if (pr) h += viewPredict(f, pr);
+  if (f.state === 'posted') h += viewOutcome(f);
+  { const rs = ruleState(f), n = rs.filter((r) => !r.ok).length, ch = f.changes || [];
+    h += `<details class="fold"><summary>القواعد وآخر تحديث <span>${n ? `⚠ ${n} مو مطبّقة` : 'كلها مطبّقة ✓'}${f.updated ? ' · ' + esc(ago(f.updated)) : ''}</span></summary><div class="fin">`
+      + (f.updated ? `<p class="note" style="color:var(--ink)">${esc(f.version || '')} · ${esc(when(f.updated))}</p>` : '')
+      + (ch.length ? `<ul class="chg">${ch[0].what.map((w) => `<li>${esc(w)}</li>`).join('')}</ul>` + (ch.length > 1 ? `<details><summary class="note" style="cursor:pointer;color:var(--ink);font-weight:700">النسخ اللي قبل</summary>${ch.slice(1).map((c) => `<p class="note" style="color:var(--ink);font-weight:700;margin-top:6px">${esc(c.v)} · ${esc(when(c.at))}</p><ul class="chg">${c.what.map((w) => `<li>${esc(w)}</li>`).join('')}</ul>`).join('')}</details>` : '') : '')
+      + `<ul class="rules">${rs.map((r) => `<li class="${r.ok ? 'rok' : 'rold'}">${r.ok ? '✓' : '⚠'} ${esc(r.name)}</li>`).join('')}</ul>${n ? '<p class="note">انسوت هالنسخة قبل هالقواعد. قل لي إذا تبي أعيدها عليها.</p>' : ''}</div></details>`; }
   if (f.kind === 'carousel' && f.slides?.length) {
     h += `<section class="gate" style="background:${c}" aria-label="الكاروسيل"><div class="slides">${f.slides.map((src, k) => `<img src="${esc(src)}" alt="شريحة ${k + 1}" loading="lazy">`).join('')}</div>
       <div class="two"><button type="button" class="btn dark" data-act="share" data-id="${esc(f.id)}">شارك الكل ↗</button><button type="button" class="btn line" data-act="copy" data-id="${esc(f.id)}">انسخ الكابشن</button></div>
-      <p class="note" style="color:var(--ink);text-align:center">«شارك الكل» ملف واحد فيه الصور والكابشن، والكابشن ينسخ بنفس الضغطة. بالآيفون: Save to Files ← افتحه في Files ← اختار الصور ← شارك ← Save Images ← إنستغرام.</p>
+      <details class="note" style="color:var(--ink);width:100%"><summary style="cursor:pointer;text-align:center;font-weight:700">شلون أنشرها من الآيفون؟</summary><p style="text-align:center">«شارك الكل» ملف واحد فيه الصور والكابشن، والكابشن ينسخ بنفس الضغطة. بالآيفون: Save to Files ← افتحه في Files ← اختار الصور ← شارك ← Save Images ← إنستغرام.</p></details>
       <div class="chips" role="group" aria-label="صورة صورة" style="justify-content:center"><span class="note" style="color:var(--ink)">أو صورة صورة:</span>${f.slides.map((_, k) => `<button type="button" class="chip" data-act="one" data-k="${k}" data-id="${esc(f.id)}">${k + 1}</button>`).join('')}</div>`;
     if (f.state === 'waiting') h += `<div class="two"><button type="button" class="btn dark" data-act="approve" data-id="${esc(f.id)}">وافق ✓</button><button type="button" class="btn line" data-act="change" data-id="${esc(f.id)}">تعديل</button></div>
       <div id="chg" ${chgOpen === f.id ? '' : 'hidden'} style="width:100%;display:grid;gap:8px"><p class="note" style="color:var(--ink);font-weight:700">اختار الشرائح اللي تبي تعدّلها (وحدة أو أكثر)</p>
@@ -389,7 +436,7 @@ function viewFilm(id) {
     h += postedButton(f) + `</section>`;
     h += viewAnalysis(f);
     if (f.spec) h += `<a class="short" href="#edit-${esc(f.id)}" style="background:var(--card);color:var(--ink);box-shadow:0 1px 0 var(--line)">✎ عدّل النص بنفسك</a>`;
-    if (f.caption) h += `<section class="caption" aria-label="الكابشن"><div class="row"><b style="font:800 17px var(--display)">الكابشن</b><button type="button" class="chip" data-act="savecap" data-id="${esc(f.id)}">احفظه ملف</button></div><pre id="cap">${esc(f.caption)}</pre></section>`;
+    if (f.caption) h += `<details class="fold caption-f"><summary>الكابشن <span>${esc(String(f.caption).split('\n')[0].slice(0, 40))}…</span></summary><div class="fin"><pre id="cap" style="margin:0;white-space:pre-wrap;font:500 15px/1.7 var(--body)">${esc(f.caption)}</pre><button type="button" class="chip" style="justify-self:start" data-act="savecap" data-id="${esc(f.id)}">احفظه ملف</button></div></details>`;
   }
   if (f.video) {
     h += `<section class="gate" style="background:${c}" aria-label="الفلم"><video controls playsinline preload="none" ${f.poster ? `poster="${esc(f.poster)}"` : ''} src="${esc(f.video)}"></video>`;
@@ -400,7 +447,7 @@ function viewFilm(id) {
       <p class="note" style="color:var(--ink);text-align:center">${f.final ? 'بالجودة الكاملة (1080×1920). ' : ''}بالآيفون: Save Video يحفظه بالصور، والكابشن ينسخ بنفس الضغطة.</p>`;
     h += postedButton(f) + `</section>`;
     h += viewAnalysis(f);
-    if (f.caption) h += `<section class="caption" aria-label="الكابشن"><div class="row"><b style="font:800 17px var(--display)">الكابشن</b><button type="button" class="chip" data-act="savecap" data-id="${esc(f.id)}">احفظه ملف</button></div><pre id="cap">${esc(f.caption)}</pre></section>`;
+    if (f.caption) h += `<details class="fold caption-f"><summary>الكابشن <span>${esc(String(f.caption).split('\n')[0].slice(0, 40))}…</span></summary><div class="fin"><pre id="cap" style="margin:0;white-space:pre-wrap;font:500 15px/1.7 var(--body)">${esc(f.caption)}</pre><button type="button" class="chip" style="justify-self:start" data-act="savecap" data-id="${esc(f.id)}">احفظه ملف</button></div></details>`;
   }
   if (f.acts?.length) h += `<section class="acts" aria-label="الفصول">${f.acts.map((a, k) => `<div class="act" style="background:${COLORS[k % COLORS.length]}"><b>${esc(a.name)}</b><span>${esc(a.time || '')}</span></div>`).join('')}</section>`;
   const twin = films.find((x) => x.id !== f.id && (x.of === f.id || f.of === x.id));     // the same topic in the other format
@@ -514,10 +561,10 @@ const stageSel = {};                                               // per film: 
 function viewAnalysis(f) {
   if (f.state !== 'posted' || !f.posted?.at) return '';
   const cs = checks(f), d = dueCheck(f), g = igFilm(f) || {}, reps = g.reports || {};
-  let h = `<section class="group" aria-label="التحليل"><div class="row"><b>التحليل</b><span class="note" style="color:var(--ink)">نشرته ${esc(when(g.posted_at || f.posted.at))}</span></div>`;
-  if (g.linked && g.confirmed) h += `<div class="row" style="justify-content:flex-start;gap:8px;flex-wrap:wrap"><span class="auto">● من إنستغرام</span>${g.permalink ? `<a class="chip" href="${esc(g.permalink)}" target="_blank" rel="noopener">افتح المنشور ↗</a>` : ''}</div>`;
-  else if (g.linked) h += `<div class="sugg"><b style="font:800 14px var(--display)">مقترح: «${esc(g.first_line || 'المنشور')}»</b><span class="note">لقيته من الكابشن. أكّده عشان ينحفظ برقمه.</span><div class="two"><button type="button" class="btn dark" style="min-height:44px" data-act="pickopen" data-id="${esc(f.id)}">أكّد المنشور</button>${g.permalink ? `<a class="btn line" style="min-height:44px;display:grid;place-items:center;text-decoration:none;color:var(--ink)" href="${esc(g.permalink)}" target="_blank" rel="noopener">شوفه ↗</a>` : '<span></span>'}</div></div>`;
-  else h += `<div class="q try"><b>أي منشور هو؟</b><p style="font-size:13.5px">اختار المنشور، وأقرا أرقامه بنفسي بدون صور.</p><button type="button" class="btn dark" style="min-height:44px" data-act="pickopen" data-id="${esc(f.id)}">اختار المنشور</button></div>`;
+  let h = '', top = '';
+  if (g.linked && g.confirmed) h += `<div class="row" style="justify-content:flex-start;gap:8px;flex-wrap:wrap"><span class="note">نشرته ${esc(when(g.posted_at || f.posted.at))}</span><span class="auto">● من إنستغرام</span>${g.permalink ? `<a class="chip" href="${esc(g.permalink)}" target="_blank" rel="noopener">افتح المنشور ↗</a>` : ''}</div>`;
+  else if (g.linked) top += `<div class="sugg"><b style="font:800 14px var(--display)">مقترح: «${esc(g.first_line || 'المنشور')}»</b><span class="note">لقيته من الكابشن. أكّده عشان ينحفظ برقمه.</span><div class="two"><button type="button" class="btn dark" style="min-height:44px" data-act="pickopen" data-id="${esc(f.id)}">أكّد المنشور</button>${g.permalink ? `<a class="btn line" style="min-height:44px;display:grid;place-items:center;text-decoration:none;color:var(--ink)" href="${esc(g.permalink)}" target="_blank" rel="noopener">شوفه ↗</a>` : '<span></span>'}</div></div>`;
+  else top += `<div class="q try"><b>أي منشور هو؟</b><p style="font-size:13.5px">اختار المنشور، وأقرا أرقامه بنفسي بدون صور.</p><button type="button" class="btn dark" style="min-height:44px" data-act="pickopen" data-id="${esc(f.id)}">اختار المنشور</button></div>`;
   h += `<ul class="checks">`;
   for (const c of cs) {
     const ins = reps[c.id] || (f.insights || []).find((x) => x.stage === c.id);
@@ -539,7 +586,8 @@ function viewAnalysis(f) {
     if (!(f.insights || []).length) h += `<p class="note">ما أحكم بالمشاهدات بروحها: أقارن كل منشور بوسيط منشوراتنا من نفس النوع بنفس الحساب، وبنفس العمر لما يتوفر (48 ساعة و7 أيام).</p>`;
   }
   if (!avail.length && !(f.insights || []).length && !g.linked) h += `<button type="button" class="chip" style="justify-self:start;margin-top:4px" data-act="unpost" data-id="${esc(f.id)}">ما نشرته، رجّعه</button>`;
-  return h + `</section>` + (pick?.id === f.id ? viewPick(f) : '');
+  const br = bestReport(f);
+  return top + `<details class="fold"><summary>التقرير كامل <span>${br ? esc(STAGE_AR[br.stage] || '') + (br.level ? ' · ' + LV[br.level]?.[0] + ' ' + LV[br.level]?.[1] : '') : 'الأسئلة الأربعة'}</span></summary><div class="fin">` + h + `</div></details>` + (pick?.id === f.id ? viewPick(f) : '');
 }
 
 // ===== Instagram, read live from Supabase through the owner's own connector. Nothing here needs a Claude session:
@@ -547,8 +595,8 @@ function viewAnalysis(f) {
 // keeps a copy (studio/ig) so it opens at once and others who can see the studio see the last numbers too.
 const SB = { server: 'Supabase', tool: 'execute_sql', project: 'ttshgrujnycapugrmyxs' };
 let mcp = null, ig = null, igAt = null, igCached = false, igState = 'idle', igErr = null, igChoices = {}, pick = null;
-let acc = (() => { try { return localStorage.getItem('tk-acc') || 'timekeeperkw'; } catch (e) { return 'timekeeperkw'; } })();
-const ACC = { timekeeperkw: 'تايم كيبر', timekeeperkwshop: 'المتجر', timegallerykw: 'الغاليري' };
+let acc = 'timekeeperkw';                                         // Timekeeper is where the studio opens, every time
+const ACC = { timekeeperkw: 'تايم كيبر', timegallerykw: 'الغاليري', timekeeperkwshop: 'المتجر' };
 const dq = (v) => { const s = JSON.stringify(v); let t = 'sp'; while (s.includes('$' + t + '$')) t += 'x'; return `$${t}$${s}$${t}$`; };
 async function sql(query) {
   const r = await mcp.callTool(SB.server, SB.tool, { project_id: SB.project, query }, { cache: false });
@@ -563,7 +611,8 @@ function twinCaption(f) { const t = films.find((x) => x.id !== f.id && (x.of ===
 function filmPayload(f) {
   const o = { id: f.id, kind: f.kind === 'carousel' ? 'carousel' : 'reel', name: f.name, meta: f.meta, seconds: f.seconds, topic: f.topic,
     caption: f.caption ? f.caption.slice(0, 1500) : undefined, caption_hint: f.caption ? undefined : twinCaption(f), posted: f.posted,
-    version: f.version, rules: f.rules, slides: Array.isArray(f.slides) ? f.slides.map(() => 1) : undefined, hook: f.hook, test: f.test };
+    version: f.version, rules: f.rules, slides: Array.isArray(f.slides) ? f.slides.map(() => 1) : undefined, hook: f.hook, test: f.test,
+    state: f.state, product: f.product };
   return JSON.parse(JSON.stringify(o));
 }
 const ERR_AR = {
@@ -579,7 +628,7 @@ async function loadIg(manual) {
   igState = 'loading'; if (manual) route();
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
-      const rows = await sql(`select public.studio_page(${dq({ films: films.filter((f) => f.posted?.at).map(filmPayload) })}::jsonb) as page`);
+      const rows = await sql(`select public.studio_page(${dq({ films: films.filter((f) => f.posted?.at || ['waiting', 'done'].includes(f.state)).map(filmPayload) })}::jsonb) as page`);
       const page = rows[0]?.page;
       if (!page) throw { code: 'empty' };
       ig = page; igAt = page.at; igCached = false; igState = 'ok'; igErr = null;
@@ -618,28 +667,120 @@ function connectNote() {
 }
 const fmt = (n) => (n == null ? '—' : Number(n).toLocaleString('en-US'));
 
+// ===== The numbers, per the approved iPhone design: Timekeeper by default; two numbers, a chart, one note and one
+// recommendation; everything else closed. Computed in Supabase (ig_dash2), read live.
+const fmtK = (n) => {
+  if (n == null || isNaN(n)) return '—';
+  const v = Number(n), a = Math.abs(v);
+  return a >= 1e6 ? (v / 1e6).toFixed(1) + ' مليون' : a >= 1e4 ? Math.round(v / 1e3).toLocaleString('en-US') + ' ألف' : a >= 1e3 ? (v / 1e3).toFixed(1) + ' ألف' : Math.round(v).toLocaleString('en-US');
+};
+const dayAr = (iso) => { const t = Date.parse(iso || ''); return t ? new Date(t).toLocaleDateString('ar-KW-u-nu-latn', { timeZone: 'Asia/Kuwait', day: 'numeric', month: 'long' }) : ''; };
+const pc = (x) => Math.max(0, Math.min(100, Math.round(x * 1000) / 10));
+function niceStep(mx) { const raw = mx / 3, p = Math.pow(10, Math.floor(Math.log10(raw))); return [1, 2, 5, 10].map((m) => m * p).find((s) => s >= raw) || p * 10; }
+// Daily reach, newest on the left (the page reads right to left): the last 7 days teal, the week before light teal.
+function chartSvg(series) {
+  const W = 340, H = 130, top = 8, bot = 18, n = series.length;
+  if (!n) return '';
+  const bw = W / n, mx = Math.max(...series.map((s) => s[1] || 0), 1) * 1.08, st = niceStep(mx);
+  let out = '';
+  series.forEach(([, v], i) => {
+    const x = W - (i + 1) * bw + 1.2, h = (H - top - bot) * (v || 0) / mx;
+    out += `<rect class="${i >= n - 7 ? 'b7' : i >= n - 14 ? 'bp' : 'bo'}" x="${x.toFixed(1)}" y="${(H - bot - h).toFixed(1)}" width="${Math.max(1, bw - 2.4).toFixed(1)}" height="${h.toFixed(1)}" rx="2"/>`;
+  });
+  for (let v = st; v < mx; v += st) {
+    const y = H - bot - (H - top - bot) * v / mx;
+    out += `<line class="gl" x1="0" x2="${W}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}"/><text class="ax" x="2" y="${(y - 3).toFixed(1)}">${fmtK(v)}</text>`;
+  }
+  out += `<text class="ax" x="${W}" y="${H - 4}" text-anchor="end">${dayAr(series[0][0])}</text><text class="ax" x="0" y="${H - 4}" text-anchor="start">${dayAr(series[n - 1][0])}</text>`;
+  return `<svg viewBox="0 0 ${W} ${H}" direction="ltr" style="direction:ltr" role="img" aria-label="الوصول اليومي آخر ${n} يوم">${out}</svg>`;
+}
+const KIND_AR = { reel: 'ريل', carousel: 'كاروسيل', image: 'صورة', video: 'فيديو' };
+function heroCell(x, big) {
+  if (!x) return '';
+  let chip = '';
+  if (x.chg != null) chip = `<span class="pch ${esc(x.tone || 'ok')}">${x.chg < 0 ? '↓' : x.chg > 0 ? '↑' : ''} ${Math.abs(x.chg)}% عن الأسبوع اللي قبل</span>`;
+  else if (x.usual != null && x.value != null) chip = `<span class="pch ${esc(x.tone || 'ok')}">المعتاد ${esc(x.usual)} · ${x.tone === 'down' ? 'أقل' : x.tone === 'up' ? 'أعلى' : 'طبيعي'}</span>`;
+  return `<div class="hn1"><small>${esc(x.label)}</small><b class="${big ? '' : 'sm'}">${esc(x.text ?? '—')}</b>${chip}${x.sub ? `<small style="margin-top:3px">${esc(x.sub)}</small>` : ''}</div>`;
+}
 function viewNumbers() {
-  let h = `<div class="headrow">${header('الأرقام', 'إنستغرام لكل حساب')}${statusDot()}</div>` + connectNote();
+  let h = `<div class="headrow">${header('الأرقام', '')}${statusDot()}</div>` + connectNote();
   const dash = ig?.dash || {}, keys = Object.keys(ACC).filter((k) => dash[k]);
   if (!keys.length) return h + (igState === 'ok' ? '<p class="note">ما وصلت أرقام للحين.</p>' : '');
   if (!dash[acc]) acc = keys[0];
   const d = dash[acc];
   h += `<div class="seg" role="group" aria-label="الحساب">${keys.map((k) => `<button type="button" data-act="acc" data-k="${k}" aria-pressed="${k === acc}">${ACC[k]}</button>`).join('')}</div>`;
-  h += `<div class="group" style="background:#E3F1E8"><b style="font:800 17px/1.4 var(--display)">${esc(d.summary || '')}</b>${d.top ? `<span class="note" style="color:var(--ink)">أقوى منشور هالأسبوع: «${esc(d.top.first_line || '')}» · ${fmt(d.top.reach)} وصول${d.top.permalink ? ` · <a href="${esc(d.top.permalink)}" target="_blank" rel="noopener">افتحه ↗</a>` : ''}</span>` : ''}</div>`;
-  h += `<div class="tilesg"><div class="tl"><span>المتابعين</span><b>${fmt(d.followers)}</b>${d.followers_week != null ? `<small style="${d.followers_week < 0 ? 'color:#8a1426' : ''}">${d.followers_week >= 0 ? '+' : ''}${fmt(d.followers_week)} بأسبوع</small>` : ''}</div>
-    <div class="tl"><span>منشورات الأسبوع</span><b>${fmt(d.week?.posts)}</b><small style="color:var(--mute)">${fmt(d.week?.reels)} ريل · ${fmt(d.week?.carousels)} كاروسيل</small></div>
-    <div class="tl"><span>مشاركات الأسبوع</span><b>${fmt(d.week?.shares)}</b><small style="color:var(--mute)">${fmt(d.week?.saves)} حفظ</small></div></div>`;
-  if (d.split && (d.split.followers || d.split.non_followers)) {
-    const tot = (d.split.followers || 0) + (d.split.non_followers || 0), pf = Math.round(100 * (d.split.followers || 0) / tot);
-    h += `<div class="group"><b>من وين جا الوصول أمس</b><div class="splitb" role="img" aria-label="متابعين ${pf}%، مو متابعين ${100 - pf}%"><i style="width:${pf}%;background:var(--teal)"></i><i style="width:${100 - pf}%;background:var(--yellow)"></i></div><div class="row note" style="color:var(--ink)"><span>متابعين ${pf}%</span><span>مو متابعين ${100 - pf}%</span></div></div>`;
+  if (!d.hero) return h + `<div class="group" style="background:#E3F1E8"><b style="font:800 17px/1.4 var(--display)">${esc(d.summary || '')}</b></div>`;
+  h += `<section class="hero" aria-label="آخر 7 أيام"><div class="hn">${heroCell(d.hero[0], true)}${heroCell(d.hero[1], false)}</div>`;
+  if (d.series?.length) h += `<div class="chart">${chartSvg(d.series)}</div><div class="legend"><span><i style="background:var(--teal)"></i>آخر 7 أيام</span><span><i style="background:#9FD9DA"></i>الأسبوع اللي قبل</span><span><i style="background:#DCD3C2"></i>قبلها</span></div>`;
+  h += `</section>`;
+  if (d.gist?.note) h += `<section class="gist" aria-label="الزبدة"><div class="gr"><span class="tg">الملاحظة</span><span>${esc(d.gist.note)}</span></div>${d.gist.rec ? `<div class="gr"><span class="tg t2">التوصية</span><span>${esc(d.gist.rec)}</span></div>` : ''}</section>`;
+  // closed until opened
+  const ks = (d.kinds || []).filter((k) => (k.n || 0) + (k.n_recent || 0) > 0 && (k.n_usual || 0) > 0).slice(0, 3);
+  if (ks.length) {
+    const cols = d.priority === 1 ? [['shares_pk', 'مشاركات /1000'], ['saves_pk', 'حفظ /1000']] : d.priority === 2 ? [['saves_pk', 'حفظ /1000']] : [];
+    h += `<details class="fold"><summary>حسب النوع <span>هالأسبوع · المعتاد</span></summary><div class="fin"><div style="overflow-x:auto"><table class="ktab"><thead><tr><th></th><th>الوصول للبوست</th>${cols.map((c) => `<th>${c[1]}</th>`).join('')}</tr></thead><tbody>`
+      + ks.map((k) => `<tr><td><b>${esc(KIND_AR[k.kind] || k.kind)}</b><small>${k.n || 0} هالأسبوع</small></td><td><b>${fmtK(k.n_recent ? k.reach_recent : k.reach)}</b><small>المعتاد ${fmtK(k.reach_usual)}</small></td>${cols.map(([c]) => `<td><b>${k[c] ?? '—'}</b><small>المعتاد ${k[c + '_usual'] ?? '—'}</small></td>`).join('')}</tr>`).join('')
+      + `</tbody></table></div>`;
+    const rl = ks.find((k) => k.kind === 'reel' && k.skip_usual != null);
+    if (rl && d.priority === 1) h += `<p style="font-size:13.5px"><b style="font:800 13.5px var(--display)">الاحتفاظ بالريل:</b> ${esc(rl.skip_usual)}% يتخطّون بأول 3 ثواني${rl.watch_usual != null ? ` · الشخص العادي يشوف ${esc(rl.watch_usual)} ث` : ''}${rl.skip != null ? ` · هالأسبوع ${esc(rl.skip)}%` : ''}</p>`;
+    h += `<p class="note">الوصول للبوست = بوستات عمرها من يومين لـ9 أيام، عشان ما نظلم الجديدة. كل نوع ينقاس بمقياسه.</p></div></details>`;
   }
-  const sa = d.same_age || {}, rows = ['reel', 'carousel'].filter((k) => sa[k]?.ratio != null);
-  h += `<div class="group"><b>منشورات هالأسبوع عند 48 ساعة</b><p class="note">مقارنة بنفس العمر، مو بالمجموع.</p>`;
-  if (rows.length) h += `<div class="bars">${rows.map((k) => `<span>${k === 'reel' ? 'ريلز' : 'كاروسيل'}</span><span class="tr"><i class="${sa[k].ratio < 0.8 ? 'bad' : sa[k].ratio < 1.2 ? 'mid' : ''}" style="width:${Math.round(Math.min(sa[k].ratio / 2, 1) * 100)}%"></i><u></u></span><span class="x">×${sa[k].ratio}</span>`).join('')}</div>`;
-  else h += `<p>يتجمع: قراءات 48 ساعة بدت من 3 نوفمبر، ونحتاج 5 منشورات أقدم عندها قراءة عشان نقارن.</p>`;
-  h += `</div>`;
-  h += `<button type="button" class="group" style="text-align:start;border:0;cursor:pointer;width:100%" data-go="sync"><div class="row"><b>المزامنة</b><span class="note" style="color:var(--ink)">${ig?.status ? `الجاية ${esc(when(ig.status.next_fresh))} · ${ig.status.health === 'ok' ? 'ما فيه مشاكل' : 'فيه مشكلة'}` : ''} ←</span></div></button>`;
-  if (d.since) h += `<p class="note">أرقام الوصول اليومية من ${esc(d.since)}.</p>`;
+  const ms = Object.entries(d.models || {});
+  if (ms.length) {
+    h += `<details class="fold"><summary>دقة التوقع <span>${ms.map(([k, m]) => `${KIND_AR[k] || k} v${m.version}`).join(' · ')}</span></summary><div class="fin">`
+      + ms.map(([k, m]) => `<p style="font-size:13.5px"><b style="font:800 14px var(--display)">${esc(KIND_AR[k] || k)}:</b> ${m.live?.n ? `آخر ${m.live.n} توقعات: ${m.live.within} داخل المدى.` : `بالاختبار على ${m.n} بوست ما شافها: ${Math.round((m.coverage || 0) / 10)} من 10 داخل المدى.`}</p>`).join('')
+      + `<p class="note">${ms.some(([, m]) => m.level_only) ? 'التوقع للحين من مستوى آخر 10 بوستات من نفس النوع: خصائص البوست ما أثبتت إنها تحسّنه. ' : ''}النموذج يتحدّث بس إذا النسخة الجديدة أدق على بوستات ما شافتها، ونحفظ كل نسخة.</p></div></details>`;
+  }
+  const imp = ig?.updates?.important || [];
+  if (imp.length) h += `<details class="fold"><summary>تحديث مهم من إنستغرام <span>${imp.length}</span></summary><div class="fin">${imp.map(updLine).join('')}</div></details>`;
+  h += `<button type="button" class="fold" style="text-align:start;border:0;cursor:pointer;width:100%;display:flex;justify-content:space-between;padding:11px 14px;font:800 15px var(--display)" data-go="sync"><span>المزامنة</span><span class="note" style="color:var(--ink)">${ig?.status ? `${ig.status.health === 'ok' ? 'ما فيه مشاكل' : 'فيه مشكلة'} ←` : ''}</span></button>`;
+  return h;
+}
+const SRC_AR = { official: ['off', 'رسمي'], third_party: ['tp', 'رأي'], unverified: ['un', 'غير مؤكد'] };
+function updLine(u) {
+  const s = SRC_AR[u.source_kind] || SRC_AR.unverified;
+  return `<div style="display:grid;gap:3px;font-size:13.5px"><b style="font:800 14px var(--display)">${esc(u.title)}</b>
+    <span class="row" style="justify-content:flex-start;gap:6px;flex-wrap:wrap"><span class="badge ${s[0]}">${s[1]}${u.source_name ? ' · ' + esc(u.source_name) : ''}</span><span class="note">${u.affects_us ? 'يمسنا' : 'ما يمسنا'}${u.announced_on ? ' · ' + esc(dayAr(u.announced_on)) : ''}</span>${u.source_url ? `<a class="note" href="${esc(u.source_url)}" target="_blank" rel="noopener">المصدر ↗</a>` : ''}</span>
+    ${u.action ? `<span><b style="color:#7A5A00">${u.status === 'done' ? 'سوّيناه:' : 'الإجراء:'}</b> ${esc(u.action)}</span>` : ''}</div>`;
+}
+function viewUpdates() {
+  const U = ig?.updates; if (!U) return '';
+  const list = U.recent || [];
+  return `<details class="fold"><summary>تحديثات إنستغرام <span>${list.length ? list.length + ' · ' : ''}${U.last_check ? 'آخر فحص ' + esc(agoShort(U.last_check)) : 'الفحص الأسبوعي يبدأ قريب'}</span></summary><div class="fin">`
+    + (list.length ? list.map(updLine).join('<hr style="border:0;border-top:1px solid var(--line);margin:2px 0">') : '<p class="note">ما فيه تحديثات تمسنا.</p>')
+    + `<p class="note">نفحص مصادر إنستغرام و Meta الرسمية كل أسبوع. الرسمي غير الرأي، وما نغيّر قواعدنا بسبب إشاعة أو أسبوع واحد.</p></div></details>`;
+}
+
+// ===== A film before posting: one number, its range, 2–3 suggestions. After: expected against actual, three lines.
+function viewPredict(f, p) {
+  const lo = Math.max(1, p.low), hi = Math.max(lo + 1, p.high), a = Math.log(lo / 1.6), z = Math.log(hi * 1.25);
+  const pos = (v) => pc((Math.log(Math.max(v, 1)) - a) / (z - a));
+  let h = `<section class="pred" aria-label="التوقع"><small>الوصول المتوقع بعد 7 أيام</small><div class="pbig">${fmtK(p.predicted)}</div>
+    <div class="range" aria-hidden="true"><i style="inset-inline-start:${pos(lo)}%;inset-inline-end:${100 - pos(hi)}%"></i><em style="inset-inline-start:${pos(p.predicted)}%"></em></div>
+    <div class="rl"><span>غالباً بين ${fmtK(lo)} و${fmtK(hi)}</span><span>المعتاد ${fmtK(p.usual)}</span></div>`;
+  if (p.model?.coverage != null) h += `<span class="note">بالاختبار: ${Math.round(p.model.coverage / 10)} من 10 مرات جت داخل المدى.</span>`;
+  const sh = ig?.dash?.[p.username || 'timekeeperkw']?.shift;
+  if (sh?.direction === 'down') h += `<span class="note" style="color:#8a1426">⚠ الوصول نازل من ${esc(dayAr(sh.since))}، والتوقع مبني على البوستات اللي قبل، فممكن يطلع أعلى من الواقع.</span>`;
+  h += `</section>`;
+  const sg = (p.suggestions || []).slice(0, 3);
+  if (sg.length) h += `<section class="sg" aria-label="قبل النشر"><h3>قبل النشر</h3>${sg.map((s, i) => `<div class="sgi"><p>${esc(s.text)}${s.why ? `<small>${esc(s.why)}</small>` : ''}</p><button type="button" class="do" data-act="suggest" data-id="${esc(f.id)}" data-k="${i}">${s.action === 'test' ? 'جرّبها' : 'سوّها'}</button></div>`).join('')}</section>`;
+  return h;
+}
+function viewOutcome(f) {
+  const g = igFilm(f) || {}, p = g.prediction, rep = bestReport(f);
+  let h = '';
+  if (p?.predicted) {
+    const done = p.actual != null, now = done ? p.actual : p.now, mx = Math.max(p.predicted, now || 0, 1);
+    h += `<section class="pred" aria-label="المتوقع مقابل الفعلي"><small>الوصول · المتوقع مقابل ${done ? 'الفعلي' : 'الحين'}</small><div class="vs">
+      <div class="vsrow"><span>المتوقع</span><span class="bar"><i style="width:${pc(p.predicted / mx)}%;background:#DCD3C2"></i></span><b>${fmtK(p.predicted)}</b></div>
+      <div class="vsrow"><span>${done ? 'الفعلي' : 'الحين'}</span><span class="bar"><i style="width:${pc((now || 0) / mx)}%;background:var(--teal)"></i></span><b>${now == null ? '—' : fmtK(now)}</b></div></div>
+      <div class="rl"><span>${done ? (p.within ? '✓ جا داخل المدى المتوقع' : 'جا برا المدى المتوقع') : `المدى ${fmtK(p.low)}–${fmtK(p.high)}`}</span><span>${done ? '' : 'الحكم النهائي ' + esc(dayAr(p.final_at))}</span></div>
+      ${p.basis === 'after' ? '<span class="note">التوقع محسوب بعد النشر من مستوى الحساب وقتها.</span>' : ''}</section>`;
+  }
+  if (rep && (rep.worked?.length || rep.didnt?.length)) {
+    const w = lineOf(rep.worked?.[0]), d = lineOf(rep.didnt?.[0]), t = lineOf(rep.try_next?.[0]);
+    h += `<section class="lines3" aria-label="الزبدة">${w.t ? `<div><span class="ok">✓</span><span>${esc(w.t)}</span></div>` : ''}${d.t ? `<div><span class="no">✗</span><span>${esc(d.t)}</span></div>` : ''}${t.t ? `<div><span class="nx">←</span><span>${esc(t.t)}</span></div>` : ''}</section>`;
+  }
   return h;
 }
 
@@ -651,6 +792,7 @@ function viewSync() {
     <div class="kvr"><span>التحديث الجاي</span><b>${esc(when(st.next_fresh))}</b></div>
     <div class="kvr"><span>تحديث الصبح الكامل</span><b>${esc(when(st.next_daily))}</b></div>
     <div class="kvr"><span>التقارير انحسبت</span><b>${esc(when(st.refreshed_at))}</b></div>
+    <div class="kvr"><span>فحص تحديثات إنستغرام</span><b>${st.news_checked ? esc(when(st.news_checked)) : 'أول فحص الأحد'}</b></div>
     ${Object.entries(st.accounts || {}).map(([u, a]) => `<div class="kvr"><span>${esc(ACC[u] || u)}</span><b style="color:${a.last_error ? '#B3261E' : '#1f6b3f'}">${a.last_error ? 'فشل: ' + esc(String(a.last_error).slice(0, 60)) : '✓ ' + esc(agoShort(a.last_ok))}</b></div>`).join('')}</section>`;
   const probs = st.problems || [];
   h += `<section class="group"><b>المشاكل</b>${probs.length ? probs.map((p) => `<div class="kvr"><span>${esc(p.detail || p.kind)}</span><b>${esc(when(p.at))}</b></div>`).join('') + '<p class="note">النظام يعيد المحاولة كل ساعة، وإذا فشل مرتين ورا بعض يوصلك تنبيه بالجوال.</p>' : '<p>ما فيه مشاكل.</p>'}</section>`;
@@ -684,6 +826,7 @@ function viewLearn() {
   const sugg = items.filter((x) => lvOf(x.confidence) === 'c').map((x) => ({ ...x, key: ruleKey(x) }))
     .filter((x) => !RULES.some((r) => r.id === x.key) && !(igChoices.dismissed || []).includes(x.key));
   for (const x of sugg) h += `<div class="sugg"><b style="font:800 15px var(--display)">صار مؤكد: تخليه قاعدة؟</b><p>${esc(x.rule)}</p><span class="note">${esc(x.why)}</span><div class="two"><button type="button" class="btn dark" style="min-height:44px" data-act="ruleyes" data-k="${esc(x.key)}">خله قاعدة</button><button type="button" class="btn line" style="min-height:44px" data-act="ruleno" data-k="${esc(x.key)}">مو الحين</button></div></div>`;
+  h += viewUpdates();
   return h;
 }
 
@@ -821,8 +964,16 @@ async function act(b) {
     return;
   }
   if (kind === 'briefkind') { briefKind = b.dataset.k; route(); return; }
-  if (kind === 'acc') { acc = b.dataset.k; try { localStorage.setItem('tk-acc', acc); } catch (e) {} route(); return; }
+  if (kind === 'acc') { acc = b.dataset.k; route(); return; }
   if (kind === 'stage') { stageSel[id] = b.dataset.k; route(); return; }
+  if (kind === 'suggest') {                                         // a suggestion before posting goes to Claude, who makes a new version for approval
+    const sg = ig?.predictions?.[id]?.suggestions?.[+b.dataset.k];
+    if (!sg || !f) return;
+    b.disabled = true;
+    await tell(`الاستوديو: ${sg.action === 'test' ? 'جرّب' : 'طبّق'} على «${f.name}» ${f.version || ''}: ${sg.text}`, b, { film: id, kind: 'suggestion', text: sg.text, action: sg.action, version: f.version || '' });
+    b.textContent = 'وصل ✓';
+    return;
+  }
   if (kind === 'igreload') { loadIg(true); return; }
   if (kind === 'pickopen') { openPick(f); return; }
   if (kind === 'pickclose') { pick = null; route(); return; }
