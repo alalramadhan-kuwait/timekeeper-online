@@ -156,6 +156,40 @@ nav.tabs svg{width:22px;height:22px;fill:none;stroke-width:2;stroke-linecap:roun
 .brief .sec{display:grid;gap:2px;padding:8px 0;border-top:1px solid var(--line)}.brief .sec:first-of-type{border-top:0}
 .brief .sec b{font:800 15px var(--display)}.brief .sec p{font-size:14px;color:var(--ink)}.brief .sec .note{font-size:12.5px}
 .linkrow{display:flex;gap:8px;flex-wrap:wrap}.linkrow .inp{flex:1 1 200px;min-width:0}
+/* the Instagram side of the studio (approved plan, 3 Nov 2026): strength marks, status dot, numbers, learning, the post picker */
+.lv{flex:none;display:inline-grid;place-items:center;width:17px;height:17px;border-radius:50%;font:800 10px var(--body);margin-top:3px}
+.lv.c{background:#1f6b3f;color:#fff}.lv.e{box-shadow:inset 0 0 0 1.7px #8a5a00;color:#8a5a00}.lv.w{box-shadow:inset 0 0 0 1.5px #9b948a;color:#857e74;border-radius:5px}
+.q li.l{list-style:none;display:flex;gap:7px;align-items:flex-start;margin-inline-start:-18px}
+.sdot{display:inline-flex;align-items:center;gap:6px;border:0;background:var(--card);border-radius:999px;padding:5px 11px;font:700 12.5px var(--body);box-shadow:0 1px 0 var(--line);cursor:pointer;color:var(--ink)}
+.sdot::before{content:"";width:8px;height:8px;border-radius:50%;background:#2E8B57}
+.sdot.bad::before{background:#C0392B}.sdot.idle::before{background:#b3ab9f}
+.headrow{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;background:var(--soft);border-radius:999px;padding:3px;gap:3px}
+.seg button{border:0;background:transparent;border-radius:999px;padding:6px 4px;font:700 13px var(--body);cursor:pointer;color:var(--ink);min-height:36px}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.seg button:disabled{opacity:.4;cursor:default}
+.tilesg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.tl{background:var(--card);border-radius:16px;padding:9px 11px;box-shadow:0 1px 0 var(--line);display:grid;gap:1px;min-width:0}
+.tl span{font:600 12px var(--body);color:var(--mute)}.tl b{font:800 21px/1.15 var(--display);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.tl small{font:700 11.5px var(--body);color:#1f6b3f}
+.splitb{height:14px;border-radius:8px;overflow:hidden;display:flex;background:var(--soft)}.splitb i{display:block;height:100%}
+.bars{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:6px 8px;align-items:center;font-size:13px}
+.bars .tr{height:10px;border-radius:6px;background:var(--soft);position:relative;overflow:hidden}
+.bars .tr i{position:absolute;inset-block:0;right:0;border-radius:6px;background:var(--teal)}
+.bars .tr i.bad{background:var(--coral)}.bars .tr i.mid{background:#b9b1a4}
+.bars .tr u{position:absolute;inset-block:-2px;right:50%;width:2px;background:var(--ink)}
+.bars .x{font:800 12.5px var(--body);direction:ltr;font-variant-numeric:tabular-nums}
+.kvr{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid var(--line);font-size:14px}.kvr:first-child{border-top:0}
+.kvr b{font-weight:700;text-align:end}
+.sheet{position:fixed;inset:auto 0 0 0;max-width:560px;margin:0 auto;background:var(--card);border-radius:26px 26px 0 0;padding:14px 16px calc(24px + env(safe-area-inset-bottom,0px));box-shadow:0 -14px 40px -16px rgba(0,0,0,.35);display:grid;gap:9px;z-index:25;max-height:82vh;overflow-y:auto}
+body:has(.sheet) nav.tabs,body:has(.sheet) #toast{display:none}
+.scrim{position:fixed;inset:0;background:rgba(27,27,27,.38);z-index:24;border:0}
+.grab{width:40px;height:5px;border-radius:3px;background:var(--line);justify-self:center}
+.post{border:0;width:100%;text-align:start;border-radius:14px;padding:9px 12px;background:var(--bg);display:grid;gap:1px;font:500 13px var(--body);cursor:pointer;color:var(--ink)}
+.post b{font:700 14px var(--body)}.post[aria-pressed="true"]{box-shadow:inset 0 0 0 2.5px var(--ink);background:#fff}
+.post:disabled{opacity:.5;cursor:default}
+.tag2{display:inline-block;border-radius:999px;padding:0 8px;font:700 11px var(--body);background:#E3F1E8;color:#1f6b3f}
+.sugg{border-radius:16px;padding:10px 12px;background:var(--card);box-shadow:inset 0 0 0 2px var(--ink);display:grid;gap:6px}
 </style>
 
 <div class="app" dir="rtl" lang="ar">
@@ -171,9 +205,9 @@ const COLORS = ['#2BB5B8', '#F2765F', '#E9A0C0', '#A8D8A0', '#F2C230'];
 const STEPS = ['الفكرة والبحث', 'الهوك والسكربت', 'القرّاء', 'الصوت', 'الإيقاع والانتقالات', 'الستايل', 'الصور والتركيب', 'المراجعة', 'التسليم'];
 const TABS = [
   { id: 'films', name: 'الأفلام', c: '#2BB5B8', icon: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3 2"/>' },
+  { id: 'numbers', name: 'الأرقام', c: '#F2C230', icon: '<path d="M5 20V11M10 20V5M15 20v-7M20 20V8"/>' },
+  { id: 'learn', name: 'التعلّم', c: '#E9A0C0', icon: '<path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/>' },
   { id: 'library', name: 'المكتبة', c: '#F2765F', icon: '<path d="M5 4h11l3 3v13H5z"/><path d="M8 10h8M8 14h8"/>' },
-  { id: 'styles', name: 'الستايلات', c: '#F2C230', icon: '<rect x="4" y="4" width="7" height="7"/><rect x="13" y="4" width="7" height="7"/><rect x="4" y="13" width="7" height="7"/><rect x="13" y="13" width="7" height="7"/>' },
-  { id: 'recreate', name: 'ريل عجبك', c: '#E9A0C0', icon: '<path d="M4 12a8 8 0 0 1 14-5.3M20 12a8 8 0 0 1-14 5.3"/><path d="M18 3v4h-4M6 21v-4h4"/>' },
   { id: 'team', name: 'الفريق', c: '#A8D8A0', icon: '<circle cx="8" cy="9" r="3"/><circle cx="16" cy="9" r="3"/><path d="M3 19c.8-3 2.8-4.5 5-4.5s4.2 1.5 5 4.5M11 19c.8-3 2.8-4.5 5-4.5s4.2 1.5 5 4.5"/>' }];
 const READERS = [['نورة', 'noura', 'مبتدئة', '#E9A0C0'], ['فهد', 'fahad', 'متوسط', '#2BB5B8'], ['بو خالد', 'bukhaled', 'خبير', '#F2C230'], ['سالم', 'salem', 'الفلتر', '#A8D8A0'], ['إتيان', 'etienne', 'البراند', '#F2765F']];
 const VOICES = [['Faisal', 'المعتمد ✓ · كويتي', '#2BB5B8'], ['Jarnathan', 'قبل (مستعجل)', '#EFE8DA'], ['Ali TK', 'صوتك', '#EFE8DA'], ['OmniVoice', 'يشتغل · يستنسخ صوتك من مقطع 10–30 ث', '#EFE8DA'], ['ناصر', 'متاح', '#EFE8DA'], ['Abdullah', 'Halter', '#EFE8DA']];
@@ -230,20 +264,22 @@ const SHOTS = ['نظرة عامة: المشاهدات، الوصول، ونسب�
 const VERDICT = { good: 'ناجح', mid: 'متوسط', bad: 'ضعيف' };
 function checks(f) {
   if (!f.posted?.at) return [];
-  const t0 = Date.parse(f.ig?.posted_at || f.posted.at), sent = f.insights_sent || [], ins = f.insights || [];   // Instagram's own post time once linked
-  return CHECKS.map((c) => ({ ...c, due: t0 + c.h * 3600e3, sent: sent.includes(c.id), done: ins.some((x) => x.stage === c.id) }));
+  const g = igFilm(f), t0 = Date.parse(g?.posted_at || f.posted.at), sent = f.insights_sent || [], ins = f.insights || [];   // Instagram's own post time once linked
+  return CHECKS.map((c) => ({ ...c, due: t0 + c.h * 3600e3, sent: sent.includes(c.id), done: !!g?.reports?.[c.id] || ins.some((x) => x.stage === c.id) }));
 }
 // The owner, 3 Nov 2026: «No more manual screenshots when API data is available». A posted film the studio has tied to
 // its Instagram post (`ig` {linked, media_id, permalink, method, latest, updated}, written with the reports in `insights`
 // [{stage, source: 'instagram', verdict, label, confidence, worked, didnt, evidence, try_next, ...}]) is read from
 // Instagram itself; screenshots are asked for only when no post was found.
-const linked = (f) => !!f.ig?.linked;
+const igFilm = (f) => (ig?.films?.[f.id]) || (f.ig?.linked ? { linked: true, confirmed: false, legacy: true, permalink: f.ig.permalink, posted_at: f.ig.posted_at, reports: { latest: f.ig.latest } } : null);
+const linked = (f) => !!igFilm(f)?.linked;
 const dueCheck = (f) => (f.state === 'posted' && !linked(f) ? checks(f).find((c) => !c.done && !c.sent && Date.now() >= c.due) : null);
 const isWaiting = (f) => f.state === 'waiting' || !!dueCheck(f);
 function left(ms) { const h = Math.max(1, Math.round(ms / 3600e3)); return h < 24 ? `${h} س` : `${Math.floor(h / 24)} يوم${h % 24 ? ` و${h % 24} س` : ''}`; }
 const lastInsight = (f) => (f.insights || []).slice().sort((a, b) => Date.parse(b.at || 0) - Date.parse(a.at || 0))[0];
+const bestReport = (f) => { const r = igFilm(f)?.reports || {}; return r['7d'] || r['48h'] || r.latest || null; };
 function postedLine(f) {
-  const cs = checks(f), d = dueCheck(f), sent = cs.find((c) => c.sent && !c.done), next = cs.find((c) => !c.done && Date.now() < c.due), li = lastInsight(f);
+  const cs = checks(f), d = dueCheck(f), sent = cs.find((c) => c.sent && !c.done), next = cs.find((c) => !c.done && Date.now() < c.due), li = bestReport(f) || lastInsight(f);
   if (d) return { icon: '⏸', text: `بانتظارك · صور الإحصائيات (${d.name})`, action: true };
   const late = linked(f) ? cs.find((c) => !c.done && Date.now() >= c.due) : null;
   if (late) return { icon: '⏱', text: `${late.name} تنقرا تلقائياً من إنستغرام${li ? ' · ' + (li.label || '') : ''}` };
@@ -291,7 +327,7 @@ function itemLabel(f, tname) {
 }
 function viewFilms() {
   const waiting = films.filter(isWaiting).length, working = films.filter((f) => f.state === 'working').length;
-  let h = header('أفلامنا', ready ? `${waiting} بانتظارك · ${working} يشتغل` : 'جاري التحميل…') + nowLine();
+  let h = `<div class="headrow" style="position:relative;z-index:1">${header('أفلامنا', ready ? `${waiting} بانتظارك · ${working} يشتغل` : 'جاري التحميل…')}${statusDot()}</div>` + nowLine() + problemBanner();
   if (ready && !films.length) h += `<div class="empty"><b style="font:800 18px var(--display)">ما فيه أفلام للحين</b><p class="note">أرسل لي فكرة في المحادثة، ويطلع الفلم هنا بنسبته ووقته.</p></div>`;
   const groups = {};
   for (const f of films) (groups[topicOf(f)] ||= []).push(f);
@@ -304,7 +340,7 @@ function viewFilms() {
     for (const f of list) {
       const old = ruleState(f).filter((r) => !r.ok);
       const rules = old.length ? `<span class="rold">⚠ قبل ${old.length === 1 ? 'قاعدة جديدة' : `${old.length} قواعد جديدة`}</span>` : '<span class="rok">✓ آخر القواعد</span>';
-      const li = f.state === 'posted' ? lastInsight(f) : null;
+      const li = f.state === 'posted' ? (bestReport(f) || lastInsight(f)) : null;
       const st = isWaiting(f) ? '<span class="ist">بانتظارك</span>' : f.state === 'working' ? `<span class="ist">يشتغل ${pct(f)}%</span>`
         : f.state === 'posted' ? `<span class="ist ok">${li ? esc(li.label || VERDICT[li.verdict] || 'منشور') : 'منشور'}</span>` : `<span class="ist ok">${f.state === 'done' ? 'جاهز ✓' : esc(STEPS[(f.step || 1) - 1])}</span>`;
       h += `<button type="button" class="item" data-film="${esc(f.id)}">${ICON[kindOf(f)]}<span class="iname">${esc(itemLabel(f, tname))} <span style="font-weight:600;opacity:.75">${esc(f.version || '')}</span></span>${st}
@@ -312,7 +348,7 @@ function viewFilms() {
     }
     h += `</section>`;
   });
-  if (ready) h += viewBrief() + viewRecipe();
+  if (ready) h += viewBrief();
   h += `<div class="shortcuts"><a class="short" href="#recreate" style="background:var(--yellow);color:var(--ink)">ريل عجبك</a><a class="short" href="#library" style="background:var(--blue);color:#fff">فكرة جديدة</a></div>`;
   return h;
 }
@@ -377,8 +413,8 @@ function viewFilm(id) {
 }
 
 function viewLibrary() {
-  let h = header('المكتبة', 'نوع السكربت ولغته') + viewBrief(true);
-  if (!lib) return h + '<p class="note">جاري التحميل…</p>';
+  let h = header('المكتبة', 'نوع السكربت ولغته') + viewBrief(false);
+  if (!lib) return h + '<p class="note">جاري التحميل…</p>' + librarySections();
   h += `<div class="chips" role="group" aria-label="اللغة">${Object.entries(lib.languages).map(([k, L]) => `<button type="button" class="chip${openLang === k ? ' on' : ''}" data-lang="${k}">${esc(L.name)}</button>`).join('')}</div>`;
   const L = lib.languages[openLang];
   h += `<section class="lang" style="background:${openLang === 'tk' ? 'var(--green)' : openLang === 'light' ? 'var(--yellow)' : 'var(--pink)'}">
@@ -397,11 +433,17 @@ function viewLibrary() {
   }
   for (const R of [lib.direction, lib.carousel]) if (R) h += `<section class="group"><details><summary style="cursor:pointer;font:800 16px var(--display)">${esc(R.name)}</summary><ul style="margin:6px 0 0;padding-inline-start:18px;display:grid;gap:4px;font-size:14px">${R.rules.map((r) => `<li>${esc(r)}</li>`).join('')}</ul></details></section>`;
   h += `<div class="types">${Object.entries(lib.types).map(([k, T], i) => `<button type="button" class="type" style="background:${k === openType ? 'var(--ink);color:var(--bg)' : COLORS[i % COLORS.length]}" data-type="${k}"><b>${esc(T.name)}</b><span>${T.seconds[0]}–${T.seconds[1]}ث</span></button>`).join('')}</div>`;
-  return h;
+  return h + librarySections();
 }
 
-function viewStyles() {
-  let h = header('الستايلات', 'من أفلامنا الحقيقية');
+// The styles and «ريل عجبك» live inside the library (the owner approved five tabs: الأفلام · الأرقام · التعلّم · المكتبة · الفريق).
+function librarySections() {
+  const open = (location.hash || '').slice(1);
+  return `<details class="group" id="sec-styles"${open === 'styles' ? ' open' : ''}><summary style="cursor:pointer;font:800 18px var(--display)">الستايلات</summary><div style="display:grid;gap:12px;margin-top:8px">${viewStyles(true)}</div></details>
+    <details class="group" id="sec-recreate"${open === 'recreate' ? ' open' : ''}><summary style="cursor:pointer;font:800 18px var(--display)">ريل عجبك</summary><div style="display:grid;gap:12px;margin-top:8px">${viewRecreate(true)}</div></details>`;
+}
+function viewStyles(inner) {
+  let h = inner ? '' : header('الستايلات', 'من أفلامنا الحقيقية');
   h += `<div class="row"><h2>المحرك</h2><span class="badge" style="background:var(--green)">مبني · مجاني</span></div>`;
   for (const L of LOOKS) h += `<div class="row"><b style="font:800 17px var(--display)">${esc(L.name)}</b><span class="note">${esc(L.fits)} · ${esc(L.film)}</span></div>
     <div class="grid3">${L.imgs.map((src) => `<div class="sample"><img src="${src}" alt="${esc(L.name)}" loading="lazy"></div>`).join('')}</div>`;
@@ -413,8 +455,8 @@ function viewStyles() {
   return h;
 }
 
-function viewRecreate() {
-  return header('ريل عجبك', 'أفككه ونصنع مثله بقصتنا') + `
+function viewRecreate(inner) {
+  return (inner ? '<p class="note">أفككه ونصنع مثله بقصتنا.</p>' : header('ريل عجبك', 'أفككه ونصنع مثله بقصتنا')) + `
     <section class="lang" style="background:var(--yellow)"><b style="font:800 19px var(--display)">أرسل الفيديو في المحادثة</b>
       <p style="font-size:14px">احفظ الريل من جوالك وأرسله لي. الروابط تحتاج جهازك أو حساب ثانوي لأن إنستغرام يمنع التنزيل من هنا.</p></section>
     <section class="group"><div class="row"><b>أداة التحليل</b><span class="badge" style="background:var(--green)">جاهز</span></div>
@@ -434,12 +476,20 @@ function postedButton(f) {
 }
 const CONF_AR = { high: 'ثقة عالية', medium: 'ثقة متوسطة', low: 'ثقة منخفضة', principle: 'مبدأ عام', not_enough: 'البيانات ما تكفي' };
 const conf = (c, ar) => (c ? `<span class="conf ${esc(c)}">${esc(ar || CONF_AR[c] || c)}</span>` : '');
+// The strength of a finding: ✓ مؤكد, ◐ ملاحظة أولية, ○ دليل ضعيف (as defined in the plan the owner approved, 3 Nov 2026)
+const LV = { c: ['✓', 'مؤكد'], e: ['◐', 'ملاحظة أولية'], w: ['○', 'دليل ضعيف'] };
+const lvOf = (c) => ({ high: 'c', medium: 'e' })[c] || 'w';
+const mark = (lv) => { const k = lv in LV ? lv : 'w'; return `<span class="lv ${k}" title="${LV[k][1]}" aria-label="${LV[k][1]}">${LV[k][0]}</span>`; };
+const lineOf = (x) => (typeof x === 'string' ? { t: x, lv: null } : x || { t: '' });
+const ruleKey = (x) => 'ig-' + [x.kind, x.dim, x.val].join('-').replace(/\s+/g, '_');
 function qList(cls, title, items) {
-  return items?.length ? `<div class="q ${cls}"><b>${title}</b><ul>${items.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></div>` : '';
+  if (!items?.length) return '';
+  return `<div class="q ${cls}"><b>${title}</b><ul>${items.map(lineOf).map((x) => (x.lv ? `<li class="l">${mark(x.lv)}<span>${esc(x.t)}</span></li>` : `<li>${esc(x.t)}</li>`)).join('')}</ul></div>`;
 }
-// One report: what worked, what did not, the numbers behind it (unavailable is never shown as zero), what to try next.
+const STAGE_AR = { latest: 'قراءة مبكرة', '48h': 'أول قراءة (48 ساعة)', '7d': 'القراءة النهائية (7 أيام)' };
+// One report: what worked, what did not, the evidence (unavailable is never shown as zero), what we learn for the next film.
 function report(ins, name) {
-  let h = `<div class="rep"><div class="row"><b style="font:800 15px var(--display)">${esc(name)}</b><span class="row" style="gap:6px"><span class="vd ${esc(ins.verdict || 'mid')}">${esc(ins.label || VERDICT[ins.verdict] || '')}</span>${conf(ins.confidence, ins.confidence_ar)}</span></div>`;
+  let h = `<div class="rep"><div class="row"><b style="font:800 15px var(--display)">${esc(name)}</b><span class="row" style="gap:6px"><span class="vd ${esc(ins.verdict || 'mid')}">${esc(ins.label || VERDICT[ins.verdict] || '')}</span>${ins.level ? mark(ins.level) : conf(ins.confidence, ins.confidence_ar)}</span></div>`;
   if (ins.vs) h += `<p class="note" style="color:var(--ink)">${esc(ins.vs)}${ins.at ? ` · قراءة ${esc(when(ins.at))}` : ''}</p>`;
   if (ins.note) h += `<p class="note">${esc(ins.note)}</p>`;
   if (!ins.worked && !ins.evidence) {                               // a report written by hand from screenshots
@@ -447,60 +497,251 @@ function report(ins, name) {
       + qList('ok', 'وش تعلمنا', ins.lessons) + qList('try', 'الفيلم الياي', ins.next) + `</div>`;
   }
   h += qList('ok', 'شنو نجح؟', ins.worked) + qList('no', 'شنو ما نجح؟', ins.didnt);
-  if (ins.evidence?.length) h += `<div class="q ev"><b>شنو الدليل من الأرقام؟</b><div style="overflow-x:auto"><table class="evt"><thead><tr><th>المقياس</th><th>هالمنشور</th><th>المعتاد</th><th></th></tr></thead><tbody>`
-    + ins.evidence.map((e) => `<tr class="${esc(e.state || '')}"><td>${esc(e.label)}${e.note ? `<small>${esc(e.note)}</small>` : ''}</td><td>${esc(e.value)}</td><td>${esc(e.usual || '—')}</td><td class="r">${e.ratio != null ? '×' + esc(e.ratio) : ''}</td></tr>`).join('')
-    + `</tbody></table></div></div>`;
-  h += qList('try', 'شنو نجرب بالفيديو القادم؟', ins.try_next);
-  if (ins.caveat) h += `<p class="note">${esc(ins.caveat)}</p>`;
+  const ev = ins.evidence || [], scored = ev.filter((e) => e.ratio != null);
+  if (ev.length) {
+    h += `<div class="q ev"><b>شنو الدليل؟</b>`;
+    if (scored.length) h += `<div class="bars">${scored.map((e) => `<span>${esc(e.label)}</span><span class="tr" aria-hidden="true"><i class="${e.state === 'bad' ? 'bad' : e.state === 'mid' ? 'mid' : ''}" style="width:${Math.round(Math.min(e.ratio / 2, 1) * 100)}%"></i><u></u></span><span class="x">×${esc(e.ratio)}</span>`).join('')}</div>
+      <p class="note">الخط الأسود = المعتاد لمنشوراتنا من نفس النوع. أطول من الخط = أحسن.</p>`;
+    h += `<details><summary class="note" style="cursor:pointer;color:var(--ink);font-weight:700">كل الأرقام</summary><div style="overflow-x:auto"><table class="evt"><thead><tr><th>المقياس</th><th>هالمنشور</th><th>المعتاد</th><th></th></tr></thead><tbody>`
+      + ev.map((e) => `<tr class="${esc(e.state || '')}"><td>${esc(e.label)}${e.note ? `<small>${esc(e.note)}</small>` : ''}</td><td>${esc(e.value)}</td><td>${esc(e.usual || '—')}</td><td class="r">${e.ratio != null ? '×' + esc(e.ratio) : ''}</td></tr>`).join('')
+      + `</tbody></table></div></details></div>`;
+  }
+  h += qList('try', 'شنو نتعلم للفيلم القادم؟', ins.try_next);
+  if (ins.caveat) h += `<p class="note">${esc(ins.caveat)}</p><p class="note">${mark('c')} مؤكد · ${mark('e')} ملاحظة أولية · ${mark('w')} دليل ضعيف</p>`;
   return h + `</div>`;
 }
+const stageSel = {};                                               // per film: which reading is open
 function viewAnalysis(f) {
   if (f.state !== 'posted' || !f.posted?.at) return '';
-  const cs = checks(f), d = dueCheck(f), ig = f.ig || {};
-  let h = `<section class="group" aria-label="التحليل"><div class="row"><b>التحليل</b><span class="note" style="color:var(--ink)">نشرته ${esc(when(ig.posted_at || f.posted.at))}</span></div>`;
-  if (linked(f)) h += `<div class="row" style="justify-content:flex-start;gap:8px;flex-wrap:wrap"><span class="auto">● تلقائي من إنستغرام</span>${ig.permalink ? `<a class="chip" href="${esc(ig.permalink)}" target="_blank" rel="noopener">افتح المنشور ↗</a>` : ''}${ig.updated ? `<span class="note">آخر مزامنة ${esc(ago(ig.updated))}</span>` : ''}</div>`;
-  else h += `<div class="q try"><b>ما لقيت المنشور بإنستغرام تلقائياً</b><p style="font-size:13.5px">حط رابط المنشور، وأقرا أرقامه بنفسي بدون صور.</p>
-    <div class="linkrow"><input id="iglink" class="inp" inputmode="url" placeholder="https://www.instagram.com/reel/…" value="${esc(f.posted.permalink || '')}"><button type="button" class="btn dark" style="min-height:44px" data-act="savelink" data-id="${esc(f.id)}">احفظ</button></div></div>`;
+  const cs = checks(f), d = dueCheck(f), g = igFilm(f) || {}, reps = g.reports || {};
+  let h = `<section class="group" aria-label="التحليل"><div class="row"><b>التحليل</b><span class="note" style="color:var(--ink)">نشرته ${esc(when(g.posted_at || f.posted.at))}</span></div>`;
+  if (g.linked && g.confirmed) h += `<div class="row" style="justify-content:flex-start;gap:8px;flex-wrap:wrap"><span class="auto">● من إنستغرام</span>${g.permalink ? `<a class="chip" href="${esc(g.permalink)}" target="_blank" rel="noopener">افتح المنشور ↗</a>` : ''}</div>`;
+  else if (g.linked) h += `<div class="sugg"><b style="font:800 14px var(--display)">مقترح: «${esc(g.first_line || 'المنشور')}»</b><span class="note">لقيته من الكابشن. أكّده عشان ينحفظ برقمه.</span><div class="two"><button type="button" class="btn dark" style="min-height:44px" data-act="pickopen" data-id="${esc(f.id)}">أكّد المنشور</button>${g.permalink ? `<a class="btn line" style="min-height:44px;display:grid;place-items:center;text-decoration:none;color:var(--ink)" href="${esc(g.permalink)}" target="_blank" rel="noopener">شوفه ↗</a>` : '<span></span>'}</div></div>`;
+  else h += `<div class="q try"><b>أي منشور هو؟</b><p style="font-size:13.5px">اختار المنشور، وأقرا أرقامه بنفسي بدون صور.</p><button type="button" class="btn dark" style="min-height:44px" data-act="pickopen" data-id="${esc(f.id)}">اختار المنشور</button></div>`;
   h += `<ul class="checks">`;
   for (const c of cs) {
-    const ins = (f.insights || []).find((x) => x.stage === c.id);
+    const ins = reps[c.id] || (f.insights || []).find((x) => x.stage === c.id);
     const s = ins ? `<span class="vd ${esc(ins.verdict || 'mid')}">${esc(ins.label || VERDICT[ins.verdict] || 'انقرا')}</span>` : c.sent ? '⏱ وصلت الصور، أحللها'
-      : Date.now() >= c.due ? (linked(f) ? '⏱ تنقرا بالمزامنة الجاية' : '⏸ حان وقتها') : `⏳ بعد ${left(c.due - Date.now())}`;
+      : Date.now() >= c.due ? (g.linked ? '⏱ تنقرا بالتحديث الجاي' : '⏸ حان وقتها') : `⏳ بعد ${left(c.due - Date.now())}`;
     h += `<li><b style="font:800 14px var(--display)">${c.name}</b> ${s}<span class="when">${esc(when(new Date(c.due).toISOString()))}</span></li>`;
   }
   h += `</ul>`;
-  if (d) h += `<p class="note" style="color:var(--ink);font-weight:700;margin-top:6px">أو صوّر لي من إنستغرام (الريل ← View insights):</p><ul class="shots">${SHOTS.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
+  if (d && !mcp) h += `<p class="note" style="color:var(--ink);font-weight:700;margin-top:6px">أو صوّر لي من إنستغرام (الريل ← View insights):</p><ul class="shots">${SHOTS.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
     <label class="btn dark up" style="margin-top:6px">ارفع الصور (${esc(d.name)})<input type="file" accept="image/*" multiple hidden data-up="${esc(f.id)}" data-stage="${esc(d.id)}"></label>
     <button type="button" class="chip" style="justify-self:center" data-act="shotschat" data-id="${esc(f.id)}" data-stage="${esc(d.id)}">أرسلتها بالمحادثة</button>`;
-  const done = (f.insights || []).slice().sort((a, b) => Date.parse(b.at || 0) - Date.parse(a.at || 0));
-  for (const ins of done) h += report(ins, CHECKS.find((c) => c.id === ins.stage)?.name || ins.stage);
-  if (!done.length && ig.latest?.available) h += report(ig.latest, 'قراءة مبكرة');
-  if (!done.length && !ig.latest?.available) h += `<p class="note">ما أحكم بالمشاهدات بروحها: أقارن كل منشور بوسيط منشوراتنا من نفس النوع بنفس الحساب، بنفس العمر لما يتوفر (48 ساعة و7 أيام).</p>`;
-  if (!done.length && !linked(f)) h += `<button type="button" class="chip" style="justify-self:start;margin-top:4px" data-act="unpost" data-id="${esc(f.id)}">ما نشرته، رجّعه</button>`;
-  return h + `</section>`;
+  const avail = ['latest', '48h', '7d'].filter((k) => reps[k]);
+  if (avail.length) {
+    const cur = avail.includes(stageSel[f.id]) ? stageSel[f.id] : avail[avail.length - 1];
+    h += `<div class="seg" role="group" aria-label="القراءة" style="margin-top:8px">${[['latest', 'مبكرة'], ['48h', '48 ساعة'], ['7d', '7 أيام']].map(([k, n]) => `<button type="button" data-act="stage" data-id="${esc(f.id)}" data-k="${k}" aria-pressed="${k === cur}" ${reps[k] ? '' : 'disabled'}>${n}</button>`).join('')}</div>`;
+    h += report(reps[cur], STAGE_AR[cur]);
+  } else {
+    for (const ins of (f.insights || []).slice().sort((a, b) => Date.parse(b.at || 0) - Date.parse(a.at || 0))) h += report(ins, CHECKS.find((c) => c.id === ins.stage)?.name || ins.stage);
+    if (!(f.insights || []).length) h += `<p class="note">ما أحكم بالمشاهدات بروحها: أقارن كل منشور بوسيط منشوراتنا من نفس النوع بنفس الحساب، وبنفس العمر لما يتوفر (48 ساعة و7 أيام).</p>`;
+  }
+  if (!avail.length && !(f.insights || []).length && !g.linked) h += `<button type="button" class="chip" style="justify-self:start;margin-top:4px" data-act="unpost" data-id="${esc(f.id)}">ما نشرته، رجّعه</button>`;
+  return h + `</section>` + (pick?.id === f.id ? viewPick(f) : '');
 }
-// The recipe and the brief are recommendations for the owner's review: nothing here changes the studio's rules
-// (studio/rules) or an approved film. Each claim carries its confidence; patterns are correlations, said so.
-function viewRecipe() {
-  const items = recipe?.items || [], needs = recipe?.needs_data || [];
-  const head = items.length ? `${items.length} ${items.length === 1 ? 'نمط' : 'أنماط'}${recipe.updated ? ' · ' + esc(ago(recipe.updated)) : ''}` : recipe ? 'ما فيه نمط أكيد للحين' : 'تنبني من الأرقام';
-  let h = `<details class="group recipe"><summary><b>وصفة الخوارزمية</b><span class="note" style="color:var(--ink)">${head}</span></summary>`;
-  if (recipe) h += `<p class="note" style="margin-top:4px">من ${esc(Object.entries(recipe.posts || {}).map(([k, n]) => `${n} ${({ reel: 'ريل', carousel: 'كاروسيل', image: 'صورة', video: 'فيديو' })[k] || k}`).join(' و'))} بحساب @${esc(recipe.username || 'timekeeperkw')} (عمرها أسبوع وأكثر). للمراجعة، ما تتغير القواعد إلا بموافقتك.</p>`;
-  if (items.length) h += `<ol>${items.map((x) => `<li><b style="font:800 14px var(--display)">${esc(x.rule)}</b> ${conf(x.confidence, x.confidence_ar)}${x.why ? `<br><span class="note" style="color:var(--mute)">${esc(x.why)}${x.from ? ' · ' + esc(x.from) : ''}</span>` : ''}</li>`).join('')}</ol>`;
-  else if (!recipe) h += `<p>كل منشور أقرا أرقامه من إنستغرام بعد 48 ساعة وبعد 7 أيام، وأكتب هني اللي يجي معاه أداء أعلى عندنا: الافتتاحية، الطول، وقت النشر، الكابشن.</p>`;
+
+// ===== Instagram, read live from Supabase through the owner's own connector. Nothing here needs a Claude session:
+// the sync, the reports and the learning run in Supabase on their own clock; the studio reads them when it opens, and
+// keeps a copy (studio/ig) so it opens at once and others who can see the studio see the last numbers too.
+const SB = { server: 'Supabase', tool: 'execute_sql', project: 'ttshgrujnycapugrmyxs' };
+let mcp = null, ig = null, igAt = null, igCached = false, igState = 'idle', igErr = null, igChoices = {}, pick = null;
+let acc = (() => { try { return localStorage.getItem('tk-acc') || 'timekeeperkw'; } catch (e) { return 'timekeeperkw'; } })();
+const ACC = { timekeeperkw: 'تايم كيبر', timekeeperkwshop: 'المتجر', timegallerykw: 'الغاليري' };
+const dq = (v) => { const s = JSON.stringify(v); let t = 'sp'; while (s.includes('$' + t + '$')) t += 'x'; return `$${t}$${s}$${t}$`; };
+async function sql(query) {
+  const r = await mcp.callTool(SB.server, SB.tool, { project_id: SB.project, query }, { cache: false });
+  const p = r?.payload;
+  const text = typeof p === 'string' ? p : typeof p?.result === 'string' ? p.result : Array.isArray(p) ? JSON.stringify(p) : (r?.content?.[0]?.text || '');
+  // Supabase wraps the rows in a marked block, and names the marker once in the sentence before it
+  const m = text.match(/<untrusted-data-([\w-]+)>\s*(\[[\s\S]*\])\s*<\/untrusted-data-\1>/);
+  const rows = JSON.parse(m ? m[2] : text);
+  return Array.isArray(rows) ? rows : [];
+}
+function twinCaption(f) { const t = films.find((x) => x.id !== f.id && (x.of === f.id || f.of === x.id) && x.caption); return t ? t.caption.slice(0, 1500) : undefined; }
+function filmPayload(f) {
+  const o = { id: f.id, kind: f.kind === 'carousel' ? 'carousel' : 'reel', name: f.name, meta: f.meta, seconds: f.seconds, topic: f.topic,
+    caption: f.caption ? f.caption.slice(0, 1500) : undefined, caption_hint: f.caption ? undefined : twinCaption(f), posted: f.posted,
+    version: f.version, rules: f.rules, slides: Array.isArray(f.slides) ? f.slides.map(() => 1) : undefined, hook: f.hook, test: f.test };
+  return JSON.parse(JSON.stringify(o));
+}
+const ERR_AR = {
+  needs_reauth: 'ربط Supabase انتهى. أعد ربطه من claude.ai ← الإعدادات ← Connectors.',
+  server_not_connected: 'Supabase مو مربوط بحسابك. أضفه من claude.ai ← الإعدادات ← Connectors.',
+  selection_required: 'عندك أكثر من ربط Supabase. اختار واحد لما يسألك claude.ai.',
+  not_in_manifest: 'الستوديو يحتاج إذنك يقرا من Supabase.', approval_required: 'الستوديو يحتاج إذنك يقرا من Supabase.', consent_required: 'الستوديو يحتاج إذنك يقرا من Supabase.',
+  blocked_by_policy: 'إعدادات المؤسسة تمنع هالربط.', server_unavailable: 'Supabase ما رد الحين. جرّب بعد شوي.',
+};
+async function loadIg(manual) {
+  if (!mcp) { igState = 'nomcp'; refresh(); return; }
+  if (igState === 'loading') return;
+  igState = 'loading'; if (manual) route();
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const rows = await sql(`select public.studio_page(${dq({ films: films.filter((f) => f.posted?.at).map(filmPayload) })}::jsonb) as page`);
+      const page = rows[0]?.page;
+      if (!page) throw { code: 'empty' };
+      ig = page; igAt = page.at; igCached = false; igState = 'ok'; igErr = null;
+      saveIgCache();
+      break;
+    } catch (e) {
+      igErr = e?.code || 'error';
+      if (e?.retryable && attempt === 0) { await new Promise((ok) => setTimeout(ok, Math.min(e.retryAfterMs || 1500, 8000) + Math.random() * 800)); continue; }
+      igState = 'error'; break;
+    }
+  }
+  if (manual && igState === 'ok') toast('انقرت آخر الأرقام ✓');
+  refresh();
+}
+async function saveIgCache() {
+  try { if (db && ig) await db.doc('studio/ig').set({ page: ig, at: ig.at }); } catch (e) { /* a viewer who cannot write keeps the live numbers on screen */ }
+}
+const agoShort = (iso) => ago(iso) || '—';
+function statusDot() {
+  const st = ig?.status;
+  if (!st) return igState === 'loading' ? `<button type="button" class="sdot idle" data-go="sync">يقرا الأرقام…</button>` : `<button type="button" class="sdot idle" data-go="sync">الأرقام</button>`;
+  if (st.health !== 'ok') return `<button type="button" class="sdot bad" data-go="sync">فيه مشكلة</button>`;
+  return `<button type="button" class="sdot" data-go="sync">محدّث ${esc(agoShort(st.last_fresh || st.last_ok))}</button>`;
+}
+function problemBanner() {
+  if (ig?.status?.health === 'problem') return `<a class="chip" href="#sync" style="background:#FBE6E3;justify-self:start">⚠ أرقام إنستغرام ما تتحدث. التفاصيل ←</a>`;
+  if (igState === 'error' && igErr && ERR_AR[igErr] && !igCached) return `<p class="note" style="color:#8a1426">${esc(ERR_AR[igErr])}</p>`;
+  return '';
+}
+function connectNote() {
+  if (igState === 'ok') return '';
+  if (igState === 'nomcp') return `<p class="note">هالنسخة من الستوديو ما تقدر توصل لـSupabase. افتحه من claude.ai أو تطبيق Claude.${ig ? ' هذي آخر نسخة محفوظة.' : ''}</p>`;
+  if (igState === 'error') return `<div class="q try"><b>${esc(ERR_AR[igErr] || 'ما قدرت أقرا الأرقام الحين.')}</b>${ig ? `<span class="note">تشوف آخر نسخة محفوظة (${esc(when(igAt))}).</span>` : ''}<button type="button" class="btn dark" style="min-height:44px" data-act="igreload">${['not_in_manifest', 'approval_required', 'consent_required'].includes(igErr) ? 'اسمح واقرا الأرقام' : 'جرّب مرة ثانية'}</button></div>`;
+  if (igState === 'loading') return `<p class="note">يقرا آخر الأرقام…</p>`;
+  return '';
+}
+const fmt = (n) => (n == null ? '—' : Number(n).toLocaleString('en-US'));
+
+function viewNumbers() {
+  let h = `<div class="headrow">${header('الأرقام', 'إنستغرام لكل حساب')}${statusDot()}</div>` + connectNote();
+  const dash = ig?.dash || {}, keys = Object.keys(ACC).filter((k) => dash[k]);
+  if (!keys.length) return h + (igState === 'ok' ? '<p class="note">ما وصلت أرقام للحين.</p>' : '');
+  if (!dash[acc]) acc = keys[0];
+  const d = dash[acc];
+  h += `<div class="seg" role="group" aria-label="الحساب">${keys.map((k) => `<button type="button" data-act="acc" data-k="${k}" aria-pressed="${k === acc}">${ACC[k]}</button>`).join('')}</div>`;
+  h += `<div class="group" style="background:#E3F1E8"><b style="font:800 17px/1.4 var(--display)">${esc(d.summary || '')}</b>${d.top ? `<span class="note" style="color:var(--ink)">أقوى منشور هالأسبوع: «${esc(d.top.first_line || '')}» · ${fmt(d.top.reach)} وصول${d.top.permalink ? ` · <a href="${esc(d.top.permalink)}" target="_blank" rel="noopener">افتحه ↗</a>` : ''}</span>` : ''}</div>`;
+  h += `<div class="tilesg"><div class="tl"><span>المتابعين</span><b>${fmt(d.followers)}</b>${d.followers_week != null ? `<small style="${d.followers_week < 0 ? 'color:#8a1426' : ''}">${d.followers_week >= 0 ? '+' : ''}${fmt(d.followers_week)} بأسبوع</small>` : ''}</div>
+    <div class="tl"><span>منشورات الأسبوع</span><b>${fmt(d.week?.posts)}</b><small style="color:var(--mute)">${fmt(d.week?.reels)} ريل · ${fmt(d.week?.carousels)} كاروسيل</small></div>
+    <div class="tl"><span>مشاركات الأسبوع</span><b>${fmt(d.week?.shares)}</b><small style="color:var(--mute)">${fmt(d.week?.saves)} حفظ</small></div></div>`;
+  if (d.split && (d.split.followers || d.split.non_followers)) {
+    const tot = (d.split.followers || 0) + (d.split.non_followers || 0), pf = Math.round(100 * (d.split.followers || 0) / tot);
+    h += `<div class="group"><b>من وين جا الوصول أمس</b><div class="splitb" role="img" aria-label="متابعين ${pf}%، مو متابعين ${100 - pf}%"><i style="width:${pf}%;background:var(--teal)"></i><i style="width:${100 - pf}%;background:var(--yellow)"></i></div><div class="row note" style="color:var(--ink)"><span>متابعين ${pf}%</span><span>مو متابعين ${100 - pf}%</span></div></div>`;
+  }
+  const sa = d.same_age || {}, rows = ['reel', 'carousel'].filter((k) => sa[k]?.ratio != null);
+  h += `<div class="group"><b>منشورات هالأسبوع عند 48 ساعة</b><p class="note">مقارنة بنفس العمر، مو بالمجموع.</p>`;
+  if (rows.length) h += `<div class="bars">${rows.map((k) => `<span>${k === 'reel' ? 'ريلز' : 'كاروسيل'}</span><span class="tr"><i class="${sa[k].ratio < 0.8 ? 'bad' : sa[k].ratio < 1.2 ? 'mid' : ''}" style="width:${Math.round(Math.min(sa[k].ratio / 2, 1) * 100)}%"></i><u></u></span><span class="x">×${sa[k].ratio}</span>`).join('')}</div>`;
+  else h += `<p>يتجمع: قراءات 48 ساعة بدت من 3 نوفمبر، ونحتاج 5 منشورات أقدم عندها قراءة عشان نقارن.</p>`;
+  h += `</div>`;
+  h += `<button type="button" class="group" style="text-align:start;border:0;cursor:pointer;width:100%" data-go="sync"><div class="row"><b>المزامنة</b><span class="note" style="color:var(--ink)">${ig?.status ? `الجاية ${esc(when(ig.status.next_fresh))} · ${ig.status.health === 'ok' ? 'ما فيه مشاكل' : 'فيه مشكلة'}` : ''} ←</span></div></button>`;
+  if (d.since) h += `<p class="note">أرقام الوصول اليومية من ${esc(d.since)}.</p>`;
+  return h;
+}
+
+function viewSync() {
+  const st = ig?.status;
+  let h = `<header class="top fhead"><button type="button" class="back" aria-label="رجوع" data-go="numbers"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FBF7EF" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button><h1 style="font-size:28px">حالة المزامنة</h1></header>` + connectNote();
+  if (!st) return h;
+  h += `<section class="group"><div class="kvr"><span>آخر تحديث ناجح</span><b>${esc(when(st.last_fresh || st.last_ok))}</b></div>
+    <div class="kvr"><span>التحديث الجاي</span><b>${esc(when(st.next_fresh))}</b></div>
+    <div class="kvr"><span>تحديث الصبح الكامل</span><b>${esc(when(st.next_daily))}</b></div>
+    <div class="kvr"><span>التقارير انحسبت</span><b>${esc(when(st.refreshed_at))}</b></div>
+    ${Object.entries(st.accounts || {}).map(([u, a]) => `<div class="kvr"><span>${esc(ACC[u] || u)}</span><b style="color:${a.last_error ? '#B3261E' : '#1f6b3f'}">${a.last_error ? 'فشل: ' + esc(String(a.last_error).slice(0, 60)) : '✓ ' + esc(agoShort(a.last_ok))}</b></div>`).join('')}</section>`;
+  const probs = st.problems || [];
+  h += `<section class="group"><b>المشاكل</b>${probs.length ? probs.map((p) => `<div class="kvr"><span>${esc(p.detail || p.kind)}</span><b>${esc(when(p.at))}</b></div>`).join('') + '<p class="note">النظام يعيد المحاولة كل ساعة، وإذا فشل مرتين ورا بعض يوصلك تنبيه بالجوال.</p>' : '<p>ما فيه مشاكل.</p>'}</section>`;
+  const miss = [];
+  for (const [u, a] of Object.entries(st.accounts || {})) if (a.reels_without_figures) miss.push(`${ACC[u] || u}: ${a.reels_without_figures} ريل قديم بدون أرقام (إنستغرام ما يعطيها)`);
+  if (st.missing?.films_suggested) miss.push(`${st.missing.films_suggested} فيلم منشوره مقترح ويحتاج تأكيدك`);
+  if (st.missing?.films_unlinked) miss.push(`${st.missing.films_unlinked} فيلم ما انربط بمنشوره`);
+  h += `<section class="group"><b>أرقام ناقصة</b>${miss.length ? `<ul class="chg">${miss.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>` : '<p>ما فيه شي ناقص.</p>'}</section>`;
+  h += `<button type="button" class="btn dark" data-act="syncnow">حدّث الحين</button><button type="button" class="btn line" data-act="igreload">اقرا الأرقام من جديد</button>`;
+  h += `<details class="group"><summary class="note" style="cursor:pointer;color:var(--ink);font-weight:700">آخر المحاولات</summary>${(st.runs || []).map((r) => `<div class="kvr"><span>${esc(when(r.at))} · ${r.mode === 'fresh' ? 'سريع' : r.mode === 'backfill' ? 'تاريخ' : 'كامل'}</span><b>${r.status === 'ok' ? '✓' : esc(r.status)}${r.error ? ' · ' + esc(String(r.error).slice(0, 50)) : ''}</b></div>`).join('')}</details>`;
+  return h;
+}
+
+function viewLearn() {
+  let h = `<div class="headrow">${header('التعلّم', 'من أرقامنا، للفيلم الجاي')}${statusDot()}</div>` + connectNote() + viewBrief(true);
+  const L = ig?.learn; if (!L) return h;
+  const accs = L.accounts || {}, keys = Object.keys(ACC).filter((k) => accs[k]);
+  const a = accs[acc] ? acc : 'timekeeperkw', items = accs[a]?.items || [];
+  h += `<section class="group"><b style="font:800 18px var(--display)">اللي تعلمناه</b>`;
+  if (keys.length > 1) h += `<div class="seg" role="group" aria-label="الحساب">${keys.map((k) => `<button type="button" data-act="acc" data-k="${k}" aria-pressed="${k === a}">${ACC[k]}</button>`).join('')}</div>`;
+  const posts = accs[a]?.posts || {};
+  h += `<p class="note">من ${esc(Object.entries(posts).map(([k, n]) => `${n} ${({ reel: 'ريل', carousel: 'كاروسيل', image: 'صورة', video: 'فيديو' })[k] || k}`).join(' و'))} عمرها أسبوع وأكثر. علاقات من أرقامنا، مو أسباب مثبتة.</p>`;
+  for (const [lv, title, emptyText] of [['c', 'مؤكد', 'ما فيه للحين. يحتاج 20 منشور ونمط ثابت ما يجي بالصدفة.'], ['e', 'ملاحظة أولية', 'ما فيه.'], ['w', 'دليل ضعيف', 'ما فيه.']]) {
+    const list = items.filter((x) => lvOf(x.confidence) === lv);
+    h += `<div style="display:grid;gap:4px;margin-top:6px"><b style="font:800 14px var(--body);display:flex;gap:6px;align-items:center">${mark(lv)} ${title}</b>${list.length ? `<ul class="rules">${list.map((x) => `<li><b style="font:700 14px var(--body)">${esc(x.rule)}</b><br><span class="note">${esc(x.why)}</span></li>`).join('')}</ul>` : `<span class="note">${emptyText}</span>`}</div>`;
+  }
+  const needs = (a === 'timekeeperkw' ? L.recipe?.needs_data : null) || [];
   if (needs.length) h += `<p class="note" style="margin-top:6px">نحتاج أفلام أكثر قبل ما نحكم على: ${esc(needs.slice(0, 6).map((x) => `${x.val} (${x.n} من 5)`).join('، '))}.</p>`;
-  if (recipe?.caveat) h += `<p class="note">${esc(recipe.caveat)}</p>`;
-  return h + `</details>`;
+  h += `</section>`;
+  // a confirmed pattern may become a studio rule, only when the owner says so
+  const sugg = items.filter((x) => lvOf(x.confidence) === 'c').map((x) => ({ ...x, key: ruleKey(x) }))
+    .filter((x) => !RULES.some((r) => r.id === x.key) && !(igChoices.dismissed || []).includes(x.key));
+  for (const x of sugg) h += `<div class="sugg"><b style="font:800 15px var(--display)">صار مؤكد: تخليه قاعدة؟</b><p>${esc(x.rule)}</p><span class="note">${esc(x.why)}</span><div class="two"><button type="button" class="btn dark" style="min-height:44px" data-act="ruleyes" data-k="${esc(x.key)}">خله قاعدة</button><button type="button" class="btn line" style="min-height:44px" data-act="ruleno" data-k="${esc(x.key)}">مو الحين</button></div></div>`;
+  return h;
 }
+
+// ---- the post picker: «أي منشور هو؟» ----
+function viewPick(f) {
+  let h = `<button type="button" class="scrim" aria-label="سكّر" data-act="pickclose"></button><div class="sheet" role="dialog" aria-label="أي منشور هو؟"><div class="grab"></div><div class="row"><b style="font:800 18px var(--display)">أي منشور هو؟</b><button type="button" class="chip" data-act="pickclose">سكّر</button></div>`;
+  if (!mcp) return h + `<p class="note">الاختيار يحتاج الستوديو يوصل لـSupabase. افتحه من claude.ai أو تطبيق Claude، أو الصق الرابط.</p>${pasteRow(f)}</div>`;
+  if (pick.loading) return h + `<p class="note">يجيب آخر المنشورات…</p></div>`;
+  if (pick.error) return h + `<p class="note" style="color:#8a1426">${esc(ERR_AR[pick.error] || 'ما قدرت أجيب المنشورات.')}</p>${pasteRow(f)}</div>`;
+  const posts = pick.list || [];
+  h += `<span class="note">آخر ${f.kind === 'carousel' ? 'الكاروسيلات' : 'الريلز'} بـ@timekeeperkw${pick.synced ? ` · آخر سحب ${esc(ago(pick.synced))}` : ''}</span>`;
+  if (!posts.length) h += `<p>ما لقيت منشورات من هالنوع بالأيام الأخيرة.</p>`;
+  h += posts.map((p) => `<button type="button" class="post" data-act="pickchoose" data-id="${esc(f.id)}" data-k="${esc(p.media_id)}" aria-pressed="${pick.sel === p.media_id}" ${p.taken_by ? 'disabled' : ''}><span class="row"><b>${esc(p.first_line || '(بدون كابشن)')}</b>${pick.suggested === p.media_id ? '<span class="tag2">مقترح</span>' : ''}</span><span>${esc(when(p.posted_at))}${p.taken_by ? ' · مربوط بفيلم ثاني' : ''}</span></button>`).join('');
+  h += `<button type="button" class="btn dark" data-act="pickconfirm" data-id="${esc(f.id)}" ${pick.sel ? '' : 'disabled'}>هذا هو ✓</button>`;
+  h += `<details><summary class="note" style="cursor:pointer;color:var(--ink);font-weight:700">مو موجود؟</summary><p class="note">إذا توه منشور، إنستغرام يحتاج دقايق. اضغط «حدّث الحين» من حالة المزامنة، أو الصق الرابط:</p>${pasteRow(f)}</details></div>`;
+  return h;
+}
+const pasteRow = (f) => `<div class="linkrow"><input id="iglink" class="inp" inputmode="url" placeholder="https://www.instagram.com/reel/…" value="${esc(f.posted?.permalink || '')}"><button type="button" class="btn dark" style="min-height:44px" data-act="savelink" data-id="${esc(f.id)}">احفظ</button></div>`;
+async function openPick(f) {
+  pick = { id: f.id, loading: true }; route();
+  if (!mcp) { pick.loading = false; route(); return; }
+  try {
+    const rows = await sql(`select public.studio_candidates(${dq(filmPayload(f))}::jsonb) as c`);
+    const c = rows[0]?.c || {};
+    pick = { id: f.id, list: c.posts || [], suggested: c.suggested || null, sel: c.suggested || igFilm(f)?.media_id || null, synced: c.synced_at };
+  } catch (e) { pick = { id: f.id, error: e?.code || 'error' }; }
+  route();
+}
+async function confirmPick(f, mediaId, permalink) {
+  if (!mcp) return false;
+  const payload = filmPayload(f);
+  if (permalink) payload.posted = { ...(payload.posted || {}), permalink };
+  const mid = mediaId && /^[0-9]{5,30}$/.test(mediaId) ? `'${mediaId}'` : 'null';
+  try {
+    const rows = await sql(`select public.studio_confirm(${dq(payload)}::jsonb, ${mid}) as r`);
+    const r = rows[0]?.r || {};
+    if (!r.ok) {
+      toast(r.reason === 'taken' ? `هذا المنشور مربوط بـ«${films.find((x) => x.id === r.film)?.name || r.film}».` : 'ما لقيته. إذا توه منشور، حدّث الأرقام وجرّب بعد دقايق.');
+      return false;
+    }
+    if (ig) ig.films = { ...(ig.films || {}), [f.id]: r.film };
+    try { await db?.doc(`films/${f.id}`).update({ posted: { ...(f.posted || {}), media_id: r.film?.media_id, ...(r.film?.permalink ? { permalink: r.film.permalink } : {}) } }); } catch (e) {}
+    saveIgCache(); toast('انربط ✓ أقرا أرقامه بنفسي');
+    return true;
+  } catch (e) { toast(ERR_AR[e?.code] || 'ما قدرت أربطه الحين.'); return false; }
+}
+
 let briefKind = 'reel';
+// «قبل الفيلم الجاي»: what our numbers say before the next film, each line with its strength. For the owner's review:
+// nothing here changes the studio's rules.
 function viewBrief(open) {
-  const b = brief?.[briefKind];
+  const B = ig?.learn?.brief || brief, b = B?.[briefKind];
   if (!b) return '';
-  let h = `<details class="group brief"${open ? ' open' : ''}><summary class="row" style="cursor:pointer;list-style:none"><b>قبل الفيلم الجاي</b><span class="note" style="color:var(--ink)">${b.updated ? esc(ago(b.updated)) : ''}</span></summary>
-    <div class="chips" role="group" aria-label="النوع" style="margin:6px 0">${[['reel', 'ريل'], ['carousel', 'كاروسيل']].map(([k, n]) => `<button type="button" class="chip${briefKind === k ? ' on' : ''}" data-act="briefkind" data-k="${k}">${n}</button>`).join('')}</div>
-    <p class="note">من ${esc(b.sample?.posts ?? 0)} منشور بالحساب، منها ${esc(b.sample?.studio_posts ?? 0)} من الاستوديو. ${esc(b.review || '')}</p>`;
-  for (const x of b.sections || []) h += `<div class="sec"><div class="row"><b>${esc(x.title)}</b>${conf(x.confidence, x.confidence_ar)}</div><p>${esc(x.advice)}</p>${x.evidence ? `<span class="note">${esc(x.evidence)}</span>` : ''}</div>`;
+  let h = `<details class="group brief"${open ? ' open' : ''}><summary class="row" style="cursor:pointer;list-style:none"><b style="font:800 17px var(--display)">قبل الفيلم الجاي</b><span class="note" style="color:var(--ink)">${b.updated ? esc(ago(b.updated)) : ''} ▾</span></summary>
+    <div class="seg" role="group" aria-label="النوع" style="margin:8px 0">${[['reel', 'ريل'], ['carousel', 'كاروسيل']].map(([k, n]) => `<button type="button" data-act="briefkind" data-k="${k}" aria-pressed="${briefKind === k}">${n}</button>`).join('')}</div>`;
+  for (const x of b.sections || []) h += `<div class="sec"><div class="row" style="justify-content:flex-start;gap:7px">${mark(lvOf(x.confidence))}<b>${esc(x.title)}</b></div><p>${esc(x.advice)}</p>${x.evidence ? `<span class="note">${esc(x.evidence)}</span>` : ''}</div>`;
   if (b.test_next?.length) h += `<div class="q try" style="margin-top:6px"><b>شنو نجرب (تجربة، مو قاعدة)</b><ul>${b.test_next.map((t) => `<li><b style="font:700 14px var(--body)">${esc(t.idea)}</b> · ${esc(t.why)}${t.measure ? ` <span class="note">(نقيسها بـ${esc(t.measure)})</span>` : ''}</li>`).join('')}</ul></div>`;
+  h += `<p class="note">من ${esc(b.sample?.posts ?? 0)} منشور، منها ${esc(b.sample?.studio_posts ?? 0)} من الاستوديو. توصيات للمراجعة؛ القواعد ما تتغير إلا بموافقتك.</p>`;
   return h + `</details>`;
 }
 async function upShots(input) {
@@ -521,10 +762,12 @@ function route() {
   const h = (location.hash || '#films').slice(1);
   if (h.startsWith('edit-')) { tabs('films'); document.querySelector('.bubbles').hidden = true; $('#view').innerHTML = viewEdit(h.slice(5)); bind(); bindEdit(); return; }
   const [tab, id] = h.startsWith('film-') ? ['films', h.slice(5)] : [h, null];
-  const t = TABS.some((x) => x.id === tab) ? tab : 'films';
+  const alias = { styles: 'library', recreate: 'library', sync: 'numbers' };
+  const t = TABS.some((x) => x.id === tab) ? tab : alias[tab] || 'films';
   tabs(t);
-  document.querySelector('.bubbles').hidden = !!id;
-  $('#view').innerHTML = id ? viewFilm(id) : t === 'library' ? viewLibrary() : t === 'styles' ? viewStyles() : t === 'recreate' ? viewRecreate() : t === 'team' ? viewTeam() : viewFilms();
+  document.querySelector('.bubbles').hidden = !!id || tab === 'sync';
+  $('#view').innerHTML = id ? viewFilm(id) : tab === 'sync' ? viewSync() : t === 'numbers' ? viewNumbers() : t === 'learn' ? viewLearn() : t === 'library' ? viewLibrary() : t === 'team' ? viewTeam() : viewFilms();
+  if (!id && (tab === 'styles' || tab === 'recreate')) document.getElementById('sec-' + tab)?.scrollIntoView({ block: 'start' });
   bind();
   if (id) { const ff = films.find((x) => x.id === id); prefetch(ff); if (ff && ff.video && (ff.state === 'done' || ff.state === 'posted' || ff.final)) prefetchFilm(ff); }
 }
@@ -572,16 +815,52 @@ async function act(b) {
     try {
       const at = new Date().toISOString();
       await db.doc(`films/${id}`).update({ state: 'posted', posted: { at, version: f.version || '' }, insights_sent: [] });
-      await tell(`الاستوديو: نشرت «${f.name}» ${f.version || ''}. أول قراءة بعد 48 ساعة، والنهائية بعد 7 أيام.`, b, { film: id, kind: 'posted', at });
+      try { await db.collection('inbox').add({ film: id, kind: 'posted', at, text: `الاستوديو: نشرت «${f.name}» ${f.version || ''}.`, sent: false }); } catch (e) {}
+      openPick({ ...f, state: 'posted', posted: { at, version: f.version || '' } });
     } catch (e) { toast('ما قدرت أحفظها.'); b.disabled = false; }
     return;
   }
   if (kind === 'briefkind') { briefKind = b.dataset.k; route(); return; }
+  if (kind === 'acc') { acc = b.dataset.k; try { localStorage.setItem('tk-acc', acc); } catch (e) {} route(); return; }
+  if (kind === 'stage') { stageSel[id] = b.dataset.k; route(); return; }
+  if (kind === 'igreload') { loadIg(true); return; }
+  if (kind === 'pickopen') { openPick(f); return; }
+  if (kind === 'pickclose') { pick = null; route(); return; }
+  if (kind === 'pickchoose') { if (pick) { pick.sel = b.dataset.k; route(); } return; }
+  if (kind === 'pickconfirm') { b.disabled = true; if (await confirmPick(f, pick?.sel)) pick = null; route(); return; }
+  if (kind === 'syncnow') {
+    if (!mcp) { toast('يحتاج الستوديو يوصل لـSupabase.'); return; }
+    b.disabled = true;
+    try {
+      const r = (await sql('select public.instagram_sync_now() as r'))[0]?.r || {};
+      toast(r.started ? 'بدأ التحديث. خذ دقيقتين واضغط «اقرا الأرقام من جديد».' : r.reason === 'running' ? 'فيه تحديث شغال الحين.' : 'توه تحدّث. جرّب بعد 5 دقايق.');
+    } catch (e) { toast(ERR_AR[e?.code] || 'ما قدرت أبدأ التحديث.'); }
+    b.disabled = false; return;
+  }
+  if (kind === 'ruleyes' || kind === 'ruleno') {
+    if (!db) { toast('يحتاج صلاحية تعديل الاستوديو.'); return; }
+    const key = b.dataset.k, items = Object.values(ig?.learn?.accounts || {}).flatMap((x) => x.items || []);
+    const x = items.find((i) => ruleKey(i) === key);
+    b.disabled = true;
+    try {
+      if (kind === 'ruleyes' && x) {
+        await db.doc('studio/rules').set({ list: [...RULES, { id: key, kind: x.kind === 'carousel' ? 'carousel' : 'reel', at: new Date().toISOString(), name: x.rule, why: x.why, from: 'instagram' }] });
+        toast('انضافت للقواعد ✓');
+      } else {
+        await db.doc('studio/ig_choices').set({ ...igChoices, dismissed: [...new Set([...(igChoices.dismissed || []), key])] });
+        toast('تمام، ما تنضاف.');
+      }
+    } catch (e) { toast('ما قدرت أحفظها.'); b.disabled = false; }
+    return;
+  }
+
   if (kind === 'savelink') {
     const v = ($('#iglink')?.value || '').trim();
     if (!/^https:\/\/(www\.)?instagram\.com\/(p|reel|reels)\/[\w-]+/.test(v)) { toast('حط رابط منشور من إنستغرام (instagram.com/p/… أو /reel/…).'); return; }
+    const link = v.split('?')[0];
+    if (mcp && await confirmPick(f, null, link)) { pick = null; route(); return; }
     if (!db) { toast('يحتاج صلاحية تعديل الاستوديو.'); return; }
-    try { await db.doc(`films/${id}`).update({ posted: { ...(f.posted || {}), permalink: v.split('?')[0] } }); toast('انحفظ الرابط ✓ أقرا أرقامه بالمزامنة الجاية.'); }
+    try { await db.doc(`films/${id}`).update({ posted: { ...(f.posted || {}), permalink: link } }); toast('انحفظ الرابط ✓ ينربط أول ما ينقرا من إنستغرام.'); }
     catch (e) { toast('ما قدرت أحفظه.'); }
     return;
   }
@@ -1005,7 +1284,7 @@ route();
 fetch('library.json').then((r) => r.json()).then((j) => { lib = j; route(); }).catch(() => {});
 (async () => {
   try {
-    if (!window.claude?.use) { ready = true; route(); return; }
+    if (!window.claude?.use) { ready = true; igState = 'nomcp'; route(); return; }
     db = await window.claude.use('db');
     comments = await window.claude.use('comments');
     if (!db) { ready = true; route(); return; }
@@ -1018,6 +1297,11 @@ fetch('library.json').then((r) => r.json()).then((j) => { lib = j; route(); }).c
     db.doc('studio/topics').onSnapshot((d) => { topics = d.exists ? d.data() : {}; refresh(); }, () => {});
     db.doc('studio/recipe').onSnapshot((d) => { recipe = d.exists ? d.data() : null; refresh(); }, () => {});
     db.doc('studio/brief').onSnapshot((d) => { brief = d.exists ? d.data() : null; refresh(); }, () => {});
+    db.doc('studio/ig').onSnapshot((d) => { if (d.exists && (!ig || igCached) && d.data().page) { ig = d.data().page; igAt = d.data().at; igCached = true; refresh(); } }, () => {});
+    db.doc('studio/ig_choices').onSnapshot((d) => { igChoices = d.exists ? d.data() : {}; refresh(); }, () => {});
+    mcp = await window.claude.use('mcp').catch(() => null);
+    const firstLoad = setInterval(() => { if (ready) { clearInterval(firstLoad); loadIg(false); } }, 300);
+    setInterval(() => { if (document.visibilityState === 'visible') loadIg(false); }, 30 * 60e3);   // the reports move every 3 hours
     setInterval(refresh, 5 * 60e3);                                  // the countdowns move
   } catch (e) { ready = true; route(); }
 })();
