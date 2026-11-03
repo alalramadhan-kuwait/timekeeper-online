@@ -371,6 +371,17 @@ function itemLabel(f, tname) {
   const rest = String(f.name || '').split(' · ').slice(1).join(' · ') || (String(f.name || '').startsWith(tname) ? '' : f.name || '');
   return `${kind}${rest ? ' · ' + rest : ''}`;
 }
+const HIDE_DAYS = 30;                                               // a hidden film is deleted after this many days
+const hideLeft = (f) => Math.max(0, Math.ceil((Date.parse(f.hidden_at || 0) + HIDE_DAYS * 864e5 - Date.now()) / 864e5));
+let purging = false;
+async function purgeHidden() {                                     // runs when the studio opens with edit rights
+  if (purging || !db) return;
+  purging = true;
+  for (const f of films.filter((x) => x.hidden && x.hidden_at && hideLeft(x) === 0)) {
+    try { await db.doc(`films/${f.id}`).delete(); } catch (e) { /* a viewer without edit rights cannot; the owner's next visit will */ }
+  }
+  purging = false;
+}
 function viewFilms() {
   const shown = films.filter((f) => !f.hidden), hidden = films.filter((f) => f.hidden);   // «شيله من القائمة» hides, never deletes
   const waiting = shown.filter(isWaiting).length, working = shown.filter((f) => f.state === 'working').length;
@@ -395,7 +406,7 @@ function viewFilms() {
     }
     h += `</section>`;
   });
-  if (hidden.length) h += `<details class="fold"><summary>المخفية <span>${hidden.length}</span></summary><div class="fin">${hidden.map((f) => `<div class="row"><a href="#film-${esc(f.id)}" style="color:var(--ink);font-weight:700;text-decoration:none">${esc(f.name)} <span class="note">${esc(f.version || '')}</span></a><button type="button" class="chip" data-act="unhide" data-id="${esc(f.id)}">رجّعه</button></div>`).join('')}</div></details>`;
+  if (hidden.length) h += `<details class="fold"><summary>المخفية <span>${hidden.length} · تنمسح بعد ${HIDE_DAYS} يوم</span></summary><div class="fin">${hidden.map((f) => `<div class="row"><a href="#film-${esc(f.id)}" style="color:var(--ink);font-weight:700;text-decoration:none">${esc(f.name)} <span class="note">${esc(f.version || '')} · ينمسح بعد ${hideLeft(f)} يوم</span></a><button type="button" class="chip" data-act="unhide" data-id="${esc(f.id)}">رجّعه</button></div>`).join('')}</div></details>`;
   if (ready) h += viewBrief();
   h += `<div class="shortcuts"><a class="short" href="#recreate" style="background:var(--yellow);color:var(--ink)">ريل عجبك</a><a class="short" href="#library" style="background:var(--blue);color:#fff">فكرة جديدة</a></div>`;
   return h;
@@ -1032,11 +1043,11 @@ async function act(b) {
   }
   if (kind === 'hide' || kind === 'unhide') {
     if (!db || !f) { toast('يحتاج صلاحية تعديل الاستوديو.'); return; }
-    if (kind === 'hide' && b.dataset.sure !== '1') { b.dataset.sure = '1'; b.textContent = 'أكيد؟ اضغط مرة ثانية (تقدر ترجّعه)'; return; }
+    if (kind === 'hide' && b.dataset.sure !== '1') { b.dataset.sure = '1'; b.textContent = `أكيد؟ اضغط مرة ثانية (تقدر ترجّعه خلال ${HIDE_DAYS} يوم)`; return; }
     b.disabled = true;
     try {
       await db.doc(`films/${id}`).update(kind === 'hide' ? { hidden: true, hidden_at: new Date().toISOString() } : { hidden: false });
-      toast(kind === 'hide' ? 'انشال من القائمة ✓ تلقاه تحت «المخفية».' : 'رجع للقائمة ✓');
+      toast(kind === 'hide' ? `انشال من القائمة ✓ ينمسح نهائياً بعد ${HIDE_DAYS} يوم إذا ما رجّعته.` : 'رجع للقائمة ✓');
       if (kind === 'hide') location.hash = 'films';
     } catch (e) { toast('ما قدرت.'); b.disabled = false; }
     return;
@@ -1467,7 +1478,7 @@ fetch('library.json').then((r) => r.json()).then((j) => { lib = j; route(); }).c
     if (!db) { ready = true; route(); return; }
     db.collection('films').onSnapshot((snap) => {
       films = snap.docs.map((d) => ({ id: d.id, ...d.data() })).sort((a, b) => (a.order ?? 99) - (b.order ?? 99));
-      ready = true; refresh();
+      ready = true; refresh(); purgeHidden();
     }, () => { ready = true; refresh(); });
     db.doc('studio/now').onSnapshot((d) => { now = d.exists ? d.data() : null; refresh(); }, () => {});
     db.doc('studio/rules').onSnapshot((d) => { const l = d.exists ? d.data().list : null; if (Array.isArray(l) && l.length) { RULES = l; refresh(); } }, () => {});

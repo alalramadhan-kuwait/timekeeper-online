@@ -13,7 +13,7 @@ const data = JSON.parse(fs.readFileSync(data_, 'utf8'));
     const snap = (id, d) => ({ id, exists: d != null, data: () => d });
     window.claude = { use: async (k) => k === 'db' ? {
       collection: (c) => ({ onSnapshot: (cb) => { setTimeout(() => cb({ docs: Object.entries(data[c] || {}).map(([id, d]) => snap(id, d)) }), 30); return () => {}; }, add: async () => ({}) }),
-      doc: (p) => ({ onSnapshot: (cb) => { const [c, id] = p.split('/'); setTimeout(() => cb(snap(id, (data[c] || {})[id] ?? null)), 30); return () => {}; }, update: async (x) => { window.__updates = [...(window.__updates || []), [p, x]]; }, set: async (x) => { window.__updates = [...(window.__updates || []), [p, x]]; } }),
+      doc: (p) => ({ onSnapshot: (cb) => { const [c, id] = p.split('/'); setTimeout(() => cb(snap(id, (data[c] || {})[id] ?? null)), 30); return () => {}; }, update: async (x) => { window.__updates = [...(window.__updates || []), [p, x]]; }, set: async (x) => { window.__updates = [...(window.__updates || []), [p, x]]; }, delete: async () => { window.__updates = [...(window.__updates || []), [p + ' (deleted)', null]]; } }),
     } : k === 'mcp' && data.__page ? {
       // Supabase connector stub: answers studio_page / studio_candidates with recorded real replies
       callTool: async (server, tool, args) => { await new Promise((ok) => setTimeout(ok, 80)); window.__sql = [...(window.__sql || []), args.query.slice(0, 60)];
