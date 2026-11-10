@@ -35,7 +35,7 @@ for crf in (23, 25, 27, 29, 31):
            '-map', '[v]', '-map', '[a]', '-map', '2:v',
            '-c:v:0', 'libx264', '-crf', str(crf), '-preset', 'medium', '-pix_fmt:v:0', 'yuv420p',
            '-c:v:1', 'mjpeg', '-disposition:v:1', 'attached_pic',
-           '-c:a', 'aac', '-b:a', '192k', '-movflags', '+faststart', a.out]
+           '-c:a', 'aac', '-b:a', '192k', '-ar', '48000', '-ac', '2', '-movflags', '+faststart', a.out]
     subprocess.run(cmd, check=True)
     mb = os.path.getsize(a.out) / 2 ** 20
     print('crf %d: %.1f MiB' % (crf, mb))

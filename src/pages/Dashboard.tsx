@@ -365,7 +365,8 @@ export default function Dashboard({ title = 'Dashboard' }: { title?: string }) {
     const monthStart = format(startOfMonth(new Date()), 'yyyy-MM-dd');
     const weekStart = format(startOfWeek(new Date(), { weekStartsOn: 6 }), 'yyyy-MM-dd');
     const thisMonth = format(new Date(), 'MM');
-    const in60 = format(new Date(Date.now() + 60 * 86400000), 'yyyy-MM-dd');
+    // the same 30-day window as the Today view
+    const in30 = format(new Date(Date.now() + 30 * 86400000), 'yyyy-MM-dd');
     const canHR = ['admin', 'manager', 'hr'].includes(role ?? '');
 
     async function load() {
@@ -473,18 +474,16 @@ export default function Dashboard({ title = 'Dashboard' }: { title?: string }) {
       const deadValue = stockSumQ.data ? Number(stockSumQ.data.dead_value) : null;
       const lowStock = (stockCntQ.count ?? 0) > 0 ? (lowQ.count ?? 0) : null;
       const poRows = (poQ.data ?? []) as any[];
-      const openPOs = poRows.filter((p) => !['Fully Received'].includes(p.status)).length;
+      // not yet received — the same rule as the Purchase Orders page's "awaiting receipt" card (po_summary)
+      const openPOs = poRows.filter((p) => ['Ordered', 'Pending Approval', 'Partially Received'].includes(p.status)).length;
       const shipments = poRows.filter((p) => ['Ordered', 'Partially Received'].includes(p.status)).length;
-      /* An amount paid well beyond the order's cost is a typing slip, not a
-         payment (one order of 370 KD is recorded as paid 371 trillion), and a
-         single one swamps the balance. Same test the World's purchase-order
-         panel uses to mark an amount paid unreliable; those orders stay out. */
-      const paidUnreliable = (p: any) => {
-        const cost = Number(p.total_cost ?? 0), paid = Number(p.amount_paid ?? 0);
-        return paid > 0 && (cost <= 0 || paid > cost * 1.5 + 1);
-      };
-      const supplierBalance = poRows.filter((p) => !paidUnreliable(p))
-        .reduce((s, p) => s + Number(p.total_cost ?? 0) - Number(p.amount_paid ?? 0), 0);
+      /* What is still owed: each order's unpaid part, counting only orders with
+         something left to pay — the same figure as the Purchase Orders page
+         (po_summary) and the by-brand chart below. An overpaid order (or a typing
+         slip like the 370 KD order recorded as paid 371 trillion) owes nothing;
+         it no longer subtracts from what the others owe. */
+      const supplierBalance = poRows
+        .reduce((s, p) => s + Math.max(0, Number(p.total_cost ?? 0) - Number(p.amount_paid ?? 0)), 0);
 
       // HR
       /* Counted by login, not by spelling. The name on a record is a copy from
@@ -494,7 +493,8 @@ export default function Dashboard({ title = 'Dashboard' }: { title?: string }) {
         .map((r) => r.user_id ?? `name:${r.employee_name}`)).size;
       const lateMonth = attLateQ.count ?? 0;
       const leaveRows = (leaveQ.data ?? []) as any[];
-      const pendingLeave = leaveRows.filter((l) => (l.leave_type ?? 'Annual') === 'Annual').length;
+      // every type waiting for a decision — the same count as the Leave page and the alerts
+      const pendingLeave = leaveRows.length;
       const sickReq = leaveRows.filter((l) => l.leave_type === 'Sick').length;
       const wfhReq = leaveRows.filter((l) => l.leave_type === 'WFH').length;
 
@@ -504,7 +504,7 @@ export default function Dashboard({ title = 'Dashboard' }: { title?: string }) {
       const needsMe = reqRows.filter((r) => r.stage_owner === 'owner').length;
       const withManager = reqRows.filter((r) => r.stage_owner === 'manager').length;
       const overdueReq = reqRows.filter((r) => r.is_overdue).length;
-      const empDocs = ((empQ as any).data ?? []).filter((e: any) => (e.residency_expiry && e.residency_expiry <= in60) || (e.work_permit_expiry && e.work_permit_expiry <= in60)).length;
+      const empDocs = ((empQ as any).data ?? []).filter((e: any) => (e.residency_expiry && e.residency_expiry <= in30) || (e.work_permit_expiry && e.work_permit_expiry <= in30)).length;
 
       // repairs
       const repairs = (repairsQ.data ?? []) as any[];
@@ -608,7 +608,9 @@ export default function Dashboard({ title = 'Dashboard' }: { title?: string }) {
         .map((p) => ({ date: p.posted_at ? String(p.posted_at).slice(0, 10) : null, type: p.type, likes: Number(p.likes ?? 0), comments: Number(p.comments ?? 0), url: p.url, caption: p.caption }))
         .sort((a, b) => (b.likes + b.comments) - (a.likes + a.comments))
         .slice(0, 5);
-      const igAvgEng = posts.length ? Math.round(posts.reduce((s, p) => s + eng(p), 0) / posts.length) : null;
+      // the last 12 posts, as on the Instagram page, so the tile and the page it opens agree
+      const recent12 = posts.slice(0, 12);
+      const igAvgEng = recent12.length ? Math.round(recent12.reduce((s, p) => s + eng(p), 0) / recent12.length) : null;
       const igEngRate = igAvgEng != null && igFollowers ? (igAvgEng / igFollowers) * 100 : null;
 
       setCharts({ salesTrend, outletSales: outletBars, stockHistory, supplierByBrand, repairsByStatus, igSeries, igAccounts, igTopPosts });
@@ -660,7 +662,7 @@ export default function Dashboard({ title = 'Dashboard' }: { title?: string }) {
   // Headline strip — only the company-wide numbers this role is allowed to see. A
   // non-financial role (e.g. marketing) sees none of these and gets its own sections below.
   const topRow: Kpi[] = [
-    ...(can('/sales') ? [{ label: 'Sales this month', value: kd(d.salesMonth),
+    ...(can('/sales') ? [{ label: 'Sales this month · tills', value: kd(d.salesMonth),
       sub: d.salesTarget != null ? `${targetPct}% of ${kd(d.salesTarget)} target` : 'set a target in Settings',
       accent: 'text-emerald-600', link: '/sales', parts: outletParts } as Kpi] : []),
     ...(can('/purchase-orders') ? [{ label: 'Supplier balance', value: kd(d.supplierBalance), accent: Number(d.supplierBalance) > 0 ? 'text-rose-600' : 'text-emerald-600', link: '/purchase-orders' } as Kpi] : []),
@@ -670,7 +672,7 @@ export default function Dashboard({ title = 'Dashboard' }: { title?: string }) {
 
   // Each section = its few must-follow KPIs; the fuller breakdown lives on the section's page.
   const salesCards: Kpi[] = [
-    { label: 'Sales today', value: kd(d.salesToday), sub: tillAsOf, accent: 'text-emerald-600', link: '/sales' },
+    { label: 'Sales today · tills', value: kd(d.salesToday), sub: tillAsOf, accent: 'text-emerald-600', link: '/sales' },
     { label: 'Lost sales (month)', value: kd(d.lostMonth), accent: Number(d.lostMonth) ? 'text-rose-600' : undefined, link: '/sales' },
     { label: 'Overdue follow-ups', value: d.overdueFu ?? 0, accent: Number(d.overdueFu) ? 'text-red-600' : undefined, link: '/follow-ups' },
   ];
@@ -699,7 +701,7 @@ export default function Dashboard({ title = 'Dashboard' }: { title?: string }) {
   const hrCards: Kpi[] = [
     { label: 'Present today', value: d.presentToday ?? 0, accent: 'text-emerald-600', link: '/attendance' },
     { label: 'Pending leave', value: d.pendingLeave ?? 0, accent: Number(d.pendingLeave) ? 'text-amber-600' : undefined, link: '/leave' },
-    { label: 'Expiring docs ≤60d', value: d.empDocs ?? 0, accent: Number(d.empDocs) ? 'text-red-600' : undefined, link: '/hr' },
+    { label: 'Expiring docs ≤30d', value: d.empDocs ?? 0, accent: Number(d.empDocs) ? 'text-red-600' : undefined, link: '/hr' },
   ];
 
   const repairCards: Kpi[] = [
@@ -775,7 +777,7 @@ export default function Dashboard({ title = 'Dashboard' }: { title?: string }) {
             <ChartCard title="Instagram accounts" hint="followers · Δ today · days idle" link="/instagram">
               <IgComparison accounts={charts.igAccounts} />
             </ChartCard>
-            <ChartCard title="Top posts (30d)" hint="@timekeeperkw · by engagement" link="/instagram">
+            <ChartCard title="Top of the last 30 posts" hint="@timekeeperkw · by engagement" link="/instagram">
               <IgTopPosts posts={charts.igTopPosts} />
             </ChartCard>
             {charts.igSeries.map((s) => (

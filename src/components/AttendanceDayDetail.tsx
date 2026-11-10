@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Check, Plus, X, Loader2 } from 'lucide-react';
 import { Badge, Spinner } from './ui';
-import { isEarlyLeave, lateClassOf } from '../lib/lateness';
+import { supabase } from '../lib/supabase';
+import { dayPunctuality, type DayPunctuality } from '../shared/punctuality';
+import { scheduleFromRow, type ScheduleRow } from '../shared/schedule';
 import {
   loadDay, saveCorrection, addRecord, deleteRecord,
   kuwaitHM, fmtTime, hoursOf, type AttendanceRecord,
@@ -42,10 +44,32 @@ export function AttendanceDayDetail({ employee, date, workStart, note, onChanged
   const [aIn, setAIn] = useState('09:00'); const [aOut, setAOut] = useState('');
   const [aReason, setAReason] = useState('');
 
+  /* Late and early are judged the way Attendance and Performance judge them:
+     against this person's own shift that day, with its grace, and only the
+     clock-in that opened the day can be late. */
+  const [judge, setJudge] = useState<((rs: AttendanceRecord[]) => DayPunctuality) | null>(null);
+
   const refresh = useCallback(async () => {
     if (!employee.user_id) { setRecs([]); return; }
-    setRecs(await loadDay(employee.user_id, date));
-  }, [employee.user_id, date]);
+    const [day, empQ, setQ] = await Promise.all([
+      loadDay(employee.user_id, date),
+      supabase.from('employees').select('id').eq('user_id', employee.user_id).maybeSingle(),
+      supabase.from('settings').select('work_start_time, work_end_time, late_grace_minutes').maybeSingle(),
+    ]);
+    const empId = (empQ.data as { id: string } | null)?.id;
+    const sch = empId
+      ? (await supabase.from('employee_schedules')
+          .select('id, employee_id, effective_from, effective_to, working_days, shift_start, shift_end, grace_minutes, note')
+          .eq('employee_id', empId)).data ?? []
+      : [];
+    const schedules = (sch as ScheduleRow[]).map(scheduleFromRow);
+    const st = (setQ.data ?? null) as { work_start_time?: string; work_end_time?: string; late_grace_minutes?: number } | null;
+    setJudge(() => (rs: AttendanceRecord[]) => dayPunctuality(
+      { date, schedules, records: rs.map((r) => ({ clockIn: r.clock_in, clockOut: r.clock_out, justified: r.justified })) },
+      { defaultStart: st?.work_start_time ?? workStart, defaultEnd: st?.work_end_time ?? '17:00', graceMinutes: st?.late_grace_minutes ?? 60 },
+    ));
+    setRecs(day);
+  }, [employee.user_id, date, workStart]);
 
   useEffect(() => { void refresh(); }, [refresh]);
 
@@ -121,7 +145,11 @@ export function AttendanceDayDetail({ employee, date, workStart, note, onChanged
       )}
 
       {recs.map((r) => {
-        const late = lateClassOf(r.clock_in, workStart);
+        const isFirst = recs.every((o) => o.clock_in >= r.clock_in);
+        const isLast = !!r.clock_out && recs.every((o) => !o.clock_out || o.clock_out <= r.clock_out!);
+        const verdict = judge ? judge(recs) : null;
+        const late = isFirst && verdict && (verdict.hoursLate ?? 0) > 0 ? verdict.lateClass : null;
+        const leftEarly = isLast && verdict ? (verdict.hoursEarly ?? 0) > 0 : false;
         return (
           <div key={r.id} className="rounded-xl border border-slate-200 bg-white p-3">
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
@@ -133,8 +161,8 @@ export function AttendanceDayDetail({ employee, date, workStart, note, onChanged
               <span className="text-xs text-slate-400 tabular-nums">{formatHours(hoursOf(r.clock_in, r.clock_out))}</span>
               {r.justified
                 ? <Badge className="bg-slate-100 text-slate-600 border-slate-200">Late — excused</Badge>
-                : late !== 'On time' && <Badge className="bg-amber-100 text-amber-700 border-amber-200">{late}</Badge>}
-              {r.clock_out && isEarlyLeave(r.clock_out) && (
+                : late && late !== 'On time' && <Badge className="bg-amber-100 text-amber-700 border-amber-200">{late}</Badge>}
+              {leftEarly && (
                 <Badge className="bg-amber-100 text-amber-700 border-amber-200">Left early</Badge>
               )}
               {/* Where they were, and how far off the pin — the same cell the

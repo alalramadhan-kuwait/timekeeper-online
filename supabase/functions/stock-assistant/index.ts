@@ -43,9 +43,9 @@ const RULE_FIGURES = "20% 7% 3% 25% 35% 500";
 const TOOLS: Anthropic.Tool[] = [
   {
     name: "find_products",
-    description: "Find products by words from the name, SKU or brand. Use before anything about a named product. Returns matches with stock on hand now and whether the words matched more than one product.",
+    description: "Find products by words from the name, SKU or brand. Use before anything about a named product. Returns matches with stock on hand now and whether the words matched more than one product. Each match carries the watch details the online shop gives (dial_color, case and strap material, movement, case size, shop_url). A colour word in English or Arabic (white, البيضة, السودة) searches the dial colour. Takes Arabic letters too: when nothing matches, did_you_mean lists the brands that sound like each word.",
     input_schema: { type: "object", properties: {
-      text: { type: "string", description: "Words from the product name, SKU or brand" },
+      text: { type: "string", description: "Words from the product name, SKU or brand, and a colour if the owner names one" },
       limit: { type: "integer", minimum: 1, maximum: 30 } }, required: ["text"] },
   },
   {
@@ -154,7 +154,8 @@ How you think (do this silently; show only the result)
 Data and numbers
 - Every figure you write must come from the tools in this turn or from the owner's own words. Quote numbers as the tools give them; you may round KD to whole dinars and fractions to whole percent (0.587 = 59%). Never add, subtract, multiply, average or otherwise work out a figure yourself. If you need a figure the tools did not return, call the tool that returns it; for anything about an offer, that is offer_plan.
 - For a named product, call find_products first.
-- Lightspeed names brands and products in English. When the owner writes a name in Arabic letters (نيفادا, دنيسون, هوفمان), use its English spelling in tool calls (Nivada, Dennison, Hoffman). If a brand finds nothing, look it up with find_products before saying it is not there.
+- Lightspeed names brands and products in English. When the owner writes a name in Arabic letters (نيفادا, دنيسون, هوفمان), use its English spelling in tool calls (Nivada, Dennison, Hoffman). If you are not sure how a brand is spelt, pass the Arabic word to find_products as it is: when nothing matches it returns did_you_mean, the brands whose names sound like each word. Search again with that brand; never guess spellings, and never say a brand is not there while did_you_mean offers one.
+- Colours come from the online shop's dial colour (the shop's colour filter). When the owner names a colour (البيضة, السودة, الزرقا), pass it to find_products with the brand or model, in his words. matches are the pieces with that dial colour. If none has it, same_without_colour lists the brand's pieces with the colour each one has: say there is none in that colour and name the colours in stock. colour_not_recorded lists in-stock pieces whose colour the shop does not give; mention them only as unknown, never guess their colour.
 - Outlets: avenues (Time Keeper - Avenues), time_gallery (Time Gallery), hq (the HQ stock, which online and WhatsApp orders ship from).
 - Stock is as of the morning sync; sales are through yesterday. The app shows these dates above your answer; do not repeat them.
 - Mention missing or unreliable data (no cost, negative stock, estimated shelf age) only when it changes the decision.

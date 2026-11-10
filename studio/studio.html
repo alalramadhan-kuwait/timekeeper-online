@@ -1,0 +1,1497 @@
+<title>ستوديو تايم كيبر</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="theme-color" content="#FBF7EF">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@600;800&family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
+<style>
+/* layout: a phone app in the celebration-dial look the owner chose (theme A): cream ground, one bright colour per film,
+   rounded cards, a dark floating tab bar; one light look on purpose */
+:root{
+  --bg:#FBF7EF; --card:#FFFFFF; --ink:#1B1B1B; --mute:#5B5650; --soft:#EFE8DA; --line:#E6DECD;
+  --teal:#2BB5B8; --yellow:#F2C230; --coral:#F2765F; --pink:#E9A0C0; --green:#A8D8A0; --blue:#2F5BD3; --ok:#2E8B57;
+  --display:'Baloo Bhaijaan 2','IBM Plex Sans Arabic',system-ui,sans-serif; --body:'IBM Plex Sans Arabic',system-ui,-apple-system,sans-serif; --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html{background:var(--bg)}
+body{background:var(--bg);color:var(--ink);font:400 15px/1.6 var(--body);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 calc(110px + env(safe-area-inset-bottom,0px));overflow-x:hidden}
+.app{max-width:560px;margin:0 auto;position:relative}
+h1,h2,h3{margin:0;text-wrap:balance}
+h1{font:800 34px/1.1 var(--display)}
+h2{font:800 21px/1.25 var(--display)}
+p{margin:0}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.bubbles{position:absolute;inset:0 auto auto 0;width:200px;height:150px;pointer-events:none;z-index:0}
+.bubbles span{position:absolute;border-radius:50%}
+.top{position:relative;z-index:1;padding-block:26px 6px;display:grid;gap:2px}
+.sub{font:700 14px var(--body);color:var(--mute)}
+.view{position:relative;z-index:1;display:grid;gap:12px;padding-top:12px}
+.now{display:flex;gap:8px;align-items:center;font:700 13.5px var(--body);background:var(--card);border-radius:999px;padding:8px 14px;justify-self:start;box-shadow:0 1px 0 var(--line)}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--mute);flex:none}
+.dot.on{background:var(--teal);box-shadow:0 0 0 4px color-mix(in srgb,var(--teal) 30%,transparent)}
+@media (prefers-reduced-motion:no-preference){.dot.on{animation:pulse 1.6s infinite}}
+@keyframes pulse{50%{opacity:.4}}
+/* film cards */
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.fname{font:800 20px/1.2 var(--display)}
+.track{height:8px;border-radius:999px;background:rgba(27,27,27,.18);overflow:hidden}
+.track i{display:block;height:100%;border-radius:999px;background:var(--ink)}
+.state{display:flex;gap:6px;align-items:center;font:700 13.5px var(--body)}
+.pill{background:var(--bg);border-radius:999px;padding:6px 13px;font:800 13.5px var(--body)}
+.empty{background:var(--card);border-radius:24px;padding:18px;display:grid;gap:6px;box-shadow:0 1px 0 var(--line)}
+.shortcuts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.short{border:0;border-radius:18px;padding:10px 16px;min-height:50px;display:flex;align-items:center;gap:10px;font:800 16px var(--display);cursor:pointer;text-decoration:none}
+/* film page */
+.back{width:44px;height:44px;border-radius:50%;background:var(--ink);border:0;display:grid;place-items:center;cursor:pointer}
+.fhead{display:flex;align-items:center;gap:12px}
+.fhead .tag{margin-inline-start:auto;border-radius:999px;padding:4px 12px;font:700 13px var(--body);white-space:nowrap}
+.steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(9,minmax(0,1fr));gap:4px}
+.steps li{display:grid;place-items:center}
+.steps span{width:34px;height:34px;max-width:100%;border-radius:50%;display:grid;place-items:center;font:800 14px var(--display)}
+.steps .todo{background:var(--soft);color:var(--mute)}
+.steps .cur{border:3px solid var(--ink)}
+.stepname{text-align:center;font:700 14px var(--body)}
+.prog{background:var(--card);border-radius:22px;padding:14px 16px;display:grid;grid-template-columns:auto 1fr;gap:6px 14px;align-items:center;box-shadow:0 1px 0 var(--line)}
+.prog b.big{grid-row:span 2;font:800 40px/1 var(--display);direction:ltr;font-variant-numeric:tabular-nums}
+.prog .track{background:var(--soft);height:10px}.prog .track i{background:var(--teal)}
+.gate{border-radius:28px;padding:16px;display:grid;gap:12px;justify-items:center}
+video{width:min(100%,240px);aspect-ratio:9/16;border-radius:18px;background:#000;display:block}
+.two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;width:100%}
+.btn{min-height:52px;border-radius:999px;font:800 17px var(--display);cursor:pointer;border:0;padding:8px 16px}
+.btn.dark{background:var(--ink);color:var(--bg)}.btn.line{background:transparent;box-shadow:inset 0 0 0 2px var(--ink)}
+.btn:disabled{opacity:.5;cursor:default}
+textarea{font:inherit;font-size:16px;width:100%;min-height:84px;border-radius:16px;border:0;background:var(--bg);padding:10px 12px;resize:vertical}
+.acts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.act{border-radius:20px;padding:12px 14px;display:grid;gap:0}
+.act b{font:800 17px var(--display)}.act span{font:700 12.5px var(--body)}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{border:0;border-radius:999px;padding:6px 14px;font:700 13px var(--body);background:var(--soft);cursor:pointer;text-decoration:none;color:var(--ink)}
+.chip.on{background:var(--ink);color:var(--bg)}
+/* library, styles, team */
+.lang{border-radius:24px;padding:14px 16px;display:grid;gap:8px}
+.lang ul{margin:0;padding-inline-start:18px;display:grid;gap:2px;font-size:14px}
+.ex{background:rgba(255,255,255,.7);border-radius:14px;padding:8px 12px;display:grid;gap:2px;font:600 14.5px/1.6 var(--body)}
+.types{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.type{border:0;border-radius:22px;padding:14px;min-height:92px;display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;gap:8px;cursor:pointer;text-align:start}
+.type b{font:800 17px/1.25 var(--display)}.type span{font:700 12px var(--body)}
+.typecard{border-radius:26px;padding:16px;display:grid;gap:10px;background:var(--teal)}
+.beats{display:flex;gap:4px}
+.beats span{border-radius:999px;padding:5px 0;text-align:center;font:700 11px var(--body);min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.typecard ol{margin:0;padding-inline-start:20px;display:grid;gap:4px;font-size:14px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.sample{display:grid;gap:6px;justify-items:center;text-align:center}
+.sample img,.sample .ph{width:100%;aspect-ratio:9/16;object-fit:cover;border-radius:16px;background:var(--soft);max-width:100%}
+.sample .ph{display:grid;place-items:center;font:700 12px var(--body);color:var(--mute);padding:6px}
+.sample b{font:800 15px var(--display)}
+.badge{border-radius:999px;padding:2px 10px;font:700 12px var(--body);justify-self:start}
+.group{background:var(--card);border-radius:20px;padding:12px 14px;display:grid;gap:4px;box-shadow:0 1px 0 var(--line)}
+.group b{font:800 16px var(--display)}.group p{font-size:13px;color:var(--mute);line-height:1.7}
+.readers{display:flex;justify-content:space-between;gap:6px}
+.reader{display:grid;justify-items:center;gap:4px;text-align:center}
+.reader img{width:58px;height:58px;border-radius:50%;object-fit:cover;border:3px solid var(--c)}
+.reader b{font:800 13.5px var(--display)}.reader span{font:700 11px var(--body);color:var(--mute)}
+.voice{border-radius:20px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.voice b{font:800 18px var(--display)}
+/* tab bar */
+nav.tabs{position:fixed;left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));max-width:528px;margin:0 auto;height:64px;background:var(--ink);border-radius:32px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));align-items:center;z-index:20}
+nav.tabs a{justify-self:center;width:46px;height:46px;border-radius:50%;display:grid;place-items:center}
+nav.tabs a[aria-current="page"]{background:var(--c)}
+nav.tabs svg{width:22px;height:22px;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#toast{position:fixed;inset-inline:16px;bottom:calc(92px + env(safe-area-inset-bottom,0px));max-width:528px;margin:0 auto;background:var(--teal);color:var(--ink);border-radius:16px;padding:12px 16px;font-weight:700;z-index:30}
+.note{font-size:13px;color:var(--mute)}
+.slides{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:6px;width:100%;direction:rtl}
+.slides img{flex:none;width:min(78%,300px);aspect-ratio:4/5;object-fit:cover;border-radius:16px;scroll-snap-align:center;background:var(--soft);box-shadow:0 1px 0 var(--line)}
+.caption{background:var(--card);border-radius:20px;padding:12px 14px;display:grid;gap:8px;width:100%;box-shadow:0 1px 0 var(--line)}
+.caption pre{margin:0;white-space:pre-wrap;font:500 15px/1.7 var(--body)}
+.pick{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;width:100%}
+.pick button{position:relative;border:0;padding:0;border-radius:12px;background:var(--soft);cursor:pointer;overflow:hidden;box-shadow:0 1px 0 var(--line)}
+.pick img{display:block;width:100%;aspect-ratio:4/5;object-fit:cover;transition:opacity .15s}
+.pick span{position:absolute;inset-block-end:6px;inset-inline-start:6px;background:var(--bg);color:var(--ink);border-radius:999px;padding:1px 9px;font:800 12.5px var(--body)}
+.pick button[aria-pressed="true"]{box-shadow:inset 0 0 0 4px var(--ink)}
+.pick button[aria-pressed="true"] img{opacity:.55}
+.pick button[aria-pressed="true"] span{background:var(--ink);color:var(--bg)}
+.pick button[aria-pressed="true"]::after{content:"✓";position:absolute;top:6px;inset-inline-end:6px;width:26px;height:26px;border-radius:50%;background:var(--ink);color:var(--bg);display:grid;place-items:center;font:800 14px var(--body)}
+.chg{margin:4px 0 0;padding-inline-start:18px;display:grid;gap:2px;font-size:14px}
+.kitc{width:100%;height:auto;aspect-ratio:4/5;border-radius:18px;box-shadow:0 1px 0 var(--line);background:var(--soft)}
+.warn{list-style:none;margin:0;padding:0;display:grid;gap:4px;font:700 13.5px var(--body);color:#a3172e}.warn .ok{color:var(--ok)}
+.inp{font:inherit;font-size:16px;width:100%;border-radius:14px;border:0;background:var(--card);padding:10px 12px;box-shadow:0 1px 0 var(--line)}
+.kind{font:800 11.5px var(--body);background:var(--bg);border-radius:999px;padding:2px 9px}
+/* the films list, by topic (the owner: «too bulky… group the topics together… the latest update shown»): one card per
+   topic, one slim row per Reel or carousel with its kind, version, when it was last made and whether it has the newest rules */
+.topic{border-radius:22px;padding:10px 10px 8px;display:grid;gap:6px}
+.thead{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:2px 6px 0}
+.thead b{font:800 19px/1.2 var(--display)}.thead span{font:700 12.5px var(--body)}
+.item{border:0;width:100%;text-align:start;background:rgba(255,255,255,.62);border-radius:14px;padding:7px 10px;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:2px 9px;align-items:center;cursor:pointer;color:var(--ink);min-height:52px}
+.item svg{width:20px;height:20px;fill:none;stroke:var(--ink);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;grid-row:span 2}
+.iname{font:800 15px/1.25 var(--body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.imeta{font:600 12px/1.3 var(--body);color:#3b3732;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;grid-column:2}
+.ist{grid-row:1 / span 2;grid-column:3;font:800 12px var(--body);border-radius:999px;padding:3px 10px;background:var(--ink);color:var(--bg);white-space:nowrap}
+.ist.ok{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--ink)}
+.checks{list-style:none;margin:4px 0 0;padding:0;display:grid;gap:6px;font-size:14px}
+.checks li{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}.checks .when{margin-inline-start:auto;font-size:12px;color:var(--mute);white-space:nowrap}
+.shots{margin:2px 0 0;padding-inline-start:18px;display:grid;gap:2px;font-size:13px}
+.up{display:flex;align-items:center;justify-content:center;width:100%}
+.vd{display:inline-block;border-radius:999px;padding:2px 10px;font:800 13px var(--body);color:#fff}
+.vd.good{background:#2E8B57}.vd.mid{background:#C98A12}.vd.bad{background:#C0392B}
+.nums{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:6px}
+.nums div{background:var(--bg);border-radius:12px;padding:6px 10px;display:grid}.nums span{font-size:12px;color:var(--mute)}.nums b{font:800 16px var(--display)}
+.recipe ol{margin:6px 0 0;padding-inline-start:20px;display:grid;gap:6px;font-size:14px}.recipe summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.rok{color:#1f6b3f}.rold{color:#8a1426}
+.rules{list-style:none;margin:2px 0 0;padding:0;display:grid;gap:3px;font-size:14px}
+/* Instagram reports: four questions, the numbers as evidence, a confidence on every claim */
+.auto{display:inline-flex;gap:6px;align-items:center;border-radius:999px;padding:2px 10px;font:700 12px var(--body);background:#E3F1E8;color:#1f6b3f}
+.conf{display:inline-block;border-radius:999px;padding:1px 9px;font:700 11.5px var(--body);white-space:nowrap}
+.conf.high{background:#1f6b3f;color:#fff}.conf.medium{background:#F2C230;color:var(--ink)}.conf.low{background:var(--soft);color:var(--mute)}
+.conf.principle{background:#DCE5FA;color:#23408f}.conf.not_enough{background:transparent;color:var(--mute);box-shadow:inset 0 0 0 1.5px var(--line)}
+.rep{border-top:1px solid var(--line);margin-top:8px;padding-top:10px;display:grid;gap:8px}
+.q{border-radius:14px;padding:8px 12px;display:grid;gap:3px}.q b{font:800 14.5px var(--display)}.q ul{margin:0;padding-inline-start:18px;display:grid;gap:3px;font-size:14px;line-height:1.55}
+.q.ok{background:#E3F1E8}.q.no{background:#FBE6E3}.q.try{background:#FFF4D6}.q.ev{background:var(--bg)}
+.evt{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}
+.evt th{font:700 11.5px var(--body);color:var(--mute);text-align:start;padding:2px 4px}
+.evt td{padding:5px 4px;border-top:1px solid var(--line);vertical-align:top}
+.evt td:first-child{font-weight:700}.evt .r{white-space:nowrap;font-weight:800;direction:ltr;text-align:end}
+.evt tr.good .r{color:#1f6b3f}.evt tr.bad .r{color:#B3261E}.evt tr.na td,.evt tr.nc td,.evt tr.nobase td{color:var(--mute)}
+.evt small{display:block;font-size:11.5px;color:var(--mute);font-weight:500}
+.brief .sec{display:grid;gap:2px;padding:8px 0;border-top:1px solid var(--line)}.brief .sec:first-of-type{border-top:0}
+.brief .sec b{font:800 15px var(--display)}.brief .sec p{font-size:14px;color:var(--ink)}.brief .sec .note{font-size:12.5px}
+.linkrow{display:flex;gap:8px;flex-wrap:wrap}.linkrow .inp{flex:1 1 200px;min-width:0}
+/* the Instagram side of the studio (approved plan, 3 Nov 2026): strength marks, status dot, numbers, learning, the post picker */
+.lv{flex:none;display:inline-grid;place-items:center;width:17px;height:17px;border-radius:50%;font:800 10px var(--body);margin-top:3px}
+.lv.c{background:#1f6b3f;color:#fff}.lv.e{box-shadow:inset 0 0 0 1.7px #8a5a00;color:#8a5a00}.lv.w{box-shadow:inset 0 0 0 1.5px #9b948a;color:#857e74;border-radius:5px}
+.q li.l{list-style:none;display:flex;gap:7px;align-items:flex-start;margin-inline-start:-18px}
+.sdot{display:inline-flex;align-items:center;gap:6px;border:0;background:var(--card);border-radius:999px;padding:5px 11px;font:700 12.5px var(--body);box-shadow:0 1px 0 var(--line);cursor:pointer;color:var(--ink)}
+.sdot::before{content:"";width:8px;height:8px;border-radius:50%;background:#2E8B57}
+.sdot.bad::before{background:#C0392B}.sdot.idle::before{background:#b3ab9f}
+.headrow{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;background:var(--soft);border-radius:999px;padding:3px;gap:3px}
+.seg button{border:0;background:transparent;border-radius:999px;padding:6px 4px;font:700 13px var(--body);cursor:pointer;color:var(--ink);min-height:36px}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.seg button:disabled{opacity:.4;cursor:default}
+.tilesg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.tl{background:var(--card);border-radius:16px;padding:9px 11px;box-shadow:0 1px 0 var(--line);display:grid;gap:1px;min-width:0}
+.tl span{font:600 12px var(--body);color:var(--mute)}.tl b{font:800 21px/1.15 var(--display);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.tl small{font:700 11.5px var(--body);color:#1f6b3f}
+.splitb{height:14px;border-radius:8px;overflow:hidden;display:flex;background:var(--soft)}.splitb i{display:block;height:100%}
+.bars{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:6px 8px;align-items:center;font-size:13px}
+.bars .tr{height:10px;border-radius:6px;background:var(--soft);position:relative;overflow:hidden}
+.bars .tr i{position:absolute;inset-block:0;right:0;border-radius:6px;background:var(--teal)}
+.bars .tr i.bad{background:var(--coral)}.bars .tr i.mid{background:#b9b1a4}
+.bars .tr u{position:absolute;inset-block:-2px;right:50%;width:2px;background:var(--ink)}
+.bars .x{font:800 12.5px var(--body);direction:ltr;font-variant-numeric:tabular-nums}
+.kvr{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid var(--line);font-size:14px}.kvr:first-child{border-top:0}
+.kvr b{font-weight:700;text-align:end}
+.sheet{position:fixed;inset:auto 0 0 0;max-width:560px;margin:0 auto;background:var(--card);border-radius:26px 26px 0 0;padding:14px 16px calc(24px + env(safe-area-inset-bottom,0px));box-shadow:0 -14px 40px -16px rgba(0,0,0,.35);display:grid;gap:9px;z-index:25;max-height:82vh;overflow-y:auto}
+body:has(.sheet) nav.tabs,body:has(.sheet) #toast{display:none}
+.scrim{position:fixed;inset:0;background:rgba(27,27,27,.38);z-index:24;border:0}
+.grab{width:40px;height:5px;border-radius:3px;background:var(--line);justify-self:center}
+.post{border:0;width:100%;text-align:start;border-radius:14px;padding:9px 12px;background:var(--bg);display:grid;gap:1px;font:500 13px var(--body);cursor:pointer;color:var(--ink)}
+.post b{font:700 14px var(--body)}.post[aria-pressed="true"]{box-shadow:inset 0 0 0 2.5px var(--ink);background:#fff}
+.post:disabled{opacity:.5;cursor:default}
+.tag2{display:inline-block;border-radius:999px;padding:0 8px;font:700 11px var(--body);background:#E3F1E8;color:#1f6b3f}
+.sugg{border-radius:16px;padding:10px 12px;background:var(--card);box-shadow:inset 0 0 0 2px var(--ink);display:grid;gap:6px}
+
+/* v3, the approved iPhone design: the numbers in five seconds, one number before posting, the rest closed */
+.hero{background:var(--card);border-radius:24px;padding:14px 16px 10px;display:grid;gap:10px;box-shadow:0 1px 0 var(--line)}
+.hn{display:grid;grid-template-columns:1.25fr 1fr;gap:10px}
+.hn small{display:block;font:700 12.5px var(--body);color:var(--mute)}
+.hn b{display:block;font:800 34px/1.05 var(--display);font-variant-numeric:tabular-nums}
+.hn b.sm{font-size:27px}
+.pch{display:inline-block;font:800 12.5px var(--body);border-radius:999px;padding:1px 9px;margin-top:3px}
+.pch.down{background:#FBE3DF;color:#B3261E}.pch.ok{background:#E3F1E8;color:#1f6b3f}.pch.up{background:#DCEBFF;color:#1d4fa8}
+.chart svg{width:100%;height:auto;display:block}
+.b7{fill:var(--teal)}.bp{fill:#9FD9DA}.bo{fill:#DCD3C2}.gl{stroke:var(--line);stroke-width:1}.ax{font:500 9.5px var(--body);fill:var(--mute)}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font:600 11.5px var(--body);color:var(--mute)}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-inline-end:4px;vertical-align:-1px}
+.gist{border-radius:22px;padding:12px 14px;background:#FFF4D6;display:grid;gap:8px}
+.gist .gr{display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:start;font-size:14.5px;line-height:1.5}
+.gist .tg{font:800 11.5px var(--body);border-radius:999px;padding:1px 8px;background:var(--ink);color:var(--bg);white-space:nowrap;margin-top:2px}
+.gist .tg.t2{background:var(--teal);color:var(--ink)}
+.fold{background:var(--card);border-radius:18px;box-shadow:0 1px 0 var(--line)}
+details.fold>summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:8px;padding:11px 14px;font:800 15px var(--display)}
+details.fold>summary::-webkit-details-marker{display:none}
+details.fold>summary span{font:600 12.5px var(--body);color:var(--mute);text-align:end}
+details.fold>summary::after{content:"‹";font:800 18px var(--body);color:var(--mute);transform:rotate(-90deg);transition:transform .15s;flex:none}
+details.fold[open]>summary::after{transform:rotate(90deg)}
+.fin{padding:0 14px 12px;display:grid;gap:8px}
+.pred{background:var(--card);border-radius:24px;padding:14px 16px;display:grid;gap:6px;box-shadow:0 1px 0 var(--line)}
+.pred small{font:700 12.5px var(--body);color:var(--mute)}
+.pred .pbig{font:800 40px/1 var(--display);font-variant-numeric:tabular-nums}
+.range{position:relative;height:10px;border-radius:999px;background:var(--soft);margin:6px 0 2px}
+.range i{position:absolute;top:0;bottom:0;border-radius:999px;background:#9FD9DA}
+.range em{position:absolute;top:-4px;width:4px;height:18px;border-radius:2px;background:var(--ink);margin-inline-start:-2px}
+.rl{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font:600 11.5px var(--body);color:var(--mute);font-variant-numeric:tabular-nums}
+.sg{display:grid;gap:8px}.sg h3{margin:0;font:800 16px var(--display)}
+.sgi{background:var(--card);border-radius:18px;padding:11px 12px;display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;box-shadow:0 1px 0 var(--line)}
+.sgi p{margin:0;font-size:14px;line-height:1.5}.sgi p small{display:block;color:var(--mute);font-size:12px}
+.do{border:0;border-radius:999px;background:var(--ink);color:var(--bg);font:800 14px var(--display);padding:7px 14px;min-height:40px;cursor:pointer}
+.vs{display:grid;gap:8px}.vsrow{display:grid;grid-template-columns:56px 1fr auto;gap:8px;align-items:center;font-size:13px}
+.vsrow .bar{height:14px;border-radius:999px;background:var(--soft);overflow:hidden}.vsrow .bar i{display:block;height:100%;border-radius:999px}
+.vsrow b{font:800 15px var(--display);font-variant-numeric:tabular-nums}
+.lines3{background:var(--card);border-radius:20px;padding:10px 14px;display:grid;gap:6px;box-shadow:0 1px 0 var(--line)}
+.lines3 div{display:grid;grid-template-columns:22px 1fr;gap:6px;font-size:14px;line-height:1.5}
+.lines3 .ok{color:#1f6b3f;font-weight:800}.lines3 .no{color:#B3261E;font-weight:800}.lines3 .nx{color:#7A5A00;font-weight:800}
+.badge.off{background:#DCE5FA;color:#23408f}.badge.tp{background:var(--soft);color:var(--mute)}.badge.un{background:#FBE6E3;color:#8a1426}
+.ktab{width:100%;border-collapse:collapse;font-size:12.5px;font-variant-numeric:tabular-nums}
+.ktab th{font:700 11px var(--body);color:var(--mute);text-align:start;padding:3px}
+.ktab td{padding:6px 3px;border-top:1px solid var(--line);vertical-align:top}.ktab td small{display:block;color:var(--mute);font-size:11px}
+@media (prefers-reduced-motion:reduce){details.fold>summary::after{transition:none}}
+</style>
+
+<div class="app" dir="rtl" lang="ar">
+  <div class="bubbles" aria-hidden="true"><span style="top:-60px;left:-50px;width:190px;height:190px;background:var(--teal);opacity:.9"></span><span style="top:40px;left:80px;width:64px;height:64px;background:var(--yellow)"></span><span style="top:-20px;left:130px;width:40px;height:40px;background:var(--coral)"></span><span style="top:110px;left:20px;width:30px;height:30px;background:var(--pink)"></span></div>
+  <main id="view" class="view" aria-live="polite"></main>
+</div>
+<nav class="tabs" aria-label="الأقسام" id="tabs"></nav>
+<div id="toast" hidden role="status"></div>
+
+<script>
+(() => {
+const COLORS = ['#2BB5B8', '#F2765F', '#E9A0C0', '#A8D8A0', '#F2C230'];
+const STEPS = ['الفكرة والبحث', 'الهوك والسكربت', 'القرّاء', 'الصوت', 'الإيقاع والانتقالات', 'الستايل', 'الصور والتركيب', 'المراجعة', 'التسليم'];
+const TABS = [
+  { id: 'films', name: 'الأفلام', c: '#2BB5B8', icon: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3 2"/>' },
+  { id: 'numbers', name: 'الأرقام', c: '#F2C230', icon: '<path d="M5 20V11M10 20V5M15 20v-7M20 20V8"/>' },
+  { id: 'learn', name: 'التعلّم', c: '#E9A0C0', icon: '<path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/>' },
+  { id: 'library', name: 'المكتبة', c: '#F2765F', icon: '<path d="M5 4h11l3 3v13H5z"/><path d="M8 10h8M8 14h8"/>' },
+  { id: 'team', name: 'الفريق', c: '#A8D8A0', icon: '<circle cx="8" cy="9" r="3"/><circle cx="16" cy="9" r="3"/><path d="M3 19c.8-3 2.8-4.5 5-4.5s4.2 1.5 5 4.5M11 19c.8-3 2.8-4.5 5-4.5s4.2 1.5 5 4.5"/>' }];
+const READERS = [['نورة', 'noura', 'مبتدئة', '#E9A0C0'], ['فهد', 'fahad', 'متوسط', '#2BB5B8'], ['بو خالد', 'bukhaled', 'خبير', '#F2C230'], ['سالم', 'salem', 'الفلتر', '#A8D8A0'], ['إتيان', 'etienne', 'البراند', '#F2765F']];
+const VOICES = [['Faisal', 'المعتمد ✓ · كويتي', '#2BB5B8'], ['Jarnathan', 'قبل (مستعجل)', '#EFE8DA'], ['Ali TK', 'صوتك', '#EFE8DA'], ['OmniVoice', 'يشتغل · يستنسخ صوتك من مقطع 10–30 ث', '#EFE8DA'], ['ناصر', 'متاح', '#EFE8DA'], ['Abdullah', 'Halter', '#EFE8DA']];
+const LOOKS = [
+  { name: 'بيانات', fits: 'الأرقام والآليات', imgs: ['samples/data-1.jpg', 'samples/data-2.jpg', 'samples/data-3.jpg'], built: true, film: 'الياقوت' },
+  { name: 'ورقي', fits: 'الأشخاص والبراندات', imgs: ['samples/paper-1.jpg', 'samples/paper-2.jpg', 'posters/halter-1.jpg'], built: true, film: 'Halter' },
+  { name: 'رسم تقني', fits: 'كيف تشتغل القطعة', imgs: ['samples/technical-1.jpg'], built: true, film: 'الياقوت' },
+  { name: 'نقش النحاس', fits: 'التاريخ والوثائق والأشخاص', imgs: ['samples/engraving-7.jpg', 'samples/engraving-34.5.jpg', 'samples/engraving-59.jpg'], built: true, film: 'الياقوت · نقش' },
+  { name: 'آرت ديكو', fits: 'الإعلانات والفخامة والعشرينات', imgs: ['samples/deco-11.jpg', 'samples/deco-31.jpg', 'samples/deco-56.jpg'], built: true, film: '10:10' }];
+const CODE = [['وثائقي', 'نشرة 1920، أخبار بالكابشن، تحقيق بصري، مونتاج بنائي…', 8], ['أدلة', 'تفكيك القطع، المجهر، طاولة الأرشيف، لوحة هندسية…', 8],
+  ['رسم يدوي', 'ألوان مائية، حبر صيني، طباشير، كتاب بالشمع…', 8], ['طباعة ونقش', 'نقش النحاس، الحفر بالخشب، ريزوغراف…', 6], ['جرافيك', 'آرت ديكو، سويسري، بلوبرنت، زجاج معشّق…', 7],
+  ['معلومات', 'قصص بالبيانات، إنفوجرافيك، عرض داكن، خريطة مترو…', 8], ['كرتون وألعاب وسينما ومواد', 'أنمي الثمانينات، بكسل، فيلم صامت، خيال ظل، كتاب منبثق…', 21]];
+const $ = (s) => document.querySelector(s);
+const esc = (t) => String(t ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+// The newest rules, so each version shows whether it was made with them (the owner: «so I can know the new rules are
+// applied to this or no»). A record's `rules` lists the ids it follows; without it, a version made after a rule's `at`
+// counts as following it. `studio/rules` ({list: [...]}) adds to or replaces these without a new page.
+let RULES = [
+  { id: 'no-boom', kind: 'reel', at: '2026-11-02T12:54:00Z', name: 'الصوت بدون تضخم' },
+  { id: 'one-take', kind: 'reel', at: '2026-11-02T13:10:00Z', name: 'الصوت تسجيلة وحدة، والمشاهد تتبعه' },
+  { id: 'whole-figure', kind: 'reel', at: '2026-11-02T13:38:00Z', name: 'الشخصية كاملة، ما ينقص منها شي' },
+  { id: 'whole-watch', kind: 'carousel', at: '2026-11-02T10:40:00Z', name: 'الساعة كاملة داخل الشريحة' },
+  { id: 'real-photo', kind: 'carousel', at: '2026-11-02T11:51:00Z', name: 'الأشخاص بصور حقيقية' },
+  { id: 'ask-big', kind: 'carousel', at: '2026-11-02T11:58:00Z', name: 'سؤال القارئ كبير بآخر شريحة' },
+  { id: 'principles', kind: 'carousel', at: '2026-11-02T12:47:00Z', name: 'غلاف واضح، رسم بسيط، أرقام دقيقة، النهاية تجاوب الغلاف' },
+  { id: 'text-size', kind: 'carousel', at: '2026-11-02T16:20:00Z', name: 'الخط أكبر 10%' }];
+let topics = {};                                                   // studio/topics: {<topic id>: {name, order}}
+const kindOf = (f) => (f.kind === 'carousel' ? 'carousel' : 'reel');
+const ruleState = (f) => RULES.filter((r) => r.kind === kindOf(f)).map((r) => ({ ...r, ok: Array.isArray(f.rules) ? f.rules.includes(r.id) : Date.parse(f.updated || 0) >= Date.parse(r.at) }));
+let films = [], now = null, lib = null, db = null, comments = null, recipe = null, brief = null, ready = false, openType = null, openLang = 'tk', openFormat = 'reel';
+const picks = {};                                                  // slides chosen for a change, per carousel (kept across live refreshes)
+let chgOpen = null;
+const picked = (id) => picks[id] || (picks[id] = new Set());
+const slideName = (k) => (k === 0 ? 'الغلاف' : `${k}`);
+const FORMAT = { reel: 'ريل', carousel: 'كاروسيل', both: 'ريل وكاروسيل' };
+
+// When a version came and what changed in it (the owner: «شلون اعرف اذا هذي اخر نسخة تم تحديثها متى؟ وشنو كانت اخر
+// التغيرات؟»): `updated` in Kuwait time with its age, and `changes` [{v, at, what: [...]}], newest first.
+function ago(iso) {
+  const t = Date.parse(iso || ''); if (!t) return '';
+  const m = Math.max(0, Math.round((Date.now() - t) / 60000));
+  return m < 1 ? 'الحين' : m < 60 ? `قبل ${m} د` : m < 1440 ? `قبل ${Math.round(m / 60)} س` : `قبل ${Math.round(m / 1440)} يوم`;
+}
+// Posted, then read (the owner, 3 Nov 2026: «حط اوبشن تم النشر وتنطر التحليل بعد مدة معينه انت تحددها… ونحاول
+// نحسن لين نوصل حق افضل وصفه للخوارزمية»). «تم النشر ✓» writes `posted: {at}`; Instagram's numbers are read twice:
+// at 48 h (the hook, the watch time, and whether the algorithm took it past the followers) and at 7 days (the final
+// reach, shares, saves and follows). When a read is due the film waits for the owner's screenshots (uploaded here, or
+// sent in the chat); Claude writes `insights` [{stage, at, verdict: good|mid|bad, label, vs, numbers: {name: value},
+// lessons: [...], next: [...]}] and the shared recipe `studio/recipe` {updated, items: [{rule, why, from}]}. Since 3 Nov
+// 2026 the studio sync reads both from Instagram's API (see `linked` below); screenshots are the fallback.
+const CHECKS = [{ id: '48h', name: 'أول قراءة', h: 48 }, { id: '7d', name: 'القراءة النهائية', h: 168 }];
+const SHOTS = ['نظرة عامة: المشاهدات، الوصول، ونسبة اللي مو متابعين', 'وقت المشاهدة: المعدّل، ونسبة اللي تخطّوه (Skip rate)', 'رسم الاحتفاظ: وين الناس طلعوا من الفيديو',
+  'التفاعل: اللايكات، التعليقات، المشاركات (Shares)، الحفظ (Saves)، والمتابعين الجدد'];
+const VERDICT = { good: 'ناجح', mid: 'متوسط', bad: 'ضعيف' };
+function checks(f) {
+  if (!f.posted?.at) return [];
+  const g = igFilm(f), t0 = Date.parse(g?.posted_at || f.posted.at), sent = f.insights_sent || [], ins = f.insights || [];   // Instagram's own post time once linked
+  return CHECKS.map((c) => ({ ...c, due: t0 + c.h * 3600e3, sent: sent.includes(c.id), done: !!g?.reports?.[c.id] || ins.some((x) => x.stage === c.id) }));
+}
+// The owner, 3 Nov 2026: «No more manual screenshots when API data is available». A posted film the studio has tied to
+// its Instagram post (`ig` {linked, media_id, permalink, method, latest, updated}, written with the reports in `insights`
+// [{stage, source: 'instagram', verdict, label, confidence, worked, didnt, evidence, try_next, ...}]) is read from
+// Instagram itself; screenshots are asked for only when no post was found.
+const igFilm = (f) => (ig?.films?.[f.id]) || (f.ig?.linked ? { linked: true, confirmed: false, legacy: true, permalink: f.ig.permalink, posted_at: f.ig.posted_at, reports: { latest: f.ig.latest } } : null);
+const linked = (f) => !!igFilm(f)?.linked;
+const dueCheck = (f) => (f.state === 'posted' && !linked(f) ? checks(f).find((c) => !c.done && !c.sent && Date.now() >= c.due) : null);
+const isWaiting = (f) => f.state === 'waiting' || !!dueCheck(f);
+function left(ms) { const h = Math.max(1, Math.round(ms / 3600e3)); return h < 24 ? `${h} س` : `${Math.floor(h / 24)} يوم${h % 24 ? ` و${h % 24} س` : ''}`; }
+const lastInsight = (f) => (f.insights || []).slice().sort((a, b) => Date.parse(b.at || 0) - Date.parse(a.at || 0))[0];
+const bestReport = (f) => { const r = igFilm(f)?.reports || {}; return r['7d'] || r['48h'] || r.latest || null; };
+function postedLine(f) {
+  const cs = checks(f), d = dueCheck(f), sent = cs.find((c) => c.sent && !c.done), next = cs.find((c) => !c.done && Date.now() < c.due), li = bestReport(f) || lastInsight(f);
+  if (d) return { icon: '⏸', text: `بانتظارك · صور الإحصائيات (${d.name})`, action: true };
+  const late = linked(f) ? cs.find((c) => !c.done && Date.now() >= c.due) : null;
+  if (late) return { icon: '⏱', text: `${late.name} تنقرا تلقائياً من إنستغرام${li ? ' · ' + (li.label || '') : ''}` };
+  if (sent) return { icon: '⏱', text: `Claude يحلل ${sent.name}` };
+  if (next) return { icon: '⏳', text: `منشور${li ? ' · ' + (li.label || VERDICT[li.verdict] || '') : ''} · ${next.name} بعد ${left(next.due - Date.now())}` };
+  return { icon: '✓', text: `منشور · ${li ? li.label || VERDICT[li.verdict] || 'انقرا' : 'التحليل خلص'}` };
+}
+function when(iso) {
+  const t = Date.parse(iso || ''); if (!t) return '';
+  const k = (d) => new Date(d).toLocaleDateString('en-CA', { timeZone: 'Asia/Kuwait' });
+  const day = k(t) === k(Date.now()) ? 'اليوم' : k(t) === k(Date.now() - 864e5) ? 'أمس' : new Date(t).toLocaleDateString('ar-KW-u-nu-latn', { timeZone: 'Asia/Kuwait', day: 'numeric', month: 'long' });
+  return `${day} ${new Date(t).toLocaleTimeString('ar-KW-u-nu-latn', { timeZone: 'Asia/Kuwait', hour: 'numeric', minute: '2-digit' })}`;
+}
+function pct(f) { return f.state === 'done' || f.state === 'posted' ? 100 : Math.round(100 * (Math.max(1, f.step || 1) - 1) / STEPS.length); }
+function color(f, i) { return f.color || COLORS[i % COLORS.length]; }
+function eta(m) { if (m == null) return ''; return m < 60 ? `~${m} د` : `~${Math.round(m / 6) / 10} س`; }
+function stateLine(f) {
+  if (f.state === 'waiting') return { icon: '⏸', text: 'بانتظارك · ' + (f.waiting || STEPS[(f.step || 1) - 1]), action: true };
+  if (f.state === 'working') return { icon: '⏱', text: 'يشتغل · ' + (f.now || STEPS[(f.step || 1) - 1]), eta: f.eta_min };
+  if (f.state === 'done') return { icon: '✓', text: f.done_text || 'جاهز للنشر' };
+  if (f.state === 'posted') return postedLine(f);
+  return { icon: '', text: STEPS[(f.step || 1) - 1] };
+}
+
+function tabs(active) {
+  $('#tabs').innerHTML = TABS.map((t) => `<a href="#${t.id}" style="--c:${t.c}" aria-label="${t.name}" ${t.id === active ? 'aria-current="page"' : ''}>
+    <svg viewBox="0 0 24 24" aria-hidden="true" stroke="${t.id === active ? '#1B1B1B' : t.c}">${t.icon}</svg></a>`).join('');
+}
+function header(title, sub) { return `<header class="top"><h1>${esc(title)}</h1>${sub ? `<span class="sub">${sub}</span>` : ''}</header>`; }
+function nowLine() {
+  if (!now || (!now.busy && Date.now() - Date.parse(now.at || 0) > 3 * 3600e3)) return '';   // an old note is not news
+  return `<div class="now"><span class="dot${now.busy ? ' on' : ''}"></span>${now.busy ? 'Claude يشتغل' : 'Claude واقف'}${now.text ? ' · ' + esc(now.text) : ''}</div>`;
+}
+
+const ICON = { reel: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="3" width="12" height="18" rx="3"/><path d="M10.5 9.5v5l4-2.5z"/></svg>',
+  carousel: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="4" width="10" height="13" rx="2"/><path d="M4 7v7M20 7v7"/><path d="M10 20h4"/></svg>' };
+const topicOf = (f) => f.topic || (f.of && films.find((x) => x.id === f.of)?.topic) || f.id;
+function topicName(id, list) {
+  return topics[id]?.name || String(list[0].name || id).split(' · ')[0];
+}
+function itemLabel(f, tname) {
+  const kind = f.kind === 'carousel' ? 'كاروسيل' : 'ريل';
+  const rest = String(f.name || '').split(' · ').slice(1).join(' · ') || (String(f.name || '').startsWith(tname) ? '' : f.name || '');
+  return `${kind}${rest ? ' · ' + rest : ''}`;
+}
+const HIDE_DAYS = 30;                                               // a hidden film is deleted after this many days
+const hideLeft = (f) => Math.max(0, Math.ceil((Date.parse(f.hidden_at || 0) + HIDE_DAYS * 864e5 - Date.now()) / 864e5));
+let purging = false;
+async function purgeHidden() {                                     // runs when the studio opens with edit rights
+  if (purging || !db) return;
+  purging = true;
+  for (const f of films.filter((x) => x.hidden && x.hidden_at && hideLeft(x) === 0)) {
+    try { await db.doc(`films/${f.id}`).delete(); } catch (e) { /* a viewer without edit rights cannot; the owner's next visit will */ }
+  }
+  purging = false;
+}
+function viewFilms() {
+  const shown = films.filter((f) => !f.hidden), hidden = films.filter((f) => f.hidden);   // «شيله من القائمة» hides, never deletes
+  const waiting = shown.filter(isWaiting).length, working = shown.filter((f) => f.state === 'working').length;
+  let h = `<div class="headrow" style="position:relative;z-index:1">${header('أفلامنا', ready ? `${waiting} بانتظارك · ${working} يشتغل` : 'جاري التحميل…')}${statusDot()}</div>` + nowLine() + problemBanner();
+  if (ready && !films.length) h += `<div class="empty"><b style="font:800 18px var(--display)">ما فيه أفلام للحين</b><p class="note">أرسل لي فكرة في المحادثة، ويطلع الفلم هنا بنسبته ووقته.</p></div>`;
+  const groups = {};
+  for (const f of shown) (groups[topicOf(f)] ||= []).push(f);
+  const rank = (f) => (isWaiting(f) ? 0 : f.state === 'working' ? 1 : 2);
+  const order = Object.entries(groups).map(([id, list]) => [id, list.sort((a, b) => rank(a) - rank(b) || Date.parse(b.updated || 0) - Date.parse(a.updated || 0))])
+    .sort(([a, x], [b, y]) => (topics[a]?.order ?? 99) - (topics[b]?.order ?? 99) || rank(x[0]) - rank(y[0]) || Date.parse(y[0].updated || 0) - Date.parse(x[0].updated || 0));
+  order.forEach(([id, list], gi) => {
+    const tname = topicName(id, list), w = list.filter(isWaiting).length;
+    h += `<section class="topic" style="background:${topics[id]?.color || list[0].color || COLORS[gi % COLORS.length]}" aria-label="${esc(tname)}"><div class="thead"><b>${esc(tname)}</b><span>${w ? `${w} بانتظارك` : 'كله جاهز ✓'}</span></div>`;
+    for (const f of list) {
+      const old = ruleState(f).filter((r) => !r.ok);
+      const rules = old.length ? `<span class="rold">⚠ قبل ${old.length === 1 ? 'قاعدة جديدة' : `${old.length} قواعد جديدة`}</span>` : '<span class="rok">✓ آخر القواعد</span>';
+      const li = f.state === 'posted' ? (bestReport(f) || lastInsight(f)) : null;
+      const st = isWaiting(f) ? '<span class="ist">بانتظارك</span>' : f.state === 'working' ? `<span class="ist">يشتغل ${pct(f)}%</span>`
+        : f.state === 'posted' ? `<span class="ist ok">${li ? esc(li.label || VERDICT[li.verdict] || 'منشور') : 'منشور'}</span>` : `<span class="ist ok">${f.state === 'done' ? 'جاهز ✓' : esc(STEPS[(f.step || 1) - 1])}</span>`;
+      h += `<button type="button" class="item" data-film="${esc(f.id)}">${ICON[kindOf(f)]}<span class="iname">${esc(itemLabel(f, tname))} <span style="font-weight:600;opacity:.75">${esc(f.version || '')}</span></span>${st}
+        <span class="imeta">${f.updated ? esc(when(f.updated)) + ' · ' : ''}${rules}</span></button>`;
+    }
+    h += `</section>`;
+  });
+  if (hidden.length) h += `<details class="fold"><summary>المخفية <span>${hidden.length} · تنمسح بعد ${HIDE_DAYS} يوم</span></summary><div class="fin">${hidden.map((f) => `<div class="row"><a href="#film-${esc(f.id)}" style="color:var(--ink);font-weight:700;text-decoration:none">${esc(f.name)} <span class="note">${esc(f.version || '')} · ينمسح بعد ${hideLeft(f)} يوم</span></a><button type="button" class="chip" data-act="unhide" data-id="${esc(f.id)}">رجّعه</button></div>`).join('')}</div></details>`;
+  if (ready) h += viewBrief();
+  h += `<div class="shortcuts"><a class="short" href="#recreate" style="background:var(--yellow);color:var(--ink)">ريل عجبك</a><a class="short" href="#library" style="background:var(--blue);color:#fff">فكرة جديدة</a></div>`;
+  return h;
+}
+
+function viewFilm(id) {
+  const i = films.findIndex((f) => f.id === id), f = films[i];
+  if (!f) return header('الفلم', ready ? 'ما لقيت هالفلم' : 'جاري التحميل…') + '<a class="chip" href="#films">→ الأفلام</a>';
+  const c = color(f, i), p = pct(f), step = f.step || 1, s = stateLine(f);
+  const dots = STEPS.map((n, k) => {
+    const cls = k + 1 < step || f.state === 'done' || f.state === 'posted' ? '' : k + 1 === step ? 'cur' : 'todo';
+    const bg = cls === '' ? `background:${COLORS[k % COLORS.length]}` : '';
+    return `<li><span class="${cls}" style="${bg}" title="${n}">${k + 1}</span></li>`;
+  }).join('');
+  let h = `<header class="top fhead"><button type="button" class="back" aria-label="رجوع" data-go="films"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FBF7EF" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+    <h1 style="font-size:28px">${esc(f.name)}</h1>${f.version ? `<span class="tag" style="background:${c}">${esc(f.version)}${f.seconds ? ' · ' + f.seconds + 'ث' : ''}</span>` : ''}</header>`;
+  const pr = f.state !== 'posted' ? ig?.predictions?.[f.id] : null, slim = !!pr || f.state === 'posted';
+  if (!slim) {
+    h += `<ol class="steps" aria-label="المراحل">${dots}</ol><p class="stepname">${esc(STEPS[step - 1])}</p>`;
+    h += `<div class="prog"><b class="big">${p}%</b><span class="track" aria-hidden="true"><i style="width:${p}%"></i></span>
+      <span class="row"><span class="state">${s.icon} ${esc(s.text)}</span><span class="note">${s.eta != null ? 'باقي ' + eta(s.eta) : f.after_min != null && f.state === 'waiting' ? 'بعدها ' + eta(f.after_min) : ''}</span></span></div>`;
+  } else h += `<p class="state" style="margin:0">${s.icon} ${esc(s.text)}</p>`;
+  if (pr) h += viewPredict(f, pr);
+  if (f.state === 'posted') h += viewOutcome(f);
+  { const rs = ruleState(f), n = rs.filter((r) => !r.ok).length, ch = f.changes || [];
+    h += `<details class="fold"><summary>القواعد وآخر تحديث <span>${n ? `⚠ ${n} مو مطبّقة` : 'كلها مطبّقة ✓'}${f.updated ? ' · ' + esc(ago(f.updated)) : ''}</span></summary><div class="fin">`
+      + (f.updated ? `<p class="note" style="color:var(--ink)">${esc(f.version || '')} · ${esc(when(f.updated))}</p>` : '')
+      + (ch.length ? `<ul class="chg">${ch[0].what.map((w) => `<li>${esc(w)}</li>`).join('')}</ul>` + (ch.length > 1 ? `<details><summary class="note" style="cursor:pointer;color:var(--ink);font-weight:700">النسخ اللي قبل</summary>${ch.slice(1).map((c) => `<p class="note" style="color:var(--ink);font-weight:700;margin-top:6px">${esc(c.v)} · ${esc(when(c.at))}</p><ul class="chg">${c.what.map((w) => `<li>${esc(w)}</li>`).join('')}</ul>`).join('')}</details>` : '') : '')
+      + `<ul class="rules">${rs.map((r) => `<li class="${r.ok ? 'rok' : 'rold'}">${r.ok ? '✓' : '⚠'} ${esc(r.name)}</li>`).join('')}</ul>${n ? '<p class="note">انسوت هالنسخة قبل هالقواعد. قل لي إذا تبي أعيدها عليها.</p>' : ''}</div></details>`; }
+  if (f.kind === 'carousel' && f.slides?.length) {
+    h += `<section class="gate" style="background:${c}" aria-label="الكاروسيل"><div class="slides">${f.slides.map((src, k) => `<img src="${esc(src)}" alt="شريحة ${k + 1}" loading="lazy">`).join('')}</div>
+      <div class="two"><button type="button" class="btn dark" data-act="share" data-id="${esc(f.id)}">شارك الكل ↗</button><button type="button" class="btn line" data-act="copy" data-id="${esc(f.id)}">انسخ الكابشن</button></div>
+      <details class="note" style="color:var(--ink);width:100%"><summary style="cursor:pointer;text-align:center;font-weight:700">شلون أنشرها من الآيفون؟</summary><p style="text-align:center">«شارك الكل» ملف واحد فيه الصور والكابشن، والكابشن ينسخ بنفس الضغطة. بالآيفون: Save to Files ← افتحه في Files ← اختار الصور ← شارك ← Save Images ← إنستغرام.</p></details>
+      <div class="chips" role="group" aria-label="صورة صورة" style="justify-content:center"><span class="note" style="color:var(--ink)">أو صورة صورة:</span>${f.slides.map((_, k) => `<button type="button" class="chip" data-act="one" data-k="${k}" data-id="${esc(f.id)}">${k + 1}</button>`).join('')}</div>`;
+    if (f.state === 'waiting') h += `<div class="two"><button type="button" class="btn dark" data-act="approve" data-id="${esc(f.id)}">وافق ✓</button><button type="button" class="btn line" data-act="change" data-id="${esc(f.id)}">تعديل</button></div>
+      <div id="chg" ${chgOpen === f.id ? '' : 'hidden'} style="width:100%;display:grid;gap:8px"><p class="note" style="color:var(--ink);font-weight:700">اختار الشرائح اللي تبي تعدّلها (وحدة أو أكثر)</p>
+      <div class="pick" role="group" aria-label="الشرائح">${f.slides.map((src, k) => `<button type="button" data-pick="${k}" aria-pressed="${picked(f.id).has(k)}" aria-label="${slideName(k)}"><img src="${esc(src)}" alt="" loading="lazy"><span>${slideName(k)}</span></button>`).join('')}</div>
+      <label class="note" for="note" style="color:var(--ink)">وش تبي يتغيّر؟</label><textarea id="note" maxlength="1200" placeholder="مثلًا: النص طويل، أو الصورة صغيرة"></textarea>
+      <button type="button" class="btn dark" data-act="send" data-id="${esc(f.id)}">أرسل التعديل</button></div>`;
+    h += postedButton(f) + `</section>`;
+    h += viewAnalysis(f);
+    if (f.spec) h += `<a class="short" href="#edit-${esc(f.id)}" style="background:var(--card);color:var(--ink);box-shadow:0 1px 0 var(--line)">✎ عدّل النص بنفسك</a>`;
+    if (f.caption) h += `<details class="fold caption-f"><summary>الكابشن <span>${esc(String(f.caption).split('\n')[0].slice(0, 40))}…</span></summary><div class="fin"><pre id="cap" style="margin:0;white-space:pre-wrap;font:500 15px/1.7 var(--body)">${esc(f.caption)}</pre><button type="button" class="chip" style="justify-self:start" data-act="savecap" data-id="${esc(f.id)}">احفظه ملف</button></div></details>`;
+  }
+  if (f.video) {
+    h += `<section class="gate" style="background:${c}" aria-label="الفلم"><video controls playsinline preload="none" ${f.poster ? `poster="${esc(f.poster)}"` : ''} src="${esc(f.video)}"></video>`;
+    if (f.state === 'waiting') h += `<div class="two"><button type="button" class="btn dark" data-act="approve" data-id="${esc(f.id)}">وافق ✓</button><button type="button" class="btn line" data-act="change" data-id="${esc(f.id)}">تعديل</button></div>
+      <div id="chg" hidden style="width:100%;display:grid;gap:8px"><label class="note" for="note">وش تبي يتغيّر؟ (بالوقت إذا تقدر)</label><textarea id="note" maxlength="1200" placeholder="مثلًا: عند 0:42 الخط صغير"></textarea>
+      <button type="button" class="btn dark" data-act="send" data-id="${esc(f.id)}">أرسل التعديل</button></div>`;
+    if (f.state === 'done' || f.state === 'posted' || f.final) h += `<div class="two"><button type="button" class="btn dark" data-act="sharefilm" data-id="${esc(f.id)}">احفظ الفيلم ↗</button><button type="button" class="btn line" data-act="copy" data-id="${esc(f.id)}">انسخ الكابشن</button></div>
+      <p class="note" style="color:var(--ink);text-align:center">${f.final ? 'بالجودة الكاملة (1080×1920). ' : ''}بالآيفون: Save Video يحفظه بالصور، والكابشن ينسخ بنفس الضغطة.</p>`;
+    h += postedButton(f) + `</section>`;
+    h += viewAnalysis(f);
+    if (f.caption) h += `<details class="fold caption-f"><summary>الكابشن <span>${esc(String(f.caption).split('\n')[0].slice(0, 40))}…</span></summary><div class="fin"><pre id="cap" style="margin:0;white-space:pre-wrap;font:500 15px/1.7 var(--body)">${esc(f.caption)}</pre><button type="button" class="chip" style="justify-self:start" data-act="savecap" data-id="${esc(f.id)}">احفظه ملف</button></div></details>`;
+  }
+  if (f.acts?.length) h += `<section class="acts" aria-label="الفصول">${f.acts.map((a, k) => `<div class="act" style="background:${COLORS[k % COLORS.length]}"><b>${esc(a.name)}</b><span>${esc(a.time || '')}</span></div>`).join('')}</section>`;
+  const twin = films.find((x) => x.id !== f.id && (x.of === f.id || f.of === x.id));     // the same topic in the other format
+  const other = f.kind === 'carousel' ? 'ريل' : 'كاروسيل';
+  h += twin ? `<a class="short" href="#film-${esc(twin.id)}" style="background:var(--yellow);color:var(--ink)">${twin.kind === 'carousel' ? 'شوف الكاروسيل' : 'شوف الريل'} ◀</a>`
+    : `<button type="button" class="short" style="background:var(--yellow);color:var(--ink);width:100%" data-act="twin" data-id="${esc(f.id)}">سوّ منه ${other}</button>`;
+  if (f.meta) h += `<p class="note">${esc(f.meta)}</p>`;
+  if (f.versions?.length) h += `<div class="chips">${f.versions.map((v, k) => `<span class="chip${k === 0 ? ' on' : ''}">${esc(v)}</span>`).join('')}</div>`;
+  h += f.hidden ? `<button type="button" class="chip" style="justify-self:start" data-act="unhide" data-id="${esc(f.id)}">↩ رجّعه للقائمة</button>`
+    : `<button type="button" class="chip" style="justify-self:start;color:#8a1426" data-act="hide" data-id="${esc(f.id)}">شيله من القائمة</button>`;
+  return h;
+}
+
+function viewLibrary() {
+  let h = header('المكتبة', 'نوع السكربت ولغته') + viewBrief(false);
+  if (!lib) return h + '<p class="note">جاري التحميل…</p>' + librarySections();
+  h += `<div class="chips" role="group" aria-label="اللغة">${Object.entries(lib.languages).map(([k, L]) => `<button type="button" class="chip${openLang === k ? ' on' : ''}" data-lang="${k}">${esc(L.name)}</button>`).join('')}</div>`;
+  const L = lib.languages[openLang];
+  h += `<section class="lang" style="background:${openLang === 'tk' ? 'var(--green)' : openLang === 'light' ? 'var(--yellow)' : 'var(--pink)'}">
+    <b style="font:800 19px var(--display)">${esc(L.name)}</b><p style="font-size:14px">${esc(L.base)}</p>
+    <div class="ex"><span>${esc(L.example.hook)}</span><span>${esc(L.example.line)}</span><span>${esc(L.example.close)}</span></div>
+    <details><summary style="cursor:pointer;font-weight:700">القواعد</summary><ul>${L.rules.map((r) => `<li>${esc(r)}</li>`).join('')}</ul>${L.caution ? `<p class="note" style="color:var(--ink)">⚠ ${esc(L.caution)}</p>` : ''}</details></section>`;
+  if (openType && lib.types[openType]) {
+    const T = lib.types[openType];
+    h += `<section class="typecard" aria-label="${esc(T.name)}"><div class="row"><b style="font:800 22px var(--display)">${esc(T.name)}</b><span class="pill">${T.seconds[0]}–${T.seconds[1]}ث</span></div>
+      <p style="font-size:14px">${esc(T.job)}</p>
+      <div class="beats">${T.acts.map((a, k) => `<span style="flex:${a.share};background:${COLORS[(k + 4) % COLORS.length]}">${esc(a.name)}</span>`).join('')}</div>
+      <ol>${T.acts.map((a) => `<li><b>${esc(a.name)}:</b> ${esc(a.example)}</li>`).join('')}</ol>
+      <p class="note" style="color:var(--ink)">اللغات: ${T.languages.map((k) => esc(lib.languages[k].name)).join('، ')} · الستايلات: ${esc(T.styles.join('، '))}</p>
+      <div class="chips" role="group" aria-label="الشكل">${[['reel', 'ريل'], ['carousel', 'كاروسيل'], ['both', 'الاثنين']].map(([k, n]) => `<button type="button" class="chip${openFormat === k ? ' on' : ''}" data-format="${k}">${n}</button>`).join('')}</div>
+      <button type="button" class="btn dark" data-act="start" data-type="${openType}">ابدأ بهالنوع ▶</button></section>`;
+  }
+  for (const R of [lib.direction, lib.carousel]) if (R) h += `<section class="group"><details><summary style="cursor:pointer;font:800 16px var(--display)">${esc(R.name)}</summary><ul style="margin:6px 0 0;padding-inline-start:18px;display:grid;gap:4px;font-size:14px">${R.rules.map((r) => `<li>${esc(r)}</li>`).join('')}</ul></details></section>`;
+  h += `<div class="types">${Object.entries(lib.types).map(([k, T], i) => `<button type="button" class="type" style="background:${k === openType ? 'var(--ink);color:var(--bg)' : COLORS[i % COLORS.length]}" data-type="${k}"><b>${esc(T.name)}</b><span>${T.seconds[0]}–${T.seconds[1]}ث</span></button>`).join('')}</div>`;
+  return h + librarySections();
+}
+
+// The styles and «ريل عجبك» live inside the library (the owner approved five tabs: الأفلام · الأرقام · التعلّم · المكتبة · الفريق).
+function librarySections() {
+  const open = (location.hash || '').slice(1);
+  return `<details class="group" id="sec-styles"${open === 'styles' ? ' open' : ''}><summary style="cursor:pointer;font:800 18px var(--display)">الستايلات</summary><div style="display:grid;gap:12px;margin-top:8px">${viewStyles(true)}</div></details>
+    <details class="group" id="sec-recreate"${open === 'recreate' ? ' open' : ''}><summary style="cursor:pointer;font:800 18px var(--display)">ريل عجبك</summary><div style="display:grid;gap:12px;margin-top:8px">${viewRecreate(true)}</div></details>`;
+}
+function viewStyles(inner) {
+  let h = inner ? '' : header('الستايلات', 'من أفلامنا الحقيقية');
+  h += `<div class="row"><h2>المحرك</h2><span class="badge" style="background:var(--green)">مبني · مجاني</span></div>`;
+  for (const L of LOOKS) h += `<div class="row"><b style="font:800 17px var(--display)">${esc(L.name)}</b><span class="note">${esc(L.fits)} · ${esc(L.film)}</span></div>
+    <div class="grid3">${L.imgs.map((src) => `<div class="sample"><img src="${src}" alt="${esc(L.name)}" loading="lazy"></div>`).join('')}</div>`;
+  h += `<div class="row"><h2>66 ستايل كود</h2><span class="badge" style="background:var(--green)">موصول · 2 مبني</span></div>
+    <p class="note">نقش النحاس وآرت ديكو مبنيين (فوق). قبل كل فلم Claude يقترح 3 ستايلات تناسب القصة وإنت تختار.</p>`;
+  h += CODE.map(([n, d, k]) => `<div class="group"><div class="row"><b>${esc(n)}</b><span class="badge" style="background:var(--soft)">${k}</span></div><p>${esc(d)}</p></div>`).join('');
+  h += `<div class="group" style="background:var(--coral)"><b>التطعيم بالخشب</b><p style="color:var(--ink)">ستايلنا الخاص. ملفاته في جهازك: أحتاج ربط الماك أو zip.</p></div>
+    <div class="group" style="background:var(--blue)"><b style="color:#fff">ذكاء اصطناعي</b><p style="color:#fff">برصيد Higgsfield، بموافقتك كل مرة.</p></div>`;
+  return h;
+}
+
+function viewRecreate(inner) {
+  return (inner ? '<p class="note">أفككه ونصنع مثله بقصتنا.</p>' : header('ريل عجبك', 'أفككه ونصنع مثله بقصتنا')) + `
+    <section class="lang" style="background:var(--yellow)"><b style="font:800 19px var(--display)">أرسل الفيديو في المحادثة</b>
+      <p style="font-size:14px">احفظ الريل من جوالك وأرسله لي. الروابط تحتاج جهازك أو حساب ثانوي لأن إنستغرام يمنع التنزيل من هنا.</p></section>
+    <section class="group"><div class="row"><b>أداة التحليل</b><span class="badge" style="background:var(--green)">جاهز</span></div>
+      <p>تفريغ الصوت لنص بالتوقيت، عدّ القطعات وطولها، شيت صور للقطات، ومقارنة جنب بجنب مع نسختنا. النتيجة تنضاف للمكتبة.</p></section>
+    <h2>حللناها قبل</h2><div class="chips"><span class="chip">Altivère · الجواهر</span><span class="chip">Clayrified ×6</span></div>`;
+}
+
+function viewTeam() {
+  return header('الفريق') + `<div class="readers">${READERS.map(([n, f, r, c]) => `<div class="reader" style="--c:${c}"><img src="panel/${f}.jpg" alt="${n}"><b>${n}</b><span>${r}</span></div>`).join('')}</div>
+    <h2>الأصوات</h2>${VOICES.map(([n, s, c]) => `<div class="voice" style="background:${c}"><b>${esc(n)}</b><span class="state">${esc(s)}</span></div>`).join('')}`;
+}
+
+function postedButton(f) {
+  if (f.state === 'posted' || (f.state !== 'done' && !f.final)) return '';
+  return `<button type="button" class="btn dark" style="width:100%;background:#2E8B57" data-act="posted" data-id="${esc(f.id)}">تم النشر ✓</button>
+    <p class="note" style="color:var(--ink);text-align:center">اضغطها بعد ما تنشره بإنستغرام. ألقى المنشور وأقرا أرقامه بنفسي بعد 48 ساعة وبعد 7 أيام.</p>`;
+}
+const CONF_AR = { high: 'ثقة عالية', medium: 'ثقة متوسطة', low: 'ثقة منخفضة', principle: 'مبدأ عام', not_enough: 'البيانات ما تكفي' };
+const conf = (c, ar) => (c ? `<span class="conf ${esc(c)}">${esc(ar || CONF_AR[c] || c)}</span>` : '');
+// The strength of a finding: ✓ مؤكد, ◐ ملاحظة أولية, ○ دليل ضعيف (as defined in the plan the owner approved, 3 Nov 2026)
+const LV = { c: ['✓', 'مؤكد'], e: ['◐', 'ملاحظة أولية'], w: ['○', 'دليل ضعيف'] };
+const lvOf = (c) => ({ high: 'c', medium: 'e' })[c] || 'w';
+const mark = (lv) => { const k = lv in LV ? lv : 'w'; return `<span class="lv ${k}" title="${LV[k][1]}" aria-label="${LV[k][1]}">${LV[k][0]}</span>`; };
+const lineOf = (x) => (typeof x === 'string' ? { t: x, lv: null } : x || { t: '' });
+const ruleKey = (x) => 'ig-' + [x.kind, x.dim, x.val].join('-').replace(/\s+/g, '_');
+function qList(cls, title, items) {
+  if (!items?.length) return '';
+  return `<div class="q ${cls}"><b>${title}</b><ul>${items.map(lineOf).map((x) => (x.lv ? `<li class="l">${mark(x.lv)}<span>${esc(x.t)}</span></li>` : `<li>${esc(x.t)}</li>`)).join('')}</ul></div>`;
+}
+const STAGE_AR = { latest: 'قراءة مبكرة', '48h': 'أول قراءة (48 ساعة)', '7d': 'القراءة النهائية (7 أيام)' };
+// One report, short (the owner, 4 Nov 2026: «خل نخفف الكلام»): three lines (✓ what worked, ✗ what did not, ← one thing
+// for the next film), the evidence as bars, and every number and explanation folded under «كل الأرقام».
+const SHORT = { shares_pr: 'انرسل', saves_pr: 'انحفظ', likes_pr: 'لايكات', avg_watch_s: 'المشاهدة', comments_pr: 'تعليقات', follows_pr: 'متابعين', reach: 'الوصول', skip_rate: 'التخطي' };
+const xr = (r) => '×' + String(Math.round(r * 10) / 10);
+function shortLines(ins) {
+  const ev = Object.fromEntries((ins.evidence || []).map((e) => [e.k, e]));
+  const part = (x) => {
+    const k = x?.k, e = ev[k];
+    if (k === 'watch_ratio') { const m = String(e?.value || x?.t || '').match(/\((\d+)%\)/) || String(x?.t || '').match(/(\d+)%/); return m ? `شافوا ${m[1]}% بس من الفيلم` : null; }
+    return e?.ratio != null && SHORT[k] ? `${SHORT[k]} ${xr(e.ratio)}` : null;
+  };
+  const ok = (ins.worked || []).map(part).filter(Boolean).slice(0, 3);
+  const no = (ins.didnt || []).map(part).filter(Boolean).slice(0, 2);
+  return { ok: ok.join(' · '), no: no.join(' · '), next: lineOf(ins.try_next?.[0]).t || '' };
+}
+function linesBox(L) {
+  return (L.ok || L.no || L.next) ? `<section class="lines3" aria-label="الزبدة">${L.ok ? `<div><span class="ok">✓</span><span>${esc(L.ok)}</span></div>` : ''}${L.no ? `<div><span class="no">✗</span><span>${esc(L.no)}</span></div>` : ''}${L.next ? `<div><span class="nx">←</span><span>${esc(L.next)}</span></div>` : ''}</section>` : '';
+}
+function report(ins, name, noLines) {
+  let h = `<div class="rep"><div class="row"><b style="font:800 15px var(--display)">${esc(name)}</b><span class="row" style="gap:6px"><span class="vd ${esc(ins.verdict || 'mid')}">${esc(ins.label || VERDICT[ins.verdict] || '')}</span>${ins.level ? mark(ins.level) : conf(ins.confidence, ins.confidence_ar)}</span></div>`;
+  if (ins.note) h += `<p class="note">${esc(ins.note)}</p>`;
+  if (!ins.worked && !ins.evidence) {                               // a report written by hand from screenshots
+    return h + (ins.numbers ? `<div class="nums">${Object.entries(ins.numbers).map(([k, v]) => `<div><span>${esc(k)}</span><b>${esc(v)}</b></div>`).join('')}</div>` : '')
+      + qList('ok', 'وش تعلمنا', ins.lessons) + qList('try', 'الفيلم الياي', ins.next) + `</div>`;
+  }
+  if (!noLines) h += linesBox(shortLines(ins));        // the film's top already shows these for its best reading
+  const ev = ins.evidence || [], scored = ev.filter((e) => e.ratio != null);
+  if (scored.length) h += `<div class="bars">${scored.map((e) => `<span>${esc(e.label)}</span><span class="tr" aria-hidden="true"><i class="${e.state === 'bad' ? 'bad' : e.state === 'mid' ? 'mid' : ''}" style="width:${Math.round(Math.min(e.ratio / 2, 1) * 100)}%"></i><u></u></span><span class="x">${xr(e.ratio)}</span>`).join('')}</div>`;
+  if (ev.length) h += `<details><summary class="note" style="cursor:pointer;color:var(--ink);font-weight:700">كل الأرقام</summary>
+    <div style="overflow-x:auto"><table class="evt"><thead><tr><th>المقياس</th><th>هالمنشور</th><th>المعتاد</th><th></th></tr></thead><tbody>`
+    + ev.map((e) => `<tr class="${esc(e.state || '')}"><td>${esc(e.label)}${e.note ? `<small>${esc(e.note)}</small>` : ''}</td><td>${esc(e.value)}</td><td>${esc(e.usual || '—')}</td><td class="r">${e.ratio != null ? '×' + esc(e.ratio) : ''}</td></tr>`).join('')
+    + `</tbody></table></div>`
+    + `<p class="note">الخط الأسود بالخطوط = المعتاد لمنشوراتنا من نفس النوع، وأطول منه أحسن.${ins.vs ? ' ' + esc(ins.vs) : ''}${ins.at ? ` قراءة ${esc(when(ins.at))}.` : ''}</p>`
+    + (ins.caveat ? `<p class="note">${esc(ins.caveat)}</p>` : '')
+    + `<p class="note">${mark('c')} مؤكد · ${mark('e')} ملاحظة أولية · ${mark('w')} دليل ضعيف</p></details>`;
+  return h + `</div>`;
+}
+const stageSel = {};                                               // per film: which reading is open
+function viewAnalysis(f) {
+  if (f.state !== 'posted' || !f.posted?.at) return '';
+  const cs = checks(f), d = dueCheck(f), g = igFilm(f) || {}, reps = g.reports || {};
+  let h = '', top = '';
+  if (g.linked && g.confirmed) h += `<div class="row" style="justify-content:flex-start;gap:8px;flex-wrap:wrap"><span class="note">نشرته ${esc(when(g.posted_at || f.posted.at))}</span><span class="auto">● من إنستغرام</span>${g.permalink ? `<a class="chip" href="${esc(g.permalink)}" target="_blank" rel="noopener">افتح المنشور ↗</a>` : ''}</div>`;
+  else if (g.linked) top += `<div class="sugg"><b style="font:800 14px var(--display)">مقترح: «${esc(g.first_line || 'المنشور')}»</b><span class="note">لقيته من الكابشن. أكّده عشان ينحفظ برقمه.</span><div class="two"><button type="button" class="btn dark" style="min-height:44px" data-act="pickopen" data-id="${esc(f.id)}">أكّد المنشور</button>${g.permalink ? `<a class="btn line" style="min-height:44px;display:grid;place-items:center;text-decoration:none;color:var(--ink)" href="${esc(g.permalink)}" target="_blank" rel="noopener">شوفه ↗</a>` : '<span></span>'}</div></div>`;
+  else top += `<div class="q try"><b>أي منشور هو؟</b><p style="font-size:13.5px">اختار المنشور، وأقرا أرقامه بنفسي بدون صور.</p><button type="button" class="btn dark" style="min-height:44px" data-act="pickopen" data-id="${esc(f.id)}">اختار المنشور</button></div>`;
+  h += `<ul class="checks">`;
+  for (const c of cs) {
+    const ins = reps[c.id] || (f.insights || []).find((x) => x.stage === c.id);
+    const s = ins ? `<span class="vd ${esc(ins.verdict || 'mid')}">${esc(ins.label || VERDICT[ins.verdict] || 'انقرا')}</span>` : c.sent ? '⏱ وصلت الصور، أحللها'
+      : Date.now() >= c.due ? (g.linked ? '⏱ تنقرا بالتحديث الجاي' : '⏸ حان وقتها') : `⏳ بعد ${left(c.due - Date.now())}`;
+    h += `<li><b style="font:800 14px var(--display)">${c.name}</b> ${s}<span class="when">${esc(when(new Date(c.due).toISOString()))}</span></li>`;
+  }
+  h += `</ul>`;
+  if (d && !mcp) h += `<p class="note" style="color:var(--ink);font-weight:700;margin-top:6px">أو صوّر لي من إنستغرام (الريل ← View insights):</p><ul class="shots">${SHOTS.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>
+    <label class="btn dark up" style="margin-top:6px">ارفع الصور (${esc(d.name)})<input type="file" accept="image/*" multiple hidden data-up="${esc(f.id)}" data-stage="${esc(d.id)}"></label>
+    <button type="button" class="chip" style="justify-self:center" data-act="shotschat" data-id="${esc(f.id)}" data-stage="${esc(d.id)}">أرسلتها بالمحادثة</button>`;
+  const avail = ['latest', '48h', '7d'].filter((k) => reps[k]);
+  if (avail.length) {
+    const cur = avail.includes(stageSel[f.id]) ? stageSel[f.id] : avail[avail.length - 1];
+    h += `<div class="seg" role="group" aria-label="القراءة" style="margin-top:8px">${[['latest', 'مبكرة'], ['48h', '48 ساعة'], ['7d', '7 أيام']].map(([k, n]) => `<button type="button" data-act="stage" data-id="${esc(f.id)}" data-k="${k}" aria-pressed="${k === cur}" ${reps[k] ? '' : 'disabled'}>${n}</button>`).join('')}</div>`;
+    h += report(reps[cur], STAGE_AR[cur], reps[cur] === bestReport(f));
+  } else {
+    for (const ins of (f.insights || []).slice().sort((a, b) => Date.parse(b.at || 0) - Date.parse(a.at || 0))) h += report(ins, CHECKS.find((c) => c.id === ins.stage)?.name || ins.stage);
+    if (!(f.insights || []).length) h += `<p class="note">ما أحكم بالمشاهدات بروحها: أقارن كل منشور بوسيط منشوراتنا من نفس النوع بنفس الحساب، وبنفس العمر لما يتوفر (48 ساعة و7 أيام).</p>`;
+  }
+  if (!avail.length && !(f.insights || []).length && !g.linked) h += `<button type="button" class="chip" style="justify-self:start;margin-top:4px" data-act="unpost" data-id="${esc(f.id)}">ما نشرته، رجّعه</button>`;
+  const br = bestReport(f);
+  return top + `<details class="fold"><summary>التقرير كامل <span>${br ? esc(STAGE_AR[br.stage] || '') + (br.level ? ' · ' + LV[br.level]?.[0] + ' ' + LV[br.level]?.[1] : '') : 'الأسئلة الأربعة'}</span></summary><div class="fin">` + h + `</div></details>` + (pick?.id === f.id ? viewPick(f) : '');
+}
+
+// ===== Instagram, read live from Supabase through the owner's own connector. Nothing here needs a Claude session:
+// the sync, the reports and the learning run in Supabase on their own clock; the studio reads them when it opens, and
+// keeps a copy (studio/ig) so it opens at once and others who can see the studio see the last numbers too.
+const SB = { server: 'Supabase', tool: 'execute_sql', project: 'ttshgrujnycapugrmyxs' };
+let mcp = null, ig = null, igAt = null, igCached = false, igState = 'idle', igErr = null, igChoices = {}, pick = null;
+let acc = 'timekeeperkw';                                         // Timekeeper is where the studio opens, every time
+const ACC = { timekeeperkw: 'تايم كيبر', timegallerykw: 'الغاليري', timekeeperkwshop: 'المتجر' };
+const dq = (v) => { const s = JSON.stringify(v); let t = 'sp'; while (s.includes('$' + t + '$')) t += 'x'; return `$${t}$${s}$${t}$`; };
+async function sql(query) {
+  const r = await mcp.callTool(SB.server, SB.tool, { project_id: SB.project, query }, { cache: false });
+  const p = r?.payload;
+  const text = typeof p === 'string' ? p : typeof p?.result === 'string' ? p.result : Array.isArray(p) ? JSON.stringify(p) : (r?.content?.[0]?.text || '');
+  // Supabase wraps the rows in a marked block, and names the marker once in the sentence before it
+  const m = text.match(/<untrusted-data-([\w-]+)>\s*(\[[\s\S]*\])\s*<\/untrusted-data-\1>/);
+  const rows = JSON.parse(m ? m[2] : text);
+  return Array.isArray(rows) ? rows : [];
+}
+function twinCaption(f) { const t = films.find((x) => x.id !== f.id && (x.of === f.id || f.of === x.id) && x.caption); return t ? t.caption.slice(0, 1500) : undefined; }
+function filmPayload(f) {
+  const o = { id: f.id, kind: f.kind === 'carousel' ? 'carousel' : 'reel', name: f.name, meta: f.meta, seconds: f.seconds, topic: f.topic,
+    caption: f.caption ? f.caption.slice(0, 1500) : undefined, caption_hint: f.caption ? undefined : twinCaption(f), posted: f.posted,
+    version: f.version, rules: f.rules, slides: Array.isArray(f.slides) ? f.slides.map(() => 1) : undefined, hook: f.hook, test: f.test,
+    state: f.state, product: f.product };
+  return JSON.parse(JSON.stringify(o));
+}
+const ERR_AR = {
+  needs_reauth: 'ربط Supabase انتهى. أعد ربطه من claude.ai ← الإعدادات ← Connectors.',
+  server_not_connected: 'Supabase مو مربوط بحسابك. أضفه من claude.ai ← الإعدادات ← Connectors.',
+  selection_required: 'عندك أكثر من ربط Supabase. اختار واحد لما يسألك claude.ai.',
+  not_in_manifest: 'الستوديو يحتاج إذنك يقرا من Supabase.', approval_required: 'الستوديو يحتاج إذنك يقرا من Supabase.', consent_required: 'الستوديو يحتاج إذنك يقرا من Supabase.',
+  blocked_by_policy: 'إعدادات المؤسسة تمنع هالربط.', server_unavailable: 'Supabase ما رد الحين. جرّب بعد شوي.',
+};
+async function loadIg(manual) {
+  if (!mcp) { igState = 'nomcp'; refresh(); return; }
+  if (igState === 'loading') return;
+  igState = 'loading'; if (manual) route();
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const rows = await sql(`select public.studio_page(${dq({ films: films.filter((f) => f.posted?.at || (['waiting', 'done'].includes(f.state) && !f.hidden)).map(filmPayload) })}::jsonb) as page`);
+      const page = rows[0]?.page;
+      if (!page) throw { code: 'empty' };
+      ig = page; igAt = page.at; igCached = false; igState = 'ok'; igErr = null;
+      saveIgCache();
+      break;
+    } catch (e) {
+      igErr = e?.code || 'error';
+      if (e?.retryable && attempt === 0) { await new Promise((ok) => setTimeout(ok, Math.min(e.retryAfterMs || 1500, 8000) + Math.random() * 800)); continue; }
+      igState = 'error'; break;
+    }
+  }
+  if (manual && igState === 'ok') toast('انقرت آخر الأرقام ✓');
+  refresh();
+}
+async function saveIgCache() {
+  try { if (db && ig) await db.doc('studio/ig').set({ page: ig, at: ig.at }); } catch (e) { /* a viewer who cannot write keeps the live numbers on screen */ }
+}
+const agoShort = (iso) => ago(iso) || '—';
+function statusDot() {
+  const st = ig?.status;
+  if (!st) return igState === 'loading' ? `<button type="button" class="sdot idle" data-go="sync">يقرا الأرقام…</button>` : `<button type="button" class="sdot idle" data-go="sync">الأرقام</button>`;
+  if (st.health !== 'ok') return `<button type="button" class="sdot bad" data-go="sync">فيه مشكلة</button>`;
+  return `<button type="button" class="sdot" data-go="sync">محدّث ${esc(agoShort(st.last_fresh || st.last_ok))}</button>`;
+}
+function problemBanner() {
+  if (ig?.status?.health === 'problem') return `<a class="chip" href="#sync" style="background:#FBE6E3;justify-self:start">⚠ أرقام إنستغرام ما تتحدث. التفاصيل ←</a>`;
+  if (igState === 'error' && igErr && ERR_AR[igErr] && !igCached) return `<p class="note" style="color:#8a1426">${esc(ERR_AR[igErr])}</p>`;
+  return '';
+}
+function connectNote() {
+  if (igState === 'ok') return '';
+  if (igState === 'nomcp') return `<p class="note">هالنسخة من الستوديو ما تقدر توصل لـSupabase. افتحه من claude.ai أو تطبيق Claude.${ig ? ' هذي آخر نسخة محفوظة.' : ''}</p>`;
+  if (igState === 'error') return `<div class="q try"><b>${esc(ERR_AR[igErr] || 'ما قدرت أقرا الأرقام الحين.')}</b>${ig ? `<span class="note">تشوف آخر نسخة محفوظة (${esc(when(igAt))}).</span>` : ''}<button type="button" class="btn dark" style="min-height:44px" data-act="igreload">${['not_in_manifest', 'approval_required', 'consent_required'].includes(igErr) ? 'اسمح واقرا الأرقام' : 'جرّب مرة ثانية'}</button></div>`;
+  if (igState === 'loading') return `<p class="note">يقرا آخر الأرقام…</p>`;
+  return '';
+}
+const fmt = (n) => (n == null ? '—' : Number(n).toLocaleString('en-US'));
+
+// ===== The numbers, per the approved iPhone design: Timekeeper by default; two numbers, a chart, one note and one
+// recommendation; everything else closed. Computed in Supabase (ig_dash2), read live.
+const fmtK = (n) => {
+  if (n == null || isNaN(n)) return '—';
+  const v = Number(n), a = Math.abs(v);
+  return a >= 1e6 ? (v / 1e6).toFixed(1) + ' مليون' : a >= 1e4 ? Math.round(v / 1e3).toLocaleString('en-US') + ' ألف' : a >= 1e3 ? (v / 1e3).toFixed(1) + ' ألف' : Math.round(v).toLocaleString('en-US');
+};
+const dayAr = (iso) => { const t = Date.parse(iso || ''); return t ? new Date(t).toLocaleDateString('ar-KW-u-nu-latn', { timeZone: 'Asia/Kuwait', day: 'numeric', month: 'long' }) : ''; };
+const pc = (x) => Math.max(0, Math.min(100, Math.round(x * 1000) / 10));
+function niceStep(mx) { const raw = mx / 3, p = Math.pow(10, Math.floor(Math.log10(raw))); return [1, 2, 5, 10].map((m) => m * p).find((s) => s >= raw) || p * 10; }
+// Daily reach, newest on the left (the page reads right to left): the last 7 days teal, the week before light teal.
+function chartSvg(series) {
+  const W = 340, H = 130, top = 8, bot = 18, n = series.length;
+  if (!n) return '';
+  const bw = W / n, mx = Math.max(...series.map((s) => s[1] || 0), 1) * 1.08, st = niceStep(mx);
+  let out = '';
+  series.forEach(([, v], i) => {
+    const x = W - (i + 1) * bw + 1.2, h = (H - top - bot) * (v || 0) / mx;
+    out += `<rect class="${i >= n - 7 ? 'b7' : i >= n - 14 ? 'bp' : 'bo'}" x="${x.toFixed(1)}" y="${(H - bot - h).toFixed(1)}" width="${Math.max(1, bw - 2.4).toFixed(1)}" height="${h.toFixed(1)}" rx="2"/>`;
+  });
+  for (let v = st; v < mx; v += st) {
+    const y = H - bot - (H - top - bot) * v / mx;
+    out += `<line class="gl" x1="0" x2="${W}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}"/><text class="ax" x="2" y="${(y - 3).toFixed(1)}">${fmtK(v)}</text>`;
+  }
+  out += `<text class="ax" x="${W}" y="${H - 4}" text-anchor="end">${dayAr(series[0][0])}</text><text class="ax" x="0" y="${H - 4}" text-anchor="start">${dayAr(series[n - 1][0])}</text>`;
+  return `<svg viewBox="0 0 ${W} ${H}" direction="ltr" style="direction:ltr" role="img" aria-label="الوصول اليومي آخر ${n} يوم">${out}</svg>`;
+}
+const KIND_AR = { reel: 'ريل', carousel: 'كاروسيل', image: 'صورة', video: 'فيديو' };
+function heroCell(x, big) {
+  if (!x) return '';
+  let chip = '';
+  if (x.chg != null) chip = `<span class="pch ${esc(x.tone || 'ok')}">${x.chg < 0 ? '↓' : x.chg > 0 ? '↑' : ''} ${Math.abs(x.chg)}% عن الأسبوع اللي قبل</span>`;
+  else if (x.usual != null && x.value != null) chip = `<span class="pch ${esc(x.tone || 'ok')}">المعتاد ${esc(x.usual)} · ${x.tone === 'down' ? 'أقل' : x.tone === 'up' ? 'أعلى' : 'طبيعي'}</span>`;
+  return `<div class="hn1"><small>${esc(x.label)}</small><b class="${big ? '' : 'sm'}">${esc(x.text ?? '—')}</b>${chip}${x.sub ? `<small style="margin-top:3px">${esc(x.sub)}</small>` : ''}</div>`;
+}
+function viewNumbers() {
+  let h = `<div class="headrow">${header('الأرقام', '')}${statusDot()}</div>` + connectNote();
+  const dash = ig?.dash || {}, keys = Object.keys(ACC).filter((k) => dash[k]);
+  if (!keys.length) return h + (igState === 'ok' ? '<p class="note">ما وصلت أرقام للحين.</p>' : '');
+  if (!dash[acc]) acc = keys[0];
+  const d = dash[acc];
+  h += `<div class="seg" role="group" aria-label="الحساب">${keys.map((k) => `<button type="button" data-act="acc" data-k="${k}" aria-pressed="${k === acc}">${ACC[k]}</button>`).join('')}</div>`;
+  if (!d.hero) return h + `<div class="group" style="background:#E3F1E8"><b style="font:800 17px/1.4 var(--display)">${esc(d.summary || '')}</b></div>`;
+  h += `<section class="hero" aria-label="آخر 7 أيام"><div class="hn">${heroCell(d.hero[0], true)}${heroCell(d.hero[1], false)}</div>`;
+  if (d.series?.length) h += `<div class="chart">${chartSvg(d.series)}</div><div class="legend"><span><i style="background:var(--teal)"></i>آخر 7 أيام</span><span><i style="background:#9FD9DA"></i>الأسبوع اللي قبل</span><span><i style="background:#DCD3C2"></i>قبلها</span></div>`;
+  h += `</section>`;
+  if (d.gist?.note) h += `<section class="gist" aria-label="الزبدة"><div class="gr"><span class="tg">الملاحظة</span><span>${esc(d.gist.note)}</span></div>${d.gist.rec ? `<div class="gr"><span class="tg t2">التوصية</span><span>${esc(d.gist.rec)}</span></div>` : ''}</section>`;
+  // closed until opened
+  const ks = (d.kinds || []).filter((k) => (k.n || 0) + (k.n_recent || 0) > 0 && (k.n_usual || 0) > 0).slice(0, 3);
+  if (ks.length) {
+    const cols = d.priority === 1 ? [['shares_pk', 'مشاركات /1000'], ['saves_pk', 'حفظ /1000']] : d.priority === 2 ? [['saves_pk', 'حفظ /1000']] : [];
+    h += `<details class="fold"><summary>حسب النوع <span>هالأسبوع · المعتاد</span></summary><div class="fin"><div style="overflow-x:auto"><table class="ktab"><thead><tr><th></th><th>الوصول للبوست</th>${cols.map((c) => `<th>${c[1]}</th>`).join('')}</tr></thead><tbody>`
+      + ks.map((k) => `<tr><td><b>${esc(KIND_AR[k.kind] || k.kind)}</b><small>${k.n || 0} هالأسبوع</small></td><td><b>${fmtK(k.n_recent ? k.reach_recent : k.reach)}</b><small>المعتاد ${fmtK(k.reach_usual)}</small></td>${cols.map(([c]) => `<td><b>${k[c] ?? '—'}</b><small>المعتاد ${k[c + '_usual'] ?? '—'}</small></td>`).join('')}</tr>`).join('')
+      + `</tbody></table></div>`;
+    const rl = ks.find((k) => k.kind === 'reel' && k.skip_usual != null);
+    if (rl && d.priority === 1) h += `<p style="font-size:13.5px"><b style="font:800 13.5px var(--display)">الاحتفاظ بالريل:</b> ${esc(rl.skip_usual)}% يتخطّون بأول 3 ثواني${rl.watch_usual != null ? ` · الشخص العادي يشوف ${esc(rl.watch_usual)} ث` : ''}${rl.skip != null ? ` · هالأسبوع ${esc(rl.skip)}%` : ''}</p>`;
+    h += `<p class="note">الوصول للبوست = بوستات عمرها من يومين لـ9 أيام، عشان ما نظلم الجديدة. كل نوع ينقاس بمقياسه.</p></div></details>`;
+  }
+  const ms = Object.entries(d.models || {});
+  if (ms.length) {
+    h += `<details class="fold"><summary>دقة التوقع <span>${ms.map(([k, m]) => `${KIND_AR[k] || k} v${m.version}`).join(' · ')}</span></summary><div class="fin">`
+      + ms.map(([k, m]) => `<p style="font-size:13.5px"><b style="font:800 14px var(--display)">${esc(KIND_AR[k] || k)}:</b> ${m.live?.n ? `آخر ${m.live.n} توقعات: ${m.live.within} داخل المدى.` : `بالاختبار على ${m.n} بوست ما شافها: ${Math.round((m.coverage || 0) / 10)} من 10 داخل المدى.`}</p>`).join('')
+      + `<p class="note">${ms.some(([, m]) => m.level_only) ? 'التوقع للحين من مستوى آخر 10 بوستات من نفس النوع: خصائص البوست ما أثبتت إنها تحسّنه. ' : ''}النموذج يتحدّث بس إذا النسخة الجديدة أدق على بوستات ما شافتها، ونحفظ كل نسخة.</p></div></details>`;
+  }
+  const imp = ig?.updates?.important || [];
+  if (imp.length) h += `<details class="fold"><summary>تحديث مهم من إنستغرام <span>${imp.length}</span></summary><div class="fin">${imp.map(updLine).join('')}</div></details>`;
+  h += `<button type="button" class="fold" style="text-align:start;border:0;cursor:pointer;width:100%;display:flex;justify-content:space-between;padding:11px 14px;font:800 15px var(--display)" data-go="sync"><span>المزامنة</span><span class="note" style="color:var(--ink)">${ig?.status ? `${ig.status.health === 'ok' ? 'ما فيه مشاكل' : 'فيه مشكلة'} ←` : ''}</span></button>`;
+  return h;
+}
+const SRC_AR = { official: ['off', 'رسمي'], third_party: ['tp', 'رأي'], unverified: ['un', 'غير مؤكد'] };
+function updLine(u) {
+  const s = SRC_AR[u.source_kind] || SRC_AR.unverified;
+  return `<div style="display:grid;gap:3px;font-size:13.5px"><b style="font:800 14px var(--display)">${esc(u.title)}</b>
+    <span class="row" style="justify-content:flex-start;gap:6px;flex-wrap:wrap"><span class="badge ${s[0]}">${s[1]}${u.source_name ? ' · ' + esc(u.source_name) : ''}</span><span class="note">${u.affects_us ? 'يمسنا' : 'ما يمسنا'}${u.announced_on ? ' · ' + esc(dayAr(u.announced_on)) : ''}</span>${u.source_url ? `<a class="note" href="${esc(u.source_url)}" target="_blank" rel="noopener">المصدر ↗</a>` : ''}</span>
+    ${u.action ? `<span><b style="color:#7A5A00">${u.status === 'done' ? 'سوّيناه:' : 'الإجراء:'}</b> ${esc(u.action)}</span>` : ''}</div>`;
+}
+function viewUpdates() {
+  const U = ig?.updates; if (!U) return '';
+  const list = U.recent || [];
+  return `<details class="fold"><summary>تحديثات إنستغرام <span>${list.length ? list.length + ' · ' : ''}${U.last_check ? 'آخر فحص ' + esc(agoShort(U.last_check)) : 'الفحص الأسبوعي يبدأ قريب'}</span></summary><div class="fin">`
+    + (list.length ? list.map(updLine).join('<hr style="border:0;border-top:1px solid var(--line);margin:2px 0">') : '<p class="note">ما فيه تحديثات تمسنا.</p>')
+    + `<p class="note">نفحص مصادر إنستغرام و Meta الرسمية كل أسبوع. الرسمي غير الرأي، وما نغيّر قواعدنا بسبب إشاعة أو أسبوع واحد.</p></div></details>`;
+}
+
+// ===== A film before posting: one number, its range, 2–3 suggestions. After: expected against actual, three lines.
+function viewPredict(f, p) {
+  const lo = Math.max(1, p.low), hi = Math.max(lo + 1, p.high), a = Math.log(lo / 1.6), z = Math.log(hi * 1.25);
+  const pos = (v) => pc((Math.log(Math.max(v, 1)) - a) / (z - a));
+  let h = `<section class="pred" aria-label="التوقع"><small>الوصول المتوقع بعد 7 أيام</small><div class="pbig">${fmtK(p.predicted)}</div>
+    <div class="range" aria-hidden="true"><i style="inset-inline-start:${pos(lo)}%;inset-inline-end:${100 - pos(hi)}%"></i><em style="inset-inline-start:${pos(p.predicted)}%"></em></div>
+    <div class="rl"><span>غالباً بين ${fmtK(lo)} و${fmtK(hi)}</span><span>المعتاد ${fmtK(p.usual)}</span></div>`;
+  if (p.model?.coverage != null) h += `<span class="note">بالاختبار: ${Math.round(p.model.coverage / 10)} من 10 مرات جت داخل المدى.</span>`;
+  const sh = ig?.dash?.[p.username || 'timekeeperkw']?.shift;
+  if (sh?.direction === 'down') h += `<span class="note" style="color:#8a1426">⚠ الوصول نازل من ${esc(dayAr(sh.since))}، والتوقع مبني على البوستات اللي قبل، فممكن يطلع أعلى من الواقع.</span>`;
+  h += `</section>`;
+  const sg = (p.suggestions || []).slice(0, 3);
+  if (sg.length) h += `<section class="sg" aria-label="قبل النشر"><h3>قبل النشر</h3>${sg.map((s, i) => `<div class="sgi"><p>${esc(s.text)}${s.why ? `<small>${esc(s.why)}</small>` : ''}</p><button type="button" class="do" data-act="suggest" data-id="${esc(f.id)}" data-k="${i}">${s.action === 'test' ? 'جرّبها' : 'سوّها'}</button></div>`).join('')}</section>`;
+  return h;
+}
+function viewOutcome(f) {
+  const g = igFilm(f) || {}, p = g.prediction, rep = bestReport(f);
+  let h = '';
+  if (p?.predicted) {
+    const done = p.actual != null, now = done ? p.actual : p.now, mx = Math.max(p.predicted, now || 0, 1);
+    h += `<section class="pred" aria-label="المتوقع مقابل الفعلي"><small>الوصول · المتوقع مقابل ${done ? 'الفعلي' : 'الحين'}</small><div class="vs">
+      <div class="vsrow"><span>المتوقع</span><span class="bar"><i style="width:${pc(p.predicted / mx)}%;background:#DCD3C2"></i></span><b>${fmtK(p.predicted)}</b></div>
+      <div class="vsrow"><span>${done ? 'الفعلي' : 'الحين'}</span><span class="bar"><i style="width:${pc((now || 0) / mx)}%;background:var(--teal)"></i></span><b>${now == null ? '—' : fmtK(now)}</b></div></div>
+      <div class="rl"><span>${done ? (p.within ? '✓ جا داخل المدى المتوقع' : 'جا برا المدى المتوقع') : `المدى ${fmtK(p.low)}–${fmtK(p.high)}`}</span><span>${done ? '' : 'الحكم النهائي ' + esc(dayAr(p.final_at))}</span></div>
+      ${p.basis === 'after' ? '<span class="note">التوقع محسوب بعد النشر من مستوى الحساب وقتها.</span>' : ''}</section>`;
+  }
+  if (rep && (rep.worked?.length || rep.didnt?.length)) h += linesBox(shortLines(rep));
+  return h;
+}
+
+function viewSync() {
+  const st = ig?.status;
+  let h = `<header class="top fhead"><button type="button" class="back" aria-label="رجوع" data-go="numbers"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FBF7EF" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button><h1 style="font-size:28px">حالة المزامنة</h1></header>` + connectNote();
+  if (!st) return h;
+  h += `<section class="group"><div class="kvr"><span>آخر تحديث ناجح</span><b>${esc(when(st.last_fresh || st.last_ok))}</b></div>
+    <div class="kvr"><span>التحديث الجاي</span><b>${esc(when(st.next_fresh))}</b></div>
+    <div class="kvr"><span>تحديث الصبح الكامل</span><b>${esc(when(st.next_daily))}</b></div>
+    <div class="kvr"><span>التقارير انحسبت</span><b>${esc(when(st.refreshed_at))}</b></div>
+    <div class="kvr"><span>فحص تحديثات إنستغرام</span><b>${st.news_checked ? esc(when(st.news_checked)) : 'أول فحص الأحد'}</b></div>
+    ${Object.entries(st.accounts || {}).map(([u, a]) => `<div class="kvr"><span>${esc(ACC[u] || u)}</span><b style="color:${a.last_error ? '#B3261E' : '#1f6b3f'}">${a.last_error ? 'فشل: ' + esc(String(a.last_error).slice(0, 60)) : '✓ ' + esc(agoShort(a.last_ok))}</b></div>`).join('')}</section>`;
+  const probs = st.problems || [];
+  h += `<section class="group"><b>المشاكل</b>${probs.length ? probs.map((p) => `<div class="kvr"><span>${esc(p.detail || p.kind)}</span><b>${esc(when(p.at))}</b></div>`).join('') + '<p class="note">النظام يعيد المحاولة كل ساعة، وإذا فشل مرتين ورا بعض يوصلك تنبيه بالجوال.</p>' : '<p>ما فيه مشاكل.</p>'}</section>`;
+  const miss = [];
+  for (const [u, a] of Object.entries(st.accounts || {})) if (a.reels_without_figures) miss.push(`${ACC[u] || u}: ${a.reels_without_figures} ريل قديم بدون أرقام (إنستغرام ما يعطيها)`);
+  if (st.missing?.films_suggested) miss.push(`${st.missing.films_suggested} فيلم منشوره مقترح ويحتاج تأكيدك`);
+  if (st.missing?.films_unlinked) miss.push(`${st.missing.films_unlinked} فيلم ما انربط بمنشوره`);
+  h += `<section class="group"><b>أرقام ناقصة</b>${miss.length ? `<ul class="chg">${miss.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>` : '<p>ما فيه شي ناقص.</p>'}</section>`;
+  h += `<button type="button" class="btn dark" data-act="syncnow">حدّث الحين</button><button type="button" class="btn line" data-act="igreload">اقرا الأرقام من جديد</button>`;
+  h += `<details class="group"><summary class="note" style="cursor:pointer;color:var(--ink);font-weight:700">آخر المحاولات</summary>${(st.runs || []).map((r) => `<div class="kvr"><span>${esc(when(r.at))} · ${r.mode === 'fresh' ? 'سريع' : r.mode === 'backfill' ? 'تاريخ' : 'كامل'}</span><b>${r.status === 'ok' ? '✓' : esc(r.status)}${r.error ? ' · ' + esc(String(r.error).slice(0, 50)) : ''}</b></div>`).join('')}</details>`;
+  return h;
+}
+
+function viewLearn() {
+  let h = `<div class="headrow">${header('التعلّم', 'من أرقامنا، للفيلم الجاي')}${statusDot()}</div>` + connectNote() + viewBrief(true);
+  const L = ig?.learn; if (!L) return h;
+  const accs = L.accounts || {}, keys = Object.keys(ACC).filter((k) => accs[k]);
+  const a = accs[acc] ? acc : 'timekeeperkw', items = accs[a]?.items || [];
+  h += `<section class="group"><b style="font:800 18px var(--display)">اللي تعلمناه</b>`;
+  if (keys.length > 1) h += `<div class="seg" role="group" aria-label="الحساب">${keys.map((k) => `<button type="button" data-act="acc" data-k="${k}" aria-pressed="${k === a}">${ACC[k]}</button>`).join('')}</div>`;
+  const posts = accs[a]?.posts || {};
+  h += `<p class="note">من ${esc(Object.entries(posts).map(([k, n]) => `${n} ${({ reel: 'ريل', carousel: 'كاروسيل', image: 'صورة', video: 'فيديو' })[k] || k}`).join(' و'))} عمرها أسبوع وأكثر. علاقات من أرقامنا، مو أسباب مثبتة.</p>`;
+  for (const [lv, title, emptyText] of [['c', 'مؤكد', 'ما فيه للحين. يحتاج 20 منشور ونمط ثابت ما يجي بالصدفة.'], ['e', 'ملاحظة أولية', 'ما فيه.'], ['w', 'دليل ضعيف', 'ما فيه.']]) {
+    const list = items.filter((x) => lvOf(x.confidence) === lv);
+    h += `<div style="display:grid;gap:4px;margin-top:6px"><b style="font:800 14px var(--body);display:flex;gap:6px;align-items:center">${mark(lv)} ${title}</b>${list.length ? `<ul class="rules">${list.map((x) => `<li><b style="font:700 14px var(--body)">${esc(x.rule)}</b><br><span class="note">${esc(x.why)}</span></li>`).join('')}</ul>` : `<span class="note">${emptyText}</span>`}</div>`;
+  }
+  const needs = (a === 'timekeeperkw' ? L.recipe?.needs_data : null) || [];
+  if (needs.length) h += `<p class="note" style="margin-top:6px">نحتاج أفلام أكثر قبل ما نحكم على: ${esc(needs.slice(0, 6).map((x) => `${x.val} (${x.n} من 5)`).join('، '))}.</p>`;
+  h += `</section>`;
+  // a confirmed pattern may become a studio rule, only when the owner says so
+  const sugg = items.filter((x) => lvOf(x.confidence) === 'c').map((x) => ({ ...x, key: ruleKey(x) }))
+    .filter((x) => !RULES.some((r) => r.id === x.key) && !(igChoices.dismissed || []).includes(x.key));
+  for (const x of sugg) h += `<div class="sugg"><b style="font:800 15px var(--display)">صار مؤكد: تخليه قاعدة؟</b><p>${esc(x.rule)}</p><span class="note">${esc(x.why)}</span><div class="two"><button type="button" class="btn dark" style="min-height:44px" data-act="ruleyes" data-k="${esc(x.key)}">خله قاعدة</button><button type="button" class="btn line" style="min-height:44px" data-act="ruleno" data-k="${esc(x.key)}">مو الحين</button></div></div>`;
+  h += viewUpdates();
+  return h;
+}
+
+// ---- the post picker: «أي منشور هو؟» ----
+function viewPick(f) {
+  let h = `<button type="button" class="scrim" aria-label="سكّر" data-act="pickclose"></button><div class="sheet" role="dialog" aria-label="أي منشور هو؟"><div class="grab"></div><div class="row"><b style="font:800 18px var(--display)">أي منشور هو؟</b><button type="button" class="chip" data-act="pickclose">سكّر</button></div>`;
+  if (!mcp) return h + `<p class="note">الاختيار يحتاج الستوديو يوصل لـSupabase. افتحه من claude.ai أو تطبيق Claude، أو الصق الرابط.</p>${pasteRow(f)}</div>`;
+  if (pick.loading) return h + `<p class="note">يجيب آخر المنشورات…</p></div>`;
+  if (pick.error) return h + `<p class="note" style="color:#8a1426">${esc(ERR_AR[pick.error] || 'ما قدرت أجيب المنشورات.')}</p>${pasteRow(f)}</div>`;
+  const posts = pick.list || [];
+  h += `<span class="note">آخر ${f.kind === 'carousel' ? 'الكاروسيلات' : 'الريلز'} بـ@timekeeperkw${pick.synced ? ` · آخر سحب ${esc(ago(pick.synced))}` : ''}</span>`;
+  if (!posts.length) h += `<p>ما لقيت منشورات من هالنوع بالأيام الأخيرة.</p>`;
+  h += posts.map((p) => `<button type="button" class="post" data-act="pickchoose" data-id="${esc(f.id)}" data-k="${esc(p.media_id)}" aria-pressed="${pick.sel === p.media_id}" ${p.taken_by ? 'disabled' : ''}><span class="row"><b>${esc(p.first_line || '(بدون كابشن)')}</b>${pick.suggested === p.media_id ? '<span class="tag2">مقترح</span>' : ''}</span><span>${esc(when(p.posted_at))}${p.taken_by ? ' · مربوط بفيلم ثاني' : ''}</span></button>`).join('');
+  h += `<button type="button" class="btn dark" data-act="pickconfirm" data-id="${esc(f.id)}" ${pick.sel ? '' : 'disabled'}>هذا هو ✓</button>`;
+  h += `<details><summary class="note" style="cursor:pointer;color:var(--ink);font-weight:700">مو موجود؟</summary><p class="note">إذا توه منشور، إنستغرام يحتاج دقايق. اضغط «حدّث الحين» من حالة المزامنة، أو الصق الرابط:</p>${pasteRow(f)}</details></div>`;
+  return h;
+}
+const pasteRow = (f) => `<div class="linkrow"><input id="iglink" class="inp" inputmode="url" placeholder="https://www.instagram.com/reel/…" value="${esc(f.posted?.permalink || '')}"><button type="button" class="btn dark" style="min-height:44px" data-act="savelink" data-id="${esc(f.id)}">احفظ</button></div>`;
+async function openPick(f) {
+  pick = { id: f.id, loading: true }; route();
+  if (!mcp) { pick.loading = false; route(); return; }
+  try {
+    const rows = await sql(`select public.studio_candidates(${dq(filmPayload(f))}::jsonb) as c`);
+    const c = rows[0]?.c || {};
+    pick = { id: f.id, list: c.posts || [], suggested: c.suggested || null, sel: c.suggested || igFilm(f)?.media_id || null, synced: c.synced_at };
+  } catch (e) { pick = { id: f.id, error: e?.code || 'error' }; }
+  route();
+}
+async function confirmPick(f, mediaId, permalink) {
+  if (!mcp) return false;
+  const payload = filmPayload(f);
+  if (permalink) payload.posted = { ...(payload.posted || {}), permalink };
+  const mid = mediaId && /^[0-9]{5,30}$/.test(mediaId) ? `'${mediaId}'` : 'null';
+  try {
+    const rows = await sql(`select public.studio_confirm(${dq(payload)}::jsonb, ${mid}) as r`);
+    const r = rows[0]?.r || {};
+    if (!r.ok) {
+      toast(r.reason === 'taken' ? `هذا المنشور مربوط بـ«${films.find((x) => x.id === r.film)?.name || r.film}».` : 'ما لقيته. إذا توه منشور، حدّث الأرقام وجرّب بعد دقايق.');
+      return false;
+    }
+    if (ig) ig.films = { ...(ig.films || {}), [f.id]: r.film };
+    try { await db?.doc(`films/${f.id}`).update({ posted: { ...(f.posted || {}), media_id: r.film?.media_id, ...(r.film?.permalink ? { permalink: r.film.permalink } : {}) } }); } catch (e) {}
+    saveIgCache(); toast('انربط ✓ أقرا أرقامه بنفسي');
+    return true;
+  } catch (e) { toast(ERR_AR[e?.code] || 'ما قدرت أربطه الحين.'); return false; }
+}
+
+let briefKind = 'reel';
+// «قبل الفيلم الجاي»: what our numbers say before the next film, each line with its strength. For the owner's review:
+// nothing here changes the studio's rules.
+function viewBrief(open) {
+  const B = ig?.learn?.brief || brief, b = B?.[briefKind];
+  if (!b) return '';
+  let h = `<details class="group brief"${open ? ' open' : ''}><summary class="row" style="cursor:pointer;list-style:none"><b style="font:800 17px var(--display)">قبل الفيلم الجاي</b><span class="note" style="color:var(--ink)">${b.updated ? esc(ago(b.updated)) : ''} ▾</span></summary>
+    <div class="seg" role="group" aria-label="النوع" style="margin:8px 0">${[['reel', 'ريل'], ['carousel', 'كاروسيل']].map(([k, n]) => `<button type="button" data-act="briefkind" data-k="${k}" aria-pressed="${briefKind === k}">${n}</button>`).join('')}</div>`;
+  for (const x of b.sections || []) h += `<div class="sec"><div class="row" style="justify-content:flex-start;gap:7px">${mark(lvOf(x.confidence))}<b>${esc(x.title)}</b></div><p>${esc(x.advice)}</p>${x.evidence ? `<span class="note">${esc(x.evidence)}</span>` : ''}</div>`;
+  if (b.test_next?.length) h += `<div class="q try" style="margin-top:6px"><b>شنو نجرب (تجربة، مو قاعدة)</b><ul>${b.test_next.map((t) => `<li><b style="font:700 14px var(--body)">${esc(t.idea)}</b> · ${esc(t.why)}${t.measure ? ` <span class="note">(نقيسها بـ${esc(t.measure)})</span>` : ''}</li>`).join('')}</ul></div>`;
+  h += `<p class="note">من ${esc(b.sample?.posts ?? 0)} منشور، منها ${esc(b.sample?.studio_posts ?? 0)} من الاستوديو. توصيات للمراجعة؛ القواعد ما تتغير إلا بموافقتك.</p>`;
+  return h + `</details>`;
+}
+async function upShots(input) {
+  const id = input.dataset.up, stage = input.dataset.stage, f = films.find((x) => x.id === id), files = [...(input.files || [])];
+  if (!f || !files.length) return;
+  const assets = await window.claude?.use?.('assets').catch(() => null);
+  if (!assets || !db) { toast('الرفع يحتاج صلاحية تعديل الاستوديو. أرسلها لي بالمحادثة.'); return; }
+  toast(`أرفع ${files.length} صور…`);
+  try {
+    const urls = [];
+    for (const file of files) { const r = await assets.upload(file, { type: file.type || 'image/png' }); urls.push('/_blob/' + r.id); }
+    await db.doc(`films/${id}`).update({ insights_shots: [...(f.insights_shots || []), { stage, at: new Date().toISOString(), shots: urls }], insights_sent: [...new Set([...(f.insights_sent || []), stage])] });
+    await tell(`الاستوديو: صور إحصائيات «${f.name}» ${f.version || ''} (${CHECKS.find((c) => c.id === stage)?.name}): ${urls.length} صور. حللها.`, input.closest('section'), { film: id, kind: 'insights', stage, shots: urls });
+  } catch (e) { toast('ما قدرت أرفعها. أرسلها لي بالمحادثة.'); }
+}
+
+function route() {
+  const h = (location.hash || '#films').slice(1);
+  if (h.startsWith('edit-')) { tabs('films'); document.querySelector('.bubbles').hidden = true; $('#view').innerHTML = viewEdit(h.slice(5)); bind(); bindEdit(); return; }
+  const [tab, id] = h.startsWith('film-') ? ['films', h.slice(5)] : [h, null];
+  const alias = { styles: 'library', recreate: 'library', sync: 'numbers' };
+  const t = TABS.some((x) => x.id === tab) ? tab : alias[tab] || 'films';
+  tabs(t);
+  document.querySelector('.bubbles').hidden = !!id || tab === 'sync';
+  $('#view').innerHTML = id ? viewFilm(id) : tab === 'sync' ? viewSync() : t === 'numbers' ? viewNumbers() : t === 'learn' ? viewLearn() : t === 'library' ? viewLibrary() : t === 'team' ? viewTeam() : viewFilms();
+  if (!id && (tab === 'styles' || tab === 'recreate')) document.getElementById('sec-' + tab)?.scrollIntoView({ block: 'start' });
+  bind();
+  if (id) { const ff = films.find((x) => x.id === id); prefetch(ff); if (ff && ff.video && (ff.state === 'done' || ff.state === 'posted' || ff.final)) prefetchFilm(ff); }
+}
+function bind() {
+  document.querySelectorAll('[data-film]').forEach((b) => b.addEventListener('click', () => { location.hash = 'film-' + b.dataset.film; }));
+  document.querySelectorAll('[data-go]').forEach((b) => b.addEventListener('click', () => { location.hash = b.dataset.go; }));
+  document.querySelectorAll('[data-lang]').forEach((b) => b.addEventListener('click', () => { openLang = b.dataset.lang; route(); }));
+  document.querySelectorAll('[data-format]').forEach((b) => b.addEventListener('click', () => { openFormat = b.dataset.format; route(); }));
+  document.querySelectorAll('.type[data-type]').forEach((b) => b.addEventListener('click', () => { openType = openType === b.dataset.type ? null : b.dataset.type; route(); window.scrollTo({ top: 0, behavior: 'smooth' }); }));
+  document.querySelectorAll('[data-pick]').forEach((b) => b.addEventListener('click', () => {
+    const id = (location.hash.match(/^#film-(.+)$/) || [])[1], set = picked(id), k = +b.dataset.pick;
+    set.has(k) ? set.delete(k) : set.add(k); b.setAttribute('aria-pressed', set.has(k));
+  }));
+  document.querySelectorAll('[data-act]').forEach((b) => b.addEventListener('click', (e) => act(b, e)));
+  document.querySelectorAll('input[data-up]').forEach((i) => i.addEventListener('change', () => upShots(i)));
+}
+
+async function tell(text, el, record) {
+  let sent = false;
+  try {
+    if (comments && (await comments.canSendToClaude()) === 'available') { await comments.sendToClaude({ anchor: await comments.anchorFor(el), text }); sent = true; }
+  } catch (e) { /* kept in the inbox below */ }
+  try { if (db) await db.collection('inbox').add({ ...record, text, sent, at: new Date().toISOString() }); } catch (e) {}
+  toast(sent ? 'وصلت لـ Claude ✓' : 'انحفظت هنا. قل لي «شيّك الاستوديو» في المحادثة.');
+}
+async function act(b) {
+  const kind = b.dataset.act, id = b.dataset.id, f = films.find((x) => x.id === id);
+  if (kind === 'change') { const box = $('#chg'); box.hidden = !box.hidden; chgOpen = box.hidden ? null : id; if (!box.hidden && f.kind !== 'carousel') $('#note').focus(); return; }
+  if (kind === 'copy') {
+    try { await navigator.clipboard.writeText(f.caption || ''); toast('انسخ الكابشن ✓'); }
+    catch (e) { const r = document.createRange(); r.selectNodeContents($('#cap')); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); toast('اضغط مطوّل وانسخ.'); }
+    return;
+  }
+  if (kind === 'share') { share(f, b); return; }
+  if (kind === 'sharefilm') { shareFilm(f, b); return; }
+  if (kind === 'edsave') { edSave(f, b); return; }
+  if (kind === 'edundo') { edUndo(f, b); return; }
+  if (kind === 'edcancel') { ed = null; location.hash = 'film-' + id; return; }
+  if (kind === 'one') { one(f, +b.dataset.k, b); return; }
+  if (kind === 'saveall' || kind === 'savecap') { await save(kind, f, b); return; }
+  if (kind === 'posted') {
+    if (b.dataset.sure !== '1') { b.dataset.sure = '1'; b.textContent = 'نشرته؟ اضغط مرة ثانية ✓'; return; }
+    if (!db) { toast('يحتاج صلاحية تعديل الاستوديو.'); return; }
+    b.disabled = true;
+    try {
+      const at = new Date().toISOString();
+      await db.doc(`films/${id}`).update({ state: 'posted', posted: { at, version: f.version || '' }, insights_sent: [] });
+      try { await db.collection('inbox').add({ film: id, kind: 'posted', at, text: `الاستوديو: نشرت «${f.name}» ${f.version || ''}.`, sent: false }); } catch (e) {}
+      openPick({ ...f, state: 'posted', posted: { at, version: f.version || '' } });
+    } catch (e) { toast('ما قدرت أحفظها.'); b.disabled = false; }
+    return;
+  }
+  if (kind === 'briefkind') { briefKind = b.dataset.k; route(); return; }
+  if (kind === 'acc') { acc = b.dataset.k; route(); return; }
+  if (kind === 'stage') { stageSel[id] = b.dataset.k; route(); return; }
+  if (kind === 'suggest') {                                         // a suggestion before posting goes to Claude, who makes a new version for approval
+    const sg = ig?.predictions?.[id]?.suggestions?.[+b.dataset.k];
+    if (!sg || !f) return;
+    b.disabled = true;
+    await tell(`الاستوديو: ${sg.action === 'test' ? 'جرّب' : 'طبّق'} على «${f.name}» ${f.version || ''}: ${sg.text}`, b, { film: id, kind: 'suggestion', text: sg.text, action: sg.action, version: f.version || '' });
+    b.textContent = 'وصل ✓';
+    return;
+  }
+  if (kind === 'igreload') { loadIg(true); return; }
+  if (kind === 'pickopen') { openPick(f); return; }
+  if (kind === 'pickclose') { pick = null; route(); return; }
+  if (kind === 'pickchoose') { if (pick) { pick.sel = b.dataset.k; route(); } return; }
+  if (kind === 'pickconfirm') { b.disabled = true; if (await confirmPick(f, pick?.sel)) pick = null; route(); return; }
+  if (kind === 'syncnow') {
+    if (!mcp) { toast('يحتاج الستوديو يوصل لـSupabase.'); return; }
+    b.disabled = true;
+    try {
+      const r = (await sql('select public.instagram_sync_now() as r'))[0]?.r || {};
+      toast(r.started ? 'بدأ التحديث. خذ دقيقتين واضغط «اقرا الأرقام من جديد».' : r.reason === 'running' ? 'فيه تحديث شغال الحين.' : 'توه تحدّث. جرّب بعد 5 دقايق.');
+    } catch (e) { toast(ERR_AR[e?.code] || 'ما قدرت أبدأ التحديث.'); }
+    b.disabled = false; return;
+  }
+  if (kind === 'ruleyes' || kind === 'ruleno') {
+    if (!db) { toast('يحتاج صلاحية تعديل الاستوديو.'); return; }
+    const key = b.dataset.k, items = Object.values(ig?.learn?.accounts || {}).flatMap((x) => x.items || []);
+    const x = items.find((i) => ruleKey(i) === key);
+    b.disabled = true;
+    try {
+      if (kind === 'ruleyes' && x) {
+        await db.doc('studio/rules').set({ list: [...RULES, { id: key, kind: x.kind === 'carousel' ? 'carousel' : 'reel', at: new Date().toISOString(), name: x.rule, why: x.why, from: 'instagram' }] });
+        toast('انضافت للقواعد ✓');
+      } else {
+        await db.doc('studio/ig_choices').set({ ...igChoices, dismissed: [...new Set([...(igChoices.dismissed || []), key])] });
+        toast('تمام، ما تنضاف.');
+      }
+    } catch (e) { toast('ما قدرت أحفظها.'); b.disabled = false; }
+    return;
+  }
+
+  if (kind === 'savelink') {
+    const v = ($('#iglink')?.value || '').trim();
+    if (!/^https:\/\/(www\.)?instagram\.com\/(p|reel|reels)\/[\w-]+/.test(v)) { toast('حط رابط منشور من إنستغرام (instagram.com/p/… أو /reel/…).'); return; }
+    const link = v.split('?')[0];
+    if (mcp && await confirmPick(f, null, link)) { pick = null; route(); return; }
+    if (!db) { toast('يحتاج صلاحية تعديل الاستوديو.'); return; }
+    try { await db.doc(`films/${id}`).update({ posted: { ...(f.posted || {}), permalink: link } }); toast('انحفظ الرابط ✓ ينربط أول ما ينقرا من إنستغرام.'); }
+    catch (e) { toast('ما قدرت أحفظه.'); }
+    return;
+  }
+  if (kind === 'hide' || kind === 'unhide') {
+    if (!db || !f) { toast('يحتاج صلاحية تعديل الاستوديو.'); return; }
+    if (kind === 'hide' && b.dataset.sure !== '1') { b.dataset.sure = '1'; b.textContent = `أكيد؟ اضغط مرة ثانية (تقدر ترجّعه خلال ${HIDE_DAYS} يوم)`; return; }
+    b.disabled = true;
+    try {
+      await db.doc(`films/${id}`).update(kind === 'hide' ? { hidden: true, hidden_at: new Date().toISOString() } : { hidden: false });
+      toast(kind === 'hide' ? `انشال من القائمة ✓ ينمسح نهائياً بعد ${HIDE_DAYS} يوم إذا ما رجّعته.` : 'رجع للقائمة ✓');
+      if (kind === 'hide') location.hash = 'films';
+    } catch (e) { toast('ما قدرت.'); b.disabled = false; }
+    return;
+  }
+  if (kind === 'unpost') {
+    if (!db) return;
+    try { await db.doc(`films/${id}`).update({ state: 'done', posted: null, insights_sent: [] }); toast('رجع «جاهز للنشر».'); } catch (e) { toast('ما قدرت.'); }
+    return;
+  }
+  if (kind === 'shotschat') {
+    if (!db) return;
+    const stage = b.dataset.stage;
+    try {
+      await db.doc(`films/${id}`).update({ insights_sent: [...new Set([...(f.insights_sent || []), stage])] });
+      await tell(`الاستوديو: أرسلت لك صور إحصائيات «${f.name}» (${CHECKS.find((c) => c.id === stage)?.name}) بالمحادثة.`, b, { film: id, kind: 'insights', stage, via: 'chat' });
+    } catch (e) { toast('ما قدرت.'); }
+    return;
+  }
+  b.disabled = true;
+  try {
+    if (kind === 'approve') await tell(`الاستوديو: موافق على «${f.name}» ${f.version || ''} (${STEPS[(f.step || 1) - 1]}).`, b, { film: id, kind: 'approve', step: f.step });
+    else if (kind === 'send') {
+      const note = $('#note').value.trim(), slides = f.kind === 'carousel' ? [...picked(id)].sort((a, c) => a - c) : [];
+      if (!note) { toast('اكتب وش تبي يتغيّر.'); return; }
+      const where = slides.length ? ' · ' + slides.map((k) => (k === 0 ? 'الغلاف' : `الشريحة ${k}`)).join('، ') : '';
+      await tell(`الاستوديو: تعديل على «${f.name}» ${f.version || ''}${where}: ${note}`, b, { film: id, kind: 'change', step: f.step, note, ...(slides.length ? { slides: slides.map((k) => f.slides[k]) } : {}) });
+      picked(id).clear(); chgOpen = null; route();
+    } else if (kind === 'twin') {
+      const want = f.kind === 'carousel' ? 'ريل' : 'كاروسيل';
+      await tell(`الاستوديو: سوّ ${want} من «${f.title || f.name}» (${f.version || ''}): نفس المعلومات والمصادر.`, b, { film: id, kind: 'twin', format: f.kind === 'carousel' ? 'reel' : 'carousel' });
+    } else if (kind === 'start') {
+      const T = lib.types[b.dataset.type];
+      await tell(`الاستوديو: ابدأ ${FORMAT[openFormat]} جديد من نوع «${T.name}» بلغة «${lib.languages[openLang].name}». (أرسل لي الموضوع في المحادثة.)`, b, { kind: 'start', type: b.dataset.type, language: openLang, format: openFormat });
+    }
+  } finally { b.disabled = false; }
+}
+// The owner: «instead of save, make it as I can share it… I want to share all along the caption». Inside the Claude app
+// the page cannot open the phone's share sheet with several files, and each save is one file with its own prompt; so
+// «شارك الكل» shares the slides where the viewer allows it (a browser), and otherwise saves ONE zip holding every
+// slide and the caption, which the phone's Files app opens into the images. The caption also goes to the clipboard.
+// The files are fetched when the page opens, so the tap reaches the share with nothing awaited first.
+const shareFiles = {};
+function prefetch(f) {
+  if (!f?.slides?.length || shareFiles[f.id]) return;
+  shareFiles[f.id] = Promise.all(f.slides.map(async (src, k) => new File([await (await fetch(src)).blob()], `${f.id}-${String(k + 1).padStart(2, '0')}.png`, { type: 'image/png' })))
+    .then((files) => (shareFiles[f.id] = files), () => { delete shareFiles[f.id]; });
+}
+function crc32(u8) {
+  const t = crc32.t || (crc32.t = Array.from({ length: 256 }, (_, n) => { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; return c >>> 0; }));
+  let x = 0xFFFFFFFF; for (let i = 0; i < u8.length; i++) x = t[(x ^ u8[i]) & 255] ^ (x >>> 8);
+  return (x ^ 0xFFFFFFFF) >>> 0;
+}
+function zip(items) {                                                // stored (PNGs are already compressed), UTF-8 names
+  const enc = new TextEncoder(), parts = [], dir = [], DATE = ((new Date().getFullYear() - 1980) << 9) | ((new Date().getMonth() + 1) << 5) | new Date().getDate();
+  let off = 0;
+  for (const it of items) {
+    const n = enc.encode(it.name), c = crc32(it.data), z = it.data.length;
+    const h = new DataView(new ArrayBuffer(30));
+    h.setUint32(0, 0x04034b50, true); h.setUint16(4, 20, true); h.setUint16(6, 0x0800, true); h.setUint16(12, DATE, true);
+    h.setUint32(14, c, true); h.setUint32(18, z, true); h.setUint32(22, z, true); h.setUint16(26, n.length, true);
+    parts.push(h, n, it.data);
+    const d = new DataView(new ArrayBuffer(46));
+    d.setUint32(0, 0x02014b50, true); d.setUint16(4, 20, true); d.setUint16(6, 20, true); d.setUint16(8, 0x0800, true); d.setUint16(14, DATE, true);
+    d.setUint32(16, c, true); d.setUint32(20, z, true); d.setUint32(24, z, true); d.setUint16(28, n.length, true); d.setUint32(42, off, true);
+    dir.push(d, n); off += 30 + n.length + z;
+  }
+  const size = dir.reduce((a, p) => a + p.byteLength, 0), e = new DataView(new ArrayBuffer(22));
+  e.setUint32(0, 0x06054b50, true); e.setUint16(8, items.length, true); e.setUint16(10, items.length, true); e.setUint32(12, size, true); e.setUint32(16, off, true);
+  return new Blob([...parts, ...dir, e], { type: 'application/zip' });
+}
+async function share(f, b) {
+  const files = Array.isArray(shareFiles[f.id]) ? shareFiles[f.id] : null;
+  if (!files) { toast('لحظة، الصور تتحمّل… اضغط مرة ثانية.'); prefetch(f); return; }
+  if (f.caption) navigator.clipboard?.writeText(f.caption).catch(() => {});
+  if (navigator.canShare?.({ files })) {
+    try { await navigator.share({ files }); toast(f.caption ? 'الكابشن منسوخ: الصقه مع البوست ✓' : 'تم ✓'); return; }
+    catch (e) { if (e?.name === 'AbortError') return; }
+  }
+  let dl = null; try { dl = await window.claude?.use?.('downloads'); } catch (e) {}
+  if (!dl) { toast('المشاركة مو متاحة هنا. اضغط مطوّل على الصورة واحفظها.'); return; }
+  b.disabled = true;
+  try {
+    const items = await Promise.all(files.map(async (x) => ({ name: x.name, data: new Uint8Array(await x.arrayBuffer()) })));
+    if (f.caption) items.push({ name: `${f.id}-caption.txt`, data: new TextEncoder().encode(f.caption) });
+    await dl.save({ filename: `${f.id}.zip`, data: zip(items) });
+    toast(f.caption ? 'الكابشن منسوخ ✓ افتح الملف في Files' : 'افتح الملف في Files ✓');
+  } catch (e) { if (e?.code !== 'declined') toast('ما قدرت أجهز الملف. شارك الصور وحدة وحدة تحت.'); }
+  finally { b.disabled = false; }
+}
+async function one(f, k, b) {                                        // one slide: its own share sheet (Save Image)
+  let dl = null; try { dl = await window.claude?.use?.('downloads'); } catch (e) {}
+  const files = Array.isArray(shareFiles[f.id]) ? shareFiles[f.id] : null;
+  if (files && navigator.canShare?.({ files: [files[k]] }) && !dl) { navigator.share({ files: [files[k]] }).catch(() => {}); return; }
+  if (!dl) { toast('اضغط مطوّل على الصورة واحفظها.'); return; }
+  b.disabled = true;
+  try {
+    const data = files ? files[k] : await (await fetch(f.slides[k])).blob();
+    await dl.save({ filename: `${f.id}-${String(k + 1).padStart(2, '0')}.png`, data });
+    b.classList.add('on');
+  } catch (e) { if (e?.code === 'rate_limited') toast('لحظة وجرّب مرة ثانية.'); }
+  finally { b.disabled = false; }
+}
+async function save(kind, f, b) {                                   // the viewer saves each file (a confirmation each time)
+  let dl = null; try { dl = await window.claude?.use?.('downloads'); } catch (e) {}
+  if (!dl) { toast('الحفظ مو متاح هنا. اضغط مطوّل على الصورة واحفظها.'); return; }
+  b.disabled = true;
+  try {
+    if (kind === 'savecap') { await dl.save({ filename: `${f.id}-caption.txt`, data: new Blob([f.caption || ''], { type: 'text/plain;charset=utf-8' }) }); toast('انحفظ الكابشن ✓'); return; }
+    let n = 0;
+    for (const [k, src] of f.slides.entries()) {
+      const blob = await (await fetch(src)).blob();
+      try { await dl.save({ filename: `${f.id}-${String(k + 1).padStart(2, '0')}.png`, data: blob }); n++; } catch (e) { break; }
+    }
+    toast(n ? `انحفظت ${n} صور ✓` : 'ما انحفظ شي.');
+  } catch (e) { toast('ما قدرت أحفظ. جرّب مرة ثانية.'); }
+  finally { b.disabled = false; }
+}
+// ===== The carousel text editor. The owner: «I need for the carousel some time to edit or change the text… it is very
+// simple, so shouldn't require a regeneration of the whole picture». The slide is drawn here, on the phone, from the
+// record's `spec` and its saved pictures (`src`), with the kit's own layout (tools/carousel/carousel.mjs): the text
+// changes, the pictures never do. Saving uploads only the changed slides (assets) and keeps the version before it.
+const KIT = {
+  W: 1080, H: 1350, PAPER: '#f3ead6', INK: '#1c1510',
+  ORDER: ['topImage', 'rightBleed', 'bottomImage', 'leftBleed', 'bigCorner'],
+  TXT: { topImage: [80, 80, 850], rightBleed: [620, 60, 300], leftBleed: [70, 620, 300], bottomImage: [80, 80, 270], bigCorner: [80, 300, 270] },   // right, left, top
+  FIG: { topImage: [-40, 130, 1160, 700], rightBleed: [480, 200, 900, 950], leftBleed: [-300, 200, 900, 950], bottomImage: [-20, 650, 1120, 760], bigCorner: [-200, 800, 880, 850] },
+  WHOLE: { topImage: [60, 150, 960, 680], bottomImage: [60, 680, 960, 620] },
+  NORMAL: 1.5,                                   // CSS line-height: normal for the kit's font (calibrated against carousel.mjs)
+  SIZE: { title: 81, body: 44, ask: 64, name: 31, num: 33, cover: 86 },   // the owner: «increase it about 10%» (was 74/40/58/28/30/78)
+  BOTTOM: 1290, GAP: 24, PIC_MIN: 420,           // topImage/bottomImage: the picture takes the room the text leaves
+};
+const AR = /[ء-ي]/;
+let kitFonts = null; const kitImgs = {};
+function kitLoad() {
+  if (!kitFonts) kitFonts = Promise.all([['800', 'carousel-kit/fonts/tajawal-arabic-800-normal.woff2'], ['500', 'carousel-kit/fonts/tajawal-arabic-500-normal.woff2']]
+    .map(([w, u]) => new FontFace('TK', `url(${u})`, { weight: w }).load().then((f) => document.fonts.add(f)))).catch(() => {});
+  return kitFonts;
+}
+function kitImg(src) {
+  if (!kitImgs[src]) kitImgs[src] = new Promise((ok) => { const i = new Image(); i.onload = () => ok(i); i.onerror = () => ok(null); i.src = src; });
+  return kitImgs[src];
+}
+const kfont = (w, px) => `${w} ${px}px TK, "Helvetica Neue", Arial, sans-serif`;
+function tokens(html, bold = false) {          // words with their weight and whether they touch the word before them
+  const out = []; const re = /<b>([\s\S]*?)<\/b>|([^<]+)|<[^>]*>/g; let m, prevSpace = true;
+  while ((m = re.exec(html || ''))) {
+    if (m[1] === undefined && m[2] === undefined) continue;
+    const b = m[1] !== undefined || bold, s = (m[1] ?? m[2]).replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&');
+    s.split(/(\s+)/).forEach((p) => {
+      if (!p) return;
+      if (/^\s+$/.test(p)) { prevSpace = true; return; }
+      out.push({ t: p, b, glue: !prevSpace && out.length > 0 }); prevSpace = false;
+    });
+  }
+  const g = [];                                  // neighbouring words with no Arabic letter read left to right as one run
+  for (const w of out) { const l = g[g.length - 1]; if (l && !w.glue && !AR.test(w.t) && !AR.test(l.t) && l.b === w.b) l.t += ' ' + w.t; else g.push({ ...w }); }
+  return g;
+}
+function wrap(ctx, toks, width, px, weight) {
+  ctx.font = kfont(weight, px); const sp = ctx.measureText(' ').width;
+  const lines = []; let line = [], w = 0;
+  for (const t of toks) {
+    ctx.font = kfont(t.b ? 800 : weight, px); const tw = ctx.measureText(t.t).width; const gap = line.length && !t.glue ? sp : 0;
+    if (line.length && w + gap + tw > width) { lines.push(line); line = []; w = 0; }
+    line.push({ ...t, w: tw, gap: line.length && !t.glue ? sp : 0 }); w += (line.length > 1 ? line[line.length - 1].gap : 0) + tw;
+  }
+  if (line.length) lines.push(line);
+  return lines;
+}
+function drawLines(ctx, lines, right, top, px, lh, weight, color, accent) {
+  let y = top;
+  for (const line of lines) {
+    let x = right;
+    for (const t of line) {
+      x -= t.gap; ctx.font = kfont(t.b ? 800 : weight, px); ctx.fillStyle = t.b ? accent : color;
+      ctx.direction = 'rtl'; ctx.textAlign = 'right';   // the paragraph is RTL: «1963.» shows its stop on the left, Latin runs stay LTR ctx.textBaseline = 'middle';
+      ctx.fillText(t.t, x, y + lh / 2); x -= t.w;
+    }
+    y += lh;
+  }
+  return y;
+}
+function contain(im, [bx, by, bw, bh]) {
+  const r = Math.min(bw / im.width, bh / im.height), w = im.width * r, h = im.height * r;
+  return [bx + (bw - w) / 2, by + (bh - h) / 2, w, h];
+}
+async function kitSlide(canvas, spec, base, k) {          // k = 0: the cover; k = 1…n: the slides. Returns what the checks need.
+  await kitLoad();
+  const ctx = canvas.getContext('2d'); canvas.width = KIT.W; canvas.height = KIT.H;
+  const accent = spec.accent || '#a3172e', ink = spec.ink || KIT.INK;
+  const info = {};
+  if (k === 0) {
+    const c = spec.cover || {}, im = await kitImg(base + c.image);
+    ctx.fillStyle = '#111'; ctx.fillRect(0, 0, KIT.W, KIT.H);
+    let light = c.palette ? c.palette === 'light' : false;
+    if (im) {
+      const r = Math.max(KIT.W / im.width, KIT.H / im.height), w = im.width * r, h = im.height * r;
+      ctx.drawImage(im, (KIT.W - w) / 2, (KIT.H - h) / 2, w, h);
+      if (!c.palette) {                                    // a bright top band takes the black overlay (the kit's rule)
+        const t = document.createElement('canvas'); t.width = t.height = 64; const tc = t.getContext('2d'); tc.drawImage(im, 0, 0, 64, 64);
+        const d = tc.getImageData(8, 4, 48, 8).data; let sum = 0;
+        for (let i = 0; i < d.length; i += 4) sum += .299 * d[i] + .587 * d[i + 1] + .114 * d[i + 2];
+        light = sum / (d.length / 4) > 150;
+      }
+    }
+    const ov = await kitImg(`carousel-kit/${light ? 'Black' : 'White'}_temp.png`); if (ov) ctx.drawImage(ov, 0, -25, KIT.W, KIT.H);
+    const box = c.box === 'dark' ? ['#111111', '#FFFFFF'] : ['#FFFFFF', '#111111'];
+    const rows = [c.top, c.bottom].filter(Boolean).map((s) => {
+      let px = KIT.SIZE.cover; ctx.font = kfont(800, px);
+      const tw = () => tokens(s).reduce((a, t, i) => a + ctx.measureText(t.t).width + (i ? ctx.measureText(' ').width : 0), 0);
+      while (tw() + 44 > 940 && px > 32) { px -= 2; ctx.font = kfont(800, px); }
+      return { s, px, w: tw() + 44, h: px * 1.02 + 11 };
+    });
+    let y = KIT.H - 196 - rows.reduce((a, r) => a + r.h + 7, 0);
+    for (const r of rows) {
+      ctx.fillStyle = box[0]; ctx.fillRect(KIT.W - 52 - r.w, y, r.w, r.h);
+      drawLines(ctx, [wrap(ctx, tokens(r.s), 9999, r.px, 800)[0]], KIT.W - 52 - 22, y + 5, r.px, r.px * 1.02, 800, box[1], box[1]);
+      y += r.h + 7;
+    }
+    info.coverPx = Math.min(...rows.map((r) => r.px), KIT.SIZE.cover);
+    return info;
+  }
+  const s = spec.slides[k - 1], n = spec.slides.length, name = s.layout || KIT.ORDER[(k - 1) % 5], Z = KIT.SIZE;
+  ctx.fillStyle = spec.paper || KIT.PAPER; ctx.fillRect(0, 0, KIT.W, KIT.H);
+  const [right, left, top0] = KIT.TXT[name], width = KIT.W - right - left, R = KIT.W - right;
+  const tl = wrap(ctx, tokens(s.title, true), width, Z.title, 800), bl = wrap(ctx, tokens(s.body), width, Z.body, 500), al = s.ask ? wrap(ctx, tokens(s.ask, true), width, Z.ask, 800) : [];
+  const h = Z.num * KIT.NORMAL + 18 + 6 + 26 + tl.length * Z.title * 1.12 + 26 + (s.name ? Z.name * KIT.NORMAL + 8 : 0)
+    + bl.length * Z.body * 1.55 + (al.length ? 26 + al.length * Z.ask * 1.3 : 0);
+  const top = name === 'topImage' ? Math.min(top0, KIT.BOTTOM - h) : top0;
+  const im = s.image && await kitImg(base + s.image);
+  if (im) {
+    let box = [...((s.watch && KIT.WHOLE[name]) || KIT.FIG[name])];
+    if (name === 'topImage') box[3] = Math.max(0, top - KIT.GAP - box[1]);
+    if (name === 'bottomImage') { const y0 = top + h + KIT.GAP; box = [box[0], y0, box[2], Math.max(0, (s.watch ? 1300 : 1410) - y0)]; }
+    const r = contain(im, box); ctx.drawImage(im, ...r); info.figTop = r[1]; info.figBottom = r[1] + r[3]; info.figH = box[3];
+  }
+  const ov = await kitImg('carousel-kit/Black_temp.png'); if (ov) ctx.drawImage(ov, 0, -25, KIT.W, KIT.H);
+  let y = top;
+  ctx.font = kfont(800, Z.num); ctx.fillStyle = accent; ctx.direction = 'ltr'; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+  ctx.fillText(`${String(k).padStart(2, '0')} / ${String(n).padStart(2, '0')}`, R, y + Z.num * KIT.NORMAL / 2); y += Z.num * KIT.NORMAL + 18;
+  ctx.fillStyle = accent; ctx.fillRect(R - 120, y, 120, 6); y += 6 + 26;
+  y = drawLines(ctx, tl, R, y, Z.title, Z.title * 1.12, 800, ink, ink) + 26;
+  if (s.name) {
+    y -= 14; ctx.font = kfont(500, Z.name); ctx.globalAlpha = .75; ctx.fillStyle = ink; ctx.direction = 'ltr'; ctx.textAlign = 'right';
+    ctx.fillText(s.name, R, y + Z.name * KIT.NORMAL / 2); ctx.globalAlpha = 1; y += Z.name * KIT.NORMAL + 22;
+  }
+  y = drawLines(ctx, bl, R, y, Z.body, Z.body * 1.55, 500, ink, accent);
+  if (al.length) y = drawLines(ctx, al, R, y + 26, Z.ask, Z.ask * 1.3, 800, accent, accent);
+  info.textBottom = y; info.layout = name;
+  return info;
+}
+const words = (h) => (h || '').replace(/<[^>]+>/g, ' ').split(/\s+/).filter((w) => /[\w؀-ۿ]/.test(w));
+const toMark = (h) => (h || '').replace(/<b>([\s\S]*?)<\/b>/g, '**$1**');
+const fromMark = (t) => esc(t || '').replace(/\*\*([\s\S]+?)\*\*/g, '<b>$1</b>');
+function kitWarnings(spec, k, info) {
+  const out = [], avoid = (lib?.languages?.[spec.language || 'kuwaiti']?.avoid) || [];
+  const said = k === 0 ? `${spec.cover.top || ''} ${spec.cover.bottom || ''}` : `${spec.slides[k - 1].title} ${spec.slides[k - 1].body} ${spec.slides[k - 1].ask || ''}`;
+  const hit = avoid.filter((w) => new RegExp(`(^|[^\\u0621-\\u064A])[وف]?${w}([^\\u0621-\\u064A]|$)`).test(said.replace(/<[^>]+>/g, ' ')));
+  if (hit.length) out.push(`كلمات مو كويتية: ${hit.join('، ')}`);
+  if (k === 0) {
+    const n = ((spec.cover.top || '') + (spec.cover.bottom || '')).length;
+    if (n > 73) out.push(`الغلاف ${n} حرف؛ الحد 73`);
+    if (info.coverPx < 60) out.push('السطر طويل: الخط صغر');
+    return out;
+  }
+  const s = spec.slides[k - 1], n = words(s.body).length + words(s.ask).length, t = words(s.title).length;
+  if (n < 12 || n > 32) out.push(`${n} كلمة؛ الشريحة من 12 لـ32`);
+  if (t < 2 || t > 4) out.push(`العنوان ${t} كلمات؛ من 2 لـ4`);
+  if (info.figH !== undefined && ['topImage', 'bottomImage'].includes(info.layout) && info.figH < KIT.PIC_MIN) out.push('النص طويل: الصورة صغرت وايد، اختصره');
+  else if (info.figTop !== undefined && info.layout === 'bigCorner' && info.textBottom > info.figTop - 8) out.push('النص يدخل على الصورة: اختصره');
+  else if (info.textBottom > KIT.H) out.push('النص طويل: ينزل تحت الشريحة');
+  if (k === spec.slides.length && !(s.ask || '').trim().endsWith('؟')) out.push('آخر شريحة تنتهي بسؤال للقارئ (؟)');
+  return out;
+}
+let ed = null;                                           // {id, spec, k, caption, dirty: Set, base}
+function viewEdit(id) {
+  const f = films.find((x) => x.id === id);
+  if (!f) return header('تعديل النص', ready ? 'ما لقيته' : 'جاري التحميل…');
+  if (!f.spec || !f.src) return header('تعديل النص', esc(f.name)) + `<p class="note">ملفات هالكاروسيل مو محفوظة بالاستوديو، فما يتعدّل من هني. اكتب التعديل من «تعديل» وأسويه لك.</p><a class="chip" href="#film-${esc(id)}">→ رجوع</a>`;
+  if (!ed || ed.id !== id) ed = { id, spec: JSON.parse(JSON.stringify(f.spec)), k: 0, caption: f.caption || '', dirty: new Set(), base: f.src };
+  const sp = ed.spec, k = ed.k, names = ['الغلاف', ...sp.slides.map((_, i) => String(i + 1))];
+  let h = `<header class="top fhead"><button type="button" class="back" aria-label="رجوع" data-go="film-${esc(id)}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FBF7EF" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button><h1 style="font-size:26px">تعديل النص</h1><span class="tag" style="background:${f.color || '#F2C230'}">${esc(f.name)}</span></header>`;
+  h += `<div class="chips" role="group" aria-label="الشرائح">${names.map((n, i) => `<button type="button" class="chip${i === k ? ' on' : ''}" data-ek="${i}">${n}${ed.dirty.has(i) ? ' •' : ''}</button>`).join('')}</div>`;
+  h += `<canvas id="kit" class="kitc" width="1080" height="1350" aria-label="الشريحة"></canvas><ul id="warn" class="warn"></ul>`;
+  if (k === 0) h += field('top', 'السطر الأول', sp.cover.top) + field('bottom', 'السطر الثاني', sp.cover.bottom);
+  else {
+    const s = sp.slides[k - 1];
+    h += field('title', 'العنوان', s.title) + (s.name !== undefined ? field('name', 'الاسم تحت العنوان', s.name) : '')
+      + field('body', 'النص (الكلمة الملونة بين **نجمتين**)', toMark(s.body), true) + (k === sp.slides.length ? field('ask', 'سؤال القارئ (الكبير)', s.ask) : '');
+  }
+  h += `<label class="note" for="cap-ed" style="color:var(--ink);font-weight:700">الكابشن</label><textarea id="cap-ed" class="inp" data-ef="caption" maxlength="2200" style="min-height:140px">${esc(ed.caption)}</textarea>`;
+  h += `<label class="note" for="why-ed" style="color:var(--ink);font-weight:700">ليش غيّرته؟ <span style="font-weight:400">(اختياري، أتعلم منه للجاية)</span></label><input id="why-ed" class="inp" data-ef="why" maxlength="300" value="${esc(ed.why || '')}">`;
+  h += `<div class="two"><button type="button" class="btn dark" data-act="edsave" data-id="${esc(id)}">احفظ${ed.dirty.size ? ` (${ed.dirty.size})` : ''}</button><button type="button" class="btn line" data-act="edcancel" data-id="${esc(id)}">إلغاء</button></div>`;
+  if (f.history?.length) h += `<button type="button" class="chip" data-act="edundo" data-id="${esc(id)}">↶ رجّع النسخة السابقة (${esc(f.history[0].version || '')})</button>`;
+  return h;
+}
+function field(key, label, val, area) {
+  return `<label class="note" for="ef-${key}" style="color:var(--ink);font-weight:700">${label}</label>` +
+    (area ? `<textarea id="ef-${key}" class="inp" data-ef="${key}" maxlength="600">${esc(val || '')}</textarea>` : `<input id="ef-${key}" data-ef="${key}" class="inp" maxlength="120" value="${esc(val || '')}">`);
+}
+let kitTimer = null;
+function kitPaint() {
+  clearTimeout(kitTimer);
+  kitTimer = setTimeout(async () => {
+    const c = document.getElementById('kit'); if (!c || !ed) return;
+    const info = await kitSlide(c, ed.spec, ed.base, ed.k);
+    const w = document.getElementById('warn'); if (w) w.innerHTML = kitWarnings(ed.spec, ed.k, info).map((m) => `<li>⚠ ${esc(m)}</li>`).join('') || '<li class="ok">✓ جاهزة</li>';
+  }, 120);
+}
+function bindEdit() {
+  document.querySelectorAll('[data-ek]').forEach((b) => b.addEventListener('click', () => { ed.k = +b.dataset.ek; route(); }));
+  document.querySelectorAll('[data-ef]').forEach((el) => el.addEventListener('input', () => {
+    const key = el.dataset.ef, v = el.value;
+    if (key === 'caption') { ed.caption = v; return; }
+    if (key === 'why') { ed.why = v; return; }
+    if (ed.k === 0) ed.spec.cover[key] = v;
+    else ed.spec.slides[ed.k - 1][key] = key === 'body' ? fromMark(v) : v;
+    ed.dirty.add(ed.k);
+    if (key === 'title' && ed.k) {}                       // the slide numbers never change; the other slides stay as they are
+    const chip = document.querySelector(`[data-ek="${ed.k}"]`); if (chip && !chip.textContent.endsWith('•')) chip.textContent += ' •';
+    const sv = document.querySelector('[data-act="edsave"]'); if (sv) sv.textContent = `احفظ (${ed.dirty.size})`;
+    kitPaint();
+  }));
+  if (document.getElementById('kit')) kitPaint();
+}
+const nextVersion = (f) => `v${Math.max(0, ...[f.version, ...(f.versions || [])].map((v) => parseInt(String(v || '').replace(/\D/g, ''), 10) || 0)) + 1}`;
+// The owner, on an approved film: «مفروض بعد الموافقه يعطيني الفيديو جاهز للحفظ مع الكابشن». The full-quality file
+// (`final`, else the light copy) is fetched when the page opens, so the tap reaches the share sheet at once; in the
+// Claude app it is saved as one file (Save Video on the iPhone), and the caption goes to the clipboard on the same tap.
+const filmFiles = {};
+function prefetchFilm(f) {
+  if (filmFiles[f.id]) return;
+  const src = f.final || f.video;
+  filmFiles[f.id] = fetch(src).then((r) => r.blob()).then((b) => (filmFiles[f.id] = new File([b], `${f.id}-${f.version || 'film'}.mp4`, { type: 'video/mp4' })), () => { delete filmFiles[f.id]; });
+}
+async function shareFilm(f, b) {
+  const file = filmFiles[f.id] instanceof File ? filmFiles[f.id] : null;
+  if (f.caption) navigator.clipboard?.writeText(f.caption).catch(() => {});
+  if (!file) { toast('لحظة، الفيلم يتحمّل… اضغط مرة ثانية.'); prefetchFilm(f); return; }
+  if (navigator.canShare?.({ files: [file] })) {
+    try { await navigator.share({ files: [file] }); toast(f.caption ? 'الكابشن منسوخ: الصقه مع البوست ✓' : 'تم ✓'); return; }
+    catch (e) { if (e?.name === 'AbortError') return; }
+  }
+  let dl = null; try { dl = await window.claude?.use?.('downloads'); } catch (e) {}
+  if (!dl) { toast('الحفظ مو متاح هنا.'); return; }
+  b.disabled = true;
+  try { await dl.save({ filename: file.name, data: file }); toast(f.caption ? 'الكابشن منسوخ ✓ احفظ الفيديو وانشره' : 'تم ✓'); }
+  catch (e) { if (e?.code !== 'declined') toast('ما قدرت أحفظ. جرّب مرة ثانية.'); }
+  finally { b.disabled = false; }
+}
+// The owner: «I want you to understand every change I'm doing in the carousel so it can be updated for the future». Each
+// save keeps exactly what changed, before and after, field by field (and the owner's «ليش» when given): it goes with the
+// version's change log and the inbox note, and the session writes it into references/carousel-edits.md with its lesson.
+const ED_FIELDS = { top: 'السطر الأول', bottom: 'السطر الثاني', title: 'العنوان', name: 'الاسم', body: 'النص', ask: 'سؤال القارئ' };
+function edDiff(was, now, capWas, capNow) {
+  const out = [], plain = (h) => String(h || '').replace(/<b>([\s\S]*?)<\/b>/g, '**$1**').trim();
+  const pairs = [['الغلاف', was.cover || {}, now.cover || {}], ...now.slides.map((s, i) => [`الشريحة ${i + 1}`, was.slides?.[i] || {}, s])];
+  for (const [where, a, z] of pairs) for (const key of Object.keys(ED_FIELDS)) {
+    if (plain(a[key]) !== plain(z[key])) out.push({ where, field: ED_FIELDS[key], key, before: plain(a[key]), after: plain(z[key]) });
+  }
+  if ((capWas || '').trim() !== (capNow || '').trim()) out.push({ where: 'الكابشن', field: 'الكابشن', key: 'caption', before: capWas || '', after: capNow || '' });
+  return out;
+}
+function wdiff(a, z) {                                   // the changed runs of words: [[before, after], …]
+  const A = String(a || '').split(/\s+/).filter(Boolean), Z = String(z || '').split(/\s+/).filter(Boolean);
+  const L = A.map(() => Array(Z.length + 1).fill(0)).concat([Array(Z.length + 1).fill(0)]);
+  for (let i = A.length - 1; i >= 0; i--) for (let j = Z.length - 1; j >= 0; j--) L[i][j] = A[i] === Z[j] ? L[i + 1][j + 1] + 1 : Math.max(L[i + 1][j], L[i][j + 1]);
+  const out = []; let i = 0, j = 0, cur = null;
+  const flush = () => { if (cur) out.push([cur[0].join(' '), cur[1].join(' ')]); cur = null; };
+  while (i < A.length || j < Z.length) {
+    if (i < A.length && j < Z.length && A[i] === Z[j]) { flush(); i++; j++; }
+    else if (j < Z.length && (i >= A.length || L[i][j + 1] >= L[i + 1][j])) { (cur ||= [[], []])[1].push(Z[j++]); }
+    else { (cur ||= [[], []])[0].push(A[i++]); }
+  }
+  flush(); return out;
+}
+async function edSave(f, b) {
+  const assets = await window.claude?.use?.('assets').catch(() => null);
+  if (!assets || !db) { toast('الحفظ يحتاج صلاحية تعديل الاستوديو.'); return; }
+  b.disabled = true; b.textContent = 'أحفظ…';
+  try {
+    const slides = [...f.slides], c = document.createElement('canvas');
+    for (const k of [...ed.dirty].sort((a, z) => a - z)) {
+      await kitSlide(c, ed.spec, ed.base, k);
+      const blob = await new Promise((ok) => c.toBlob(ok, 'image/png'));
+      const r = await assets.upload(blob, { type: 'image/png' });
+      slides[k] = '/_blob/' + r.id;
+    }
+    const version = nextVersion(f), edits = edDiff(f.spec, ed.spec, f.caption, ed.caption), why = (ed.why || '').trim();
+    const history = [{ version: f.version || 'v1', spec: f.spec, slides: f.slides, caption: f.caption || '', at: new Date().toISOString() }, ...(f.history || [])].slice(0, 10);
+    await db.doc(`films/${f.id}`).update({ spec: ed.spec, slides, caption: ed.caption, version, versions: [version, ...(f.versions || [])], history,
+      state: 'waiting', waiting: 'موافقتك على الكاروسيل', edited: 'studio', updated: new Date().toISOString(),
+      changes: [{ v: version, at: new Date().toISOString(), by: 'owner', edits, ...(why ? { why } : {}),
+        what: edits.length ? edits.map((e) => `${e.where} · ${e.field}: ${wdiff(e.before, e.after).map(([x, y]) => `«${x || '—'}» ← «${y || '—'}»`).join('، ')}`) : ['عدّلت النص بنفسك'] }, ...(f.changes || [])].slice(0, 20) });
+    try { await db.collection('inbox').add({ film: f.id, kind: 'edit', version, edits, ...(why ? { why } : {}), sent: false, at: new Date().toISOString(),
+      text: `الاستوديو: عدّلت نص «${f.name}» (${version}) بنفسي: ${edits.map((e) => `${e.where} · ${e.field}`).join('، ') || 'بدون فرق'}${why ? ` — ليش: ${why}` : ''}` }); } catch (e) {}
+    toast(`انحفظ ${version} ✓`); ed = null; location.hash = 'film-' + f.id;
+  } catch (e) { toast('ما قدرت أحفظ. جرّب مرة ثانية.'); b.disabled = false; b.textContent = 'احفظ'; }
+}
+async function edUndo(f, b) {
+  const last = f.history?.[0]; if (!last || !db) return;
+  b.disabled = true;
+  try {
+    const version = nextVersion(f);
+    await db.doc(`films/${f.id}`).update({ spec: last.spec, slides: last.slides, caption: last.caption, version, versions: [version, ...(f.versions || [])],
+      history: [{ version: f.version, spec: f.spec, slides: f.slides, caption: f.caption || '', at: new Date().toISOString() }, ...f.history.slice(1)].slice(0, 10), updated: new Date().toISOString(),
+      changes: [{ v: version, at: new Date().toISOString(), what: [`رجّعت نص ${last.version}`] }, ...(f.changes || [])].slice(0, 20) });
+    toast(`رجعت نسخة ${last.version} (${version}) ✓`); ed = null; location.hash = 'film-' + f.id;
+  } catch (e) { toast('ما قدرت أرجّعها.'); b.disabled = false; }
+}
+
+function toast(t) { const n = $('#toast'); n.textContent = t; n.hidden = false; clearTimeout(n._t); n._t = setTimeout(() => (n.hidden = true), 6000); }
+
+function refresh() {                                                // live data never interrupts a playing film or a note being typed
+  if ((location.hash || '').startsWith('#edit-') && document.getElementById('kit')) return;   // nor an edit in progress
+  const v = document.querySelector('video'), t = document.getElementById('note');
+  if ((v && !v.paused) || (t && t.value.trim()) || document.activeElement?.tagName === 'TEXTAREA' || document.activeElement?.id === 'iglink') return;
+  route();
+}
+window.addEventListener('hashchange', route);
+route();
+fetch('library.json').then((r) => r.json()).then((j) => { lib = j; route(); }).catch(() => {});
+(async () => {
+  try {
+    if (!window.claude?.use) { ready = true; igState = 'nomcp'; route(); return; }
+    db = await window.claude.use('db');
+    comments = await window.claude.use('comments');
+    if (!db) { ready = true; route(); return; }
+    db.collection('films').onSnapshot((snap) => {
+      films = snap.docs.map((d) => ({ id: d.id, ...d.data() })).sort((a, b) => (a.order ?? 99) - (b.order ?? 99));
+      ready = true; refresh(); purgeHidden();
+    }, () => { ready = true; refresh(); });
+    db.doc('studio/now').onSnapshot((d) => { now = d.exists ? d.data() : null; refresh(); }, () => {});
+    db.doc('studio/rules').onSnapshot((d) => { const l = d.exists ? d.data().list : null; if (Array.isArray(l) && l.length) { RULES = l; refresh(); } }, () => {});
+    db.doc('studio/topics').onSnapshot((d) => { topics = d.exists ? d.data() : {}; refresh(); }, () => {});
+    db.doc('studio/recipe').onSnapshot((d) => { recipe = d.exists ? d.data() : null; refresh(); }, () => {});
+    db.doc('studio/brief').onSnapshot((d) => { brief = d.exists ? d.data() : null; refresh(); }, () => {});
+    db.doc('studio/ig').onSnapshot((d) => { if (d.exists && (!ig || igCached) && d.data().page) { ig = d.data().page; igAt = d.data().at; igCached = true; refresh(); } }, () => {});
+    db.doc('studio/ig_choices').onSnapshot((d) => { igChoices = d.exists ? d.data() : {}; refresh(); }, () => {});
+    mcp = await window.claude.use('mcp').catch(() => null);
+    const firstLoad = setInterval(() => { if (ready) { clearInterval(firstLoad); loadIg(false); } }, 300);
+    setInterval(() => { if (document.visibilityState === 'visible') loadIg(false); }, 30 * 60e3);   // the reports move every 3 hours
+    setInterval(refresh, 5 * 60e3);                                  // the countdowns move
+  } catch (e) { ready = true; route(); }
+})();
+})();
+</script>

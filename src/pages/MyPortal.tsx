@@ -11,14 +11,16 @@ import { locationBlockedMessage, locationAlreadyDenied, CORRECTION_FALLBACK } fr
 import { useAuth } from '../context/AuthContext';
 import { Spinner, Badge } from '../components/ui';
 import { workingDaysBetween } from './Leave';
-import { lateClassOf, isEarlyLeave, LATE_STYLE } from '../lib/lateness';
+import { isEarlyLeave, LATE_STYLE } from '../lib/lateness';
+import { dayPunctuality, type DayPunctuality, type LateClass } from '../shared/punctuality';
+import { scheduleFromRow, type Schedule, type ScheduleRow } from '../shared/schedule';
 import { Bell } from 'lucide-react';
 import { pushSupported, pushEnabled, enablePush, isIosNotInstalled } from '../lib/push';
 import { dayHours, totalHours, type DayHours } from '../shared/workedHours';
 import {
   fencesNear, clockIn as portalClockIn, clockOut as portalClockOut,
   applyForLeave, reviseLeave, cancelLeave as portalCancelLeave, leaveDocumentUrl,
-  planCorrection, requestCorrection, submitRequest as portalSubmitRequest,
+  planCorrection, requestCorrection, submitRequest as portalSubmitRequest, leaveBalance,
 } from '../shared/portal';
 import { useLive } from '../shared/live';
 
@@ -60,7 +62,6 @@ const fmtDur = (aIso: string, bIso: string | null, now: number) => {
 };
 const fmtDate = (iso?: string | null) => (iso ? new Date(`${iso}`).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Asia/Kuwait' }) : '');
 // minutes-since-midnight of an instant in Kuwait time (for lateness maths)
-const kwMinutes = (iso: string) => { const [h, m] = new Date(iso).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Kuwait' }).split(':').map(Number); return h * 60 + m; };
 const STANDARD_DAY_HOURS = 8; // expected hours per working day
 
 /** A month of records folded into one entry per Kuwait day, hours and all. */
@@ -137,6 +138,9 @@ export default function MyPortalPage() {
   const [geofences, setGeofences] = useState<Geofence[]>([]);
   const [workStart, setWorkStart] = useState('09:00');
   const [workEnd, setWorkEnd] = useState('17:00');
+  const [graceMinutes, setGraceMinutes] = useState(60);
+  // their own dated shifts — lateness is judged against these, as on Attendance and Performance
+  const [schedules, setSchedules] = useState<Schedule[]>([]);
   // How vague a GPS fix may be and still count as proof of being on site.
   const [maxAccuracy, setMaxAccuracy] = useState(200);
   const [loading, setLoading] = useState(true);
@@ -226,7 +230,7 @@ export default function MyPortalPage() {
     const [empQ, geoQ, setQ, attQ, reqQ, monthQ] = await Promise.all([
       supabase.from('employees').select('*'),
       supabase.from('geofences').select('*').eq('active', true),
-      supabase.from('settings').select('work_start_time, work_end_time, geo_max_accuracy_m').single(),
+      supabase.from('settings').select('work_start_time, work_end_time, late_grace_minutes, geo_max_accuracy_m').single(),
       supabase.from('attendance_records').select('id, clock_in, clock_out, is_late, justified, location, correction_reason')
         .eq('user_id', user.id).gte('clock_in', `${today}T00:00:00+03:00`).lte('clock_in', `${today}T23:59:59+03:00`)
         .order('clock_in', { ascending: true }),
@@ -241,12 +245,19 @@ export default function MyPortalPage() {
     setGeofences((geoQ.data as Geofence[]) ?? []);
     if (setQ.data?.work_start_time) setWorkStart(setQ.data.work_start_time);
     if (setQ.data?.work_end_time) setWorkEnd(setQ.data.work_end_time);
+    if (setQ.data?.late_grace_minutes != null) setGraceMinutes(Number(setQ.data.late_grace_minutes));
     if (setQ.data?.geo_max_accuracy_m) setMaxAccuracy(Number(setQ.data.geo_max_accuracy_m));
     setTodayRecs((attQ.data as AttRec[]) ?? []);
     setRequests((reqQ.data as EmpRequest[]) ?? []);
     if (mine) {
-      const { data: lv } = await supabase.from('leave_records').select('*').eq('employee_id', mine.id).order('created_at', { ascending: false });
+      const [{ data: lv }, { data: sch }] = await Promise.all([
+        supabase.from('leave_records').select('*').eq('employee_id', mine.id).order('created_at', { ascending: false }),
+        supabase.from('employee_schedules')
+          .select('id, employee_id, effective_from, effective_to, working_days, shift_start, shift_end, grace_minutes, note')
+          .eq('employee_id', mine.id),
+      ]);
       setLeaves((lv as LeaveRec[]) ?? []);
+      setSchedules(((sch ?? []) as ScheduleRow[]).map(scheduleFromRow));
     }
     } catch { setLoadError(true); }
     setLoading(false);
@@ -320,7 +331,7 @@ export default function MyPortalPage() {
       const now = new Date();
       // Lateness belongs to the clock-in that opened the day; an evening shift
       // starting after the morning one is not late.
-      const isLate = todayRecs.length === 0 && lateClassOf(now.toISOString(), workStart) !== 'On time';
+      const isLate = todayRecs.length === 0 && (punctOf(todayKuwait(), [{ clock_in: now.toISOString(), clock_out: null }]).hoursLate ?? 0) > 0;
       const err = await portalClockIn({
         userId: user!.id, employeeName: profile!.full_name, fenceName: matched.name,
         position: { latitude, longitude, accuracy }, isLate,
@@ -507,13 +518,9 @@ export default function MyPortalPage() {
 
   // ── summaries ──
   const leaveSummary = useMemo(() => {
-    const year = new Date().getFullYear();
-    const inYear = (l: LeaveRec) => new Date(l.leave_start).getFullYear() === year;
-    const annualTaken = leaves.filter((l) => l.leave_type === 'Annual' && l.approval_status === 'Approved' && inYear(l)).reduce((s, l) => s + Number(l.days), 0);
-    const sickTaken = leaves.filter((l) => l.leave_type === 'Sick' && l.approval_status === 'Approved' && inYear(l)).reduce((s, l) => s + Number(l.days), 0);
-    const pending = leaves.filter((l) => l.approval_status === 'Pending').length;
-    const entitlement = Number(emp?.annual_leave_entitlement ?? 30);
-    return { annualTaken, sickTaken, pending, entitlement, remaining: entitlement - annualTaken };
+    // the one leave calculation both apps and the Leave page share (shared/portalRules)
+    const b = leaveBalance(leaves, emp?.annual_leave_entitlement ?? null);
+    return { annualTaken: b.taken + b.booked, sickTaken: b.sick, pending: b.pending, entitlement: b.entitlement, remaining: b.remaining };
   }, [leaves, emp]);
 
   const allRequests = useMemo(() => [
@@ -555,25 +562,29 @@ export default function MyPortalPage() {
     return leaves.find((l) => l.approval_status === 'Approved' && l.leave_start <= t && l.leave_end >= t) ?? null;
   }, [leaves]);
 
+  /** One day, judged by the shared rule against their own shift (the shop default when they have none). */
+  function punctOf(date: string, recs: Array<{ clock_in: string; clock_out: string | null; justified?: boolean | null }>): DayPunctuality {
+    return dayPunctuality(
+      { date, schedules, records: recs.map((r) => ({ clockIn: r.clock_in, clockOut: r.clock_out, justified: r.justified })) },
+      { defaultStart: workStart, defaultEnd: workEnd, graceMinutes },
+    );
+  }
+  /** Per Kuwait day: whether the clock-in that opened it was late. Lateness belongs to that clock-in only. */
+  const judgeDays = (recs: AttRec[]) => {
+    const byDate = new Map<string, AttRec[]>();
+    for (const r of recs) { const d = kwDate(r.clock_in); byDate.set(d, [...(byDate.get(d) ?? []), r]); }
+    return new Map([...byDate.entries()].map(([d, rs]) => [d, punctOf(d, rs)]));
+  };
+
   // this month's attendance summary — must stay above the early return (Rules of Hooks)
   const monthStats = useMemo(() => {
-    const [wh, wm] = workStart.split(':').map(Number);
-    const graceMin = wh * 60 + wm + 60; // on time until start + 1h grace
     // Group by day first. A day worked in two shifts is one day, its hours add
     // up, and only the clock-in that opened it can be late — counting per
     // record would call it two days and charge a shortfall against each half.
     const byDay = groupByDay(monthRecs);
-    const firstOfDay = new Map<string, AttRec>();
-    for (const r of monthRecs) {
-      const d = kwDate(r.clock_in);
-      const seen = firstOfDay.get(d);
-      if (!seen || r.clock_in < seen.clock_in) firstOfDay.set(d, r);
-    }
-    let lateHours = 0;   // cumulative hours arrived past the grace window
+    const judged = [...judgeDays(monthRecs).values()];
+    const lateHours = judged.reduce((t, d) => t + (d.hoursLate ?? 0), 0); // hours past the grace window
     let missingHours = 0; // cumulative shortfall below 8h on days that are finished
-    for (const r of firstOfDay.values()) {
-      if (!r.justified) { const a = kwMinutes(r.clock_in); if (a > graceMin) lateHours += (a - graceMin) / 60; }
-    }
     for (const day of byDay.values()) {
       // A day still being worked is not short of anything yet, and a day nobody
       // clocked out of is a correction to make rather than a shortfall to charge.
@@ -582,23 +593,24 @@ export default function MyPortalPage() {
     }
     const days = byDay.size;
     const hours = totalHours([...byDay.values()]);
-    const late = [...firstOfDay.values()].filter((r) => r.is_late && !r.justified).length;
+    const late = judged.filter((d) => (d.hoursLate ?? 0) > 0).length;
     return { days, hours, onTime: Math.max(0, days - late), late, lateHours, missingHours };
-  }, [monthRecs, workStart]);
+  }, [monthRecs, workStart, workEnd, graceMinutes, schedules]);
 
   // selected-month attendance summary for the history panel
+  const histJudged = useMemo(() => judgeDays(histRecs), [histRecs, workStart, workEnd, graceMinutes, schedules]);
   const histStats = useMemo(() => {
     const byDay = groupByDay(histRecs);
-    const firstOfDay = new Map<string, AttRec>();
-    for (const r of histRecs) {
-      const d = kwDate(r.clock_in);
-      const seen = firstOfDay.get(d);
-      if (!seen || r.clock_in < seen.clock_in) firstOfDay.set(d, r);
-    }
     const days = byDay.size;
     const hours = totalHours([...byDay.values()]);
-    const late = [...firstOfDay.values()].filter((r) => r.is_late && !r.justified).length;
+    const late = [...histJudged.values()].filter((d) => (d.hoursLate ?? 0) > 0).length;
     return { days, hours, onTime: Math.max(0, days - late), late };
+  }, [histRecs, histJudged]);
+  /** The record that opened each day, so only it carries the day's lateness in the list. */
+  const histFirstIds = useMemo(() => {
+    const first = new Map<string, AttRec>();
+    for (const r of histRecs) { const d = kwDate(r.clock_in); const seen = first.get(d); if (!seen || r.clock_in < seen.clock_in) first.set(d, r); }
+    return new Set([...first.values()].map((r) => r.id));
   }, [histRecs]);
 
   if (loading) return <PortalSkeleton />;
@@ -623,7 +635,8 @@ export default function MyPortalPage() {
   const workedTodayMs = (dayHours(
     todayRecs.map((r) => ({ clockIn: r.clock_in, clockOut: r.clock_out })), new Date(nowMs),
   ).hours ?? 0) * 3_600_000;
-  const lateClass = firstRec ? lateClassOf(firstRec.clock_in, workStart) : null;
+  const todayJudged = punctOf(todayKuwait(), todayRecs);
+  const lateClass: LateClass | null = firstRec ? todayJudged.lateClass : null;
   const lateLabel = lateClass && lateClass !== 'On time' && !firstRec?.justified ? lateClass : null;
   const portalReady = !!emp && emp.portal_enabled !== false;
   const onPaidLeaveToday = !!todayLeave && todayLeave.leave_type !== 'WFH';
@@ -638,8 +651,15 @@ export default function MyPortalPage() {
     : 'Not clocked in';
   const headerDot = onPaidLeaveToday ? 'bg-sky-500' : wfhToday ? 'bg-violet-500' : clockedIn ? (lateLabel ? 'bg-amber-500' : 'bg-emerald-500') : startedToday ? 'bg-slate-400' : 'bg-slate-300';
 
-  // on time until = work start + 1h grace
-  const graceEnd = (() => { const [h, m] = workStart.split(':').map(Number); const t = h * 60 + m + 60; const hr = Math.floor(t / 60), mn = t % 60; const ap = hr >= 12 ? 'PM' : 'AM'; return `${((hr + 11) % 12) + 1}:${String(mn).padStart(2, '0')} ${ap}`; })();
+  // on time until = their shift start today + its grace (null when their hours vary)
+  const graceEnd = (() => {
+    const sh = todayJudged.shift;
+    if (!sh.start) return null;
+    const [h, m] = sh.start.split(':').map(Number);
+    const t = h * 60 + m + (sh.graceMinutes ?? graceMinutes);
+    const hr = Math.floor(t / 60), mn = t % 60; const ap = hr >= 12 ? 'PM' : 'AM';
+    return `${((hr + 11) % 12) + 1}:${String(mn).padStart(2, '0')} ${ap}`;
+  })();
 
   const entitlement = leaveSummary.entitlement;
   const usedPct = entitlement > 0 ? Math.min(100, Math.round((leaveSummary.annualTaken / entitlement) * 100)) : 0;
@@ -734,7 +754,7 @@ export default function MyPortalPage() {
         </div>
 
         <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
-          <span className="text-slate-400">Expected by {graceEnd}</span>
+          {graceEnd && <span className="text-slate-400">Expected by {graceEnd}</span>}
           {!clockedIn && lastRec?.clock_out && isEarlyLeave(lastRec.clock_out, myShiftEnd) && (
             <span className="text-amber-600">Clocked out before {myShiftEnd} — counts as early leave unless approved.</span>
           )}
@@ -914,7 +934,8 @@ export default function MyPortalPage() {
               <ul className="divide-y divide-slate-100">
                 {histRecs.map((r) => {
                   const st = r.justified ? { t: 'Justified', dot: 'bg-emerald-500', c: 'text-emerald-600' }
-                    : r.is_late ? { t: lateClassOf(r.clock_in, workStart), dot: 'bg-amber-500', c: 'text-amber-600' }
+                    : histFirstIds.has(r.id) && (histJudged.get(kwDate(r.clock_in))?.hoursLate ?? 0) > 0
+                      ? { t: histJudged.get(kwDate(r.clock_in))!.lateClass ?? 'Late', dot: 'bg-amber-500', c: 'text-amber-600' }
                     : { t: 'On time', dot: 'bg-emerald-500', c: 'text-emerald-600' };
                   return (
                     <li key={r.id} className="py-2.5 flex flex-wrap items-center gap-x-5 gap-y-1">
