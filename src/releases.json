@@ -1,5 +1,18 @@
 [
   {
+    "version": "3.21.0",
+    "date": "2026-11-10",
+    "title": "A clearer Inbox",
+    "changes": [
+      "The Inbox opens with one line saying what needs you and what is waiting on someone else.",
+      "The tabs are now Needs you, Waiting and Done, and fit on a phone.",
+      "Requests waiting on a manager are grouped under their name, with one button to remind them about all of them.",
+      "Each request shows what the employee actually wrote, the time change in one line, and how long it has waited.",
+      "A sick-leave request shows which sick day of the year it would be and whether a sick note came with it.",
+      "Marketing campaigns moved below the requests, and shrink to one line when none are running."
+    ]
+  },
+  {
     "version": "3.20.0",
     "date": "2026-11-10",
     "title": "Numbers that agree",
