@@ -5,7 +5,8 @@ import {
 } from 'date-fns';
 import { AlertTriangle, CalendarClock, Clock3, CalendarDays } from 'lucide-react';
 import { CrudModule, CrudConfig } from '../components/CrudModule';
-import { Badge } from '../components/ui';
+import { Badge, Modal } from '../components/ui';
+import { leaveBalance, leaveTypeOf } from '../shared/portalRules';
 import { supabase } from '../lib/supabase';
 import { locationType, LOCATION_TYPE_STYLE } from '../lib/locationType';
 
@@ -72,11 +73,12 @@ export default function LeavePage() {
   const [areaFilter, setAreaFilter] = useState('All');
   const [ltypeFilter, setLtypeFilter] = useState('All');
   const [month, setMonth] = useState(format(new Date(), 'yyyy-MM'));
+  const [personId, setPersonId] = useState<string | null>(null);
 
   useEffect(() => {
     supabase.from('employees').select('id, full_name, annual_leave_entitlement, status, location, job_title')
       .order('full_name').then(({ data }) => setEmployees((data as Employee[]) ?? []));
-    supabase.from('leave_records').select('id, employee_id, leave_type, leave_start, leave_end, days, approval_status, manager_status, notes')
+    supabase.from('leave_records').select('id, employee_id, leave_type, leave_start, leave_end, days, approval_status, manager_status, notes, document_url')
       .then(({ data }) => setLeaves((data as LeaveRow[]) ?? []));
   }, [reload]);
 
@@ -94,7 +96,7 @@ export default function LeavePage() {
     if (employeeFilter !== 'All' && l.employee_id !== employeeFilter) return false;
     if (statusFilter !== 'All' && l.phase !== statusFilter) return false;
     if (areaFilter !== 'All' && l.emp?.location !== areaFilter) return false;
-    if (ltypeFilter !== 'All' && (l.leave_type ?? 'Annual') !== ltypeFilter) return false;
+    if (ltypeFilter !== 'All' && leaveTypeOf(l) !== ltypeFilter) return false;
     return true;
   }), [enriched, employeeFilter, statusFilter, areaFilter, ltypeFilter]);
 
@@ -172,21 +174,11 @@ export default function LeavePage() {
       .sort((a, b) => (locationType(a.location) ?? 'zzz').localeCompare(locationType(b.location) ?? 'zzz') || a.full_name.localeCompare(b.full_name)),
     [employees, employeeFilter, areaFilter]);
 
-  // ── balances (unchanged logic)
-  const balances = useMemo(() => {
-    const year = new Date().getFullYear();
-    return employees
-      .filter((e) => ['Active', 'On leave'].includes(e.status))
-      .map((e) => {
-        const approvedThisYear = leaves.filter((l) =>
-          l.employee_id === e.id && l.approval_status === 'Approved' && new Date(l.leave_start).getFullYear() === year);
-        // only Annual leave consumes the entitlement — Sick tracked separately, WFH never deducts
-        const taken = approvedThisYear.filter((l) => (l.leave_type ?? 'Annual') === 'Annual').reduce((s, l) => s + Number(l.days), 0);
-        const sick = approvedThisYear.filter((l) => l.leave_type === 'Sick').reduce((s, l) => s + Number(l.days), 0);
-        const wfh = approvedThisYear.filter((l) => l.leave_type === 'WFH').reduce((s, l) => s + Number(l.days), 0);
-        return { ...e, taken, sick, wfh, remaining: Number(e.annual_leave_entitlement) - taken };
-      });
-  }, [employees, leaves]);
+  // ── balances: the same calculation My Portal and the dashboards use (shared/portalRules)
+  const balances = useMemo(() => employees
+    .filter((e) => ['Active', 'On leave'].includes(e.status))
+    .map((e) => ({ ...e, ...leaveBalance(leaves.filter((l) => l.employee_id === e.id), e.annual_leave_entitlement) })),
+  [employees, leaves]);
 
   const config: CrudConfig = useMemo(() => ({
     table: 'leave_records',
@@ -385,37 +377,77 @@ export default function LeavePage() {
         </div>
       </div>
 
-      {/* Balances */}
+      {/* Balances — tap a name for that person's year */}
       <div>
-        <h2 className="text-sm font-semibold text-slate-700 mb-2">Leave balances — {new Date().getFullYear()}</h2>
+        <h2 className="text-sm font-semibold text-slate-700 mb-2">Leave balances — {balances[0]?.year ?? new Date().getFullYear()}</h2>
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-xs text-slate-500 uppercase tracking-wide border-b border-slate-200">
-                <th className="px-4 py-3">Employee</th>
-                <th className="px-4 py-3 text-right">Entitlement</th>
-                <th className="px-4 py-3 text-right">Annual taken</th>
-                <th className="px-4 py-3 text-right">Remaining</th>
-                <th className="px-4 py-3 text-right hidden sm:table-cell">Sick</th>
-                <th className="px-4 py-3 text-right hidden sm:table-cell">WFH</th>
+                <th className="px-3 sm:px-4 py-3">Employee</th>
+                <th className="px-3 sm:px-4 py-3 text-right hidden sm:table-cell">Entitlement</th>
+                <th className="px-3 sm:px-4 py-3 text-right hidden sm:table-cell">Annual taken</th>
+                <th className="px-3 sm:px-4 py-3 text-right">Annual left</th>
+                <th className="px-3 sm:px-4 py-3 text-right">Sick</th>
+                <th className="px-3 sm:px-4 py-3 text-right hidden sm:table-cell">WFH</th>
               </tr>
             </thead>
             <tbody>
               {balances.length === 0 && <tr><td colSpan={6} className="px-4 py-6 text-center text-slate-400">Add employees in the HR module first</td></tr>}
               {balances.map((b) => (
                 <tr key={b.id} className="border-b border-slate-100 last:border-0">
-                  <td className="px-4 py-2.5 font-medium">{b.full_name}</td>
-                  <td className="px-4 py-2.5 text-right">{b.annual_leave_entitlement}</td>
-                  <td className="px-4 py-2.5 text-right">{b.taken}</td>
-                  <td className={`px-4 py-2.5 text-right font-semibold ${b.remaining < 0 ? 'text-red-600' : b.remaining <= 5 ? 'text-amber-600' : 'text-emerald-700'}`}>{b.remaining}</td>
-                  <td className="px-4 py-2.5 text-right text-slate-500 hidden sm:table-cell">{b.sick || '—'}</td>
-                  <td className="px-4 py-2.5 text-right text-slate-500 hidden sm:table-cell">{b.wfh || '—'}</td>
+                  <td className="px-3 sm:px-4 py-2.5 font-medium">
+                    <button type="button" onClick={() => setPersonId(b.id)} className="text-left text-blue-700 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 rounded">
+                      {b.full_name}
+                    </button>
+                    {b.pending > 0 && <span className="ml-1.5 text-[11px] text-amber-600">{b.pending} pending</span>}
+                  </td>
+                  <td className="px-3 sm:px-4 py-2.5 text-right hidden sm:table-cell">{b.entitlement}</td>
+                  <td className="px-3 sm:px-4 py-2.5 text-right hidden sm:table-cell">{b.taken + b.booked}{b.booked > 0 && <span className="text-xs text-slate-400"> ({b.booked} booked)</span>}</td>
+                  <td className={`px-3 sm:px-4 py-2.5 text-right font-semibold ${b.overdrawn > 0 ? 'text-red-600' : b.remaining <= 5 ? 'text-amber-600' : 'text-emerald-700'}`}>{b.overdrawn > 0 ? `−${b.overdrawn}` : b.remaining}</td>
+                  <td className="px-3 sm:px-4 py-2.5 text-right text-slate-700">{b.sick || '—'}</td>
+                  <td className="px-3 sm:px-4 py-2.5 text-right text-slate-500 hidden sm:table-cell">{b.wfh || '—'}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
       </div>
+
+      {personId && (() => {
+        const b = balances.find((x) => x.id === personId);
+        if (!b) return null;
+        const rows = leaves
+          .filter((l) => l.employee_id === personId && (l.approval_status === 'Pending' || Number(l.leave_start.slice(0, 4)) === b.year))
+          .sort((x, y) => y.leave_start.localeCompare(x.leave_start));
+        const fmt = (d: string) => format(parseISO(d), 'd MMM');
+        return (
+          <Modal title={`${b.full_name} — ${b.year}`} onClose={() => setPersonId(null)}>
+            <div className="grid grid-cols-3 gap-2 text-center mb-4">
+              <div className="rounded-lg bg-blue-50 py-2"><div className="text-xl font-semibold text-blue-800">{b.overdrawn > 0 ? `−${b.overdrawn}` : b.remaining}</div><div className="text-xs text-slate-500">annual left of {b.entitlement}</div></div>
+              <div className="rounded-lg bg-rose-50 py-2"><div className="text-xl font-semibold text-rose-700">{b.sick}</div><div className="text-xs text-slate-500">sick {b.sick === 1 ? 'day' : 'days'}</div></div>
+              <div className="rounded-lg bg-violet-50 py-2"><div className="text-xl font-semibold text-violet-700">{b.wfh}</div><div className="text-xs text-slate-500">WFH {b.wfh === 1 ? 'day' : 'days'}</div></div>
+            </div>
+            {rows.length === 0 && <p className="text-sm text-slate-400">No leave this year.</p>}
+            <ul className="divide-y divide-slate-100">
+              {rows.map((l) => {
+                const type = leaveTypeOf(l);
+                const phase = phaseOf(l, today);
+                return (
+                  <li key={l.id} className={`py-2 flex items-center gap-2 text-sm ${phase === 'Cancelled' || phase === 'Rejected' ? 'opacity-50' : ''}`}>
+                    <Badge className={TYPE_BADGE[type] ?? 'bg-slate-100'}>{type}</Badge>
+                    <span className="flex-1 tabular-nums">{l.leave_start === l.leave_end ? fmt(l.leave_start) : `${fmt(l.leave_start)} – ${fmt(l.leave_end)}`} · {Number(l.days)}d</span>
+                    {type === 'Sick' && (l.document_url
+                      ? <button type="button" onClick={() => openLeaveDocument(l.document_url!)} className="text-xs text-blue-700 underline">Sick note</button>
+                      : <span className="text-xs text-slate-400">no note</span>)}
+                    <Badge className={PHASE_STYLE[phase]}>{phase}</Badge>
+                  </li>
+                );
+              })}
+            </ul>
+          </Modal>
+        );
+      })()}
 
       {/* Requests list + editor (respects the filters above) */}
       <CrudModule config={config} />

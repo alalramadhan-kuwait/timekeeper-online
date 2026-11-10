@@ -1,5 +1,16 @@
 [
   {
+    "version": "3.20.0",
+    "date": "2026-11-10",
+    "title": "Numbers that agree",
+    "changes": [
+      "Leave: the Sick column now shows on phones, and tapping a name opens that person's leave for the year: annual left, sick and work-from-home days, each date, and whether a sick note was attached.",
+      "Annual leave left, sick days and pending requests are now worked out the same way on the Leave page, in My Portal and on the Dashboard, so they show the same number everywhere.",
+      "My Portal and the day view in Attendance judge lateness against your own shift, the same as the Attendance list and Performance, instead of a fixed 9:00.",
+      "Dashboard: supplier balance and open purchase orders now match the Purchase Orders page; expiring staff documents use 30 days like the Today view; the sales tiles say they come from the tills, and average Instagram engagement uses the last 12 posts like the Instagram page."
+    ]
+  },
+  {
     "version": "3.19.0",
     "date": "2026-11-01",
     "title": "Ask Mohammed by colour",

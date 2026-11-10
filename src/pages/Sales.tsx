@@ -259,7 +259,7 @@ export default function SalesPage() {
       {loading ? <Spinner /> : (
         <>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-            <Card title="Total sales" value={`${formatKD(total)} KD`} />
+            <Card title="Total sales" value={`${formatKD(total)} KD`} sub="logged in the Daily Sales Report — the Dashboard's figure comes from the tills" />
             <Card title="Transactions" value={sales.length} />
             <Card title="Average sale" value={sales.length ? `${formatKD(total / sales.length)} KD` : '—'} />
             <Card title="Period" value={`${from} → ${to}`} />
