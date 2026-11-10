@@ -2,7 +2,8 @@
 //
 // What it keeps (all read-only towards Instagram):
 //   instagram_media            one row per post: the latest figures, the full caption, carousel size, and for
-//                              Reels the watch time (ig_reels_avg_watch_time, ig_reels_video_view_total_time).
+//                              Reels the watch time (ig_reels_avg_watch_time, ig_reels_video_view_total_time) and
+//                              the video's length (duration_s, read from the file's header; 0 = could not be read).
 //   instagram_media_snapshots  a row each time a post is read, so a post's growth can be followed hour by hour
 //                              (how fast it took off, what it had at 48 hours and at 7 days).
 //   instagram_daily            yesterday's account figures (reach, profile views, accounts engaged, interactions,
@@ -14,8 +15,9 @@
 //   (none) / "daily"  everything above, the last 50 posts per account. The 08:15 Kuwait cron.
 //   "fresh"           only posts at the ages the reports read: under 26 hours (the early read), 40-62 hours (the
 //                     48-hour report) and 148-202 hours (the 7-day report). Every 3 hours. Pages back 8.5 days.
-//   "backfill"        every Reel the account still has (or `kinds`: ["REELS", "FEED"]), for the watch time and
-//                     skip rate the older posts were read without. Writes posts, not snapshots. Run by hand.
+//   "backfill"        every Reel the account still has (or `kinds`: ["REELS", "FEED"]). Writes posts, not snapshots.
+//                     `only_missing` reads only posts we lack, or lack a slide count or length for; `limit` caps a
+//                     run so it ends before the worker limit, and the report's `remaining` says what is left.
 //   "probe"           reads one recent Reel and one carousel and the account extras and returns what Instagram
 //                     answered, writing nothing. For checking which metrics the token gets.
 //
@@ -102,13 +104,32 @@ async function postInsights(m: Json, token: string, dropped: Record<string, Set<
   return null;
 }
 
+/** A video's length in seconds, from the mvhd box at the start or the end of the MP4. Null when it cannot be read. */
+async function videoSeconds(url: string) {
+  for (const range of ["bytes=0-1048575", "bytes=-1048576"]) {
+    try {
+      const res = await fetch(url, { headers: { Range: range } });
+      const b = new Uint8Array(await res.arrayBuffer());
+      for (let i = 4; i < b.length - 36; i++) {
+        if (b[i] !== 0x6d || b[i + 1] !== 0x76 || b[i + 2] !== 0x68 || b[i + 3] !== 0x64) continue;      // "mvhd"
+        const v = new DataView(b.buffer, b.byteOffset + i + 4);
+        const long = v.getUint8(0) === 1;
+        const scale = v.getUint32(long ? 20 : 12);
+        const units = long ? Number(v.getBigUint64(24)) : v.getUint32(16);
+        if (scale > 0 && units > 0) return Math.round(units / scale * 10) / 10;
+      }
+    } catch { /* try the other end of the file */ }
+  }
+  return null;
+}
+
 /** A Kuwait calendar date, `days` from today. */
 const kuwaitDate = (days = 0) =>
   new Date(Date.now() + 3 * 3600_000 + days * 86400_000).toISOString().slice(0, 10);
 
 const MEDIA_FIELDS = "id,caption,media_type,media_product_type,permalink,thumbnail_url,media_url,timestamp,like_count,comments_count,is_shared_to_feed,children{id}";
 
-function mediaRow(acc: Json, m: Json, ins: Record<string, number> | null) {
+function mediaRow(acc: Json, m: Json, ins: Record<string, number> | null, duration?: number) {
   return {
     media_id: m.id, username: acc.username,
     caption: (m.caption ?? "").slice(0, 2200), media_type: m.media_type ?? null,
@@ -121,6 +142,7 @@ function mediaRow(acc: Json, m: Json, ins: Record<string, number> | null) {
     views: ins?.views ?? null, total_interactions: ins?.total_interactions ?? null,
     profile_visits: ins?.profile_visits ?? null, follows: ins?.follows ?? null, reposts: ins?.reposts ?? null,
     avg_watch_time_ms: ins?.ig_reels_avg_watch_time ?? null, total_watch_time_ms: ins?.ig_reels_video_view_total_time ?? null,
+    duration_s: duration ?? null,
     engagement: ins?.total_interactions ?? ((m.like_count ?? 0) + (m.comments_count ?? 0)),
     insights: ins, synced_at: ins ? new Date().toISOString() : undefined,   // a failed read keeps the time of the last good one
   };
@@ -146,7 +168,7 @@ async function audience(acc: Json, token: string, since: number, until: number) 
   const asks: [string, Record<string, string>][] = [
     ["follow_type", { metric: "reach,views", breakdown: "follow_type", ...day }],
     ["media_product_type", { metric: "reach,views,total_interactions", breakdown: "media_product_type", ...day }],
-    ["online_followers", { metric: "online_followers", period: "lifetime", since: String(since), until: String(until) }],
+    ["online_followers", { metric: "online_followers", period: "lifetime" }],
     ["followers_age", { metric: "follower_demographics", period: "lifetime", metric_type: "total_value", breakdown: "age" }],
     ["followers_gender", { metric: "follower_demographics", period: "lifetime", metric_type: "total_value", breakdown: "gender" }],
     ["followers_city", { metric: "follower_demographics", period: "lifetime", metric_type: "total_value", breakdown: "city" }],
@@ -204,25 +226,33 @@ async function readAccount(admin: SupabaseClient, acc: Json, token: string, mode
     all.push(...(page.data ?? []));
     const oldest = Date.parse(all[all.length - 1]?.timestamp ?? "");
     const more = page.paging?.cursors?.after && page.paging?.next;
-    if (mode === "daily" || !more || n >= (mode === "backfill" ? 20 : 4) || (mode === "fresh" && oldest < cutoff)) break;
+    if (mode === "daily" || !more || n >= (mode === "backfill" ? 40 : 4) || (mode === "fresh" && oldest < cutoff)) break;
     page = await graph(`${acc.id}/media`, token, { fields: MEDIA_FIELDS, limit: "50", after: page.paging.cursors.after });
   }
+  const { data: have } = await admin.from("instagram_media").select("media_id,children_count,duration_s").eq("username", acc.username).limit(5000);
+  const known = new Map((have ?? []).map((r: Json) => [r.media_id, r]));
+  const needsLength = (m: Json) => m.media_product_type === "REELS" && !!m.media_url && known.get(m.id)?.duration_s == null;
+  const missing = (m: Json) => { const k = known.get(m.id); return !k || (m.media_type === "CAROUSEL_ALBUM" && k.children_count == null) || needsLength(m); };
   const kinds: string[] = Array.isArray(opts.kinds) && opts.kinds.length ? opts.kinds : ["REELS"];
   const ageH = (m: Json) => (Date.now() - Date.parse(m.timestamp ?? "")) / 3600_000;
+  const todo = mode === "backfill" ? all.filter((m) => kinds.includes(kindOf(m)) && (!opts.onlyMissing || missing(m))) : [];
   const list = mode === "fresh" ? all.filter((m) => { const h = ageH(m); return h < 26 || (h >= 40 && h <= 62) || (h >= 148 && h <= 202); })
-    : mode === "backfill" ? all.filter((m) => kinds.includes(kindOf(m)))
+    : mode === "backfill" ? todo.slice(0, opts.limit ?? todo.length)
     : all.slice(0, 50);
   one.listed = all.length;
+  if (mode === "backfill") one.remaining = todo.length - list.length;
   let posts = 0, withInsights = 0, watch = 0;
   const snaps: Json[] = [];
   for (const m of list) {
     let ins: Record<string, number> | null = null;
     try { ins = await postInsights(m, token, dropped); } catch { one.rate_limited = true; break; } // keep what we have
-    const { error } = await admin.from("instagram_media").upsert(mediaRow(acc, m, ins), { onConflict: "media_id" });
+    const duration = needsLength(m) ? (await videoSeconds(m.media_url)) ?? 0 : undefined;
+    const { error } = await admin.from("instagram_media").upsert(mediaRow(acc, m, ins, duration), { onConflict: "media_id" });
     if (error) throw new Error(`instagram_media: ${error.message}`);
     posts++;
     if (ins) { withInsights++; if (mode !== "backfill") snaps.push(snapshotRow(acc, m, ins, mode)); if (ins.ig_reels_avg_watch_time != null) watch++; }
   }
+  if (one.rate_limited && mode === "backfill") one.remaining = todo.length - posts;
   if (snaps.length) {
     const { error } = await admin.from("instagram_media_snapshots").insert(snaps);
     if (error) throw new Error(`instagram_media_snapshots: ${error.message}`);
@@ -280,6 +310,7 @@ Deno.serve(async (req: Request) => {
       const log: string[] = [];
       out[name] = { id: m.id, posted: m.timestamp, children: m.children?.data?.length ?? null, insights: await postInsights(m, token, dropped, log), refused: log };
     }
+    if (reel?.media_url) out.reel.seconds = await videoSeconds(reel.media_url);
     out.dropped = { REELS: [...dropped.REELS], FEED: [...dropped.FEED] };
     // single metrics to try on the Reel, each on its own, with Instagram's answer (for finding new metric names)
     if (reel && Array.isArray(body.try)) {
@@ -305,10 +336,11 @@ Deno.serve(async (req: Request) => {
   const dropped = { REELS: new Set<string>(), FEED: new Set<string>() };
   const report: Json[] = [];
   const only = typeof body.username === "string" ? body.username : null;
+  const limit = Number(body.limit) > 0 ? Math.min(Number(body.limit), 300) : undefined;
   for (const acc of accounts) {
     if (only && acc.username !== only) continue;
     // one account failing (rate limit, a Graph error) is reported and the next account still runs
-    try { report.push(await readAccount(admin, acc, token, mode, dropped, { kinds: body.kinds })); }
+    try { report.push(await readAccount(admin, acc, token, mode, dropped, { kinds: body.kinds, onlyMissing: body.only_missing === true, limit })); }
     catch (e) { report.push({ username: acc.username, error: (e instanceof Error ? e.message : String(e)).slice(0, 300), rate_limited: rateLimited(e) || undefined }); }
   }
   const bad = report.filter((r) => r.error || r.rate_limited);
