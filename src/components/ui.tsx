@@ -70,6 +70,13 @@ export const statusColors: Record<string, string> = {
   Low: 'bg-slate-100 text-slate-500 border-slate-200',
 };
 
+/** Badge colours for the three kinds of leave, shared by the Leave page and My Portal. */
+export const leaveTypeColors: Record<string, string> = {
+  Annual: 'bg-blue-100 text-blue-700 border-blue-200',
+  Sick: 'bg-rose-100 text-rose-600 border-rose-200',
+  WFH: 'bg-violet-100 text-violet-700 border-violet-200',
+};
+
 export function StatusBadge({ value }: { value: string }) {
   return <Badge className={statusColors[value]}>{value}</Badge>;
 }

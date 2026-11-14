@@ -5,27 +5,12 @@ import {
 } from 'date-fns';
 import { AlertTriangle, CalendarClock, Clock3, CalendarDays } from 'lucide-react';
 import { CrudModule, CrudConfig } from '../components/CrudModule';
-import { Badge, Modal } from '../components/ui';
+import { Badge, Modal, leaveTypeColors as TYPE_BADGE } from '../components/ui';
 import { leaveBalance, leaveTypeOf } from '../shared/portalRules';
 import { supabase } from '../lib/supabase';
+import { LEAVE_TYPES, workingDaysBetween } from '../shared/kuwaitTime';
 import { useAuth } from '../context/AuthContext';
 import { locationType, LOCATION_TYPE_STYLE } from '../lib/locationType';
-
-/**
- * Kuwait Labor Law (Law No. 6 of 2010): annual leave is 30 paid WORKING days.
- * The weekly rest day (Friday) inside a leave period does not consume leave,
- * so auto-calculated days skip Fridays.
- */
-export function workingDaysBetween(startStr: string, endStr: string): number {
-  let d = parseISO(startStr);
-  const end = parseISO(endStr);
-  let days = 0;
-  while (!isAfter(d, end)) {
-    if (getDay(d) !== 5) days++; // 5 = Friday
-    d = addDays(d, 1);
-  }
-  return days;
-}
 
 interface Employee { id: string; full_name: string; annual_leave_entitlement: number; status: string; location: string | null; job_title: string | null }
 interface LeaveRow { id: string; employee_id: string; leave_type?: string; leave_start: string; leave_end: string; days: number; approval_status: string; manager_status?: string; notes: string | null; document_url?: string | null }
@@ -36,12 +21,6 @@ async function openLeaveDocument(path: string) {
   if (data?.signedUrl) window.open(data.signedUrl, '_blank', 'noopener');
 }
 
-const LEAVE_TYPES = ['Annual', 'Sick', 'WFH'];
-const TYPE_BADGE: Record<string, string> = {
-  Annual: 'bg-blue-100 text-blue-700 border-blue-200',
-  Sick: 'bg-rose-100 text-rose-600 border-rose-200',
-  WFH: 'bg-violet-100 text-violet-700 border-violet-200',
-};
 
 type Phase = 'Pending' | 'Rejected' | 'Cancelled' | 'Upcoming' | 'Active' | 'Completed';
 const PHASE_STYLE: Record<Phase, string> = {
@@ -218,7 +197,7 @@ export default function LeavePage() {
     },
     fields: [
       { key: 'employee_id', label: 'Employee', type: 'select', required: true, options: employees.map((e) => ({ value: e.id, label: e.full_name })) },
-      { key: 'leave_type', label: 'Type', type: 'select', options: LEAVE_TYPES, defaultValue: 'Annual', required: true },
+      { key: 'leave_type', label: 'Type', type: 'select', options: [...LEAVE_TYPES], defaultValue: 'Annual', required: true },
       { key: 'leave_start', label: 'Leave start', type: 'date', required: true },
       { key: 'leave_end', label: 'Leave end', type: 'date', required: true },
       { key: 'days', label: 'Working days (blank = auto, Fridays excluded)', type: 'number' },

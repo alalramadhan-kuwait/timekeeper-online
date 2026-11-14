@@ -9,8 +9,7 @@ import {
 import { supabase } from '../lib/supabase';
 import { locationBlockedMessage, locationAlreadyDenied, CORRECTION_FALLBACK } from '../lib/locationHelp';
 import { useAuth } from '../context/AuthContext';
-import { Spinner, Badge } from '../components/ui';
-import { workingDaysBetween } from './Leave';
+import { Spinner, Badge, leaveTypeColors as TYPE_BADGE } from '../components/ui';
 import { isEarlyLeave, LATE_STYLE } from '../lib/lateness';
 import { dayPunctuality, type DayPunctuality, type LateClass } from '../shared/punctuality';
 import { scheduleFromRow, type Schedule, type ScheduleRow } from '../shared/schedule';
@@ -23,6 +22,7 @@ import {
   planCorrection, requestCorrection, submitRequest as portalSubmitRequest, leaveBalance,
 } from '../shared/portal';
 import { useLive } from '../shared/live';
+import { todayKuwait, kuwaitISO, kuwaitTimeOf as kuwaitHM, kuwaitDateOf as kwDate, workingDaysBetween } from '../shared/kuwaitTime';
 
 interface EmpRecord {
   id: string; full_name: string; user_id: string | null; job_title: string | null; location: string | null;
@@ -38,12 +38,6 @@ interface EmpRequest { id: string; request_type: string; details: string; status
 interface Geofence { id: string; name: string; lat: number; lng: number; radius_m: number; active: boolean }
 
 const fmtTime = (iso: string) => new Date(iso).toLocaleTimeString('en-KW', { hour: '2-digit', minute: '2-digit', hour12: true, timeZone: 'Asia/Kuwait' });
-const todayKuwait = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kuwait' });
-/** A Kuwait wall-clock time on a day, as an instant. Kuwait is UTC+3 all year. */
-const kuwaitISO = (date: string, time: string) => new Date(`${date}T${time}:00+03:00`).toISOString();
-const kuwaitHM = (iso: string) => new Intl.DateTimeFormat('en-GB',
-  { timeZone: 'Asia/Kuwait', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(iso));
-const kwDate = (iso: string) => new Date(iso).toLocaleDateString('en-CA', { timeZone: 'Asia/Kuwait' });
 const satOfWeek = (ymd: string) => { const d = new Date(`${ymd}T12:00:00Z`); d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 1) % 7)); return d.toISOString().slice(0, 10); }; // Kuwait week starts Saturday
 const durationStr = (a: string, b: string | null) => {
   const mins = Math.floor(((b ? new Date(b) : new Date()).getTime() - new Date(a).getTime()) / 60000);
@@ -119,11 +113,6 @@ const STATUS_BADGE: Record<string, string> = {
   Pending: 'bg-amber-100 text-amber-700 border-amber-200',
   Rejected: 'bg-rose-100 text-rose-600 border-rose-200',
   Cancelled: 'bg-slate-100 text-slate-500 border-slate-200',
-};
-const TYPE_BADGE: Record<string, string> = {
-  Annual: 'bg-blue-100 text-blue-700 border-blue-200',
-  Sick: 'bg-rose-100 text-rose-600 border-rose-200',
-  WFH: 'bg-violet-100 text-violet-700 border-violet-200',
 };
 
 export default function MyPortalPage() {

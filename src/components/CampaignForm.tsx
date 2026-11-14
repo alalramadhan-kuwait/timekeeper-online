@@ -4,6 +4,7 @@ import {
   FormOptions, FormProduct, Objective, formOptions, createCampaign,
   UNIT_LABEL, CHANNEL_LABEL, CONTENT_LABEL, OFFER_LABEL, ARRIVAL_LABEL,
 } from '../lib/campaigns';
+import { todayKuwait } from '../shared/kuwaitTime';
 
 const OBJECTIVE_HINT: Record<Objective, string> = {
   slow_stock: 'Move pieces that are slow or not selling.',
@@ -11,7 +12,6 @@ const OBJECTIVE_HINT: Record<Objective, string> = {
   best_seller: 'Push what already sells well.',
   brand_awareness: 'Grow attention for a brand, not a sale.',
 };
-const todayKuwait = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kuwait' });
 const inDays = (n: number) => new Date(Date.now() + n * 86400_000).toLocaleDateString('en-CA', { timeZone: 'Asia/Kuwait' });
 
 export default function CampaignForm({ myId, onClose, onCreated }: { myId: string; onClose: () => void; onCreated: (id: string) => void }) {

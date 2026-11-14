@@ -152,20 +152,3 @@ export async function logWhatsAppHandoff(customerId: string, templateKey: string
 export interface Occasion {
   customerId: string; name: string; phone: string | null; kind: string; label: string; date: string; daysUntil: number; year: number | null;
 }
-
-export async function getUpcomingOccasions(days = 7): Promise<Occasion[]> {
-  const { data, error } = await supabase.rpc('upcoming_occasions', { p_days: days });
-  if (error) throw new Error(error.message);
-  const rows = (data ?? []) as { customer_id: string; kind: string; label: string; occasion_date: string; days_until: number; occasion_year: number | null }[];
-  if (rows.length === 0) return [];
-  const ids = Array.from(new Set(rows.map(r => r.customer_id)));
-  const { data: people } = await supabase.from('customers').select('id, display_name, contact, phone_e164').in('id', ids);
-  const byId = new Map((people ?? []).map(p => [p.id as string, p as { display_name: string | null; contact: string | null; phone_e164: string | null }]));
-  return rows.map(r => {
-    const p = byId.get(r.customer_id);
-    return {
-      customerId: r.customer_id, name: p?.display_name?.trim() || p?.contact || 'Customer', phone: p?.phone_e164 ?? null,
-      kind: r.kind, label: r.label, date: r.occasion_date, daysUntil: r.days_until, year: r.occasion_year,
-    };
-  }).sort((a, b) => a.daysUntil - b.daysUntil || a.name.localeCompare(b.name));
-}

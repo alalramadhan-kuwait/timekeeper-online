@@ -18,14 +18,13 @@ import { dayPunctuality, punctualityTotals, shiftTimesOn } from '../shared/punct
 import { scheduleFromRow, type Schedule, type ScheduleRow } from '../shared/schedule';
 import { useLive } from '../shared/live';
 import { rangeLabel } from '../lib/dateRange';
+import { todayKuwait, kuwaitDateOf as kuwaitDate } from '../shared/kuwaitTime';
 
 interface EmpLite { id: string; full_name: string; location: string | null; job_title: string | null; status: string; user_id: string | null }
 interface LeaveLite { employee_id: string; leave_type: string; leave_start: string; leave_end: string; approval_status: string }
 
 const fmtTime = (iso: string) => new Date(iso).toLocaleTimeString('en-KW', { hour: '2-digit', minute: '2-digit', hour12: true, timeZone: 'Asia/Kuwait' });
 const fmtDate = (iso: string) => new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', timeZone: 'Asia/Kuwait' });
-const todayKuwait = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kuwait' });
-const kuwaitDate = (iso: string) => new Date(iso).toLocaleDateString('en-CA', { timeZone: 'Asia/Kuwait' });
 
 export default function AttendancePage() {
   const { role } = useAuth();

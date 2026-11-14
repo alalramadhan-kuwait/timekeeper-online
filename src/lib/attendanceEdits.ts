@@ -13,6 +13,9 @@
 import { supabase } from './supabase';
 import { shiftHours } from '../shared/workedHours';
 import { lateClassOf } from './lateness';
+import { kuwaitISO, kuwaitTimeOf as kuwaitHM, kuwaitDateOf as kuwaitDate } from '../shared/kuwaitTime';
+// the Kuwait clock helpers live in the shared foundation; re-exported for this file's callers
+export { kuwaitISO, kuwaitHM, kuwaitDate };
 
 export interface AttendanceRecord {
   id: string; user_id: string; employee_name: string;
@@ -25,14 +28,6 @@ export interface AttendanceRecord {
   geo_source: string | null; geo_flag: string | null;
 }
 
-/** yyyy-MM-dd + HH:mm in Kuwait → an instant. Kuwait is UTC+3 all year. */
-export const kuwaitISO = (date: string, time: string) =>
-  new Date(`${date}T${time}:00+03:00`).toISOString();
-/** The HH:MM an instant reads as in Kuwait, for a time input. */
-export const kuwaitHM = (iso: string) => new Intl.DateTimeFormat('en-GB',
-  { timeZone: 'Asia/Kuwait', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(iso));
-export const kuwaitDate = (iso: string) =>
-  new Date(iso).toLocaleDateString('en-CA', { timeZone: 'Asia/Kuwait' });
 export const fmtTime = (iso: string) => new Date(iso)
   .toLocaleTimeString('en-KW', { hour: '2-digit', minute: '2-digit', hour12: true, timeZone: 'Asia/Kuwait' });
 /**

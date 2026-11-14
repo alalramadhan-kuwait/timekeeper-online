@@ -77,21 +77,6 @@ export const alertQueries = {
   customers: () => supabase.from('customers').select('display_name, birthday, occasions').or('birthday.not.is.null,occasions.neq.[]'),
 };
 
-/** Returns active (non-dismissed, non-snoozed) alerts sorted by severity. */
-export async function buildAlerts(role: string | null): Promise<Alert[]> {
-  const canHR = ['admin', 'manager', 'hr'].includes(role ?? '');
-  const [waitingList, preOrders, purchaseOrders, employees, pendingLeave, customers, actions] = await Promise.all([
-    alertQueries.waitingList(),
-    alertQueries.preOrders(),
-    alertQueries.purchaseOrders(),
-    canHR ? supabase.from('employees').select('full_name, residency_expiry, work_permit_expiry, status').in('status', ['Active', 'On leave']) : Promise.resolve({ data: [] as any[] }),
-    canHR ? supabase.from('leave_records').select('id, approval_status').eq('approval_status', 'Pending') : Promise.resolve({ data: [] as any[] }),
-    alertQueries.customers(),
-    loadAlertActions(),
-  ]);
-  return alertsFrom(role, { waitingList, preOrders, purchaseOrders, employees, pendingLeave, customers, actions });
-}
-
 /** The same alerts, from rows already fetched. */
 export function alertsFrom(role: string | null, src: AlertSources): Alert[] {
   const alerts: Alert[] = [];

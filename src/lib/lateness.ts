@@ -11,10 +11,10 @@
  * shift as hours late every day somebody turned up on time.
  */
 import { dayPunctuality, lateClassOf as classOf, type LateClass } from '../shared/punctuality';
+import { kuwaitDateOf as kuwaitDate } from '../shared/kuwaitTime';
 
 export type { LateClass };
 
-const kuwaitDate = (iso: string) => new Date(iso).toLocaleDateString('en-CA', { timeZone: 'Asia/Kuwait' });
 
 /** How late an arrival was, in words, against a shift start. */
 export function lateClassOf(clockInIso: string, workStart = '09:00', graceMin = 60): LateClass {
