@@ -1,4 +1,5 @@
 import { Fragment, useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Plus, Trash2, MapPin, Save, UserPlus, Mail, KeyRound, X, Pencil, Check, SlidersHorizontal } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Spinner, Badge } from '../components/ui';
@@ -905,7 +906,7 @@ export default function SettingsPage() {
   }
   useEffect(() => { load(); }, []);
 
-  async function saveSettings(fields: { outlets?: string[]; staff_roster?: string[] }) {
+  async function saveSettings(fields: { outlets?: string[] }) {
     if (!settingsId) return;
     setError(null); setMsg(null);
     const { error } = await supabase.from('settings').update(fields).eq('id', settingsId);
@@ -955,7 +956,7 @@ export default function SettingsPage() {
         <h1 className="text-xl font-bold text-slate-900">Settings</h1>
         <p className="text-sm text-slate-500">
           Shared lists used by both Timekeeper Online and the store CRM.
-          {!isAdmin && ' Outlets and staff roster are admin-only.'}
+          {!isAdmin && ' Outlets are admin-only.'}
         </p>
       </div>
 
@@ -970,13 +971,20 @@ export default function SettingsPage() {
           disabled={!isAdmin}
           onChange={(v) => { setOutlets(v); saveSettings({ outlets: v }); }}
         />
-        <ListEditor
-          title="Staff roster"
-          hint="Names available in the store CRM staff dropdown."
-          items={staffRoster}
-          disabled={!isAdmin}
-          onChange={(v) => { setStaffRoster(v); saveSettings({ staff_roster: v }); }}
-        />
+        {/* The roster is no longer typed in here: it follows the Employees records, so a
+            name cannot exist in one list and be missing from the other. */}
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
+          <h2 className="text-sm font-semibold text-slate-700">Sales staff names</h2>
+          <p className="text-xs text-slate-400 mt-0.5 mb-3">
+            The names in the store app's staff dropdown. They come from the Employees page: open a person there and set
+            "Name in the sales app". Someone marked Resigned or Terminated drops off the list.
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {staffRoster.length === 0 && <span className="text-sm text-slate-400">Nobody has a sales-app name yet.</span>}
+            {staffRoster.map((n) => <span key={n} className="px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 text-sm">{n}</span>)}
+          </div>
+          <Link to="/hr" className="inline-block mt-3 text-sm font-medium text-blue-700 hover:underline">Open Employees</Link>
+        </div>
 
         {['admin', 'manager'].includes(role ?? '') && <TeamAccess staffRoster={staffRoster} />}
         {/* Daily Briefing parked (cleanup item 14) — <DailyBriefing /> and the edge function are kept for when it's wanted */}

@@ -60,9 +60,7 @@ const InfluencerProfilePage = page(() => import('./pages/InfluencerProfile'));
 const PerformancePage = page(() => import('./pages/Performance'));
 const PurchaseOrdersPage = page(() => import('./pages/PurchaseOrders').then((m) => ({ default: m.PurchaseOrdersPage })));
 const WaitingListPage = page(() => modules().then((m) => ({ default: m.WaitingListPage })));
-const PreOrdersPage = page(() => modules().then((m) => ({ default: m.PreOrdersPage })));
 const ConsignmentsPage = page(() => modules().then((m) => ({ default: m.ConsignmentsPage })));
-const VipCustomersPage = page(() => modules().then((m) => ({ default: m.VipCustomersPage })));
 const EmployeesPage = page(() => modules().then((m) => ({ default: m.EmployeesPage })));
 const CompanyDocsPage = page(() => modules().then((m) => ({ default: m.CompanyDocsPage })));
 const LimitedProjectsPage = page(() => modules().then((m) => ({ default: m.LimitedProjectsPage })));
@@ -103,11 +101,11 @@ function Shell() {
         <Route path="/crm" element={g('/crm', <CrmPage />)} />
         <Route path="/follow-ups" element={g('/follow-ups', <FollowUpsPage />)} />
         <Route path="/waiting-list" element={g('/waiting-list', <WaitingListPage />)} />
-        <Route path="/pre-orders" element={g('/waiting-list', <PreOrdersPage />)} />
+        <Route path="/pre-orders" element={<KeepSearch to="/waiting-list" />} />
         <Route path="/purchase-orders" element={g('/purchase-orders', <PurchaseOrdersPage />)} />
         <Route path="/stock" element={g('/stock', <StockPage />)} />
         <Route path="/consignments" element={g('/consignments', <ConsignmentsPage />)} />
-        <Route path="/vip" element={g('/vip', <VipCustomersPage />)} />
+        <Route path="/vip" element={<KeepSearch to="/crm" add={{ tab: 'vip' }} />} />
         <Route path="/attendance" element={g('/attendance', <AttendancePage />)} />
         <Route path="/open-shifts" element={g('/attendance', <OpenShiftsPage />)} />
         <Route path="/hr" element={g('/hr', <EmployeesPage />)} />

@@ -8,6 +8,7 @@ import { CrudModule, CrudConfig } from '../components/CrudModule';
 import { Badge, Modal } from '../components/ui';
 import { leaveBalance, leaveTypeOf } from '../shared/portalRules';
 import { supabase } from '../lib/supabase';
+import { useAuth } from '../context/AuthContext';
 import { locationType, LOCATION_TYPE_STYLE } from '../lib/locationType';
 
 /**
@@ -65,6 +66,7 @@ function phaseOf(l: LeaveRow, today: string): Phase {
 const STATUS_OPTIONS = ['Pending', 'Approved', 'Rejected', 'Cancelled'];
 
 export default function LeavePage() {
+  const { role } = useAuth();
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [leaves, setLeaves] = useState<LeaveRow[]>([]);
   const [reload, setReload] = useState(0);
@@ -186,6 +188,19 @@ export default function LeavePage() {
     description: 'Days auto-calculate as working days (Fridays excluded) if left blank — override manually for public holidays.',
     canWrite: (r) => ['admin', 'manager', 'hr'].includes(r ?? ''),
     stampCreatedBy: false,
+    /* Taking back a leave that will not happen. Only an owner may, the same as
+       the final approval; the database refuses anyone else. */
+    rowActions: (r, reload) => (role === 'admin' && ['Pending', 'Approved'].includes(r.approval_status) && r.leave_end >= today ? (
+      <button type="button" title="Cancel this leave"
+        onClick={async (e) => {
+          e.stopPropagation();
+          if (!window.confirm(`Cancel ${empNames[r.employee_id] ?? 'this'} leave (${r.leave_start} to ${r.leave_end})?`)) return;
+          const { error } = await supabase.from('leave_records').update({ approval_status: 'Cancelled' }).eq('id', r.id);
+          if (error) window.alert(error.message);
+          reload(); setReload((x) => x + 1);
+        }}
+        className="px-2 py-1 rounded-md border border-slate-200 text-xs text-slate-600 hover:bg-slate-50">Cancel</button>
+    ) : null),
     orderBy: { column: 'leave_start', ascending: false },
     onChanged: () => setReload((x) => x + 1),
     filter: (r) => {
@@ -207,7 +222,11 @@ export default function LeavePage() {
       { key: 'leave_start', label: 'Leave start', type: 'date', required: true },
       { key: 'leave_end', label: 'Leave end', type: 'date', required: true },
       { key: 'days', label: 'Working days (blank = auto, Fridays excluded)', type: 'number' },
-      { key: 'approval_status', label: 'Approval status', type: 'select', options: STATUS_OPTIONS, defaultValue: 'Pending', required: true },
+      /* Shown, never set here. A leave typed in on this page starts Pending and is
+         decided in the Inbox like any other, so the manager-then-owner steps and
+         their record cannot be skipped by picking "Approved" in a form. */
+      { key: 'approval_status', label: 'Approval status', type: 'select', options: STATUS_OPTIONS, defaultValue: 'Pending', readOnly: true,
+        hint: 'Decided in the Inbox. A new leave starts as Pending.' },
       { key: 'notes', label: 'Notes / remarks', type: 'textarea' },
     ],
     columns: [
@@ -235,7 +254,7 @@ export default function LeavePage() {
         ? <button onClick={(e) => { e.stopPropagation(); openLeaveDocument(r.document_url); }} className="text-blue-600 hover:underline text-xs">📎 view</button>
         : <span className="text-slate-300 text-xs">—</span> },
     ],
-  }), [employees, empNames, today, employeeFilter, statusFilter, areaFilter, ltypeFilter, empById]);
+  }), [employees, empNames, today, employeeFilter, statusFilter, areaFilter, ltypeFilter, empById, role]);
 
   const cardData: { label: string; value: number; icon: typeof CalendarDays; accent: string }[] = [
     { label: 'Pending approval', value: counts.Pending, icon: CalendarClock, accent: counts.Pending ? 'text-amber-600' : 'text-slate-400' },
