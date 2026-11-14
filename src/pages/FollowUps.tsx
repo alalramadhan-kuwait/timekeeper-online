@@ -181,7 +181,7 @@ export default function FollowUpsPage() {
   return (
     <div>
       <div className="mb-4">
-        <h1 className="text-xl font-bold text-slate-900">Follow-up Board</h1>
+        <h1 className="text-xl font-bold text-slate-900">Follow-ups</h1>
         <p className="text-sm text-slate-500">
           Every open follow-up from the Daily Sales Report, sorted by urgency. Close them as Won, Lost or No Response.
         </p>

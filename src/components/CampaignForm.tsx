@@ -93,7 +93,7 @@ export default function CampaignForm({ myId, onClose, onCreated }: { myId: strin
   }
 
   return (
-    <Modal title="New campaign" onClose={onClose}>
+    <Modal title="New marketing project" onClose={onClose}>
       {!opts && !err && <p className="text-sm text-slate-500">Loading…</p>}
       {opts && (
         <div className="space-y-5">
@@ -246,7 +246,7 @@ export default function CampaignForm({ myId, onClose, onCreated }: { myId: strin
                   </select>
                 </div>
                 <div>
-                  <label htmlFor="campaign-owner-new" className={label}>Campaign owner (approves it)</label>
+                  <label htmlFor="campaign-owner-new" className={label}>Project owner (approves it)</label>
                   <select id="campaign-owner-new" value={owner} onChange={(e) => setOwner(e.target.value)} className={field}>
                     {opts.owners.map((o) => <option key={o.user_id} value={o.user_id}>{o.name}{o.user_id === myId ? ' (me)' : ''}</option>)}
                   </select>

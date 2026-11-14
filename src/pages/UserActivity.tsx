@@ -8,11 +8,11 @@ interface TeamRow { id: string; full_name: string; role: string; email?: string;
 interface ActivityRow { user_id: string; last_active: string | null; views_7d: number; views_30d: number; recent_pages: string[] | null }
 
 const PAGE_LABEL: Record<string, string> = {
-  '/': 'Dashboard', '/me': 'My Portal', '/sales': 'Sales Reports', '/crm': 'CRM', '/follow-ups': 'Follow-ups',
-  '/vip': 'VIP', '/waiting-list': 'Demand List', '/stock': 'Stock', '/purchase-orders': 'Supplier Payments',
+  '/': 'Today', '/money': 'Money', '/me': 'My Portal', '/sales': 'Sales Reports', '/crm': 'Customers', '/follow-ups': 'Follow-ups',
+  '/vip': 'VIP', '/waiting-list': 'Demand List', '/stock': 'Stock', '/purchase-orders': 'Suppliers',
   '/consignments': 'Consignments', '/limited-projects': 'Limited Projects', '/repairs': 'Repairs',
   '/attendance': 'Attendance', '/hr': 'Employees', '/leave': 'Leave', '/instagram': 'Instagram',
-  '/content': 'Content Planner', '/paid-ads': 'Paid Ads', '/client-ads': 'Client Ads', '/ads': 'Ads', '/marketing': 'Marketing Overview', '/owner': 'Owner view', '/history': 'History Log', '/settings': 'Settings',
+  '/content': 'Content Planner', '/paid-ads': 'Paid Ads', '/client-ads': 'Client ad jobs', '/ads': 'Our ads', '/marketing': 'Marketing Overview', '/owner': 'Money', '/history': 'History Log', '/settings': 'Settings',
   '/activity': 'User Activity', '/company-documents': 'Company Documents',
 };
 
@@ -27,7 +27,9 @@ const rel = (iso: string | null | undefined) => {
   return `${d}d ago`;
 };
 
-export default function UserActivityPage() {
+/** Who is using the app and how often. Shown as the App activity tab of Performance;
+ *  `embedded` drops the page title, which Performance already has. */
+export default function UserActivityPage({ embedded = false }: { embedded?: boolean }) {
   const [team, setTeam] = useState<TeamRow[]>([]);
   const [acts, setActs] = useState<Map<string, ActivityRow>>(new Map());
   const [loading, setLoading] = useState(true);
@@ -73,8 +75,8 @@ export default function UserActivityPage() {
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <div>
-          <h1 className="text-xl font-bold text-slate-900 flex items-center gap-2"><Activity size={20} /> User Activity</h1>
-          <p className="text-sm text-slate-500">Who is using the system and how often. Data changes are tracked separately in the History Log.</p>
+          {!embedded && <h1 className="text-xl font-bold text-slate-900 flex items-center gap-2"><Activity size={20} /> User Activity</h1>}
+          <p className="text-sm text-slate-500">Who is using the system and how often. Data changes are tracked separately in the History log.</p>
         </div>
         <button onClick={load} className="flex items-center gap-2 bg-white border border-slate-300 px-3 py-1.5 rounded-lg text-sm hover:bg-slate-50">
           <RefreshCw size={14} /> Refresh

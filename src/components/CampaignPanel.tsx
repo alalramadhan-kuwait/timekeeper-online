@@ -37,7 +37,7 @@ export default function CampaignPanel({ id, onClose, onChanged }: { id: string; 
 
   useEffect(() => {
     let live = true;
-    loadCampaign(id).then((r) => { if (!live) return; if (r.campaign) setC(r.campaign); else setErr(r.error ?? 'Campaign not found'); });
+    loadCampaign(id).then((r) => { if (!live) return; if (r.campaign) setC(r.campaign); else setErr(r.error ?? 'Project not found'); });
     return () => { live = false; };
   }, [id]);
 
@@ -196,7 +196,7 @@ function ActionForm({ action, c, busy, onRun, onCancel }: {
       )}
       {action === 'complete' && (
         <label className="block text-sm">
-          <span className="text-slate-600">What did we learn? (kept in the campaign history)</span>
+          <span className="text-slate-600">What did we learn? (kept in the project history)</span>
           <textarea id="campaign-lesson" rows={3} maxLength={500} value={lesson} onChange={(e) => setLesson(e.target.value)} className={`${field} mt-1`} />
         </label>
       )}
@@ -208,7 +208,7 @@ function ActionForm({ action, c, busy, onRun, onCancel }: {
       )}
       {action === 'hand_over' && (
         <label className="block text-sm">
-          <span className="text-slate-600">New campaign owner</span>
+          <span className="text-slate-600">New project owner</span>
           <select id="campaign-owner" value={owner} onChange={(e) => setOwner(e.target.value)} className={`${field} mt-1`}>
             <option value="">Choose…</option>
             {owners.map((o) => <option key={o.user_id} value={o.user_id}>{o.name}</option>)}

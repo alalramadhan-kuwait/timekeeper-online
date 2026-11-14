@@ -266,7 +266,7 @@ export default function LeavePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-bold text-slate-900">Leave Tracking</h1>
+        <h1 className="text-xl font-bold text-slate-900">Leave</h1>
         <p className="text-sm text-slate-500">
           Planner, balances and approvals — 30 paid working days/year per Kuwait Labor Law (Fridays excluded).
         </p>
