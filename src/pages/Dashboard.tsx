@@ -338,7 +338,14 @@ function WorkflowTasksCard() {
 }
 
 // ── Dashboard ─────────────────────────────────────────────────────────────────
-export default function Dashboard({ title = 'Dashboard' }: { title?: string }) {
+/**
+ * `money` is the owners' page (/money, was Owner view): sales, what is owed and
+ * what is on the shelf. The day-to-day sections — follow-ups, repairs, requests,
+ * attendance, staff documents — are on the Today page and are left off it, so
+ * the same figure is not kept in two places. Everyone else's Today still shows them.
+ */
+export default function Dashboard({ title = 'Today', money = false }: { title?: string; money?: boolean }) {
+  const full = !money;
   const { role, profile, pageAccess } = useAuth();
   const [d, setD] = useState<Record<string, number | null>>({});
   const [tillSyncedAt, setTillSyncedAt] = useState<string | null>(null);
@@ -373,7 +380,7 @@ export default function Dashboard({ title = 'Dashboard' }: { title?: string }) {
       const [
         posQ, lostQ, overdueFuQ, newCustQ, vipQ, wlQ, preQ, projQ,
         stockSumQ, lowQ, stockCntQ, poQ, attTodayQ, attLateQ, leaveQ, reqQ, empQ,
-        repairsQ, contentQ, igQ, setQ, actMap, stockHistQ, syncQ, alertPoQ, alertDocQ, postQ,
+        repairsQ, igQ, setQ, actMap, stockHistQ, syncQ, alertPoQ, postQ,
       ] = await Promise.all([
         /* Till revenue from Lightspeed, refreshed by the 05:00 UTC sync every
            morning. This used to read logged Sale cases — which is a pipeline,
@@ -409,7 +416,6 @@ export default function Dashboard({ title = 'Dashboard' }: { title?: string }) {
         supabase.from('v_requests').select('stage_owner, is_overdue'),
         canHR ? supabase.from('employees').select('full_name, residency_expiry, work_permit_expiry, status').in('status', ['Active', 'On leave']) : Promise.resolve({ data: [] as any[] }),
         supabase.from('repair_watches').select('status, estimated_completion, date_returned'),
-        supabase.from('content_tasks').select('status, planned_date, posted_date'),
         supabase.from('instagram_daily').select('snapshot_date, followers, username, last_post_date').order('snapshot_date', { ascending: true }).limit(400),
         supabase.from('settings').select('sales_target_month, sales_target_avenues, sales_target_timegallery, sales_target_online, sales_target_whatsapp').single(),
         loadAlertActions(),
@@ -417,7 +423,6 @@ export default function Dashboard({ title = 'Dashboard' }: { title?: string }) {
         supabase.from('lightspeed_sync_log').select('finished_at').eq('status', 'ok').not('finished_at', 'is', null).order('finished_at', { ascending: false }).limit(1),
         // the rest of what the alerts read; the dashboard's own purchase orders are a different set
         alertQueries.purchaseOrders(),
-        alertQueries.documents(),
         // main-account post engagement (Phase 3); needs nothing above, so it goes in the same round
         supabase.from('instagram_posts')
           .select('posted_at, type, likes, comments, url, caption')
@@ -425,7 +430,7 @@ export default function Dashboard({ title = 'Dashboard' }: { title?: string }) {
           .order('posted_at', { ascending: false }).limit(30),
       ]);
       const alertList = alertsFrom(role, {
-        waitingList: wlQ, preOrders: preQ, purchaseOrders: alertPoQ, documents: alertDocQ,
+        waitingList: wlQ, preOrders: preQ, purchaseOrders: alertPoQ,
         employees: empQ as { data: any[] | null }, pendingLeave: leaveQ, customers: vipQ, actions: actMap,
       });
 
@@ -514,11 +519,6 @@ export default function Dashboard({ title = 'Dashboard' }: { title?: string }) {
       const readyPickup = repairs.filter((r) => r.status === 'Ready for pickup').length;
       const overdueRepairs = repairs.filter((r) => r.estimated_completion && r.estimated_completion < today && !['Returned to customer', 'Cancelled'].includes(r.status)).length;
 
-      // marketing (content + IG starter)
-      const content = (contentQ.data ?? []) as any[];
-      const contentPending = content.filter((c) => !['Posted', 'Cancelled'].includes(c.status)).length;
-      const scheduledMonth = content.filter((c) => ['Scheduled', 'Approved'].includes(c.status) && c.planned_date && c.planned_date.slice(0, 7) === monthStart.slice(0, 7)).length;
-      const postedMonth = content.filter((c) => c.posted_date && c.posted_date.slice(0, 7) === monthStart.slice(0, 7)).length;
       // instagram_daily now holds several accounts — split by username
       const igRows = (igQ.data ?? []) as any[];
       const igByAccount = new Map<string, any[]>();
@@ -625,7 +625,7 @@ export default function Dashboard({ title = 'Dashboard' }: { title?: string }) {
         presentToday, lateMonth, pendingLeave, sickReq, wfhReq, empDocs,
         needsMe, withManager, overdueReq,
         openRepairs, waitingApproval, sentSupplier, readyPickup, overdueRepairs,
-        contentPending, scheduledMonth, postedMonth, igFollowers, igAvgEng, igEngRate,
+        igFollowers, igAvgEng, igEngRate,
       });
       setAlerts(alertList);
       setActionMap(actMap);
@@ -674,7 +674,7 @@ export default function Dashboard({ title = 'Dashboard' }: { title?: string }) {
   const salesCards: Kpi[] = [
     { label: 'Sales today · tills', value: kd(d.salesToday), sub: tillAsOf, accent: 'text-emerald-600', link: '/sales' },
     { label: 'Lost sales (month)', value: kd(d.lostMonth), accent: Number(d.lostMonth) ? 'text-rose-600' : undefined, link: '/sales' },
-    { label: 'Overdue follow-ups', value: d.overdueFu ?? 0, accent: Number(d.overdueFu) ? 'text-red-600' : undefined, link: '/follow-ups' },
+    ...(full ? [{ label: 'Overdue follow-ups', value: d.overdueFu ?? 0, accent: Number(d.overdueFu) ? 'text-red-600' : undefined, link: '/follow-ups' } as Kpi] : []),
   ];
 
   const demandCards: Kpi[] = [
@@ -713,7 +713,6 @@ export default function Dashboard({ title = 'Dashboard' }: { title?: string }) {
   const marketingCards: Kpi[] = [
     ...(d.igFollowers != null ? [{ label: 'Instagram followers', value: formatKDCompact(d.igFollowers).replace(' KD', ''), sub: '@timekeeperkw', link: '/instagram' } as Kpi] : [{ label: 'Instagram', value: 'Connect', link: '/instagram' } as Kpi]),
     ...(d.igAvgEng != null ? [{ label: 'Avg engagement / post', value: formatKDCompact(d.igAvgEng).replace(' KD', ''), sub: d.igEngRate != null ? `${Number(d.igEngRate).toFixed(2)}% of followers` : '@timekeeperkw', accent: 'text-emerald-600', link: '/instagram' } as Kpi] : []),
-    { label: 'Content pending', value: d.contentPending ?? 0, accent: Number(d.contentPending) ? 'text-amber-600' : undefined, link: '/content' },
   ];
 
   return (
@@ -721,7 +720,7 @@ export default function Dashboard({ title = 'Dashboard' }: { title?: string }) {
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-xl font-bold text-slate-900">{title}</h1>
-          <p className="text-sm text-slate-500">Welcome back{profile ? `, ${profile.full_name}` : ''} — business health at a glance.</p>
+          <p className="text-sm text-slate-500">Welcome back{profile ? `, ${profile.full_name}` : ''} — {money ? 'sales, what we owe, and what is on the shelf.' : 'business health at a glance.'}</p>
         </div>
         {can('/sales') && (
           <a href="https://alalramadhan-kuwait.github.io/watch-store-crm/#/reports" target="_blank" rel="noopener noreferrer"
@@ -740,7 +739,7 @@ export default function Dashboard({ title = 'Dashboard' }: { title?: string }) {
         </div>
       )}
 
-      {isManager && <WorkflowTasksCard />}
+      {full && isManager && <WorkflowTasksCard />}
 
       {can('/sales') && <Section title="Sales & Customers" detailLink="/sales" cards={salesCards} charts={
         <>
@@ -752,7 +751,7 @@ export default function Dashboard({ title = 'Dashboard' }: { title?: string }) {
           </ChartCard>
         </>
       } />}
-      {(can('/waiting-list') || can('/limited-projects')) && <Section title="Demand & Projects" detailLink={can('/limited-projects') ? '/limited-projects' : '/waiting-list'} cards={demandCards} />}
+      {full && (can('/waiting-list') || can('/limited-projects')) && <Section title="Demand & Projects" detailLink={can('/limited-projects') ? '/limited-projects' : '/waiting-list'} cards={demandCards} />}
       {(can('/stock') || can('/purchase-orders')) && <Section title="Stock & Purchasing" detailLink={can('/purchase-orders') ? '/purchase-orders' : '/stock'} cards={stockCards} charts={
         <>
           {can('/stock') && <ChartCard title={stockCostView ? 'Stock cost over time' : 'Stock value over time'} hint={stockCostView ? 'cost KD' : 'retail KD'} link="/stock">
@@ -763,16 +762,16 @@ export default function Dashboard({ title = 'Dashboard' }: { title?: string }) {
           </ChartCard>}
         </>
       } />}
-      {can('/attendance') && <WhoAtWork />}
-      {can('/inbox') && <Section title="Requests" detailLink="/inbox" cards={requestCards} />}
-      {(can('/hr') || can('/attendance')) && <Section title="HR & Attendance" detailLink={can('/attendance') ? '/attendance' : '/hr'} cards={hrCards} />}
-      {can('/repairs') && <Section title="Repair Watches" detailLink="/repairs" cards={repairCards} charts={
+      {full && can('/attendance') && <WhoAtWork />}
+      {full && can('/inbox') && <Section title="Requests" detailLink="/inbox" cards={requestCards} />}
+      {full && (can('/hr') || can('/attendance')) && <Section title="HR & Attendance" detailLink={can('/attendance') ? '/attendance' : '/hr'} cards={hrCards} />}
+      {full && can('/repairs') && <Section title="Repair Watches" detailLink="/repairs" cards={repairCards} charts={
         <ChartCard title="Repairs by status" hint="open cases" link="/repairs">
           <BarChart data={charts.repairsByStatus} barColor="#2563eb" />
         </ChartCard>
       } />}
-      {(can('/instagram') || can('/content')) && <Section title="Marketing" detailLink={can('/instagram') ? '/instagram' : '/content'} cards={marketingCards} charts={
-        can('/instagram') ? (
+      {can('/instagram') && <Section title={money ? 'Instagram' : 'Marketing'} detailLink="/instagram" cards={money ? marketingCards.slice(0, 1) : marketingCards} charts={
+        full ? (
           <>
             <ChartCard title="Instagram accounts" hint="followers · Δ today · days idle" link="/instagram">
               <IgComparison accounts={charts.igAccounts} />

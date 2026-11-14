@@ -246,7 +246,7 @@ function LegacyMatches({ onLinked }: { onLinked: () => void }) {
 
 const baseConfig: CrudConfig = {
   table: 'purchase_orders',
-  title: 'Supplier Payments & PO Tracking',
+  title: 'Suppliers: payments and orders',
   description: 'Purchase orders synced from Lightspeed. Create and receive POs in Lightspeed — this page tracks payments, balances and project links.',
   canWrite: purchasingRoles,
   statusField: 'status',

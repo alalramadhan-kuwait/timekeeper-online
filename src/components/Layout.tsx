@@ -1,7 +1,7 @@
 import { NavLink, Outlet, useLocation, useSearchParams } from 'react-router-dom';
 import {
   LayoutDashboard, Briefcase, TrendingUp, Hourglass, Truck, Handshake,
-  Users, CalendarRange, LogOut, Watch, Menu, Contact, Settings, Gem, ClipboardCheck, PhoneCall, Boxes, History, UserRound, Wrench, Instagram, Megaphone, Target, Sparkles, Activity, Gauge, Inbox, ClipboardList, ChevronDown, BellRing, Bell, Download, Share, Castle, Wallet, Landmark, Scale, type LucideIcon,
+  Users, CalendarRange, LogOut, Watch, Menu, Contact, Settings, Gem, ClipboardCheck, PhoneCall, Boxes, History, UserRound, Wrench, Instagram, Megaphone, Target, Sparkles, Gauge, Inbox, ClipboardList, ChevronDown, BellRing, Bell, Download, Share, Castle, Wallet, Landmark, Scale, type LucideIcon,
 } from 'lucide-react';
 import { Suspense, useEffect, useRef, useState } from 'react';
 import { useAuth, Role } from '../context/AuthContext';
@@ -21,6 +21,8 @@ interface NavItem {
   icon: LucideIcon;
   /* Shown only to the owners on stock_ai_access, whatever their role. */
   owners?: boolean;
+  /* Left out of the phone's menu, where the top bar already offers it. */
+  wideOnly?: boolean;
   roles: Role[];
 }
 
@@ -29,73 +31,81 @@ interface NavGroup {
   items: NavItem[];
 }
 
+/* The menu, reorganised on 14 Nov 2026 (duplication audit, phase 3): one section
+   per kind of work, the owners' pages together, and Settings on its own. Paths
+   did not change except Owner view (/owner → /money); old links redirect. */
 const NAV_GROUPS: NavGroup[] = [
   {
     title: null,
     items: [
-      { to: '/', label: 'Dashboard', icon: LayoutDashboard, roles: ['admin', 'manager', 'staff', 'hr', 'viewer', 'sales', 'operations'] },
-      { to: '/owner', label: 'Owner view', icon: Briefcase, roles: ['admin'] },
-      { to: '/me', label: 'My Portal', icon: UserRound, roles: ['admin', 'manager', 'staff', 'hr', 'viewer', 'sales', 'operations'] },
+      // admin and manager land on the manager's day; everyone else on their role's dashboard
+      { to: '/', label: 'Today', icon: LayoutDashboard, roles: ['admin', 'manager', 'staff', 'hr', 'viewer', 'sales', 'operations'] },
       { to: '/inbox', label: 'Inbox', icon: Inbox, roles: ['admin', 'manager', 'staff', 'hr', 'viewer', 'sales', 'operations'] },
-      { to: '/notifications', label: 'Notifications', icon: Bell, roles: ['admin', 'manager', 'staff', 'hr', 'viewer', 'sales', 'operations', 'marketing'] },
+      { to: '/me', label: 'My Portal', icon: UserRound, roles: ['admin', 'manager', 'staff', 'hr', 'viewer', 'sales', 'operations'] },
+      // the phone's top bar already has the bell, so this row is for wide screens only
+      { to: '/notifications', label: 'Notifications', icon: Bell, wideOnly: true, roles: ['admin', 'manager', 'staff', 'hr', 'viewer', 'sales', 'operations', 'marketing'] },
     ],
   },
   {
-    title: 'Sales & Customers',
+    title: 'Sales & customers',
     items: [
-      { to: '/sales', label: 'Sales Reports', icon: TrendingUp, roles: ['admin', 'manager', 'staff', 'viewer', 'sales'] },
-      { to: '/crm', label: 'CRM Customers', icon: Contact, roles: ['admin', 'manager', 'staff', 'viewer', 'sales'] },
-      { to: '/follow-ups', label: 'Follow-up Board', icon: PhoneCall, roles: ['admin', 'manager', 'staff', 'viewer', 'sales'] },
-      { to: '/waiting-list', label: 'Demand List', icon: Hourglass, roles: ['admin', 'manager', 'staff', 'viewer', 'sales', 'operations'] },
+      { to: '/sales', label: 'Sales reports', icon: TrendingUp, roles: ['admin', 'manager', 'staff', 'viewer', 'sales'] },
+      { to: '/crm', label: 'Customers', icon: Contact, roles: ['admin', 'manager', 'staff', 'viewer', 'sales'] },
+      { to: '/follow-ups', label: 'Follow-ups', icon: PhoneCall, roles: ['admin', 'manager', 'staff', 'viewer', 'sales'] },
+      { to: '/waiting-list', label: 'Demand list', icon: Hourglass, roles: ['admin', 'manager', 'staff', 'viewer', 'sales', 'operations'] },
     ],
   },
   {
-    title: 'Purchasing & Stock',
+    title: 'Stock & suppliers',
     items: [
-      { to: '/stock', label: 'Stock (Lightspeed)', icon: Boxes, roles: ['admin', 'manager', 'staff', 'viewer', 'sales', 'operations'] },
-      { to: '/purchase-orders', label: 'Supplier Payments', icon: Truck, roles: ['admin', 'manager', 'staff', 'viewer', 'operations'] },
+      { to: '/stock', label: 'Stock', icon: Boxes, roles: ['admin', 'manager', 'staff', 'viewer', 'sales', 'operations'] },
+      { to: '/purchase-orders', label: 'Suppliers', icon: Truck, roles: ['admin', 'manager', 'staff', 'viewer', 'operations'] },
       { to: '/consignments', label: 'Consignments', icon: Handshake, roles: ['admin', 'manager', 'staff', 'viewer', 'operations'] },
-      { to: '/limited-projects', label: 'Limited Projects', icon: Gem, roles: ['admin', 'manager', 'staff', 'viewer', 'operations'] },
-      { to: '/repairs', label: 'Repair Watches', icon: Wrench, roles: ['admin', 'manager', 'staff', 'viewer', 'operations'] },
+      { to: '/limited-projects', label: 'Limited projects', icon: Gem, roles: ['admin', 'manager', 'staff', 'viewer', 'operations'] },
+      { to: '/repairs', label: 'Repairs', icon: Wrench, roles: ['admin', 'manager', 'staff', 'viewer', 'operations'] },
     ],
   },
   {
-    title: 'HR & Team',
+    title: 'Team',
     items: [
       // staff clock in from My Portal; this page is the manager dashboard
       { to: '/attendance', label: 'Attendance', icon: ClipboardCheck, roles: ['admin', 'manager', 'hr'] },
+      { to: '/leave', label: 'Leave', icon: CalendarRange, roles: ['admin', 'manager', 'hr'] },
       { to: '/hr', label: 'Employees', icon: Users, roles: ['admin', 'manager', 'hr'] },
-      { to: '/leave', label: 'Leave Tracking', icon: CalendarRange, roles: ['admin', 'manager', 'hr'] },
-      // salaries, increments, bonuses and commission: the three owners only (the database checks again)
+      // app activity is a tab of this page now (was its own User Activity page)
+      { to: '/performance', label: 'Performance', icon: Gauge, roles: ['admin', 'manager'] },
+      { to: '/tasks', label: 'Assign tasks', icon: ClipboardList, roles: ['admin', 'manager'] },
+    ],
+  },
+  {
+    title: 'Marketing',
+    items: [
+      { to: '/marketing', label: 'Overview', icon: TrendingUp, roles: ['admin', 'manager', 'marketing'] },
+      // the money we spend on ads (Meta campaigns and proposals)
+      { to: '/ads', label: 'Our ads', icon: Target, roles: ['admin', 'manager', 'marketing'] },
+      // jobs clients pay us for; client prices, so not for sales
+      { to: '/client-ads', label: 'Client ad jobs', icon: Megaphone, roles: ['admin', 'manager', 'marketing'] },
+      { to: '/instagram', label: 'Instagram', icon: Instagram, roles: ['admin', 'manager', 'marketing', 'sales'] },
+      { to: '/influencers', label: 'Influencers', icon: Sparkles, roles: ['admin', 'manager', 'marketing', 'sales'] },
+    ],
+  },
+  {
+    title: 'Owners',
+    items: [
+      // the money view of the business (was Owner view): sales, what we owe, stock
+      { to: '/money', label: 'Money', icon: Briefcase, roles: ['admin'] },
+      // the three owners only (the database checks again)
+      { to: '/financials', label: 'Financial reports', icon: Landmark, roles: ['admin'], owners: true },
+      { to: '/valuation', label: 'Business valuation', icon: Scale, roles: ['admin'], owners: true },
       { to: '/payroll', label: 'Payroll', icon: Wallet, roles: ['admin'], owners: true },
-      // Company Documents hidden from the menu while unused (module + data kept; direct URL still works)
     ],
   },
   {
-    title: 'Media & Marketing',
+    title: 'Settings',
     items: [
-      { to: '/marketing', label: 'Marketing Overview', icon: TrendingUp, roles: ['admin', 'manager', 'marketing'] },
-      // Meta Campaigns + Campaign Proposals (27 Sep): the money we spend on ads
-      { to: '/ads', label: 'Ads', icon: Target, roles: ['admin', 'manager', 'marketing'] },
-      // was Paid Ads Tracker: jobs clients pay us for; client prices, so not for sales
-      { to: '/client-ads', label: 'Client Ads', icon: Megaphone, roles: ['admin', 'manager', 'marketing'] },
-      { to: '/instagram', label: 'Instagram Performance', icon: Instagram, roles: ['admin', 'manager', 'marketing', 'sales'] },
-      // Content Planner hidden from the menu while unused (27 Sep: 0 items ever added; data and page kept)
-      { to: '/influencers', label: 'Influencer Tracker', icon: Sparkles, roles: ['admin', 'manager', 'marketing', 'sales'] },
-    ],
-  },
-  {
-    title: 'Admin',
-    items: [
-      // the accountant's monthly reports (P&L, balance sheet, cash): the three owners only (the database checks again)
-      { to: '/financials', label: 'Financial Reports', icon: Landmark, roles: ['admin'], owners: true },
-      { to: '/valuation', label: 'Business Valuation', icon: Scale, roles: ['admin'], owners: true },
-      { to: '/tasks', label: 'Assign Tasks', icon: ClipboardList, roles: ['admin', 'manager'] },
-      { to: '/activity', label: 'User Activity', icon: Activity, roles: ['admin', 'manager'] },
-      { to: '/performance', label: 'Employee Performance', icon: Gauge, roles: ['admin', 'manager'] },
-      { to: '/history', label: 'History Log', icon: History, roles: ['admin', 'manager'] },
-      { to: '/notification-settings', label: 'Notification Settings', icon: BellRing, roles: ['admin'] },
       { to: '/settings', label: 'Settings', icon: Settings, roles: ['admin', 'manager'] },
+      { to: '/notification-settings', label: 'Notification settings', icon: BellRing, roles: ['admin'] },
+      { to: '/history', label: 'History log', icon: History, roles: ['admin', 'manager'] },
     ],
   },
 ];
@@ -111,9 +121,6 @@ export function canAccessPath(to: string, role: Role | null, pageAccess: string[
   if (to === '/' || to === '/me' || to === '/inbox' || to === '/notifications') return true; // always available to everyone
   // user management stays role-gated and cannot be granted via page_access
   if (to === '/settings') return role === 'admin' || role === 'manager';
-  // hidden from the menu but still reachable by URL for HR (module kept per cleanup decision)
-  if (to === '/company-documents') return ['admin', 'manager', 'hr'].includes(role ?? '');
-  if (to === '/content') return ['admin', 'manager', 'marketing'].includes(role ?? '');
   // the owners' pages: the page and the database check the owner list itself
   if (to === '/payroll' || to === '/financials' || to === '/valuation') return role === 'admin';
   if (role === 'admin') return true;
@@ -238,7 +245,7 @@ export default function Layout() {
                 end={n.to === '/'}
                 onClick={() => setOpen(false)}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 px-5 py-2 text-sm ${isActive ? 'bg-slate-800 text-white border-r-2 border-amber-400' : 'text-slate-300 hover:bg-slate-800/60'}`}
+                  `${n.wideOnly ? 'hidden md:flex' : 'flex'} items-center gap-3 px-5 py-2 text-sm ${isActive ? 'bg-slate-800 text-white border-r-2 border-amber-400' : 'text-slate-300 hover:bg-slate-800/60'}`}
               >
                 <n.icon size={16} /> <span className="flex-1">{n.label}</span>
                 {n.to === '/inbox' && inboxN > 0 && (

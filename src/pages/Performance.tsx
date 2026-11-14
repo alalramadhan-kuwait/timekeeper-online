@@ -2,7 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { dayPunctuality, punctualityTotals } from '../shared/punctuality';
 import { scheduleFromRow, type ScheduleRow } from '../shared/schedule';
 import { formatHours } from '../shared/workedHours';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
+import UserActivityPage from './UserActivity';
 import { UserRound, Clock, Activity as ActivityIcon, Pencil, CalendarDays, MapPin, Briefcase, Trophy, Medal } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Spinner, Badge } from '../components/ui';
@@ -28,11 +29,11 @@ const TABLE_LABEL: Record<string, string> = {
   company_documents: 'Documents', settings: 'Settings', employee_requests: 'Requests',
 };
 const PAGE_LABEL: Record<string, string> = {
-  '/': 'Dashboard', '/me': 'My Portal', '/sales': 'Sales', '/crm': 'CRM', '/follow-ups': 'Follow-ups', '/vip': 'VIP',
-  '/waiting-list': 'Demand', '/stock': 'Stock', '/purchase-orders': 'Supplier Payments', '/consignments': 'Consignments',
+  '/': 'Today', '/money': 'Money', '/me': 'My Portal', '/sales': 'Sales', '/crm': 'Customers', '/follow-ups': 'Follow-ups', '/vip': 'VIP',
+  '/waiting-list': 'Demand', '/stock': 'Stock', '/purchase-orders': 'Suppliers', '/consignments': 'Consignments',
   '/limited-projects': 'Limited Projects', '/repairs': 'Repairs', '/attendance': 'Attendance', '/hr': 'Employees',
-  '/leave': 'Leave', '/instagram': 'Instagram', '/content': 'Content', '/paid-ads': 'Paid Ads', '/client-ads': 'Client Ads', '/ads': 'Ads', '/marketing': 'Marketing Overview', '/owner': 'Owner view', '/influencers': 'Influencers',
-  '/history': 'History', '/settings': 'Settings', '/activity': 'User Activity', '/performance': 'Performance',
+  '/leave': 'Leave', '/instagram': 'Instagram', '/content': 'Content', '/paid-ads': 'Paid Ads', '/client-ads': 'Client ad jobs', '/ads': 'Our ads', '/marketing': 'Marketing Overview', '/owner': 'Money', '/influencers': 'Influencers',
+  '/history': 'History', '/settings': 'Settings', '/performance': 'Performance',
 };
 
 const kdate = (iso: string) => new Date(new Date(iso).getTime() + 3 * 3600_000).toISOString().slice(0, 10);
@@ -78,7 +79,9 @@ export default function PerformancePage() {
   const [people, setPeople] = useState<Person[]>([]);
   const [sel, setSel] = useState<string>('');
   const [range, setRange] = useState('30');
-  const [mode, setMode] = useState<'individual' | 'overall'>('individual');
+  // ?view=activity opens the App activity tab (the old User Activity page lands here)
+  const [sp] = useSearchParams();
+  const [mode, setMode] = useState<'individual' | 'overall' | 'activity'>(sp.get('view') === 'activity' ? 'activity' : 'individual');
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<any>(null);
   const [busy, setBusy] = useState(false);
@@ -257,15 +260,15 @@ export default function PerformancePage() {
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <div>
-          <h1 className="text-xl font-bold text-slate-900 flex items-center gap-2"><UserRound size={20} /> Employee Performance</h1>
+          <h1 className="text-xl font-bold text-slate-900 flex items-center gap-2"><UserRound size={20} /> Performance</h1>
           <p className="text-sm text-slate-500">Attendance, app activity and edits for one person — all from their login.</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <div className="flex rounded-lg border border-slate-300 overflow-hidden text-sm">
-            {(['individual', 'overall'] as const).map((m) => (
+            {(['individual', 'overall', 'activity'] as const).map((m) => (
               <button key={m} onClick={() => setMode(m)}
                 className={`px-3 py-2 ${mode === m ? 'bg-slate-900 text-white' : 'bg-white text-slate-600 hover:bg-slate-50'}`}>
-                {m === 'individual' ? 'Individual' : 'Overall'}
+                {m === 'individual' ? 'Individual' : m === 'overall' ? 'Overall' : 'App activity'}
               </button>
             ))}
           </div>
@@ -274,11 +277,16 @@ export default function PerformancePage() {
               {people.map((p) => <option key={p.id} value={p.id}>{p.name} · {roleLabel(p.role)}</option>)}
             </select>
           )}
+          {mode !== 'activity' && (
           <select value={range} onChange={(e) => setRange(e.target.value)} className="px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm">
             {RANGES.map((r) => <option key={r.key} value={r.key}>{r.label}</option>)}
           </select>
+          )}
         </div>
       </div>
+
+      {/* App activity: who uses the app and how often (was the User Activity page) */}
+      {mode === 'activity' && <UserActivityPage embedded />}
 
       {/* Overall leaderboard */}
       {mode === 'overall' && (
@@ -379,9 +387,9 @@ export default function PerformancePage() {
           {/* Activity */}
           <SectionTitle>App activity</SectionTitle>
           <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
-            <Kpi icon={<ActivityIcon size={13} />} label="Active days" value={String(data.activeDays)} link="/activity" />
-            <Kpi icon={<ActivityIcon size={13} />} label="Page views" value={String(data.views)} link="/activity" />
-            <Kpi icon={<ActivityIcon size={13} />} label="Last active" value={rel(data.lastActive)} link="/activity" />
+            <Kpi icon={<ActivityIcon size={13} />} label="Active days" value={String(data.activeDays)} link="/performance?view=activity" />
+            <Kpi icon={<ActivityIcon size={13} />} label="Page views" value={String(data.views)} link="/performance?view=activity" />
+            <Kpi icon={<ActivityIcon size={13} />} label="Last active" value={rel(data.lastActive)} link="/performance?view=activity" />
             <div className="bg-white rounded-xl border border-slate-200 shadow-sm px-4 py-3 col-span-2 xl:col-span-3">
               <div className="text-xs text-slate-500 mb-1">Most-used pages</div>
               <div className="flex flex-wrap gap-1.5">

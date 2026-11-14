@@ -161,7 +161,7 @@ export default function CrmPage() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-xl font-bold text-slate-900">CRM Customers</h1>
+          <h1 className="text-xl font-bold text-slate-900">Customers</h1>
           <p className="text-sm text-slate-500">{search ? `${filtered.length.toLocaleString()} found in all ${rows.length.toLocaleString()} customers` : `${filtered.length.toLocaleString()} shown of ${rows.length.toLocaleString()} customers`} · {formatKD(totals.kd)} KD in Lightspeed · {totals.followups} open follow-ups · {totals.soon} occasions this week</p>
         </div>
         <div className="relative">

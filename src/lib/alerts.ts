@@ -58,7 +58,7 @@ function isActive(action: AlertAction | undefined): boolean {
    page asking the database for the same customers, waiting list and leave twice. */
 type Rows = { data: any[] | null };
 export interface AlertSources {
-  waitingList: Rows; preOrders: Rows; purchaseOrders: Rows; documents: Rows;
+  waitingList: Rows; preOrders: Rows; purchaseOrders: Rows;
   /** HR roles only; anyone else's rows are ignored here. */
   employees: Rows; pendingLeave: Rows;
   customers: Rows; actions: Map<string, AlertAction>;
@@ -71,7 +71,6 @@ export const alertQueries = {
   waitingList: () => supabase.from('waiting_list').select('customer_name, status, follow_up_date, list_type', { count: 'exact' }).eq('list_type', 'Waiting List').in('status', ['Open', 'Contacted']),
   preOrders: () => supabase.from('waiting_list').select('customer_name, brand, product, status, expected_arrival', { count: 'exact' }).eq('list_type', 'Pre-Order').not('status', 'in', '("Delivered","Cancelled","Converted")'),
   purchaseOrders: () => supabase.from('purchase_orders').select('po_number, supplier, status, expected_arrival, invoice_received').not('status', 'in', '("Fully Received","Cancelled")').is('merged_into', null),
-  documents: () => supabase.from('company_documents').select('doc_name, expiry_date, renewal_status'),
   /* Only customers with a date to remember. Reading every customer stopped at
      the API's 1000-row page, so anyone past the first thousand never got a
      birthday or occasion reminder. `occasions` is never null, only empty. */
@@ -81,24 +80,23 @@ export const alertQueries = {
 /** Returns active (non-dismissed, non-snoozed) alerts sorted by severity. */
 export async function buildAlerts(role: string | null): Promise<Alert[]> {
   const canHR = ['admin', 'manager', 'hr'].includes(role ?? '');
-  const [waitingList, preOrders, purchaseOrders, documents, employees, pendingLeave, customers, actions] = await Promise.all([
+  const [waitingList, preOrders, purchaseOrders, employees, pendingLeave, customers, actions] = await Promise.all([
     alertQueries.waitingList(),
     alertQueries.preOrders(),
     alertQueries.purchaseOrders(),
-    alertQueries.documents(),
     canHR ? supabase.from('employees').select('full_name, residency_expiry, work_permit_expiry, status').in('status', ['Active', 'On leave']) : Promise.resolve({ data: [] as any[] }),
     canHR ? supabase.from('leave_records').select('id, approval_status').eq('approval_status', 'Pending') : Promise.resolve({ data: [] as any[] }),
     alertQueries.customers(),
     loadAlertActions(),
   ]);
-  return alertsFrom(role, { waitingList, preOrders, purchaseOrders, documents, employees, pendingLeave, customers, actions });
+  return alertsFrom(role, { waitingList, preOrders, purchaseOrders, employees, pendingLeave, customers, actions });
 }
 
 /** The same alerts, from rows already fetched. */
 export function alertsFrom(role: string | null, src: AlertSources): Alert[] {
   const alerts: Alert[] = [];
   const canHR = ['admin', 'manager', 'hr'].includes(role ?? '');
-  const wl = src.waitingList, demandPO = src.preOrders, pur = src.purchaseOrders, docs = src.documents;
+  const wl = src.waitingList, demandPO = src.preOrders, pur = src.purchaseOrders;
   const emp = canHR ? src.employees : { data: [] as any[] };
   const leave = canHR ? src.pendingLeave : { data: [] as any[] };
   const vip = src.customers, actions = src.actions;
@@ -128,9 +126,6 @@ export function alertsFrom(role: string | null, src: AlertSources): Alert[] {
     }
   }
 
-  for (const r of docs.data ?? []) {
-    push(alerts, `doc_${(r.doc_name ?? '').replace(/\s+/g, '_')}`, 'Company documents', '/company-documents', r.expiry_date, (d) => `${r.doc_name} expires ${dayWord(d)}`);
-  }
 
   for (const r of (emp as any).data ?? []) {
     push(alerts, `hr_res_${(r.full_name ?? '').replace(/\s+/g, '_')}`, 'HR', '/hr', r.residency_expiry, (d) => `${r.full_name}: residency expires ${dayWord(d)}`);

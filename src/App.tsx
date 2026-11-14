@@ -48,7 +48,6 @@ const AssignTasksPage = page(() => import('./pages/AssignTasks'));
 const NotificationSettingsPage = page(() => import('./pages/NotificationSettings'));
 const NotificationsPage = page(() => import('./pages/Notifications'));
 const InstagramPage = page(() => import('./pages/Instagram'));
-const UserActivityPage = page(() => import('./pages/UserActivity'));
 const SettingsPage = page(() => import('./pages/Settings'));
 const LeavePage = page(() => import('./pages/Leave'));
 const PayrollPage = page(() => import('./pages/Payroll'));
@@ -62,16 +61,14 @@ const PurchaseOrdersPage = page(() => import('./pages/PurchaseOrders').then((m) 
 const WaitingListPage = page(() => modules().then((m) => ({ default: m.WaitingListPage })));
 const ConsignmentsPage = page(() => modules().then((m) => ({ default: m.ConsignmentsPage })));
 const EmployeesPage = page(() => modules().then((m) => ({ default: m.EmployeesPage })));
-const CompanyDocsPage = page(() => modules().then((m) => ({ default: m.CompanyDocsPage })));
 const LimitedProjectsPage = page(() => modules().then((m) => ({ default: m.LimitedProjectsPage })));
 const RepairWatchesPage = page(() => modules().then((m) => ({ default: m.RepairWatchesPage })));
-const ContentPlannerPage = page(() => modules().then((m) => ({ default: m.ContentPlannerPage })));
 const InfluencersPage = page(() => modules().then((m) => ({ default: m.InfluencersPage })));
 const AdsPage = page(() => import('./pages/Ads').then((m) => ({ default: m.AdsPage })));
 const ClientAdsPage = page(() => import('./pages/ClientAds').then((m) => ({ default: m.ClientAdsPage })));
 const MarketingOverviewPage = page(() => import('./pages/MarketingOverview').then((m) => ({ default: m.MarketingOverviewPage })));
 
-/** The manager runs the day, so admin and manager land on the manager's screen; the owner's money view is at /owner. Everyone else keeps the role-based dashboard. */
+/** The manager runs the day, so admin and manager land on the manager's screen; the owners' money view is at /money. Everyone else keeps the role-based dashboard. */
 function Home() {
   const { role } = useAuth();
   return ['admin', 'manager'].includes(role ?? '') ? <ManagerDashboard /> : <Dashboard />;
@@ -92,7 +89,8 @@ function Shell() {
       <Route path="/world" element={<WorldRoute />} />
       <Route element={<Layout />}>
         <Route path="/" element={<Home />} />
-        <Route path="/owner" element={g('/owner', <Dashboard title="Owner view" />)} />
+        <Route path="/money" element={g('/money', <Dashboard title="Money" money />)} />
+        <Route path="/owner" element={<KeepSearch to="/money" />} />
         <Route path="/me" element={<MyPortalPage />} />
         <Route path="/inbox" element={<InboxPage />} />
         <Route path="/notifications" element={<NotificationsPage />} />
@@ -116,7 +114,6 @@ function Shell() {
         <Route path="/limited-projects" element={g('/limited-projects', <LimitedProjectsPage />)} />
         <Route path="/repairs" element={g('/repairs', <RepairWatchesPage />)} />
         <Route path="/instagram" element={g('/instagram', <InstagramPage />)} />
-        <Route path="/content" element={g('/content', <ContentPlannerPage />)} />
         <Route path="/ads" element={g('/ads', <AdsPage />)} />
         <Route path="/client-ads" element={g('/client-ads', <ClientAdsPage />)} />
         {/* Merged into Ads and Client Ads (27 Sep); old links and notifications still land. */}
@@ -129,9 +126,8 @@ function Shell() {
         <Route path="/growth-review" element={<KeepSearch to="/marketing" />} />
         <Route path="/influencers" element={g('/influencers', <InfluencersPage />)} />
         <Route path="/influencers/:id" element={g('/influencers', <InfluencerProfilePage />)} />
-        <Route path="/activity" element={g('/activity', <UserActivityPage />)} />
+        <Route path="/activity" element={<KeepSearch to="/performance" add={{ view: 'activity' }} />} />
         <Route path="/performance" element={g('/performance', <PerformancePage />)} />
-        <Route path="/company-documents" element={g('/company-documents', <CompanyDocsPage />)} />
         <Route path="/history" element={g('/history', <HistoryLogPage />)} />
         <Route path="/settings" element={g('/settings', <SettingsPage />)} />
         <Route path="/notification-settings" element={g('/notification-settings', <NotificationSettingsPage />)} />

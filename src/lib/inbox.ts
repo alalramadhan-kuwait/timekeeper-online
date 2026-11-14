@@ -82,7 +82,6 @@ export const isApproverRole = (role: Role | null) => ['admin', 'manager', 'hr'].
 
 // terminal statuses per module — anything else is still "open / pending"
 const OPEN = {
-  content: (s: string) => !['Posted', 'Cancelled'].includes(s),
   ads: (s: string) => !['Completed', 'Cancelled'].includes(s),
   repair: (s: string) => !['Returned to customer', 'Cancelled'].includes(s),
   collab: (s: string) => !['Completed', 'Cancelled'].includes(s),
@@ -201,11 +200,9 @@ async function readInbox(user: User, profile: Profile | null, role: Role | null)
   /* Only rows somebody is named on and that are still open can ever be this
      person's, so those are all that is asked for. The name itself is still
      matched here, because the match ignores case and surrounding spaces. */
-  const [ident, myTasks, content, ads, repairs, collabs, cases, demand, myLocations, approvals] = await Promise.all([
+  const [ident, myTasks, ads, repairs, collabs, cases, demand, myLocations, approvals] = await Promise.all([
     identP,
     myTasksP,
-    safe<any>(supabase.from('content_tasks').select('id, title, owner, status, planned_date')
-      .not('owner', 'is', null).or(openIn(['Posted', 'Cancelled']))),
     safe<any>(supabase.from('paid_ads').select('id, ad_name, owner, status, end_date')
       .not('owner', 'is', null).or(openIn(['Completed', 'Cancelled']))),
     safe<any>(supabase.from('repair_watches').select('id, repair_id, customer_name, assigned_to, status, estimated_completion')
@@ -232,10 +229,6 @@ async function readInbox(user: User, profile: Profile | null, role: Role | null)
 
   const mine = (v: unknown) => names.has(norm(v)) && norm(v) !== '';
   const tasks: InboxTask[] = [];
-
-  for (const r of content)
-    if (mine(r.owner) && OPEN.content(r.status))
-      tasks.push({ key: `content_${r.id}`, module: 'Content Planner', link: '/content', title: r.title || 'Untitled', status: r.status, due: r.planned_date });
 
   for (const r of ads)
     if (mine(r.owner) && OPEN.ads(r.status))

@@ -3,7 +3,7 @@
  *
  * Designed by the review panel on 29 Sep. The old dashboard answered "how is
  * the company doing?" — supplier balance, stock value, ad spend, followers —
- * which is the owner's question, and it lives on at /owner. The manager runs the
+ * which is the owner's question, and it lives on at /money. The manager runs the
  * day, so this answers four things in the order a morning goes:
  *
  *   1. Staffing   — who is not here who should be (gaps first; one quiet line
@@ -316,7 +316,7 @@ export default function ManagerDashboard() {
         </div>
         <div className="flex items-center gap-3 text-xs text-slate-500">
           <span>{asOf}</span>
-          {role === 'admin' && <Link to="/owner" className="text-blue-600 hover:underline">Owner view →</Link>}
+          {role === 'admin' && <Link to="/money" className="text-blue-600 hover:underline">Money →</Link>}
         </div>
       </div>
 

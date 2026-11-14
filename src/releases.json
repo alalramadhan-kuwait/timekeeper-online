@@ -1,5 +1,19 @@
 [
   {
+    "version": "3.23.0",
+    "date": "2026-11-14",
+    "title": "A tidier menu",
+    "changes": [
+      "The menu is regrouped: Sales & customers, Stock & suppliers, Team, Marketing, Owners and Settings. Old links still open the right page.",
+      "Some pages have clearer names: Dashboard is now Today, CRM Customers is Customers, Supplier Payments is Suppliers, Ads is Our ads, and Client Ads is Client ad jobs.",
+      "On phones, Notifications is no longer in the menu: tap the bell at the top.",
+      "User Activity is now the \"App activity\" tab inside Performance.",
+      "Owner view is now Money, with sales, what we owe suppliers, stock and alerts. The day-to-day items it repeated are on Today.",
+      "In the Inbox, \"Marketing campaigns\" is now \"Marketing projects\".",
+      "Content Planner and Company Documents, which were hidden and unused, are removed."
+    ]
+  },
+  {
     "version": "3.22.0",
     "date": "2026-11-14",
     "title": "One place for each job",

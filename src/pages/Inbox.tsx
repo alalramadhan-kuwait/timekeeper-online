@@ -157,7 +157,7 @@ export default function InboxPage() {
                   {/* a campaign task closes itself when the campaign does */}
                   {t.campaignId ? (
                     <button onClick={() => openCampaign(t.campaignId!)}
-                      className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-slate-900 text-white text-xs font-medium hover:bg-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-1"><Megaphone size={13} /> Open campaign</button>
+                      className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-slate-900 text-white text-xs font-medium hover:bg-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-1"><Megaphone size={13} /> Open project</button>
                   ) : (
                   <button disabled={busy === `tk-${t.id}`} onClick={() => markTaskDone(t.id)}
                     className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-medium hover:bg-emerald-700 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-1"><Check size={13} /> Mark done</button>
@@ -213,13 +213,13 @@ export default function InboxPage() {
         <section className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
           <div className="flex items-center gap-2 px-5 py-3 border-b border-slate-100">
             <Megaphone size={16} className="text-slate-500" />
-            <h2 className="text-sm font-semibold text-slate-700">Marketing campaigns</h2>
+            <h2 className="text-sm font-semibold text-slate-700">Marketing projects</h2>
             {openCampaigns.length > 0 && <Badge className="bg-slate-100 text-slate-600 border-slate-200">{openCampaigns.length}</Badge>}
             <button onClick={() => setNewCampaign(true)}
               className="ml-auto flex items-center gap-1 px-3 py-1.5 rounded-lg bg-slate-900 text-white text-xs font-medium hover:bg-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-1">
-              <Plus size={13} /> New campaign</button>
+              <Plus size={13} /> New project</button>
           </div>
-          {campaigns.length === 0 && <p className="px-5 py-4 text-sm text-slate-500">No campaigns yet.</p>}
+          {campaigns.length === 0 && <p className="px-5 py-4 text-sm text-slate-500">No projects yet.</p>}
           <ul className="divide-y divide-slate-100">
             {[...openCampaigns, ...closedCampaigns.slice(0, 5)].map((c) => {
               const mineToReview = c.is_campaign_owner && c.waiting_on === 'owner';
@@ -252,7 +252,7 @@ export default function InboxPage() {
           <Megaphone size={16} className="text-slate-500 shrink-0" />
           <button type="button" onClick={() => setCampaignsOpen(true)} className="flex-1 text-left hover:underline"
             disabled={closedCampaigns.length === 0}>
-            Marketing campaigns · none running{closedCampaigns.length > 0 && <span className="text-slate-400"> · {closedCampaigns.length} finished</span>}
+            Marketing projects · none running{closedCampaigns.length > 0 && <span className="text-slate-400"> · {closedCampaigns.length} finished</span>}
           </button>
           <button type="button" onClick={() => setNewCampaign(true)} className="font-semibold text-blue-700 hover:underline">+ New</button>
         </div>

@@ -135,7 +135,7 @@ export function ClientAdsPage() {
   return (
     <div className="max-w-4xl min-w-0 space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-xl font-bold text-slate-900">Client Ads</h1>
+        <h1 className="text-xl font-bold text-slate-900">Client ad jobs</h1>
         {canWrite && (
           <button onClick={() => setEditing({ client_type: 'External company', platform: 'Instagram', status: 'Planned', payment_status: 'Unpaid' })}
             className="flex items-center gap-2 bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-700">
