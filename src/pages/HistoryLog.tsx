@@ -24,7 +24,7 @@ const TABLE_LABELS: Record<string, string> = {
 const TABLE_ROUTE: Record<string, string> = {
   purchase_orders: '/purchase-orders', consignments: '/consignments', limited_projects: '/limited-projects',
   waiting_list: '/waiting-list', pre_orders: '/waiting-list', employees: '/hr', leave_records: '/leave',
-  company_documents: '/company-documents', customers: '/vip', settings: '/settings',
+  company_documents: '/company-documents', customers: '/crm', settings: '/settings',
 };
 
 /** Kuwait day label for a timestamp, e.g. "Sat, 11 Jul 2026". */

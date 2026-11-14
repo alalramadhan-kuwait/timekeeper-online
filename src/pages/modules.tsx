@@ -440,10 +440,8 @@ export function DemandListPage() {
 
   return <CrudModule config={config} />;
 }
-
-/** Alias so /pre-orders route still resolves */
 export const WaitingListPage = DemandListPage;
-export const PreOrdersPage = DemandListPage;
+
 
 /* ---------------- Consignments ---------------- */
 const consignments: CrudConfig = {
@@ -477,54 +475,6 @@ const consignments: CrudConfig = {
 };
 export const ConsignmentsPage = () => <CrudModule config={consignments} />;
 
-/* ---------------- VIP customers ---------------- */
-const csv = {
-  parse: (v: any) => (v ? String(v).split(',').map((s: string) => s.trim()).filter(Boolean) : []),
-  display: (v: any) => (Array.isArray(v) ? v.join(', ') : v ?? ''),
-};
-const occasionsField = {
-  parse: (v: any) =>
-    v
-      ? String(v).split('\n').map((line: string) => {
-          const m = line.trim().match(/^(\d{4}-\d{2}-\d{2}|\d{2}-\d{2})\s+(.*)$/);
-          return m ? { date: m[1], label: m[2] } : { date: '', label: line.trim() };
-        }).filter((o: any) => o.label)
-      : [],
-  display: (v: any) => (Array.isArray(v) ? v.map((o: any) => `${o.date} ${o.label}`.trim()).join('\n') : ''),
-};
-const vipCustomers: CrudConfig = {
-  rowClickToEdit: true,
-  table: 'customers',
-  title: 'VIP Customers',
-  description: 'Important customers, preferences, birthdays and occasions.',
-  canWrite: salesRoles,
-  searchKeys: ['display_name', 'contact', 'customer_type', 'staff_responsible'],
-  orderBy: { column: 'display_name', ascending: true },
-  fields: [
-    { key: 'display_name', label: 'Customer name', type: 'text', required: true },
-    { key: 'contact', label: 'Phone number', type: 'text', required: true },
-    { key: 'customer_type', label: 'Customer type', type: 'select', options: ['VIP', 'Regular', 'Collector', 'Reseller', 'New'] },
-    { key: 'is_vip', label: 'VIP', type: 'checkbox', defaultValue: true },
-    { key: 'preferred_brands', label: 'Preferred brands (comma separated)', type: 'text', ...csv },
-    { key: 'birthday', label: 'Birthday', type: 'date' },
-    { key: 'occasions', label: 'Occasions (one per line: MM-DD Occasion)', type: 'textarea', ...occasionsField },
-    { key: 'staff_responsible', label: 'Staff responsible', type: 'text' },
-    { key: 'email', label: 'Email', type: 'text' },
-    { key: 'instagram', label: 'Instagram', type: 'text' },
-    { key: 'personal_notes', label: 'Notes', type: 'textarea' },
-  ],
-  columns: [
-    { key: 'display_name', label: 'Customer' },
-    { key: 'contact', label: 'Phone' },
-    { key: 'customer_type', label: 'Type', render: (r) => r.customer_type ? <StatusBadge value={r.customer_type} /> : '—' },
-    { key: 'preferred_brands', label: 'Preferred brands', render: (r) => (r.preferred_brands ?? []).join(', ') || '—' },
-    { key: 'birthday', label: 'Birthday' },
-    { key: 'occasions', label: 'Occasions', render: (r) => (Array.isArray(r.occasions) ? r.occasions.map((o: any) => o.label).join(', ') : '—') || '—' },
-    { key: 'staff_responsible', label: 'Staff' },
-  ],
-};
-export const VipCustomersPage = () => <CrudModule config={vipCustomers} />;
-
 /* ---------------- Employees (HR) ---------------- */
 const employees: CrudConfig = {
   table: 'employees',
@@ -545,6 +495,10 @@ const employees: CrudConfig = {
     { key: 'work_permit_expiry', label: 'Work permit expiry', type: 'date' },
     { key: 'phone', label: 'Phone', type: 'text' },
     { key: 'job_title', label: 'Job title', type: 'text' },
+    /* The one place a salesperson's roster name is set. The store app's staff dropdown
+       (settings.staff_roster) is rebuilt from these by the database. */
+    { key: 'dsr_staff_name', label: 'Name in the sales app', type: 'text', parse: (v: any) => (String(v ?? '').trim() || null),
+      hint: 'The name their sales are logged under in the store app. Leave empty for people who do not log sales. Changing it does not rename past sales.' },
     { key: 'joining_date', label: 'Joining date', type: 'date' },
     { key: 'location', label: 'Location', type: 'select', options: WORKPLACES },
     { key: 'status', label: 'Status', type: 'select', options: ['Active', 'On leave', 'Resigned', 'Terminated'], defaultValue: 'Active', required: true },

@@ -154,14 +154,14 @@ export function alertsFrom(role: string | null, src: AlertSources): Alert[] {
     if (c.birthday) {
       const d = nextOccurrenceDays(c.birthday);
       if (d != null && d <= 30) {
-        alerts.push({ key: `vip_bday_${(c.display_name ?? '').replace(/\s+/g, '_')}`, module: 'VIP', link: '/vip', severity: d <= 7 ? 'd7' : 'd30', message: `${c.display_name}: birthday ${dayWord(d)}` });
+        alerts.push({ key: `vip_bday_${(c.display_name ?? '').replace(/\s+/g, '_')}`, module: 'VIP', link: '/crm?tab=vip', severity: d <= 7 ? 'd7' : 'd30', message: `${c.display_name}: birthday ${dayWord(d)}` });
       }
     }
     for (const o of (Array.isArray(c.occasions) ? c.occasions : [])) {
       if (!o?.date) continue;
       const d = nextOccurrenceDays(o.date);
       if (d != null && d <= 30) {
-        alerts.push({ key: `vip_occ_${(c.display_name ?? '').replace(/\s+/g, '_')}_${(o.label ?? '').replace(/\s+/g, '_')}`, module: 'VIP', link: '/vip', severity: d <= 7 ? 'd7' : 'd30', message: `${c.display_name}: ${o.label} ${dayWord(d)}` });
+        alerts.push({ key: `vip_occ_${(c.display_name ?? '').replace(/\s+/g, '_')}_${(o.label ?? '').replace(/\s+/g, '_')}`, module: 'VIP', link: '/crm?tab=vip', severity: d <= 7 ? 'd7' : 'd30', message: `${c.display_name}: ${o.label} ${dayWord(d)}` });
       }
     }
   }

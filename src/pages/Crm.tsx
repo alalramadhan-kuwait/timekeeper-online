@@ -17,7 +17,7 @@ import { groupOf, GROUP_LABEL, type CustomerGroup } from '../shared/customerTier
 import type { TemplateKey } from '../shared/messageRules';
 
 type SortKey = 'name' | 'visits' | 'purchasesKD' | 'openFollowups' | 'last';
-type Filter = 'top' | 'win_back' | 'new' | 'all' | 'followups' | 'occasions' | 'unassigned';
+type Filter = 'top' | 'win_back' | 'new' | 'all' | 'vip' | 'followups' | 'occasions' | 'unassigned';
 
 const caseTypeColors: Record<string, string> = {
   Sale: 'bg-emerald-100 text-emerald-700 border-emerald-200',
@@ -59,7 +59,7 @@ export default function CrmPage() {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   /* A long list opens on the customers worth the day's attention; the rest are one search away. */
-  const [picked, setPicked] = useState<Filter | null>(params.get('tab') === 'occasions' ? 'occasions' : null);
+  const [picked, setPicked] = useState<Filter | null>(params.get('tab') === 'occasions' ? 'occasions' : params.get('tab') === 'vip' ? 'vip' : null);
   const [sortKey, setSortKey] = useState<SortKey>('last');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const openId = params.get('customer');
@@ -106,6 +106,7 @@ export default function CrmPage() {
       /* A search looks at everybody, whichever group the list opened on. */
       if (!q) {
         if ((filter === 'top' || filter === 'win_back' || filter === 'new') && groups.get(r.id) !== filter) return false;
+        if (filter === 'vip' && !r.isVip) return false;
         if (filter === 'followups' && r.openFollowups === 0) return false;
         if (filter === 'occasions' && (r.nextOccasionDays == null || r.nextOccasionDays > 30)) return false;
         if (filter === 'unassigned' && r.responsibleEmployeeId) return false;
@@ -150,6 +151,8 @@ export default function CrmPage() {
       { key: 'win_back' as Filter, label: `Win back ${counts.win_back.toLocaleString()}` },
       { key: 'new' as Filter, label: `New ${counts.new.toLocaleString()}` },
     ] : []),
+    /* VIP Customers used to be its own page over the same list; it is a filter here now. */
+    { key: 'vip', label: `VIP ${rows.filter(r => r.isVip).length.toLocaleString()}` },
     { key: 'followups', label: 'Open follow-ups' }, { key: 'occasions', label: 'Occasions (30 days)' },
     { key: 'all', label: 'All' }, ...(canAssign ? [{ key: 'unassigned' as Filter, label: 'No responsible salesperson' }] : []),
   ];

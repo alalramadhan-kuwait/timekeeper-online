@@ -1,5 +1,16 @@
 [
   {
+    "version": "3.22.0",
+    "date": "2026-11-14",
+    "title": "One place for each job",
+    "changes": [
+      "Leave is approved in the Inbox only. On the Leave page the status is shown but cannot be changed, and a leave you add there starts as Pending and goes to the Inbox like any other request.",
+      "Owners can cancel an upcoming leave from the Leave page with the new Cancel button.",
+      "VIP Customers is now a filter inside CRM Customers: tap the VIP chip. The old VIP link opens it for you.",
+      "The staff names in the store app now come from the Employees page: set \"Name in the sales app\" on a person's record. The typed-in list in Settings is gone."
+    ]
+  },
+  {
     "version": "3.21.0",
     "date": "2026-11-10",
     "title": "A clearer Inbox",
