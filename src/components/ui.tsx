@@ -35,6 +35,8 @@ export const statusColors: Record<string, string> = {
   Lost: 'bg-rose-100 text-rose-700 border-rose-200',
   'No Response': 'bg-slate-100 text-slate-500 border-slate-200',
   Closed: 'bg-slate-100 text-slate-500 border-slate-200',
+  // limited projects: an idea not yet agreed with the brand
+  'Ideation Phase': 'bg-violet-50 text-violet-700 border-violet-200',
   // pre-orders
   'Pending confirmation': 'bg-slate-100 text-slate-600 border-slate-200',
   Confirmed: 'bg-blue-100 text-blue-700 border-blue-200',

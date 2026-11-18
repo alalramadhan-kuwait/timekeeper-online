@@ -452,7 +452,8 @@ export function EmployeesPage() {
 }
 
 /* ---------------- Limited Watch Projects ---------------- */
-const LP_STATUSES = ['Upcoming', 'Confirmed', 'Received', 'Selling', 'Sold Out', 'Completed', 'Cancelled'];
+// Ideation Phase: an idea still being shaped, before anything is agreed with the brand
+const LP_STATUSES = ['Ideation Phase', 'Upcoming', 'Confirmed', 'Received', 'Selling', 'Sold Out', 'Completed', 'Cancelled'];
 // terminal states — moved into the collapsible "Completed / closed" section below the active list
 const LP_CLOSED = ['Completed', 'Cancelled'];
 
