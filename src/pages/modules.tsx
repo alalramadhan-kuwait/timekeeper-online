@@ -685,7 +685,7 @@ export function LimitedProjectsPage() {
     <>
       <div className="mb-3">
         <h1 className="text-xl font-bold text-slate-900">Limited Watch Projects</h1>
-        <p className="text-sm text-slate-500">By launch date.</p>
+        <p className="text-sm text-slate-500">The year by launch date.</p>
       </div>
       {viewToggle}
       <label className="mb-3 flex items-center gap-2 text-sm text-slate-600">

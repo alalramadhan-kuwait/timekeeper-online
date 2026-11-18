@@ -1,5 +1,13 @@
 [
   {
+    "version": "3.24.1",
+    "date": "2026-11-18",
+    "title": "Projects calendar shows the whole year",
+    "changes": [
+      "The Limited Watch Projects calendar now shows the whole year: twelve months at a glance, each with its launches. Use the arrows to move between years."
+    ]
+  },
+  {
     "version": "3.24.0",
     "date": "2026-11-18",
     "title": "Limited projects on a calendar",
