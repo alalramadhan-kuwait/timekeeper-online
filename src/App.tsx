@@ -6,7 +6,6 @@ import LoginPage from './components/LoginPage';
 import Dashboard from './pages/Dashboard';
 import ManagerDashboard from './pages/ManagerDashboard';
 import { Spinner } from './components/ui';
-import WorldRoute from './components/WorldRoute';
 
 /* Every other page arrives as its own file the first time it is opened.
 
@@ -86,7 +85,8 @@ function Shell() {
   return (
     <Routes>
       {/* owners only, full screen, outside the usual chrome */}
-      <Route path="/world" element={<WorldRoute />} />
+      {/* Time Keeper World is switched off; the code stays in src/world/ to bring it back. */}
+      <Route path="/world" element={<Navigate to="/" replace />} />
       <Route element={<Layout />}>
         <Route path="/" element={<Home />} />
         <Route path="/money" element={g('/money', <Dashboard title="Money" money />)} />

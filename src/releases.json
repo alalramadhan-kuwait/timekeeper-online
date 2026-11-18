@@ -1,5 +1,13 @@
 [
   {
+    "version": "3.24.2",
+    "date": "2026-11-18",
+    "title": "Time Keeper World switched off",
+    "changes": [
+      "Time Keeper World is switched off for now. Its button is gone from the menu and the top bar."
+    ]
+  },
+  {
     "version": "3.24.1",
     "date": "2026-11-18",
     "title": "Projects calendar shows the whole year",
