@@ -1,5 +1,13 @@
 [
   {
+    "version": "3.24.0",
+    "date": "2026-11-18",
+    "title": "Limited projects on a calendar",
+    "changes": [
+      "Limited Watch Projects has a Calendar view: tap Calendar at the top to see each project on its launch date, month by month, with the next launches and the projects that have no date yet. Tap a project to open it."
+    ]
+  },
+  {
     "version": "3.23.0",
     "date": "2026-11-14",
     "title": "A tidier menu",
