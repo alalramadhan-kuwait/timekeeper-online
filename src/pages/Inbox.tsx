@@ -7,14 +7,12 @@ import { Spinner, Badge } from '../components/ui';
 import { loadInbox, InboxData } from '../lib/inbox';
 import RequestQueue, { type QueueSummary } from '../components/RequestQueue';
 import { MONTHS } from '../lib/dateRange';
-import { applyCorrection, isApplicable } from '../lib/attendanceCorrection';
+import { applyCorrection, isApplicable } from '../shared/attendanceCorrection';
 import { CampaignRow, listCampaigns, isCampaignOwner, STAGE_LABEL, STAGE_BADGE } from '../lib/campaigns';
 import CampaignPanel from '../components/CampaignPanel';
 import CampaignForm from '../components/CampaignForm';
+import { todayKuwait, kuwaitHM } from '../shared/kuwaitTime';
 
-const todayKuwait = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kuwait' });
-const kuwaitHM = (iso: string | null) => (!iso ? null : new Intl.DateTimeFormat('en-GB',
-  { timeZone: 'Asia/Kuwait', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(iso)));
 const kuwaitDay = (d: string) => new Date(`${d}T12:00:00+03:00`)
   .toLocaleDateString('en-GB', { timeZone: 'Asia/Kuwait', weekday: 'short', day: '2-digit', month: 'short' });
 

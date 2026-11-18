@@ -51,45 +51,6 @@ export interface MetaFigures {
   status_label: string;
 }
 
-/**
- * Campaigns for the picker: the ones that ran recently first, then the rest.
- *
- * The account carries 1,200 campaigns and most last ran years ago. Sorting the
- * live ones to the top is the difference between one tap and a hunt, and the
- * search box still reaches every one of them.
- */
-export async function loadMetaCampaignOptions(current?: string): Promise<MetaCampaignOption[]> {
-  const since = new Date(Date.now() - 90 * 86400_000).toISOString().slice(0, 10);
-  const [{ data: campaigns }, { data: recent }, spending] = await Promise.all([
-    supabase.from('meta_ad_campaigns').select('id, name, effective_status').order('name'),
-    supabase.from('meta_ad_insights').select('campaign_id').eq('period', 'daily').gte('date_start', since),
-    loadSpendingCampaignIds(),
-  ]);
-  const active = new Set((recent ?? []).map((r) => r.campaign_id as string));
-  const all = (campaigns ?? []) as { id: string; name: string | null; effective_status: string | null }[];
-
-  /* Only campaigns that have spent are offered. The one exception is the
-     campaign this row is ALREADY linked to: excluding it would leave the
-     picker showing nothing selected, and saving the row would then quietly
-     drop a link somebody made on purpose. It is kept, and labelled. */
-  const rows = all.filter((c) => spending.has(c.id) || (current && c.id === current));
-
-  const opt = (c: typeof rows[number], group: string): MetaCampaignOption => ({
-    value: c.id,
-    label: c.name?.trim() || `Campaign ${c.id}`,
-    group,
-  });
-  const linkedButUnlisted = current && !spending.has(current)
-    ? rows.filter((c) => c.id === current).map((c) => opt(c, 'Linked already · no spend on Meta'))
-    : [];
-  const offered = rows.filter((c) => spending.has(c.id));
-  return [
-    ...linkedButUnlisted,
-    ...offered.filter((c) => active.has(c.id)).map((c) => opt(c, 'Spent in the last 90 days')),
-    ...offered.filter((c) => !active.has(c.id)).map((c) => opt(c, 'Spent earlier')),
-  ];
-}
-
 /** How Meta's own status words read to a person. */
 const STATUS_WORDS: Record<string, string> = {
   ACTIVE: 'Active', PAUSED: 'Paused', ARCHIVED: 'Archived', DELETED: 'Deleted',
@@ -99,66 +60,6 @@ const STATUS_WORDS: Record<string, string> = {
 };
 export const statusWord = (s: string | null) =>
   !s ? 'Unknown' : STATUS_WORDS[s] ?? s.replace(/_/g, ' ').toLowerCase().replace(/^./, (c) => c.toUpperCase());
-
-/** What Meta reports for these campaigns, over their whole life. */
-export async function loadMetaFigures(campaignIds: string[]): Promise<Map<string, MetaFigures>> {
-  const ids = [...new Set(campaignIds.filter(Boolean))];
-  if (!ids.length) return new Map();
-  const [{ data: ins }, { data: camps }, { data: cfg }] = await Promise.all([
-    supabase.from('meta_insight_totals')
-      .select(TOTALS_COLUMNS)
-      .eq('level', 'campaign').in('campaign_id', ids),
-    supabase.from('meta_ad_campaigns').select('id, name, objective, effective_status, synced_at').in('id', ids),
-    supabase.from('meta_ads_config').select('last_synced_at').eq('id', 1).maybeSingle(),
-  ]);
-
-  /* A campaign row is only touched when Meta returns it, so its synced_at is
-     also "last seen". Anything older than the last successful run was not in
-     Meta's answer — deleted, or moved somewhere this token cannot see. The few
-     minutes of slack cover a run that spans the clock tick. */
-  const lastOk = (cfg as { last_synced_at?: string } | null)?.last_synced_at;
-  const cutoff = lastOk ? new Date(lastOk).getTime() - 5 * 60_000 : null;
-  const seenRecently = (seen: string | null | undefined) =>
-    !cutoff ? true : !!seen && new Date(seen).getTime() >= cutoff;
-  const byId = new Map<string, any>((camps ?? []).map((c) => [c.id, c]));
-  const stateOf = (c: any): Pick<MetaFigures, 'link_state' | 'status_label'> => {
-    if (!c) return { link_state: 'missing', status_label: 'Not found on Meta' };
-    if (!seenRecently(c.synced_at)) return { link_state: 'missing', status_label: 'No longer returned by Meta' };
-    if ((c.effective_status ?? '') === 'ACTIVE') return { link_state: 'live', status_label: 'Active' };
-    return { link_state: 'stopped', status_label: statusWord(c.effective_status) };
-  };
-  const out = new Map<string, MetaFigures>();
-  for (const r of (ins ?? []) as any[]) {
-    const c = byId.get(r.campaign_id) ?? null;
-    out.set(r.campaign_id, {
-      ...stateOf(c),
-      campaign_id: r.campaign_id,
-      campaign_name: c?.name ?? null, objective: c?.objective ?? null,
-      effective_status: c?.effective_status ?? null,
-      spend: r.spend, impressions: r.impressions, reach: r.reach, clicks: r.clicks,
-      ctr: r.ctr, cpc: r.cpc, cpm: r.cpm, actions: r.actions, frequency: r.frequency,
-      action_values: r.action_values, purchase_roas: r.purchase_roas, cost_per_action_type: r.cost_per_action_type,
-      account_currency: r.account_currency,
-      date_start: r.date_start, date_stop: r.date_stop, synced_at: r.synced_at,
-    });
-  }
-  // A campaign with no delivery has no insight row at all; still name it.
-  /* A linked id with no insight row still needs an answer. Either it has never
-     delivered, or the campaign is gone entirely — and those read very
-     differently to whoever linked it, so both get said out loud. */
-  for (const id of ids) {
-    if (out.has(id)) continue;
-    const c = byId.get(id) ?? null;
-    out.set(id, {
-      ...stateOf(c),
-      campaign_id: id, campaign_name: c?.name ?? null, objective: c?.objective ?? null,
-      effective_status: c?.effective_status ?? null,
-      spend: null, impressions: null, reach: null, clicks: null, ctr: null, cpc: null, cpm: null,
-      actions: null, account_currency: null, date_start: null, date_stop: null, synced_at: null,
-    });
-  }
-  return out;
-}
 
 /**
  * The "Results" line, chosen the way Ads Manager chooses it.
@@ -273,17 +174,6 @@ export async function loadMetaSyncState(): Promise<MetaSyncState | null> {
   return (data as MetaSyncState) ?? null;
 }
 
-/** True when this campaign has no stored figures — nothing has been synced for
- *  it yet, which is what happens to a campaign created since the last run. */
-export async function hasNoFigures(campaignId: string): Promise<boolean> {
-  if (!campaignId) return false;
-  const { count } = await supabase
-    .from('meta_insight_totals')
-    .select('campaign_id', { count: 'exact', head: true })
-    .eq('campaign_id', campaignId).eq('level', 'campaign');
-  return (count ?? 0) === 0;
-}
-
 /** Date and time as a person reads them, for "last synced". Formatting a
  *  timestamp is not touching a figure — no Meta metric passes through here. */
 export const whenSynced = (iso: string | null | undefined) =>
@@ -293,57 +183,6 @@ export const whenSynced = (iso: string | null | undefined) =>
 /** Hours since a timestamp — used only to colour a freshness pill, never to
  *  alter a figure. */
 export const staleHours = (iso: string) => (Date.now() - new Date(iso).getTime()) / 3_600_000;
-
-/**
- * Every campaign on the account, with the figures Meta reports for it.
- *
- * Shaped for the Campaigns page, which lists Meta's own records rather than
- * ours. Same rule as everywhere else: the figures are the strings Meta sent.
- */
-export async function loadAllCampaignsWithFigures(): Promise<Record<string, any>[]> {
-  const [{ data: camps }, { data: cfg }] = await Promise.all([
-    supabase.from('meta_ad_campaigns')
-      .select('id, name, objective, effective_status, start_time, stop_time, synced_at')
-      .order('name'),
-    supabase.from('meta_ads_config').select('last_synced_at').eq('id', 1).maybeSingle(),
-  ]);
-  const rows = (camps ?? []) as any[];
-  if (!rows.length) return [];
-
-  // Insights come back in pages like any other table; ask for all of them.
-  const ins: any[] = [];
-  for (let from = 0; ; from += 1000) {
-    const { data } = await supabase.from('meta_insight_totals')
-      .select(TOTALS_COLUMNS)
-      .eq('level', 'campaign').range(from, from + 999);
-    ins.push(...(data ?? []));
-    if (!data || data.length < 1000) break;
-  }
-  const byCampaign = new Map(ins.map((r) => [r.campaign_id, r]));
-
-  const lastOk = (cfg as { last_synced_at?: string } | null)?.last_synced_at;
-  const cutoff = lastOk ? new Date(lastOk).getTime() - 5 * 60_000 : null;
-
-  return rows.map((c) => {
-    const i = byCampaign.get(c.id) ?? {};
-    const seen = !cutoff ? true : !!c.synced_at && new Date(c.synced_at).getTime() >= cutoff;
-    const figures: MetaFigures = {
-      link_state: !seen ? 'missing' : c.effective_status === 'ACTIVE' ? 'live' : 'stopped',
-      status_label: !seen ? 'No longer returned by Meta' : statusWord(c.effective_status),
-      campaign_id: c.id, campaign_name: c.name ?? null, objective: c.objective ?? null,
-      effective_status: c.effective_status ?? null,
-      spend: i.spend ?? null, impressions: i.impressions ?? null, reach: i.reach ?? null,
-      clicks: i.clicks ?? null, ctr: i.ctr ?? null, cpc: i.cpc ?? null, cpm: i.cpm ?? null,
-      actions: i.actions ?? null, account_currency: i.account_currency ?? null,
-      frequency: i.frequency ?? null, action_values: i.action_values ?? null,
-      purchase_roas: i.purchase_roas ?? null, cost_per_action_type: i.cost_per_action_type ?? null,
-      date_start: i.date_start ?? null, date_stop: i.date_stop ?? null,
-      synced_at: i.synced_at ?? c.synced_at ?? null,
-    };
-    return { ...c, __meta: figures, __result: resultFor(figures) };
-  });
-}
-
 
 /**
  * Campaigns that have ever spent anything, by id.

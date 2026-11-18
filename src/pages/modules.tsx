@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { X, Upload, Trash2 as TrashIcon, RefreshCw } from 'lucide-react';
 import { CrudModule, CrudConfig } from '../components/CrudModule';
+import LaunchCalendar from '../components/LaunchCalendar';
+import { useSearchParams } from 'react-router-dom';
 import { WorkScheduleModal } from '../components/WorkSchedule';
 import { describeDays, KUWAIT_WEEK, type Weekday } from '../shared/schedule';
 import { OUTLETS } from '../shared/outlets';
@@ -450,7 +452,8 @@ export function EmployeesPage() {
 }
 
 /* ---------------- Limited Watch Projects ---------------- */
-const LP_STATUSES = ['Upcoming', 'Confirmed', 'Received', 'Selling', 'Sold Out', 'Completed', 'Cancelled'];
+// Ideation Phase: an idea still being shaped, before anything is agreed with the brand
+const LP_STATUSES = ['Ideation Phase', 'Upcoming', 'Confirmed', 'Received', 'Selling', 'Sold Out', 'Completed', 'Cancelled'];
 // terminal states — moved into the collapsible "Completed / closed" section below the active list
 const LP_CLOSED = ['Completed', 'Cancelled'];
 
@@ -554,6 +557,15 @@ export function LimitedProjectsPage() {
   const [projectPOs, setProjectPOs] = useState<Map<string, ProjectPO[]>>(new Map());
   const [poDetail, setPODetail] = useState<{ project: string; pos: ProjectPO[] } | null>(null);
   const [showCompleted, setShowCompleted] = useState(false);
+  /* List or Calendar (by launch date); kept in the address so a refresh or a shared link keeps it. */
+  const [sp, setSp] = useSearchParams();
+  const view = sp.get('view') === 'calendar' ? 'calendar' : 'list';
+  const setView = (v: 'list' | 'calendar') => setSp((cur) => {
+    const n = new URLSearchParams(cur);
+    if (v === 'calendar') n.set('view', 'calendar'); else n.delete('view');
+    n.delete('focus');
+    return n;
+  });
 
   useEffect(() => {
     supabase.from('purchase_orders')
@@ -657,8 +669,38 @@ export function LimitedProjectsPage() {
     filter: (r) => LP_CLOSED.includes(r.status),
   }), [config]);
 
+  const viewToggle = (
+    <div role="tablist" aria-label="View" className="mb-4 inline-grid grid-cols-2 gap-1 rounded-xl bg-slate-200/70 p-1">
+      {(['list', 'calendar'] as const).map((v) => (
+        <button key={v} type="button" role="tab" aria-selected={view === v} onClick={() => setView(v)}
+          className={`min-h-[40px] px-5 rounded-lg text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400
+            ${view === v ? 'bg-white font-semibold text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-800'}`}>
+          {v === 'list' ? 'List' : 'Calendar'}
+        </button>
+      ))}
+    </div>
+  );
+
+  if (view === 'calendar') return (
+    <>
+      <div className="mb-3">
+        <h1 className="text-xl font-bold text-slate-900">Limited Watch Projects</h1>
+        <p className="text-sm text-slate-500">By launch date.</p>
+      </div>
+      {viewToggle}
+      <label className="mb-3 flex items-center gap-2 text-sm text-slate-600">
+        <input type="checkbox" checked={showCompleted} onChange={(e) => setShowCompleted(e.target.checked)} />
+        Include completed and cancelled
+      </label>
+      <LaunchCalendar showClosed={showCompleted}
+        // the list's editor opens the project: one place a project is edited
+        onOpen={(p) => setSp(() => new URLSearchParams({ focus: p.id }))} />
+    </>
+  );
+
   return (
     <>
+      {viewToggle}
       <CrudModule key={`active-${refreshKey}`} config={activeConfig} />
       <div className="mt-6">
         <button

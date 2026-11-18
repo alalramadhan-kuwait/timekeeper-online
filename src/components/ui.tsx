@@ -35,6 +35,8 @@ export const statusColors: Record<string, string> = {
   Lost: 'bg-rose-100 text-rose-700 border-rose-200',
   'No Response': 'bg-slate-100 text-slate-500 border-slate-200',
   Closed: 'bg-slate-100 text-slate-500 border-slate-200',
+  // limited projects: an idea not yet agreed with the brand
+  'Ideation Phase': 'bg-violet-50 text-violet-700 border-violet-200',
   // pre-orders
   'Pending confirmation': 'bg-slate-100 text-slate-600 border-slate-200',
   Confirmed: 'bg-blue-100 text-blue-700 border-blue-200',
@@ -68,6 +70,13 @@ export const statusColors: Record<string, string> = {
   High: 'bg-red-100 text-red-700 border-red-200',
   Medium: 'bg-amber-100 text-amber-700 border-amber-200',
   Low: 'bg-slate-100 text-slate-500 border-slate-200',
+};
+
+/** Badge colours for the three kinds of leave, shared by the Leave page and My Portal. */
+export const leaveTypeColors: Record<string, string> = {
+  Annual: 'bg-blue-100 text-blue-700 border-blue-200',
+  Sick: 'bg-rose-100 text-rose-600 border-rose-200',
+  WFH: 'bg-violet-100 text-violet-700 border-violet-200',
 };
 
 export function StatusBadge({ value }: { value: string }) {

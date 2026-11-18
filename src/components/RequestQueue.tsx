@@ -20,7 +20,7 @@ import {
   waitedFor, fieldChanges, reminderState, whenShort, requesterWords,
   type RequestRow, type Tab, type MyStage,
 } from '../shared/requests';
-import { applyCorrection, isApplicable, type CorrectionRequest } from '../lib/attendanceCorrection';
+import { applyCorrection, isApplicable, type CorrectionRequest } from '../shared/attendanceCorrection';
 import { leaveBalance, leaveTypeOf, type LeaveBalance } from '../shared/portalRules';
 
 const TABS: { key: Tab; label: string }[] = [

@@ -9,6 +9,7 @@ import { supabase } from '../lib/supabase';
 import { Spinner, Badge } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { roleLabel } from '../lib/roles';
+import { kuwaitDateOf as kdate, kuwaitTimeOf as hm } from '../shared/kuwaitTime';
 
 // One place to see a person from every angle: attendance, app activity, and the edits
 // they've made. Everything is keyed by user_id (the login), so names never duplicate.
@@ -36,8 +37,6 @@ const PAGE_LABEL: Record<string, string> = {
   '/history': 'History', '/settings': 'Settings', '/performance': 'Performance',
 };
 
-const kdate = (iso: string) => new Date(new Date(iso).getTime() + 3 * 3600_000).toISOString().slice(0, 10);
-const hm = (iso: string) => new Date(new Date(iso).getTime() + 3 * 3600_000).toISOString().slice(11, 16);
 const hoursBetween = (a: string, b: string | null) => (b ? (new Date(b).getTime() - new Date(a).getTime()) / 3600_000 : 0);
 const rel = (iso: string | null) => {
   if (!iso) return 'never';
