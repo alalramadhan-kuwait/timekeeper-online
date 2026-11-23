@@ -2,8 +2,9 @@
   {
     "version": "3.24.2",
     "date": "2026-11-18",
-    "title": "Time Keeper World switched off",
+    "title": "Clearer staffing on Today, and Time Keeper World switched off",
     "changes": [
+      "Staffing on the Today page is simpler: three numbers (in, need a look, due later), then just the names of anyone late, absent or missing a clock-out.",
       "Time Keeper World is switched off for now. Its button is gone from the menu and the top bar."
     ]
   },

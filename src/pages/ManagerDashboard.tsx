@@ -325,32 +325,36 @@ export default function ManagerDashboard() {
         {bits.map((b, i) => <span key={i} className={b.bad ? 'text-amber-300' : ''}>{b.text} </span>)}
       </div>
 
-      {/* 1 — staffing */}
+      {/* 1 — staffing: three counts, then only the people who need a look */}
       {can('/attendance') && (
-        <Group title="Staffing today" right={gapCount ? plural(gapCount, 'gap') : undefined} link="/attendance">
-          {d.staff.filter((s) => s.gaps.length).map((s) => (
-            <Link key={s.key} to="/attendance" className="block border-t border-slate-100 py-2 first:border-t-0">
-              <p className="flex items-center gap-2 text-sm font-medium text-slate-800">
-                <Dot bad={s.inCount === 0} />
-                {s.name} — {s.inCount} of {s.expected} in
-                <ChevronRight size={14} className="ml-auto text-slate-300" />
-              </p>
-              <ul className="ml-4 mt-0.5 text-xs text-slate-500">
-                {s.gaps.map((g) => (
-                  <li key={g.name}>
-                    {g.name} — {g.status === 'needs_correction' ? 'clock-out missing' : g.status === 'missing' ? 'not in' : 'not in yet'}
-                    {g.due && g.status !== 'needs_correction' ? `, due ${g.due.slice(0, 5)}` : ''}
-                  </li>
-                ))}
-              </ul>
-            </Link>
-          ))}
-          <p className={`flex items-center gap-2 text-sm text-slate-500 ${gapCount ? 'border-t border-slate-100 pt-2' : ''}`}>
-            <Check size={14} className="text-emerald-600" />
-            {d.staff.length === 0
-              ? 'Nobody is scheduled today'
-              : `${gapCount ? 'Everyone else' : 'Everyone due'} is in${d.peopleDueLater ? ` · ${d.peopleDueLater} not due yet` : ''} (${d.peopleIn})`}
-          </p>
+        <Group title="Staffing today" link="/attendance">
+          {d.staff.length === 0 ? (
+            <p className="text-sm text-slate-500">Nobody is scheduled today</p>
+          ) : (
+            <>
+              <div className="grid grid-cols-3 gap-2">
+                <Count n={d.peopleIn} label="in" tone="good" />
+                <Count n={gapCount} label={gapCount === 1 ? 'needs a look' : 'need a look'} tone={gapCount ? 'bad' : 'none'} />
+                <Count n={d.peopleDueLater} label="due later" tone="none" />
+              </div>
+              {gapCount > 0 && (
+                <ul className="mt-2 divide-y divide-slate-100">
+                  {d.staff.flatMap((s) => s.gaps.map((g) => (
+                    <li key={`${s.key}-${g.name}`}>
+                      <Link to="/attendance" className="flex items-center gap-2 py-2 text-sm">
+                        <span className="min-w-0 flex-1 truncate font-medium text-slate-800">{shortName(g.name)}</span>
+                        <span className="shrink-0 text-xs text-slate-500">
+                          {g.status === 'needs_correction' ? 'no clock-out' : g.status === 'missing' ? 'absent' : `late · due ${g.due?.slice(0, 5) ?? '—'}`}
+                          {d.staff.length > 1 ? ` · ${s.name}` : ''}
+                        </span>
+                        <ChevronRight size={14} className="shrink-0 text-slate-300" />
+                      </Link>
+                    </li>
+                  )))}
+                </ul>
+              )}
+            </>
+          )}
         </Group>
       )}
 
@@ -429,6 +433,19 @@ function Group({ title, right, link, children }: { title: string; right?: string
       </div>
       {children}
     </section>
+  );
+}
+
+/* first and last word of a long name, so a row stays on one line */
+const shortName = (n: string) => { const w = n.trim().split(/\s+/); return w.length > 2 ? `${w[0]} ${w[w.length - 1]}` : n; };
+
+function Count({ n, label, tone }: { n: number; label: string; tone: 'good' | 'bad' | 'none' }) {
+  const cls = tone === 'good' ? 'bg-emerald-50 text-emerald-700' : tone === 'bad' ? 'bg-amber-50 text-amber-800' : 'bg-slate-50 text-slate-600';
+  return (
+    <div className={`rounded-lg px-2 py-2 text-center ${cls}`}>
+      <div className="text-xl font-bold tabular-nums leading-none">{n}</div>
+      <div className="mt-1 text-xs">{label}</div>
+    </div>
   );
 }
 
