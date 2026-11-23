@@ -30,16 +30,15 @@ import { outletOf, hasAttendance, outletName, type OutletCode } from '../shared/
 import { standing, kuwaitDate, type AttendanceStatus } from '../shared/attendanceStatus';
 import { shiftTimesOn } from '../shared/punctuality';
 import { scheduleFromRow, type Schedule, type ScheduleRow } from '../shared/schedule';
+import { StaffingCard, judgeBranch, type StaffPerson, type StaffBranch } from '../components/StaffingCard';
 import { loadRequests, waitedFor, stageOf, tabOf, type RequestRow } from '../shared/requests';
 
 /* ------------------------------------------------------------------ types */
 
-interface Emp { id: string; full_name: string; location: string | null; status: string; user_id: string | null }
+interface Emp { id: string; full_name: string; location: string | null; status: string; user_id: string | null; phone: string | null }
 interface Rec { user_id: string | null; employee_name: string; clock_in: string; clock_out: string | null }
 interface Leave { employee_id: string; leave_start: string; leave_end: string }
 
-interface Gap { name: string; status: AttendanceStatus; due: string | null }
-interface StaffOutlet { key: string; name: string; expected: number; inCount: number; gaps: Gap[] }
 
 interface SalesRow { code: OutletCode; name: string; sales: number; target: number | null }
 
@@ -54,9 +53,8 @@ interface Item {
 }
 
 interface Data {
-  staff: StaffOutlet[];
-  peopleIn: number;
-  peopleDueLater: number;
+  branches: StaffBranch[];
+  workStart: string;
   sales: SalesRow[];
   companySales: number;
   companyTarget: number | null;
@@ -71,7 +69,6 @@ interface Data {
   duePOs: number;
 }
 
-const GAP_STATUS: AttendanceStatus[] = ['late', 'missing', 'needs_correction'];
 const SELLING: { code: OutletCode; target: keyof Targets }[] = [
   { code: 'avenues', target: 'sales_target_avenues' },
   { code: 'time_gallery', target: 'sales_target_timegallery' },
@@ -107,15 +104,16 @@ async function load(role: string | null, canHR: boolean): Promise<Data> {
   const mine = stageOf(role);
 
   const [
-    empQ, schedQ, recQ, leaveQ, posQ, setQ, syncQ, reqs, fuQ, repQ, preQ, projQ, taskQ, poQ, lostQ, docQ,
+    empQ, schedQ, recQ, leaveQ, outQ, posQ, setQ, syncQ, reqs, fuQ, repQ, preQ, projQ, taskQ, poQ, lostQ, docQ,
   ] = await Promise.all([
-    supabase.from('employees').select('id, full_name, location, status, user_id').in('status', ['Active', 'On leave']),
+    supabase.from('employees').select('id, full_name, location, status, user_id, phone').in('status', ['Active', 'On leave']),
     supabase.from('employee_schedules')
       .select('id, employee_id, effective_from, effective_to, working_days, shift_start, shift_end, grace_minutes, note'),
     supabase.from('attendance_records').select('user_id, employee_name, clock_in, clock_out')
       .gte('clock_in', `${today}T00:00:00+03:00`).lte('clock_in', `${today}T23:59:59+03:00`),
     supabase.from('leave_records').select('employee_id, leave_start, leave_end')
       .eq('approval_status', 'Approved').lte('leave_start', today).gte('leave_end', today),
+    supabase.from('outlets').select('code, opens_at, closes_at, min_staff'),
     supabase.from('pos_channel_sales').select('channel_code, sale_date, revenue').gte('sale_date', monthStart),
     supabase.from('settings')
       .select('sales_target_month, sales_target_avenues, sales_target_timegallery, sales_target_online, sales_target_whatsapp, work_start_time').single(),
@@ -148,31 +146,48 @@ async function load(role: string | null, canHR: boolean): Promise<Data> {
   }
   const recs = (recQ.data ?? []) as Rec[];
   const leaveIds = new Set(((leaveQ.data ?? []) as Leave[]).map((l) => l.employee_id));
-  const byOutlet = new Map<string, StaffOutlet>();
-  let peopleIn = 0, peopleDueLater = 0;
+  const outletRows = new Map(((outQ.data ?? []) as { code: string; opens_at: string | null; closes_at: string | null; min_staff: number | null }[])
+    .map((o) => [o.code, o]));
+  const hhmm = (iso: string) => new Date(iso).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Kuwait' });
+  const toMin = (t: string | null) => (t ? Number(t.slice(0, 2)) * 60 + Number(t.slice(3, 5)) : null);
+  const nowMin = toMin(hhmm(now.toISOString())) ?? 0;
+  const byBranch = new Map<string, StaffPerson[]>();
+  const names = new Map<string, string>();
   for (const e of (empQ.data ?? []) as Emp[]) {
     if (!hasAttendance(e.location)) continue;
-    const mineRecs = recs
-      .filter((r) => (e.user_id && r.user_id === e.user_id) || (!r.user_id && r.employee_name === e.full_name))
-      .map((r) => ({ clockIn: r.clock_in, clockOut: r.clock_out }));
+    const mine = recs.filter((r) => (e.user_id && r.user_id === e.user_id) || (!r.user_id && r.employee_name === e.full_name))
+      .sort((x, y) => x.clock_in.localeCompare(y.clock_in));
     const schedules = scheds.get(e.id) ?? [];
-    const s = standing({ records: mineRecs, schedules, date: today, onLeave: leaveIds.has(e.id), defaultStart }, now);
-    if (['off', 'on_leave', 'no_schedule'].includes(s.status)) continue;
+    const s = standing({ records: mine.map((r) => ({ clockIn: r.clock_in, clockOut: r.clock_out })), schedules, date: today, onLeave: leaveIds.has(e.id), defaultStart }, now);
+    const times = shiftTimesOn(schedules, today, { defaultStart });
+    const expected = s.expected === true;
+    const firstIn = mine.length ? hhmm(mine[0].clock_in) : null;
+    const lastOutIso = mine.length ? mine[mine.length - 1].clock_out : null;
+    const due = times.start;
+    const dueMin = toMin(due);
     const o = outletOf(e.location);
     const key = o?.code ?? e.location ?? 'other';
-    const row = byOutlet.get(key) ?? { key, name: bare(outletName(e.location)), expected: 0, inCount: 0, gaps: [] };
-    row.expected++;
-    if (s.status === 'working' || s.status === 'completed') { row.inCount++; peopleIn++; }
-    else if (s.status === 'due_later') peopleDueLater++;
-    if (GAP_STATUS.includes(s.status)) {
-      row.gaps.push({ name: e.full_name, status: s.status, due: shiftTimesOn(schedules, today, { defaultStart }).start });
-    }
-    byOutlet.set(key, row);
+    names.set(key, bare(outletName(e.location)).replace(/^Timekeeper /, ''));
+    const person: StaffPerson = {
+      id: e.id, name: e.full_name, phone: e.phone, user_id: e.user_id, location: e.location, branch: key,
+      status: s.status, due, timeUnknown: expected && due === null,
+      firstIn, lastOut: lastOutIso ? hhmm(lastOutIso) : null,
+      arrivedLateMin: firstIn && dueMin !== null ? Math.max(0, (toMin(firstIn) ?? 0) - dueMin) : null,
+      lateNowMin: (s.status === 'late' || s.status === 'missing') && dueMin !== null ? Math.max(0, nowMin - dueMin) : null,
+    };
+    byBranch.set(key, [...(byBranch.get(key) ?? []), person]);
   }
-  const staff = [...byOutlet.values()].sort((a, b) => {
-    const nobody = (x: StaffOutlet) => (x.gaps.length && x.inCount === 0 ? 0 : 1);
-    return nobody(a) - nobody(b) || b.gaps.length - a.gaps.length;
-  });
+  const rank = { bad: 0, warn: 1, good: 2, idle: 3 } as const;
+  const branches = [...byBranch.entries()].map(([key, people]) => {
+    const o = outletRows.get(key);
+    const opensAt = o?.opens_at?.slice(0, 5) ?? null;
+    const closesAt = o?.closes_at?.slice(0, 5) ?? null;
+    const shop = opensAt !== null;
+    const om = toMin(opensAt), cm = toMin(closesAt);
+    const open = shop && om !== null && nowMin >= om && (cm === null || nowMin < cm);
+    return judgeBranch({ key, name: names.get(key) ?? key, shop, opensAt: shop && !open && om !== null && nowMin >= om ? null : opensAt, closesAt, open, minStaff: o?.min_staff ?? null, people });
+  }).filter((b) => b.people.some((p) => !['off', 'on_leave'].includes(p.status)) || b.shop)
+    .sort((x, y) => rank[x.tone] - rank[y.tone] || x.name.localeCompare(y.name));
 
   /* ---- sales: what rang through the tills, refreshed each morning */
   const pos = (posQ.data ?? []) as { channel_code: string | null; sale_date: string; revenue: unknown }[];
@@ -230,7 +245,7 @@ async function load(role: string | null, canHR: boolean): Promise<Data> {
   const pos2 = (poQ.data ?? []) as { expected_arrival: string | null }[];
 
   return {
-    staff, peopleIn, peopleDueLater, sales,
+    branches, workStart: defaultStart, sales,
     companySales: sum(), companyTarget: num(targets.sales_target_month),
     lastSaleDay, daysInMonth,
     syncedAt: ((syncQ.data?.[0] as { finished_at?: string } | undefined)?.finished_at) ?? null,
@@ -282,14 +297,16 @@ export default function ManagerDashboard() {
 
   const pctOf = (v: number, t: number | null) => (t ? Math.round((v / t) * 100) : null);
   const behind = d.sales.filter((s) => verdictOf(pctOf(s.sales, s.target)) === 'behind');
-  const nobodyIn = d.staff.filter((s) => s.gaps.length > 0 && s.inCount === 0);
-  const gapCount = d.staff.reduce((n, s) => n + s.gaps.length, 0);
+  const nobodyIn = d.branches.filter((b) => b.tone === 'bad');
+  const shortB = d.branches.filter((b) => b.shop && b.tone === 'warn');
+  const gapCount = d.branches.reduce((n, b) => n + b.people.filter((p) => p.status === 'late' || p.status === 'missing').length, 0);
   const goneTxt = pace ? `${Math.round(pace.frac * 100)}% of the month gone` : '';
   const shown = all ? d.items : d.items.slice(0, 5);
 
   /* the headline: one sentence per thing worth saying, and nothing when all is well */
   const bits: { text: string; bad: boolean }[] = [];
-  if (nobodyIn.length) bits.push({ text: `${nobodyIn.map((s) => s.name).join(' and ')} ${nobodyIn.length === 1 ? 'has' : 'have'} nobody in yet.`, bad: true });
+  if (nobodyIn.length) bits.push({ text: `${nobodyIn.map((s) => s.name).join(' and ')} ${nobodyIn.length === 1 ? 'has' : 'have'} nobody on the floor.`, bad: true });
+  else if (shortB.length) bits.push({ text: `${shortB.map((s) => s.name).join(' and ')} ${shortB.length === 1 ? 'is' : 'are'} short-staffed.`, bad: true });
   else if (gapCount) bits.push({ text: `${plural(gapCount, 'person is', 'people are')} not in yet.`.replace('1 person is', 'One person is'), bad: true });
   else bits.push({ text: 'Everyone due is in.', bad: false });
   if (behind.length === 1) {
@@ -325,34 +342,8 @@ export default function ManagerDashboard() {
         {bits.map((b, i) => <span key={i} className={b.bad ? 'text-amber-300' : ''}>{b.text} </span>)}
       </div>
 
-      {/* 1 — staffing */}
-      {can('/attendance') && (
-        <Group title="Staffing today" right={gapCount ? plural(gapCount, 'gap') : undefined} link="/attendance">
-          {d.staff.filter((s) => s.gaps.length).map((s) => (
-            <Link key={s.key} to="/attendance" className="block border-t border-slate-100 py-2 first:border-t-0">
-              <p className="flex items-center gap-2 text-sm font-medium text-slate-800">
-                <Dot bad={s.inCount === 0} />
-                {s.name} — {s.inCount} of {s.expected} in
-                <ChevronRight size={14} className="ml-auto text-slate-300" />
-              </p>
-              <ul className="ml-4 mt-0.5 text-xs text-slate-500">
-                {s.gaps.map((g) => (
-                  <li key={g.name}>
-                    {g.name} — {g.status === 'needs_correction' ? 'clock-out missing' : g.status === 'missing' ? 'not in' : 'not in yet'}
-                    {g.due && g.status !== 'needs_correction' ? `, due ${g.due.slice(0, 5)}` : ''}
-                  </li>
-                ))}
-              </ul>
-            </Link>
-          ))}
-          <p className={`flex items-center gap-2 text-sm text-slate-500 ${gapCount ? 'border-t border-slate-100 pt-2' : ''}`}>
-            <Check size={14} className="text-emerald-600" />
-            {d.staff.length === 0
-              ? 'Nobody is scheduled today'
-              : `${gapCount ? 'Everyone else' : 'Everyone due'} is in${d.peopleDueLater ? ` · ${d.peopleDueLater} not due yet` : ''} (${d.peopleIn})`}
-          </p>
-        </Group>
-      )}
+      {/* 1 — staffing: is each branch covered, and what to do about it */}
+      {can('/attendance') && <StaffingCard branches={d.branches} workStart={d.workStart} onChanged={refresh} />}
 
       {/* 2 — outlet sales */}
       {can('/sales') && (

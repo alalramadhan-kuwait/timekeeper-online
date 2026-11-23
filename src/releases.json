@@ -1,5 +1,14 @@
 [
   {
+    "version": "3.24.2",
+    "date": "2026-11-18",
+    "title": "Staffing by branch on Today, and Time Keeper World switched off",
+    "changes": [
+      "Staffing on the Today page now shows each branch in one line: who is on the floor against what it needs (Uncovered, Short, Missing). Tap a branch to see who clocked in and when, who is late, who has no shift time, and who is off. A To do row gives one button per thing to do, such as calling someone who is late.",
+      "Time Keeper World is switched off for now. Its button is gone from the menu and the top bar."
+    ]
+  },
+  {
     "version": "3.24.1",
     "date": "2026-11-18",
     "title": "Projects calendar shows the whole year",
