@@ -37,7 +37,7 @@ import { loadRequests, waitedFor, stageOf, tabOf, type RequestRow } from '../sha
 
 interface Emp { id: string; full_name: string; location: string | null; status: string; user_id: string | null; phone: string | null }
 interface Rec { user_id: string | null; employee_name: string; clock_in: string; clock_out: string | null }
-interface Leave { employee_id: string; leave_start: string; leave_end: string }
+interface Leave { employee_id: string; leave_start: string; leave_end: string; leave_type: string | null; notes: string | null }
 
 
 interface SalesRow { code: OutletCode; name: string; sales: number; target: number | null }
@@ -93,6 +93,13 @@ const kd = (n: number) => `${short(n)} KD`;
 
 /* ------------------------------------------------------------------- data */
 
+/** "Work trip · Expo · to 26 Nov" — what kind of away, why, and until when. */
+function awayLabel(l: Leave | undefined): string | null {
+  if (!l) return null;
+  const until = new Date(`${l.leave_end}T12:00:00+03:00`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'Asia/Kuwait' });
+  return [l.leave_type || 'Annual', (l.notes ?? '').trim() || null, `to ${until}`].filter(Boolean).join(' · ');
+}
+
 async function load(role: string | null, canHR: boolean): Promise<Data> {
   const now = new Date();
   const today = kuwaitDate(now);
@@ -111,7 +118,7 @@ async function load(role: string | null, canHR: boolean): Promise<Data> {
       .select('id, employee_id, effective_from, effective_to, working_days, shift_start, shift_end, grace_minutes, note'),
     supabase.from('attendance_records').select('user_id, employee_name, clock_in, clock_out')
       .gte('clock_in', `${today}T00:00:00+03:00`).lte('clock_in', `${today}T23:59:59+03:00`),
-    supabase.from('leave_records').select('employee_id, leave_start, leave_end')
+    supabase.from('leave_records').select('employee_id, leave_start, leave_end, leave_type, notes')
       .eq('approval_status', 'Approved').lte('leave_start', today).gte('leave_end', today),
     supabase.from('outlets').select('code, opens_at, closes_at, min_staff'),
     supabase.from('pos_channel_sales').select('channel_code, sale_date, revenue').gte('sale_date', monthStart),
@@ -145,7 +152,8 @@ async function load(role: string | null, canHR: boolean): Promise<Data> {
     scheds.set(row.employee_id, list);
   }
   const recs = (recQ.data ?? []) as Rec[];
-  const leaveIds = new Set(((leaveQ.data ?? []) as Leave[]).map((l) => l.employee_id));
+  const leaves = new Map(((leaveQ.data ?? []) as Leave[]).map((l) => [l.employee_id, l]));
+  const leaveIds = new Set(leaves.keys());
   const outletRows = new Map(((outQ.data ?? []) as { code: string; opens_at: string | null; closes_at: string | null; min_staff: number | null }[])
     .map((o) => [o.code, o]));
   const hhmm = (iso: string) => new Date(iso).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Kuwait' });
@@ -171,6 +179,7 @@ async function load(role: string | null, canHR: boolean): Promise<Data> {
     const person: StaffPerson = {
       id: e.id, name: e.full_name, phone: e.phone, user_id: e.user_id, location: e.location, branch: key,
       status: s.status, due, timeUnknown: expected && due === null,
+      away: awayLabel(leaves.get(e.id)),
       firstIn, lastOut: lastOutIso ? hhmm(lastOutIso) : null,
       arrivedLateMin: firstIn && dueMin !== null ? Math.max(0, (toMin(firstIn) ?? 0) - dueMin) : null,
       lateNowMin: (s.status === 'late' || s.status === 'missing') && dueMin !== null ? Math.max(0, nowMin - dueMin) : null,

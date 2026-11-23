@@ -1,5 +1,14 @@
 [
   {
+    "version": "3.25.0",
+    "date": "2026-11-23",
+    "title": "Mark someone away for work",
+    "changes": [
+      "Tap a person in a branch's staffing list and choose Mark away to record a work trip (like the Expo), leave or working from home, from one date to another. They show as away, not late, and a work trip does not use their annual leave.",
+      "In the branch list each person sits on one line with the name, time and status always in the same place."
+    ]
+  },
+  {
     "version": "3.24.2",
     "date": "2026-11-18",
     "title": "Staffing by branch on Today, and Time Keeper World switched off",
