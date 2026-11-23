@@ -10,12 +10,15 @@
  * never called late or missing.
  */
 import { useState } from 'react';
-import { ChevronRight, Phone, ArrowLeft } from 'lucide-react';
+import { ChevronRight, Phone, ArrowLeft, Clock, CalendarPlus } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Modal } from './ui';
 import { AttendanceDayDetail } from './AttendanceDayDetail';
 import { WorkScheduleModal } from './WorkSchedule';
 import type { AttendanceStatus } from '../shared/attendanceStatus';
+import { supabase } from '../lib/supabase';
+import { useAuth } from '../context/AuthContext';
+import { LEAVE_TYPES, workingDaysBetween, todayKuwait } from '../shared/kuwaitTime';
 
 export interface StaffPerson {
   id: string;
@@ -35,6 +38,8 @@ export interface StaffPerson {
   arrivedLateMin: number | null;
   /** For someone not in yet: minutes since they were due. */
   lateNowMin: number | null;
+  /** On approved leave or a work trip today: "Work trip · Expo · until 26 Nov". */
+  away?: string | null;
 }
 
 export interface StaffBranch {
@@ -56,6 +61,8 @@ const IN: AttendanceStatus[] = ['working', 'completed'];
 const NOT_IN: AttendanceStatus[] = ['late', 'missing'];
 
 const hm = (m: number) => (m < 60 ? `${m} min` : `${Math.floor(m / 60)} h${m % 60 ? ` ${m % 60} min` : ''}`);
+/** "Work trip · Expo · to 26 Nov" → "Expo"; without a note, the kind of leave. */
+const awayWhy = (a: string | null | undefined) => { const parts = (a ?? '').split(' · '); return parts.length > 2 ? parts[1] : parts[0] || 'on leave'; };
 const first = (n: string) => n.trim().split(/\s+/)[0];
 /** Long names keep their first and last word so a row stays on one line; short ones stay whole. */
 const fit = (n: string) => { const w = n.trim().split(/\s+/); return n.length > 18 && w.length > 2 ? `${w[0]} ${w[w.length - 1]}` : n; };
@@ -163,6 +170,8 @@ export function StaffingCard({ branches, workStart, onChanged }: {
           {person ? (
             <div>
               <button type="button" onClick={() => setPerson(null)} className="mb-2 inline-flex items-center gap-1 text-sm text-blue-600"><ArrowLeft size={14} /> {branch.name}</button>
+              {person.away && <p className="mb-2 rounded-lg bg-teal-50 px-3 py-2 text-sm text-teal-900">Away today: {person.away}</p>}
+              <MarkAway person={person} onSaved={() => { setPerson(null); onChanged(); }} />
               <AttendanceDayDetail employee={{ full_name: person.name, user_id: person.user_id, location: person.location }}
                 date={new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kuwait' })} workStart={workStart}
                 onChanged={onChanged} />
@@ -183,48 +192,56 @@ export function StaffingCard({ branches, workStart, onChanged }: {
 function BranchSheet({ b, onPerson, onSetTime }: {
   b: StaffBranch; onPerson: (p: StaffPerson) => void; onSetTime: (p: StaffPerson) => void;
 }) {
-  const by = (f: (p: StaffPerson) => boolean) => b.people.filter(f).sort((x, y) => (x.due ?? '99').localeCompare(y.due ?? '99'));
+  const by = (f: (p: StaffPerson) => boolean) => b.people.filter(f).sort((x, y) => (x.due ?? '99').localeCompare(y.due ?? '99') || x.name.localeCompare(y.name));
   const inNow = by((p) => IN.includes(p.status));
   const notIn = by((p) => (NOT_IN.includes(p.status) || p.status === 'due_later') && !p.timeUnknown);
   const unknown = by((p) => (p.timeUnknown && !IN.includes(p.status)) || p.status === 'no_schedule');
   const fix = by((p) => p.status === 'needs_correction');
   const away = by((p) => p.status === 'off' || p.status === 'on_leave');
+  /* compact, so a status always fits its column: 45m late, 1h 26m late */
+  const late = (m: number | null) => (m && m > 0 ? `${m < 60 ? `${m}m` : `${Math.floor(m / 60)}h${m % 60 ? ` ${m % 60}m` : ''}`} late` : '');
 
   return (
     <div className="-mx-1 space-y-3 pb-2">
-      {b.shop && <p className="px-1 text-[13px] text-slate-500">{b.opensAt && b.closesAt ? `Open ${b.opensAt}–${b.closesAt}` : ''} · needs {b.need} on the floor</p>}
+      {b.shop && <p className="px-1 text-[13px] text-slate-500">{b.opensAt && b.closesAt ? `Open ${b.opensAt}–${b.closesAt} · ` : ''}needs {b.need} on the floor</p>}
       <Section title="In now · actual clock-ins" tone="text-emerald-700" empty="Nobody has clocked in">
         {inNow.map((p) => (
           <Row key={p.id} p={p} onClick={() => onPerson(p)}
-            mid={p.status === 'completed' ? `${p.firstIn}–${p.lastOut}` : `in ${p.firstIn}`}
-            right={p.arrivedLateMin && p.arrivedLateMin > 0 ? `${hm(p.arrivedLateMin)} late` : undefined} rightTone="text-amber-700" />
+            time={p.status === 'completed' ? `${p.firstIn}–${p.lastOut}` : `in ${p.firstIn}`}
+            status={late(p.arrivedLateMin) || 'on time'} statusTone={p.arrivedLateMin ? 'text-amber-700' : 'text-emerald-700'} />
         ))}
       </Section>
       <Section title="Not in · planned for today" tone="text-rose-700" empty="Nobody else is due">
         {notIn.map((p) => (
-          <Row key={p.id} p={p} onClick={() => onPerson(p)}
-            mid={p.status === 'due_later' ? `due ${p.due}` : `due ${p.due}`}
-            right={NOT_IN.includes(p.status) && p.lateNowMin !== null ? `${hm(p.lateNowMin)} late` : undefined} rightTone="text-rose-700 font-semibold"
-            phone={NOT_IN.includes(p.status) ? p.phone : null} />
+          <Row key={p.id} p={p} onClick={() => onPerson(p)} time={`due ${p.due}`}
+            status={NOT_IN.includes(p.status) ? late(p.lateNowMin) : 'not yet due'}
+            statusTone={NOT_IN.includes(p.status) ? 'text-rose-700 font-semibold' : 'text-slate-500'}
+            action={NOT_IN.includes(p.status) && p.phone ? { label: `Call ${p.name}`, icon: <Phone size={15} />, href: `tel:${p.phone.replace(/[^\d+]/g, '')}` } : undefined} />
         ))}
       </Section>
       {unknown.length > 0 && (
         <Section title="No shift time · not counted" tone="text-slate-500">
           {unknown.map((p) => (
-            <Row key={p.id} p={p} onClick={() => onPerson(p)}
-              mid={p.status === 'no_schedule' ? 'no schedule set' : 'time not set'}
-              action={{ label: 'Set time', onClick: () => onSetTime(p) }} />
+            <Row key={p.id} p={p} onClick={() => onPerson(p)} time="—"
+              status={p.status === 'no_schedule' ? 'no schedule' : 'time not set'} statusTone="text-slate-500"
+              action={{ label: `Set a time for ${p.name}`, icon: <Clock size={15} />, onClick: () => onSetTime(p) }} />
           ))}
         </Section>
       )}
       {fix.length > 0 && (
         <Section title="Clock-out missing" tone="text-amber-700">
-          {fix.map((p) => <Row key={p.id} p={p} onClick={() => onPerson(p)} mid={p.firstIn ? `in ${p.firstIn}, never out` : 'never clocked out'} />)}
+          {fix.map((p) => <Row key={p.id} p={p} onClick={() => onPerson(p)} time={p.firstIn ? `in ${p.firstIn}` : '—'} status="no clock-out" statusTone="text-amber-700" />)}
         </Section>
       )}
-      <Section title="Off or on leave" tone="text-slate-500" empty="Nobody today">
-        {away.map((p) => <Row key={p.id} p={p} onClick={() => onPerson(p)} mid={p.status === 'on_leave' ? 'on leave' : 'day off'} />)}
+      <Section title="Off or away" tone="text-slate-500" empty="Nobody today">
+        {away.map((p) => (
+          <Row key={p.id} p={p} onClick={() => onPerson(p)}
+            time={p.status === 'on_leave' ? (p.away?.split(' · ').pop() ?? '') : '—'}
+            status={p.status === 'on_leave' ? awayWhy(p.away) : 'day off'}
+            statusTone={p.status === 'on_leave' ? 'text-teal-700' : 'text-slate-500'} />
+        ))}
       </Section>
+      <p className="px-1 text-[12px] text-slate-500">Tap a name to see their day or mark them away (work trip, leave).</p>
     </div>
   );
 }
@@ -239,25 +256,89 @@ function Section({ title, tone, empty, children }: { title: string; tone: string
   );
 }
 
-function Row({ p, mid, right, rightTone, phone, action, onClick }: {
-  p: StaffPerson; mid?: string; right?: string; rightTone?: string; phone?: string | null;
-  action?: { label: string; onClick: () => void }; onClick: () => void;
+/* Fixed columns, so a name, a time and a status always sit in the same place
+   whatever the status: name | time | status | one action slot (kept even when empty). */
+function Row({ p, time, status, statusTone, action, onClick }: {
+  p: StaffPerson; time: string; status: string; statusTone?: string;
+  action?: { label: string; icon: React.ReactNode; href?: string; onClick?: () => void }; onClick: () => void;
 }) {
+  const btn = 'flex h-9 w-9 items-center justify-center rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50';
   return (
-    <li className="flex items-center gap-2">
-      <button type="button" onClick={onClick} className="flex min-h-[44px] min-w-0 flex-1 items-center gap-2 px-1 text-left hover:bg-slate-50">
-        <span className="min-w-0 flex-1 truncate text-[15px] text-slate-900">{fit(p.name)}</span>
-        {mid && <span className="shrink-0 text-[13px] tabular-nums text-slate-600">{mid}</span>}
-        {right && <span className={`shrink-0 text-[13px] ${rightTone ?? ''}`}>{right}</span>}
-        <ChevronRight size={14} className="shrink-0 text-slate-300" aria-hidden />
+    <li className="grid grid-cols-[minmax(0,1fr)_40px] items-center gap-1">
+      <button type="button" onClick={onClick}
+        className="grid min-h-[44px] min-w-0 grid-cols-[minmax(0,1fr)_64px_92px] items-center gap-2 px-1 text-left hover:bg-slate-50">
+        <span className="truncate text-[15px] text-slate-900">{fit(p.name)}</span>
+        <span className="truncate text-right text-[13px] tabular-nums text-slate-600">{time}</span>
+        <span className={`truncate text-right text-[13px] ${statusTone ?? 'text-slate-600'}`}>{status}</span>
       </button>
-      {phone && (
-        <a href={`tel:${phone.replace(/[^\d+]/g, '')}`} aria-label={`Call ${p.name}`}
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-300 text-slate-700"><Phone size={15} /></a>
-      )}
-      {action && (
-        <button type="button" onClick={action.onClick} className="shrink-0 rounded-lg border border-slate-300 px-2 py-1.5 text-[13px] font-semibold text-slate-900">{action.label}</button>
-      )}
+      <span className="flex justify-end">
+        {action?.href && <a href={action.href} aria-label={action.label} className={btn}>{action.icon}</a>}
+        {action?.onClick && <button type="button" onClick={action.onClick} aria-label={action.label} className={btn}>{action.icon}</button>}
+      </span>
     </li>
+  );
+}
+
+/* Away for a reason the rota cannot know: a work trip, or leave recorded on their behalf.
+   Saved as a leave record, so attendance, the scoreboard and this page all treat it the
+   same way; only Annual counts against the leave balance. An owner's entry is approved
+   at once; anyone else's goes to the Inbox for approval, as every leave does. */
+function MarkAway({ person, onSaved }: { person: StaffPerson; onSaved: () => void }) {
+  const { role } = useAuth();
+  const today = todayKuwait();
+  const [openForm, setOpenForm] = useState(false);
+  const [type, setType] = useState<string>('Work trip');
+  const [from, setFrom] = useState(today);
+  const [to, setTo] = useState(today);
+  const [note, setNote] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
+  const days = to >= from ? workingDaysBetween(from, to) : 0;
+
+  const save = async () => {
+    if (to < from) { setMsg('The last day is before the first day.'); return; }
+    if (type === 'Work trip' && !note.trim()) { setMsg('Say what the trip is for, e.g. Expo.'); return; }
+    setBusy(true); setMsg(null);
+    const { error } = await supabase.from('leave_records').insert({
+      employee_id: person.id, leave_type: type, leave_start: from, leave_end: to, days,
+      notes: note.trim() || null, approval_status: 'Approved',
+    });
+    setBusy(false);
+    if (error) { setMsg(error.message); return; }
+    if (role !== 'admin') { setMsg('Sent to the Inbox for approval.'); setTimeout(onSaved, 1500); return; }
+    onSaved();
+  };
+
+  if (!openForm) {
+    return (
+      <button type="button" onClick={() => setOpenForm(true)}
+        className="mb-3 inline-flex min-h-[40px] items-center gap-2 rounded-lg border border-slate-300 px-3 text-sm font-semibold text-slate-900 hover:bg-slate-50">
+        <CalendarPlus size={16} /> Mark away
+      </button>
+    );
+  }
+  const inp = 'w-full rounded-lg border border-slate-300 px-2.5 py-2 text-[15px]';
+  return (
+    <div className="mb-3 space-y-2 rounded-xl border border-slate-200 bg-slate-50 p-3">
+      <p className="text-sm font-semibold text-slate-900">Mark {person.name.split(' ')[0]} away</p>
+      <label className="block text-[13px] text-slate-600" htmlFor="away-type">Why</label>
+      <select id="away-type" value={type} onChange={(e) => setType(e.target.value)} className={inp}>
+        {LEAVE_TYPES.map((t) => <option key={t} value={t}>{t === 'WFH' ? 'Working from home' : t === 'Annual' ? 'Annual leave' : t === 'Sick' ? 'Sick leave' : t}</option>)}
+      </select>
+      <div className="grid grid-cols-2 gap-2">
+        <div><label className="block text-[13px] text-slate-600" htmlFor="away-from">From</label>
+          <input id="away-from" type="date" value={from} onChange={(e) => { setFrom(e.target.value); if (to < e.target.value) setTo(e.target.value); }} className={inp} /></div>
+        <div><label className="block text-[13px] text-slate-600" htmlFor="away-to">To</label>
+          <input id="away-to" type="date" value={to} min={from} onChange={(e) => setTo(e.target.value)} className={inp} /></div>
+      </div>
+      <label className="block text-[13px] text-slate-600" htmlFor="away-note">{type === 'Work trip' ? 'What for' : 'Note (optional)'}</label>
+      <input id="away-note" value={note} onChange={(e) => setNote(e.target.value)} placeholder={type === 'Work trip' ? 'e.g. Expo' : ''} className={inp} />
+      <p className="text-[13px] text-slate-600">{days} working day{days === 1 ? '' : 's'}{type === 'Annual' ? ' · taken from annual leave' : ' · not taken from annual leave'}</p>
+      {msg && <p className="text-[13px] text-rose-700">{msg}</p>}
+      <div className="flex gap-2">
+        <button type="button" disabled={busy} onClick={save} className="min-h-[40px] flex-1 rounded-lg bg-slate-900 px-3 text-sm font-semibold text-white disabled:opacity-50">{busy ? 'Saving…' : 'Save'}</button>
+        <button type="button" onClick={() => setOpenForm(false)} className="min-h-[40px] rounded-lg border border-slate-300 px-3 text-sm">Cancel</button>
+      </div>
+    </div>
   );
 }
