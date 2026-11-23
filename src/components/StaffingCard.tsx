@@ -1,0 +1,263 @@
+/**
+ * Staffing on the Today page, built around the decisions a manager makes.
+ *
+ * One line per branch says whether it is covered (shops against the minimum
+ * they need on the floor while open, the office against its own rota). Below
+ * it, "To do" holds only buttons, and only when something needs doing. Tapping
+ * a branch opens a bottom sheet that keeps what the clock recorded (In now)
+ * apart from what the rota planned (Not in), and tapping a person opens their
+ * attendance for today. Anybody whose shift time is not known is listed but
+ * never called late or missing.
+ */
+import { useState } from 'react';
+import { ChevronRight, Phone, ArrowLeft } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Modal } from './ui';
+import { AttendanceDayDetail } from './AttendanceDayDetail';
+import { WorkScheduleModal } from './WorkSchedule';
+import type { AttendanceStatus } from '../shared/attendanceStatus';
+
+export interface StaffPerson {
+  id: string;
+  name: string;
+  phone: string | null;
+  user_id: string | null;
+  location: string | null;
+  branch: string;
+  status: AttendanceStatus;
+  /** Scheduled start, HH:MM; null when not known. */
+  due: string | null;
+  /** Expected today but the schedule carries no hours. */
+  timeUnknown: boolean;
+  firstIn: string | null;
+  lastOut: string | null;
+  /** Minutes past the scheduled start at the first clock-in. */
+  arrivedLateMin: number | null;
+  /** For someone not in yet: minutes since they were due. */
+  lateNowMin: number | null;
+}
+
+export interface StaffBranch {
+  key: string;
+  name: string;
+  /** A shop has opening hours and a minimum; the office has neither. */
+  shop: boolean;
+  opensAt: string | null;
+  closesAt: string | null;
+  open: boolean;
+  need: number;
+  onFloor: number;
+  tone: 'bad' | 'warn' | 'good' | 'idle';
+  label: string;
+  people: StaffPerson[];
+}
+
+const IN: AttendanceStatus[] = ['working', 'completed'];
+const NOT_IN: AttendanceStatus[] = ['late', 'missing'];
+
+const hm = (m: number) => (m < 60 ? `${m} min` : `${Math.floor(m / 60)} h${m % 60 ? ` ${m % 60} min` : ''}`);
+const first = (n: string) => n.trim().split(/\s+/)[0];
+/** Long names keep their first and last word so a row stays on one line; short ones stay whole. */
+const fit = (n: string) => { const w = n.trim().split(/\s+/); return n.length > 18 && w.length > 2 ? `${w[0]} ${w[w.length - 1]}` : n; };
+
+/** Whether a branch is covered, from the people judged by the shared engine. */
+export function judgeBranch(b: Omit<StaffBranch, 'tone' | 'label' | 'onFloor' | 'need'> & { minStaff: number | null }): StaffBranch {
+  const onFloor = b.people.filter((p) => p.status === 'working').length;
+  if (b.shop) {
+    const need = b.minStaff ?? 1;
+    if (!b.open) {
+      const before = b.opensAt !== null;
+      return { ...b, need, onFloor, tone: 'idle', label: before ? `Opens ${b.opensAt}` : 'Closed' };
+    }
+    if (onFloor === 0 && need > 0) return { ...b, need, onFloor, tone: 'bad', label: 'Uncovered' };
+    if (onFloor < need) return { ...b, need, onFloor, tone: 'warn', label: `Short ${need - onFloor}` };
+    return { ...b, need, onFloor, tone: 'good', label: 'Covered' };
+  }
+  // The office: judged against its own rota, counting only people with a known time.
+  const planned = b.people.filter((p) => IN.includes(p.status) || NOT_IN.includes(p.status) || (p.status === 'due_later' && !p.timeUnknown));
+  const inCount = planned.filter((p) => IN.includes(p.status)).length;
+  const missing = planned.filter((p) => NOT_IN.includes(p.status)).length;
+  const label = missing ? `Missing ${missing}` : inCount < planned.length ? `${planned.length - inCount} due later` : 'All in';
+  return { ...b, need: planned.length, onFloor: inCount, tone: missing ? 'warn' : 'good', label };
+}
+
+interface Action { key: string; label: string; primary?: boolean; href?: string; onClick?: () => void }
+
+export function StaffingCard({ branches, workStart, onChanged }: {
+  branches: StaffBranch[]; workStart: string; onChanged: () => void;
+}) {
+  const [open, setOpen] = useState<string | null>(null);
+  const [person, setPerson] = useState<StaffPerson | null>(null);
+  const [schedFor, setSchedFor] = useState<StaffPerson | null>(null);
+  const branch = branches.find((b) => b.key === open) ?? null;
+
+  /* one button per thing to do, most urgent first */
+  const all = branches.flatMap((b) => b.people);
+  const firstNames = new Map<string, number>();
+  for (const p of all) firstNames.set(first(p.name), (firstNames.get(first(p.name)) ?? 0) + 1);
+  const call = (p: StaffPerson) => {
+    const f = first(p.name);
+    const w = p.name.trim().split(/\s+/);
+    return (firstNames.get(f) ?? 0) > 1 && w.length > 1 ? `${f} ${w[w.length - 1][0]}.` : f;
+  };
+  const actions: Action[] = [];
+  for (const b of branches.filter((x) => x.tone === 'bad')) {
+    actions.push({ key: `cover-${b.key}`, label: `Send cover to ${b.name}`, primary: true, onClick: () => setOpen(b.key) });
+  }
+  for (const b of branches.filter((x) => x.shop && x.open && x.tone === 'warn')) {
+    const unknown = b.people.filter((p) => p.timeUnknown && !IN.includes(p.status));
+    if (unknown.length) actions.push({ key: `times-${b.key}`, label: `Set ${b.name} times (${unknown.length})`, onClick: () => setOpen(b.key) });
+    else if (!b.people.some((p) => NOT_IN.includes(p.status))) actions.push({ key: `cover-${b.key}`, label: `Send cover to ${b.name}`, onClick: () => setOpen(b.key) });
+  }
+  const late = all.filter((p) => NOT_IN.includes(p.status) && !p.timeUnknown)
+    .sort((x, y) => (y.lateNowMin ?? 0) - (x.lateNowMin ?? 0));
+  for (const p of late) {
+    actions.push(p.phone
+      ? { key: `call-${p.id}`, label: `Call ${call(p)}`, href: `tel:${p.phone.replace(/[^\d+]/g, '')}` }
+      : { key: `see-${p.id}`, label: `Check ${call(p)}`, onClick: () => { setOpen(p.branch); setPerson(p); } });
+  }
+  for (const p of all.filter((x) => x.status === 'needs_correction')) {
+    actions.push({ key: `fix-${p.id}`, label: `Fix ${call(p)}'s clock-out`, onClick: () => { setOpen(p.branch); setPerson(p); } });
+  }
+  const shown = actions.slice(0, 5);
+  const more = actions.length - shown.length;
+
+  const dot = { bad: 'bg-rose-600', warn: 'bg-amber-500', good: 'bg-emerald-600', idle: 'bg-slate-300' } as const;
+  const txt = { bad: 'text-rose-700', warn: 'text-amber-700', good: 'text-emerald-700', idle: 'text-slate-500' } as const;
+
+  return (
+    <section className="mt-3 overflow-hidden rounded-xl border border-slate-200 bg-white">
+      <div className="flex items-baseline justify-between px-3 pt-2.5 pb-1">
+        <h2 className="text-[15px] font-semibold text-slate-900">Staffing</h2>
+        <Link to="/attendance" className="text-[13px] text-blue-600 hover:underline">Attendance →</Link>
+      </div>
+      {branches.length === 0 && <p className="px-3 pb-3 text-sm text-slate-500">Nobody is scheduled today</p>}
+      {branches.map((b) => (
+        <button key={b.key} type="button" onClick={() => setOpen(b.key)}
+          className={`flex w-full items-center gap-2 border-t border-slate-100 px-3 py-2.5 text-left hover:bg-slate-50 focus-visible:bg-slate-50 focus-visible:outline-none ${b.tone === 'bad' ? 'bg-rose-50/60' : ''}`}>
+          <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${dot[b.tone]}`} aria-hidden />
+          <span className="flex-1 truncate text-[15px] font-medium text-slate-900">{b.name}</span>
+          <span className="text-[15px] tabular-nums text-slate-700">{b.onFloor}/{b.need}</span>
+          <span className={`w-[96px] text-right text-[13px] font-semibold ${txt[b.tone]}`}>{b.label}</span>
+          <ChevronRight size={16} className="shrink-0 text-slate-300" aria-hidden />
+        </button>
+      ))}
+      {shown.length > 0 && (
+        <div className="border-t border-slate-200 px-3 pt-2 pb-2.5">
+          <p className="mb-1.5 text-[12px] font-semibold uppercase tracking-wide text-slate-500">To do</p>
+          <div className="flex flex-wrap gap-1.5">
+            {shown.map((a) => {
+              const cls = `inline-flex min-h-[36px] items-center gap-1.5 rounded-lg px-2.5 text-[13px] font-semibold ${a.primary ? 'bg-slate-900 text-white' : 'border border-slate-300 text-slate-900 hover:bg-slate-50'}`;
+              return a.href
+                ? <a key={a.key} href={a.href} className={cls}><Phone size={13} aria-hidden />{a.label}</a>
+                : <button key={a.key} type="button" onClick={a.onClick} className={cls}>{a.label}</button>;
+            })}
+            {more > 0 && <Link to="/attendance" className="inline-flex min-h-[36px] items-center px-1 text-[13px] font-semibold text-blue-600">+{more} more</Link>}
+          </div>
+        </div>
+      )}
+
+      {branch && (
+        <Modal title={person ? person.name : `${branch.name} · ${branch.onFloor}/${branch.need}${branch.shop ? ' on floor' : ' in'}`}
+          onClose={() => { setOpen(null); setPerson(null); }}>
+          {person ? (
+            <div>
+              <button type="button" onClick={() => setPerson(null)} className="mb-2 inline-flex items-center gap-1 text-sm text-blue-600"><ArrowLeft size={14} /> {branch.name}</button>
+              <AttendanceDayDetail employee={{ full_name: person.name, user_id: person.user_id, location: person.location }}
+                date={new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kuwait' })} workStart={workStart}
+                onChanged={onChanged} />
+            </div>
+          ) : (
+            <BranchSheet b={branch} onPerson={setPerson} onSetTime={(p) => { setOpen(null); setSchedFor(p); }} />
+          )}
+        </Modal>
+      )}
+      {schedFor && (
+        <WorkScheduleModal employeeId={schedFor.id} employeeName={schedFor.name}
+          onClose={() => { setSchedFor(null); onChanged(); }} />
+      )}
+    </section>
+  );
+}
+
+function BranchSheet({ b, onPerson, onSetTime }: {
+  b: StaffBranch; onPerson: (p: StaffPerson) => void; onSetTime: (p: StaffPerson) => void;
+}) {
+  const by = (f: (p: StaffPerson) => boolean) => b.people.filter(f).sort((x, y) => (x.due ?? '99').localeCompare(y.due ?? '99'));
+  const inNow = by((p) => IN.includes(p.status));
+  const notIn = by((p) => (NOT_IN.includes(p.status) || p.status === 'due_later') && !p.timeUnknown);
+  const unknown = by((p) => (p.timeUnknown && !IN.includes(p.status)) || p.status === 'no_schedule');
+  const fix = by((p) => p.status === 'needs_correction');
+  const away = by((p) => p.status === 'off' || p.status === 'on_leave');
+
+  return (
+    <div className="-mx-1 space-y-3 pb-2">
+      {b.shop && <p className="px-1 text-[13px] text-slate-500">{b.opensAt && b.closesAt ? `Open ${b.opensAt}–${b.closesAt}` : ''} · needs {b.need} on the floor</p>}
+      <Section title="In now · actual clock-ins" tone="text-emerald-700" empty="Nobody has clocked in">
+        {inNow.map((p) => (
+          <Row key={p.id} p={p} onClick={() => onPerson(p)}
+            mid={p.status === 'completed' ? `${p.firstIn}–${p.lastOut}` : `in ${p.firstIn}`}
+            right={p.arrivedLateMin && p.arrivedLateMin > 0 ? `${hm(p.arrivedLateMin)} late` : undefined} rightTone="text-amber-700" />
+        ))}
+      </Section>
+      <Section title="Not in · planned for today" tone="text-rose-700" empty="Nobody else is due">
+        {notIn.map((p) => (
+          <Row key={p.id} p={p} onClick={() => onPerson(p)}
+            mid={p.status === 'due_later' ? `due ${p.due}` : `due ${p.due}`}
+            right={NOT_IN.includes(p.status) && p.lateNowMin !== null ? `${hm(p.lateNowMin)} late` : undefined} rightTone="text-rose-700 font-semibold"
+            phone={NOT_IN.includes(p.status) ? p.phone : null} />
+        ))}
+      </Section>
+      {unknown.length > 0 && (
+        <Section title="No shift time · not counted" tone="text-slate-500">
+          {unknown.map((p) => (
+            <Row key={p.id} p={p} onClick={() => onPerson(p)}
+              mid={p.status === 'no_schedule' ? 'no schedule set' : 'time not set'}
+              action={{ label: 'Set time', onClick: () => onSetTime(p) }} />
+          ))}
+        </Section>
+      )}
+      {fix.length > 0 && (
+        <Section title="Clock-out missing" tone="text-amber-700">
+          {fix.map((p) => <Row key={p.id} p={p} onClick={() => onPerson(p)} mid={p.firstIn ? `in ${p.firstIn}, never out` : 'never clocked out'} />)}
+        </Section>
+      )}
+      <Section title="Off or on leave" tone="text-slate-500" empty="Nobody today">
+        {away.map((p) => <Row key={p.id} p={p} onClick={() => onPerson(p)} mid={p.status === 'on_leave' ? 'on leave' : 'day off'} />)}
+      </Section>
+    </div>
+  );
+}
+
+function Section({ title, tone, empty, children }: { title: string; tone: string; empty?: string; children: React.ReactNode[] | React.ReactNode }) {
+  const has = Array.isArray(children) ? children.length > 0 : !!children;
+  return (
+    <div>
+      <p className={`px-1 text-[12px] font-semibold uppercase tracking-wide ${tone}`}>{title}</p>
+      {has ? <ul className="divide-y divide-slate-100">{children}</ul> : <p className="px-1 py-1.5 text-[14px] text-slate-500">{empty}</p>}
+    </div>
+  );
+}
+
+function Row({ p, mid, right, rightTone, phone, action, onClick }: {
+  p: StaffPerson; mid?: string; right?: string; rightTone?: string; phone?: string | null;
+  action?: { label: string; onClick: () => void }; onClick: () => void;
+}) {
+  return (
+    <li className="flex items-center gap-2">
+      <button type="button" onClick={onClick} className="flex min-h-[44px] min-w-0 flex-1 items-center gap-2 px-1 text-left hover:bg-slate-50">
+        <span className="min-w-0 flex-1 truncate text-[15px] text-slate-900">{fit(p.name)}</span>
+        {mid && <span className="shrink-0 text-[13px] tabular-nums text-slate-600">{mid}</span>}
+        {right && <span className={`shrink-0 text-[13px] ${rightTone ?? ''}`}>{right}</span>}
+        <ChevronRight size={14} className="shrink-0 text-slate-300" aria-hidden />
+      </button>
+      {phone && (
+        <a href={`tel:${phone.replace(/[^\d+]/g, '')}`} aria-label={`Call ${p.name}`}
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-slate-300 text-slate-700"><Phone size={15} /></a>
+      )}
+      {action && (
+        <button type="button" onClick={action.onClick} className="shrink-0 rounded-lg border border-slate-300 px-2 py-1.5 text-[13px] font-semibold text-slate-900">{action.label}</button>
+      )}
+    </li>
+  );
+}
