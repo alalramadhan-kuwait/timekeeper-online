@@ -141,9 +141,11 @@ function branchHead(b: StaffBranch, late: number): { count: string; countTone: B
   return { count, countTone, chip: 'All in', chipTone: 'green' };
 }
 
-const LEGEND: { kind: Kind; label: string }[] = [
-  { kind: 'in', label: 'In' }, { kind: 'late', label: 'Late' }, { kind: 'due', label: 'Later' },
-  { kind: 'none', label: 'No time' }, { kind: 'away', label: 'Away' },
+/* "Late" covers everyone past their shift start: late in, not in yet, missing.
+   A missing clock-out is its own amber column, shown only when there is one. */
+const LEGEND: { kind: Kind; label: string; aria?: string }[] = [
+  { kind: 'in', label: 'In' }, { kind: 'late', label: 'Late', aria: 'late or not in' }, { kind: 'fix', label: 'No out', aria: 'no clock-out' },
+  { kind: 'due', label: 'Later' }, { kind: 'none', label: 'No time' }, { kind: 'away', label: 'Away' },
 ];
 const dotStyle = (k: Kind) => (k === 'none'
   ? { background: '#ffffff', border: `2px solid ${HEX.grey}` }
@@ -203,21 +205,22 @@ export function StaffingCard({ branches, workStart, onChanged, at = null, alerts
       .sort((x, y) => ORDER[x.at.kind] - ORDER[y.at.kind] || (x.at.time || '99').localeCompare(y.at.time || '99') || x.p.name.localeCompare(y.p.name)),
   }));
   const counts: Record<Kind, number> = { in: 0, late: 0, due: 0, none: 0, away: 0, fix: 0 };
-  for (const x of placed) for (const y of x.people) counts[y.at.kind === 'fix' ? 'in' : y.at.kind]++;
+  for (const x of placed) for (const y of x.people) counts[y.at.kind]++;
   const total = LEGEND.reduce((t, l) => t + counts[l.kind], 0);
+  const legend = LEGEND.filter((l) => l.kind !== 'fix' || counts.fix > 0);
 
   return (
     <div ref={sectionRef}>
       {total > 0 && (
         <>
           <div className="mt-2.5 flex h-3.5 gap-[3px]" role="img"
-            aria-label={LEGEND.map((l) => `${counts[l.kind]} ${l.label.toLowerCase()}`).join(', ')}>
-            {LEGEND.filter((l) => counts[l.kind] > 0).map((l) => (
+            aria-label={legend.map((l) => `${counts[l.kind]} ${l.aria ?? l.label.toLowerCase()}`).join(', ')}>
+            {legend.filter((l) => counts[l.kind] > 0).map((l) => (
               <span key={l.kind} className="block rounded box-border" style={{ flex: `${counts[l.kind]} 1 0`, ...dotStyle(l.kind) }} />
             ))}
           </div>
-          <div className="mt-2 grid grid-cols-5 gap-1" aria-hidden>
-            {LEGEND.map((l) => (
+          <div className="mt-2 grid gap-1" style={{ gridTemplateColumns: `repeat(${legend.length}, minmax(0, 1fr))` }} aria-hidden>
+            {legend.map((l) => (
               <div key={l.kind} className="flex min-w-0 flex-col">
                 <span className={`text-[20px] font-extrabold leading-6 tabular-nums ${counts[l.kind] ? FIG[KIND_TONE[l.kind]] : 'text-slate-400'}`}>{counts[l.kind]}</span>
                 <span className="truncate text-[12px] font-semibold text-slate-500">{l.label}</span>
@@ -235,9 +238,10 @@ export function StaffingCard({ branches, workStart, onChanged, at = null, alerts
             <button type="button" onClick={(e) => { opener.current = e.currentTarget; nav.open(b.key); }}
               aria-current={active ? 'true' : undefined} aria-haspopup="dialog"
               aria-label={`${b.name}: ${head.count.replace('/', ' of ')} in, ${head.chip}`}
-              className={`-mx-2 flex min-h-[48px] w-[calc(100%+16px)] items-center gap-2.5 rounded-xl px-2 text-left hover:bg-slate-50 ${active ? 'bg-slate-100' : ''}`}>
-              <span className="min-w-0 flex-1 truncate text-[17px] font-extrabold text-slate-900">{b.name}</span>
-              <span className={`text-[22px] font-extrabold tabular-nums ${FIG[head.countTone]}`}>{head.count}</span>
+              className={`-mx-2 flex min-h-[48px] w-[calc(100%+16px)] items-center gap-1.5 rounded-xl px-2 py-1 text-left hover:bg-slate-50 min-[360px]:gap-2.5 ${active ? 'bg-slate-100' : ''}`}>
+              {/* the branch name wraps rather than being cut */}
+              <span className="min-w-0 flex-1 break-words text-[17px] font-extrabold leading-tight text-slate-900">{b.name}</span>
+              <span className={`shrink-0 text-[18px] font-extrabold tabular-nums min-[360px]:text-[22px] ${FIG[head.countTone]}`}>{head.count}</span>
               <Pill tone={head.chipTone}>{head.chip}</Pill>
               <ChevronRight size={16} className="-mr-1 shrink-0 text-slate-400" aria-hidden />
             </button>
@@ -247,12 +251,13 @@ export function StaffingCard({ branches, workStart, onChanged, at = null, alerts
                 const row = (
                   <>
                     <span className="block h-2.5 w-2.5 rounded-full box-border" style={dotStyle(pl.kind)} aria-hidden />
-                    <span className={`truncate text-[15px] font-semibold ${pl.kind === 'none' || pl.kind === 'away' ? 'text-slate-500' : 'text-slate-900'}`}>{shortName(p.name)}</span>
-                    <span className="text-right text-[14px] font-semibold tabular-nums text-slate-700">{pl.time}</span>
-                    <Pill tone={tone} className="w-full px-1.5">{pl.pill}</Pill>
+                    <span className={`min-w-0 break-words text-[14px] font-semibold leading-tight min-[360px]:truncate min-[360px]:text-[15px] min-[360px]:leading-normal ${pl.kind === 'none' || pl.kind === 'away' ? 'text-slate-500' : 'text-slate-900'}`}>{shortName(p.name)}</span>
+                    <span className="text-right text-[13px] font-semibold tabular-nums text-slate-700 min-[360px]:text-[14px]">{pl.time}</span>
+                    <Pill tone={tone} className="w-full !px-1 !text-[12px] min-[360px]:!px-1.5 min-[360px]:!text-[13px]">{pl.pill}</Pill>
                   </>
                 );
-                const cls = 'grid min-h-[44px] grid-cols-[10px_minmax(0,1fr)_44px_104px] items-center gap-2';
+                /* fixed columns at every width; under 360px the time and pill columns narrow so names stay whole */
+                const cls = 'grid min-h-[44px] grid-cols-[10px_minmax(0,1fr)_38px_84px] items-center gap-1.5 min-[360px]:grid-cols-[10px_minmax(0,1fr)_44px_104px] min-[360px]:gap-2';
                 return (
                   <li key={p.id}>
                     {canAttendance ? (

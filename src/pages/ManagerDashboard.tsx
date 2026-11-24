@@ -142,6 +142,17 @@ const dayOf = (d: string | null) => (!d ? '' : new Date(`${d.slice(0, 10)}T12:00
   .toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'Asia/Kuwait' }));
 
 const firstOf = (name: string) => name.trim().split(/\s+/)[0] || name;
+/** First + last word: "Ahmed Yasari", not "Ahmed". */
+const firstLast = (name: string) => {
+  const w = name.trim().split(/\s+/);
+  return w.length > 1 ? `${w[0]} ${w[w.length - 1]}` : name.trim();
+};
+/** A first name, unless another row on the card shares it: then first + last word, so two people never read as one. */
+const namer = (names: string[]) => {
+  const n = new Map<string, number>();
+  for (const x of names) n.set(firstOf(x).toLowerCase(), (n.get(firstOf(x).toLowerCase()) ?? 0) + 1);
+  return (x: string) => ((n.get(firstOf(x).toLowerCase()) ?? 0) > 1 ? firstLast(x) : firstOf(x));
+};
 /** Hours waiting → "6h" under a day, "14d" after. */
 const ageChip = (hours: number) => (hours >= 24 ? `${Math.round(hours / 24)}d` : `${Math.max(1, Math.round(hours))}h`);
 /** "Delivery overdue — Winter Collection" → "Winter Collection": the card already says overdue. */
@@ -356,10 +367,11 @@ async function loadNeeds(role: string | null, canHR: boolean): Promise<NeedsData
   if (missing.length === (canHR ? 7 : 6)) throw new Error(missing.map((m) => `${m.what}: ${m.error}`).join(' · '));
 
   const items: Item[] = [];
-  for (const r of reqRows ?? []) {
-    if (tabOf(r, mine) !== 'action') continue;
+  const mineNow = (reqRows ?? []).filter((r) => tabOf(r, mine) === 'action');
+  const reqName = namer(mineNow.map((r) => r.employee_name ?? 'Someone'));
+  for (const r of mineNow) {
     items.push({
-      key: `req:${r.id}`, label: `${r.kind} · ${firstOf(r.employee_name ?? 'Someone')}`, chip: ageChip(r.hours_pending),
+      key: `req:${r.id}`, label: `${r.kind} · ${reqName(r.employee_name ?? 'Someone')}`, chip: ageChip(r.hours_pending),
       age: r.hours_pending, overdue: r.is_overdue, link: `/inbox?focus=${r.id}`,
     });
   }
@@ -403,7 +415,8 @@ async function loadNeeds(role: string | null, canHR: boolean): Promise<NeedsData
   if (delayed.length) {
     const first = delayed[0];
     const days = daysSince(today, first.launch_date!);
-    const name = [first.brand, first.project_name].filter(Boolean).join(' ');
+    /* the first two words are enough to know it: "DVO Winter" */
+    const name = [first.brand, first.project_name].filter(Boolean).join(' ').split(/\s+/).filter(Boolean).slice(0, 2).join(' ');
     items.push(delayed.length === 1
       ? { key: 'proj', label: `Launch · ${name || 'unnamed'}`, chip: `${days}d`, age: days * 24, overdue: true, link: `/limited-projects?focus=${first.id}` }
       : { key: 'proj', label: `Launches ×${delayed.length}`, chip: `${days}d`, age: days * 24, overdue: true, link: '/limited-projects' });
@@ -419,13 +432,14 @@ async function loadNeeds(role: string | null, canHR: boolean): Promise<NeedsData
   /* Documents: an expired one is named, person by person, and is overdue. One
      still to expire is a heads-up, counted apart, with the next date. */
   const expiring: { date: string; name: string }[] = [];
+  const docName = namer(docs.filter((e) => [e.residency_expiry, e.work_permit_expiry].some((d) => d && d < today)).map((e) => e.full_name));
   for (const e of docs) {
     for (const [doc, date] of [['Residency', e.residency_expiry], ['Work permit', e.work_permit_expiry]] as const) {
       if (!date) continue;
       if (date < today) {
         const days = Math.max(1, daysSince(today, date));
         items.push({
-          key: `doc:${e.id}:${doc}`, label: `${doc} · ${firstOf(e.full_name)}`, chip: `${days}d`,
+          key: `doc:${e.id}:${doc}`, label: `${doc} · ${docName(e.full_name)}`, chip: `${days}d`,
           age: days * 24, overdue: true, link: `/hr?focus=${e.id}`, person: { id: e.id, doc, date },
         });
       } else if (date <= in30) expiring.push({ date, name: e.full_name });
@@ -663,8 +677,8 @@ export default function ManagerDashboard() {
           {tiles.length > 0 && (
             <div className="mt-2 grid gap-2" style={{ gridTemplateColumns: `repeat(${tiles.length}, minmax(0, 1fr))` }}>
               {tiles.map((t) => (
-                <div key={t.label} className={`flex min-w-0 flex-col rounded-xl px-2.5 py-2 ${TILE[t.tone].box}`}>
-                  <span className="truncate text-[12px] text-slate-500">{t.label}</span>
+                <div key={t.label} className={`flex min-w-0 flex-col rounded-xl px-2 py-2 ${TILE[t.tone].box}`}>
+                  <span className="text-[12px] leading-tight text-slate-500">{t.label}</span>
                   <span className={`text-[17px] font-extrabold tabular-nums ${TILE[t.tone].fig}`}>{t.value}</span>
                 </div>
               ))}
@@ -722,8 +736,8 @@ export default function ManagerDashboard() {
               const row = (
                 <>
                   <span className="truncate text-[14px] font-semibold text-slate-500">{e.name}</span>
-                  <span className="text-[14px] tabular-nums text-slate-500">{short(e.sales)} · event</span>
-                  <span />
+                  {/* no bar and no %: the figure takes both columns and stays on one line */}
+                  <span className="col-span-2 whitespace-nowrap text-[14px] tabular-nums text-slate-500">{short(e.sales)} · event</span>
                 </>
               );
               return (
