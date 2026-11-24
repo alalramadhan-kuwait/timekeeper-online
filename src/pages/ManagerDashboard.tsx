@@ -37,9 +37,9 @@ import { canAccessPath } from '../components/Layout';
 import { useLive } from '../shared/live';
 import { outletOf, hasAttendance, outletName } from '../shared/outlets';
 import { standing, kuwaitDate } from '../shared/attendanceStatus';
-import { shiftTimesOn } from '../shared/punctuality';
+import { shiftTimesOn, DEFAULT_GRACE_MINUTES } from '../shared/punctuality';
 import { scheduleFromRow, type Schedule, type ScheduleRow } from '../shared/schedule';
-import { StaffingCard, judgeBranch, type StaffPerson, type StaffBranch } from '../components/StaffingCard';
+import { StaffingCard, judgeBranch, clockInPattern, useBranchSheet, useWideSheet, type StaffPerson, type StaffBranch, type PersonAlert } from '../components/StaffingCard';
 import { loadRequests, waitedFor, stageOf, tabOf, type RequestRow } from '../shared/requests';
 import { monthSales, eventDates, daySales, sameDaysBefore, prevMonthOf, type MonthSales, type TillRow, type DaySales, type SameDays } from '../shared/tillSales';
 import { TodayCard, Chip, Dot, PaceBar, SubHead, TONE, type Tone } from '../components/TodayCard';
@@ -65,6 +65,8 @@ interface Item {
   age: number;
   overdue: boolean;
   link: string;
+  /** An expired document: whose, which, and when, so their row in a branch sheet can say so too. */
+  person?: { id: string; doc: string; date: string };
   /** Shown in place when the row is opened: the follow-ups behind a count. */
   children?: { key: string; text: string; sub: string; chip: string; link: string }[];
 }
@@ -114,6 +116,7 @@ const TIMEOUT_MS = 10_000;
 interface Targets {
   sales_target_month: number | null; sales_target_avenues: number | null; sales_target_timegallery: number | null;
   sales_target_online: number | null; sales_target_whatsapp: number | null; work_start_time: string | null;
+  late_grace_minutes: number | null;
 }
 
 /** “Time Keeper - Avenues” → “Avenues”: the brand is on every line and adds nothing here. */
@@ -149,7 +152,7 @@ function within<T>(p: Promise<T>, ms = TIMEOUT_MS): Promise<T> {
 
 const readSettings = async (): Promise<Partial<Targets>> => {
   const q = await supabase.from('settings')
-    .select('sales_target_month, sales_target_avenues, sales_target_timegallery, sales_target_online, sales_target_whatsapp, work_start_time')
+    .select('sales_target_month, sales_target_avenues, sales_target_timegallery, sales_target_online, sales_target_whatsapp, work_start_time, late_grace_minutes')
     .maybeSingle();
   return (rowsOf<Partial<Targets> | null>(q, 'Settings') ?? {}) as Partial<Targets>;
 };
@@ -165,12 +168,14 @@ function awayLabel(l: Leave | undefined): string | null {
 async function loadStaff(settings: Promise<Partial<Targets>>): Promise<StaffData> {
   const now = new Date();
   const today = kuwaitDate(now);
+  const since = kuwaitDate(new Date(now.getTime() - 10 * 86_400_000));
   const [empQ, schedQ, recQ, leaveQ, outQ, targets] = await Promise.all([
     supabase.from('employees').select('id, full_name, location, status, user_id, phone').in('status', ['Active', 'On leave']),
     supabase.from('employee_schedules')
       .select('id, employee_id, effective_from, effective_to, working_days, shift_start, shift_end, grace_minutes, note'),
+    /* today, and the ten days before for each shop's clock-in pattern */
     supabase.from('attendance_records').select('user_id, employee_name, clock_in, clock_out')
-      .gte('clock_in', `${today}T00:00:00+03:00`).lte('clock_in', `${today}T23:59:59+03:00`),
+      .gte('clock_in', `${since}T00:00:00+03:00`).lte('clock_in', `${today}T23:59:59+03:00`),
     supabase.from('leave_records').select('employee_id, leave_start, leave_end, leave_type, notes')
       .eq('approval_status', 'Approved').lte('leave_start', today).gte('leave_end', today),
     supabase.from('outlets').select('code, opens_at, closes_at, min_staff'),
@@ -178,11 +183,13 @@ async function loadStaff(settings: Promise<Partial<Targets>>): Promise<StaffData
   ]);
   const emps = rowsOf<Emp[]>(empQ, 'Employees');
   const schedRows = rowsOf<ScheduleRow[]>(schedQ, 'Schedules');
-  const recs = rowsOf<Rec[]>(recQ, 'Attendance');
+  const allRecs = rowsOf<Rec[]>(recQ, 'Attendance');
+  const recs = allRecs.filter((r) => kuwaitDate(new Date(r.clock_in)) === today);
   const leaveRows = rowsOf<Leave[]>(leaveQ, 'Leave');
   const outRows = rowsOf<{ code: string; opens_at: string | null; closes_at: string | null; min_staff: number | null }[]>(outQ, 'Outlets');
 
   const defaultStart = targets.work_start_time ?? '09:00';
+  const companyGrace = targets.late_grace_minutes ?? DEFAULT_GRACE_MINUTES;
   const scheds = new Map<string, Schedule[]>();
   for (const row of schedRows) {
     const list = scheds.get(row.employee_id) ?? [];
@@ -195,8 +202,11 @@ async function loadStaff(settings: Promise<Partial<Targets>>): Promise<StaffData
   const hhmm = (iso: string) => new Date(iso).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Kuwait' });
   const toMin = (t: string | null) => (t ? Number(t.slice(0, 2)) * 60 + Number(t.slice(3, 5)) : null);
   const nowMin = toMin(hhmm(now.toISOString())) ?? 0;
+  const fromMin = (m: number) => `${String(Math.floor(m / 60) % 24).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
   const byBranch = new Map<string, StaffPerson[]>();
   const names = new Map<string, string>();
+  /* branch → day before today → each person's first clock-in that day */
+  const past = new Map<string, Map<string, Map<string, string>>>();
   for (const e of emps) {
     if (!hasAttendance(e.location)) continue;
     const mine = recs.filter((r) => (e.user_id && r.user_id === e.user_id) || (!r.user_id && r.employee_name === e.full_name))
@@ -209,15 +219,28 @@ async function loadStaff(settings: Promise<Partial<Targets>>): Promise<StaffData
     const lastOutIso = mine.length ? mine[mine.length - 1].clock_out : null;
     const due = times.start;
     const dueMin = toMin(due);
+    const graceMin = dueMin !== null ? dueMin + (times.graceMinutes ?? companyGrace) : null;
     const o = outletOf(e.location);
     const key = o?.code ?? e.location ?? 'other';
+    for (const r of allRecs) {
+      if (!((e.user_id && r.user_id === e.user_id) || (!r.user_id && r.employee_name === e.full_name))) continue;
+      const d = kuwaitDate(new Date(r.clock_in));
+      if (d >= today) continue;
+      const days = past.get(key) ?? new Map<string, Map<string, string>>();
+      const ins = days.get(d) ?? new Map<string, string>();
+      const t = hhmm(r.clock_in);
+      if (!ins.has(e.id) || t < ins.get(e.id)!) ins.set(e.id, t);
+      days.set(d, ins); past.set(key, days);
+    }
+    const leave = leaves.get(e.id);
     names.set(key, bare(outletName(e.location)).replace(/^Timekeeper /, ''));
     const person: StaffPerson = {
       id: e.id, name: e.full_name, phone: e.phone, user_id: e.user_id, location: e.location, branch: key,
-      status: s.status, due, timeUnknown: expected && due === null,
-      away: awayLabel(leaves.get(e.id)),
+      status: s.status, due, dueEnd: times.end, graceUntil: graceMin !== null ? fromMin(graceMin) : null,
+      timeUnknown: expected && due === null,
+      away: awayLabel(leave), awayType: leave ? leave.leave_type || 'Annual' : null, awayTo: leave ? dayOf(leave.leave_end) : null,
       firstIn, lastOut: lastOutIso ? hhmm(lastOutIso) : null,
-      arrivedLateMin: firstIn && dueMin !== null ? Math.max(0, (toMin(firstIn) ?? 0) - dueMin) : null,
+      lateAfterGraceMin: firstIn && graceMin !== null ? Math.max(0, (toMin(firstIn) ?? 0) - graceMin) : null,
       lateNowMin: (s.status === 'late' || s.status === 'missing') && dueMin !== null ? Math.max(0, nowMin - dueMin) : null,
     };
     byBranch.set(key, [...(byBranch.get(key) ?? []), person]);
@@ -230,7 +253,9 @@ async function loadStaff(settings: Promise<Partial<Targets>>): Promise<StaffData
     const shop = opensAt !== null;
     const om = toMin(opensAt), cm = toMin(closesAt);
     const open = shop && om !== null && nowMin >= om && (cm === null || nowMin < cm);
-    return judgeBranch({ key, name: names.get(key) ?? key, shop, opensAt: shop && !open && om !== null && nowMin >= om ? null : opensAt, closesAt, open, minStaff: o?.min_staff ?? null, people });
+    const b = judgeBranch({ key, name: names.get(key) ?? key, shop, opensAt: shop && !open && om !== null && nowMin >= om ? null : opensAt, closesAt, open, minStaff: o?.min_staff ?? null, people });
+    const days = new Map([...(past.get(key) ?? new Map<string, Map<string, string>>()).entries()].map(([d, ins]) => [d, [...ins.values()]]));
+    return { ...b, pattern: shop ? clockInPattern({ name: b.name, opensAt, need: b.need }, days) : null };
   }).filter((b) => b.people.some((p) => !['off', 'on_leave'].includes(p.status)) || b.shop)
     .sort((x, y) => rank[x.tone] - rank[y.tone] || x.name.localeCompare(y.name));
   return { branches, workStart: defaultStart };
@@ -380,7 +405,7 @@ async function loadNeeds(role: string | null, canHR: boolean): Promise<NeedsData
           key: `doc:${e.id}:${doc}`, kind: `${doc} expired`, what: e.full_name,
           sub: `Expired ${dayOf(date)} · ${days === 1 ? 'yesterday' : `${plural(days, 'day')} ago`}`,
           verb: `Open ${e.full_name.trim().split(/\s+/)[0]}'s HR record`, chip: 'expired',
-          age: days * 24, overdue: true, link: `/hr?focus=${e.id}`,
+          age: days * 24, overdue: true, link: `/hr?focus=${e.id}`, person: { id: e.id, doc, date },
         });
       } else if (date <= in30) expiring.push({ date, name: e.full_name });
     }
@@ -455,7 +480,8 @@ export default function ManagerDashboard() {
   const [eventsCounted, setEventsCounted] = useState(false);
   const [openRows, setOpenRows] = useState<Record<string, boolean>>({});
   const [flash, setFlash] = useState<string | null>(null);
-  const [openBranch, setOpenBranch] = useState<{ key: string; at: number } | null>(null);
+  const sheetNav = useBranchSheet();
+  const wide = useWideSheet();
   const flashTimer = useRef<number | undefined>(undefined);
   /* Each section's latest load; an older answer arriving late is dropped. */
   const gen = useRef<Record<Key, number>>({ staff: 0, sales: 0, needs: 0, watch: 0 });
@@ -896,6 +922,15 @@ export default function ManagerDashboard() {
     </TodayCard>
   );
 
+  /* An expired document shows on the person's row in their branch sheet too. */
+  const personAlerts: Record<string, PersonAlert> = {};
+  for (const it of needs.data?.items ?? []) {
+    if (!it.person || personAlerts[it.person.id]) continue;
+    personAlerts[it.person.id] = { text: `${it.person.doc} expired ${dayOf(it.person.date)}`, href: can('/hr') ? `/hr?focus=${it.person.id}` : null };
+  }
+  /* From 1280px a branch sheet docks beside the page, which narrows to make room. */
+  const split = wide && !!sheetNav.sheet && !!staff.data?.branches.some((b) => b.key === sheetNav.sheet);
+
   const staffCard = visible.includes('staff') && (
     <TodayCard id="card-staff" icon={<Users className="h-5 w-5" />} title="Staffing" flash={flash === 'staff'}
       chip={staff.data ? (() => {
@@ -908,14 +943,15 @@ export default function ManagerDashboard() {
       {staff.data ? (
         <>
           {staff.error && <StaleBar at={staff.at} error={staff.error} busy={staff.loading} onRetry={refreshStaff} label="Staffing" />}
-          <StaffingCard branches={staff.data.branches} workStart={staff.data.workStart} onChanged={refreshStaff} embedded openSignal={openBranch} />
+          <StaffingCard branches={staff.data.branches} workStart={staff.data.workStart} onChanged={refreshStaff} embedded
+            at={staff.at ? hhmmOf(staff.at) : null} alerts={personAlerts} />
         </>
       ) : <SectionState slot={staff} name="staffing" onRetry={refreshStaff} />}
     </TodayCard>
   );
 
   return (
-    <div className="mx-auto max-w-2xl xl:max-w-none">
+    <div className={`mx-auto max-w-2xl xl:max-w-none ${split ? 'xl:mr-[392px]' : ''}`}>
       <div className="mb-3">
         <h1 className="text-xl font-bold text-slate-900">Today</h1>
         <p className="text-[14px] text-slate-600">{format(new Date(), 'EEEE d MMMM')}{profile ? ` · ${profile.full_name}` : ''}</p>
@@ -930,10 +966,10 @@ export default function ManagerDashboard() {
 
       {/* one sentence per card; each one jumps to its card */}
       <section aria-label="Today in three lines" className="rounded-2xl border border-slate-200 bg-white p-1 shadow-sm" aria-live="polite">
-        <ul className="xl:grid xl:grid-cols-3 xl:gap-1">
+        <ul className={split ? '' : 'xl:grid xl:grid-cols-3 xl:gap-1'}>
           {heads.map((h) => (
             <li key={h.key}>
-              <button type="button" onClick={() => { jump(h.key); if (h.branch) setOpenBranch({ key: h.branch, at: Date.now() }); }}
+              <button type="button" onClick={() => { if (h.branch) sheetNav.open(h.branch); else jump(h.key); }}
                 className="flex min-h-[44px] w-full items-center gap-2.5 rounded-xl px-2.5 py-1.5 text-left hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400">
                 <Dot tone={h.tone} />
                 <span className="flex-1 text-[15px] leading-5 text-slate-700">
@@ -954,11 +990,11 @@ export default function ManagerDashboard() {
         </div>
       )}
 
-      {/* phone: Sales, Needs you, Staffing; wide: the three side by side */}
-      <div className="mt-3 space-y-3 xl:grid xl:grid-cols-3 xl:items-start xl:gap-4 xl:space-y-0">
+      {/* phone: Sales, Needs you, Staffing; wide: the three side by side, or two beside an open branch sheet with Staffing first */}
+      <div className={`mt-3 space-y-3 xl:grid xl:items-start xl:gap-4 xl:space-y-0 ${split ? 'xl:grid-cols-2' : 'xl:grid-cols-3'}`}>
         {salesCard}
         {needsCard}
-        {staffCard}
+        {staffCard && <div className={split ? 'xl:order-first' : undefined}>{staffCard}</div>}
       </div>
 
       {can('/sales') && (

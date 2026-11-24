@@ -1,5 +1,18 @@
 [
   {
+    "version": "3.27.0",
+    "date": "2026-11-24",
+    "title": "Staffing says what it knows",
+    "changes": [
+      "Each branch on Today now says what is known in plain words, for example \"1 in · minimum 2 · 3 with no shift time\", \"3 in · 2 late · 1 no hours set · 1 on work trip to 26 Nov\" or \"Opens 14:00 · 1 planned\".",
+      "Nobody is called on time or late unless they have a shift time to compare with. People with a shift show whether they came in within the grace time, and by how much they missed it.",
+      "A branch's page opens over Today and closes with Back, Escape, the close button or a tap outside it. On a wide screen it sits beside the page instead of covering it. A link to a branch's page opens it straight away, and closing it leaves you on Today.",
+      "\"Set Avenues times\" opens the first person without a shift time, then brings you back to the branch with the next one ready.",
+      "The branch page shows how the last ten days of clock-ins went, the open question for the owner about how many people a shop needs before the afternoon, and an expired residency on that person's row with a link to their HR record.",
+      "The shift editor now says correctly what leaving the times blank means, and its day buttons are easier to tap."
+    ]
+  },
+  {
     "version": "3.26.0",
     "date": "2026-11-24",
     "title": "A new Today page",
