@@ -90,10 +90,20 @@ export function judgeBranch(b: Omit<StaffBranch, 'tone' | 'label' | 'onFloor' | 
 
 interface Action { key: string; label: string; primary?: boolean; href?: string; onClick?: () => void }
 
-export function StaffingCard({ branches, workStart, onChanged }: {
+export function StaffingCard({ branches, workStart, onChanged, embedded = false, openSignal }: {
   branches: StaffBranch[]; workStart: string; onChanged: () => void;
+  /** Inside a Today card, which already carries the title and the Attendance link. */
+  embedded?: boolean;
+  /** Open a branch's sheet from outside (a headline sentence naming it); `at` makes a repeat tap count. */
+  openSignal?: { key: string; at: number } | null;
 }) {
   const [open, setOpen] = useState<string | null>(null);
+  /* a new signal opens its branch (adjusting state to a prop, during render) */
+  const [seenSignal, setSeenSignal] = useState(openSignal);
+  if (openSignal !== seenSignal) {
+    setSeenSignal(openSignal);
+    if (openSignal) setOpen(openSignal.key);
+  }
   const [person, setPerson] = useState<StaffPerson | null>(null);
   const [schedFor, setSchedFor] = useState<StaffPerson | null>(null);
   const branch = branches.find((b) => b.key === open) ?? null;
@@ -129,37 +139,39 @@ export function StaffingCard({ branches, workStart, onChanged }: {
   const shown = actions.slice(0, 5);
   const more = actions.length - shown.length;
 
-  const dot = { bad: 'bg-rose-600', warn: 'bg-amber-500', good: 'bg-emerald-600', idle: 'bg-slate-300' } as const;
-  const txt = { bad: 'text-rose-700', warn: 'text-amber-700', good: 'text-emerald-700', idle: 'text-slate-500' } as const;
+  const dot = { bad: 'bg-rose-600', warn: 'bg-amber-500', good: 'bg-emerald-600', idle: 'bg-slate-400' } as const;
+  const txt = { bad: 'text-rose-700', warn: 'text-amber-700', good: 'text-emerald-700', idle: 'text-slate-600' } as const;
 
   return (
-    <section className="mt-3 overflow-hidden rounded-xl border border-slate-200 bg-white">
-      <div className="flex items-baseline justify-between px-3 pt-2.5 pb-1">
-        <h2 className="text-[15px] font-semibold text-slate-900">Staffing</h2>
-        <Link to="/attendance" className="text-[13px] text-blue-600 hover:underline">Attendance →</Link>
-      </div>
-      {branches.length === 0 && <p className="px-3 pb-3 text-sm text-slate-500">Nobody is scheduled today</p>}
+    <section className={embedded ? '-mx-4 -mb-4 overflow-hidden rounded-b-2xl' : 'mt-3 overflow-hidden rounded-xl border border-slate-200 bg-white'}>
+      {!embedded && (
+        <div className="flex items-baseline justify-between px-3 pt-2.5 pb-1">
+          <h2 className="text-[15px] font-semibold text-slate-900">Staffing</h2>
+          <Link to="/attendance" className="text-[13px] text-blue-600 hover:underline">Attendance →</Link>
+        </div>
+      )}
+      {branches.length === 0 && <p className="px-4 pb-3 text-sm text-slate-600">Nobody is scheduled today</p>}
       {branches.map((b) => (
         <button key={b.key} type="button" onClick={() => setOpen(b.key)}
-          className={`flex w-full items-center gap-2 border-t border-slate-100 px-3 py-2.5 text-left hover:bg-slate-50 focus-visible:bg-slate-50 focus-visible:outline-none ${b.tone === 'bad' ? 'bg-rose-50/60' : ''}`}>
+          className={`flex min-h-[48px] w-full items-center gap-2 border-t border-slate-100 ${embedded ? 'px-4' : 'px-3'} py-2.5 text-left hover:bg-slate-50 focus-visible:bg-slate-50 focus-visible:outline-none ${b.tone === 'bad' ? 'bg-rose-50/60' : ''}`}>
           <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${dot[b.tone]}`} aria-hidden />
           <span className="flex-1 truncate text-[15px] font-medium text-slate-900">{b.name}</span>
           <span className="text-[15px] tabular-nums text-slate-700">{b.onFloor}/{b.need}</span>
           <span className={`w-[96px] text-right text-[13px] font-semibold ${txt[b.tone]}`}>{b.label}</span>
-          <ChevronRight size={16} className="shrink-0 text-slate-300" aria-hidden />
+          <ChevronRight size={16} className="shrink-0 text-slate-500" aria-hidden />
         </button>
       ))}
       {shown.length > 0 && (
-        <div className="border-t border-slate-200 px-3 pt-2 pb-2.5">
-          <p className="mb-1.5 text-[12px] font-semibold uppercase tracking-wide text-slate-500">To do</p>
+        <div className={`border-t border-slate-200 ${embedded ? 'px-4 pb-4' : 'px-3 pb-2.5'} pt-2`}>
+          <p className="mb-1.5 text-[12px] font-semibold uppercase tracking-wide text-slate-600">To do</p>
           <div className="flex flex-wrap gap-1.5">
             {shown.map((a) => {
-              const cls = `inline-flex min-h-[36px] items-center gap-1.5 rounded-lg px-2.5 text-[13px] font-semibold ${a.primary ? 'bg-slate-900 text-white' : 'border border-slate-300 text-slate-900 hover:bg-slate-50'}`;
+              const cls = `inline-flex min-h-[44px] items-center gap-1.5 rounded-lg px-2.5 text-[13px] font-semibold ${a.primary ? 'bg-slate-900 text-white' : 'border border-slate-300 text-slate-900 hover:bg-slate-50'}`;
               return a.href
                 ? <a key={a.key} href={a.href} className={cls}><Phone size={13} aria-hidden />{a.label}</a>
                 : <button key={a.key} type="button" onClick={a.onClick} className={cls}>{a.label}</button>;
             })}
-            {more > 0 && <Link to="/attendance" className="inline-flex min-h-[36px] items-center px-1 text-[13px] font-semibold text-blue-600">+{more} more</Link>}
+            {more > 0 && <Link to="/attendance" className="inline-flex min-h-[44px] items-center px-1 text-[13px] font-semibold text-blue-600">+{more} more</Link>}
           </div>
         </div>
       )}

@@ -5,7 +5,9 @@ import avatar from '../assets/ask-mohammed.webp';
 import { plainText, copyText } from '../lib/answerText';
 
 /**
- * Ask Mohammed: the owners' business advisor, a face in the corner of every page.
+ * Ask Mohammed: the owners' business advisor. Opened from the top bar on a
+ * phone and from the menu on a wide screen (AskMohammedButton); since 24 Nov it
+ * no longer floats in the corner, where it covered figures.
  * Answers come from the stock-assistant backend, which only runs fixed
  * calculations; this screen never sees an API key or queries stock itself. The
  * strip above each answer (period, freshness, gaps) is written by the backend,
@@ -51,7 +53,7 @@ async function invokeError(error: unknown): Promise<string> {
   return 'Something went wrong. Try again.';
 }
 
-function Face({ size, thinking = false }: { size: number; thinking?: boolean }) {
+export function Face({ size, thinking = false }: { size: number; thinking?: boolean }) {
   return (
     <span className={`relative block shrink-0 rounded-full bg-amber-400 ring-2 ring-white overflow-hidden ${thinking ? 'animate-pulse' : ''}`}
       style={{ width: size, height: size }}>
@@ -60,8 +62,21 @@ function Face({ size, thinking = false }: { size: number; thinking?: boolean }) 
   );
 }
 
-export default function AskMohammed() {
-  const [open, setOpen] = useState(false);
+/** What opens the conversation: an outlined pill with his face. */
+export function AskMohammedButton({ onOpen, label = 'Ask Mohammed', labelClass = '', tone = 'dark' }: {
+  onOpen: () => void; label?: string; labelClass?: string; tone?: 'dark' | 'light';
+}) {
+  return (
+    <button type="button" onClick={onOpen} aria-label="اسأل محمد — Ask Mohammed" title="اسأل محمد"
+      className={`inline-flex h-11 shrink-0 items-center gap-2 rounded-full border pl-1.5 pr-1.5 text-[14px] font-semibold focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-300 ${labelClass ? 'min-[340px]:pr-3' : 'pr-3'} ${tone === 'dark' ? 'border-white/30 text-white hover:bg-white/10' : 'border-slate-300 text-slate-900 hover:bg-slate-50'}`}>
+      <Face size={30} />
+      <span className={labelClass}>{label}</span>
+    </button>
+  );
+}
+
+export default function AskMohammed({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const setOpen = (v: boolean) => { if (!v) onClose(); };
   const [status, setStatus] = useState<Status | null>(null);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Msg[]>([]);
@@ -112,16 +127,7 @@ export default function AskMohammed() {
 
   const off = status && !status.enabled;
 
-  if (!open) {
-    return (
-      <button onClick={() => setOpen(true)} aria-label="اسأل محمد — Ask Mohammed" title="اسأل محمد"
-        className="fixed z-40 rounded-full shadow-lg shadow-slate-900/20 hover:scale-105 transition-transform focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-300"
-        style={{ right: 'calc(1rem + var(--sa-r))', bottom: 'calc(1rem + var(--sa-b))' }}>
-        <Face size={56} thinking={busy} />
-        {busy && <span className="absolute -top-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-amber-500 ring-2 ring-white animate-ping" />}
-      </button>
-    );
-  }
+  if (!open) return null;
 
   return (
     <div role="dialog" aria-label="اسأل محمد"
@@ -138,7 +144,7 @@ export default function AskMohammed() {
             <Plus size={15} /> New
           </button>
         )}
-        <button onClick={() => setOpen(false)} aria-label="Close" className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100"><X size={20} /></button>
+        <button onClick={() => setOpen(false)} aria-label="Close" className="grid h-11 w-11 place-items-center rounded-lg text-slate-600 hover:bg-slate-100"><X size={20} /></button>
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">

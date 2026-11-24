@@ -12,7 +12,7 @@ import { getInstallPrompt, promptInstall, isStandalone, isIos } from '../lib/pwa
 import { supabase } from '../lib/supabase';
 import { X as CloseIcon } from 'lucide-react';
 import { VersionChip } from './WhatsNew';
-import AskMohammed from './AskMohammed';
+import AskMohammed, { AskMohammedButton } from './AskMohammed';
 import { Spinner } from './ui';
 
 interface NavItem {
@@ -140,6 +140,7 @@ function groupsFor(role: Role | null, pageAccess: string[] | null, owner = false
 export default function Layout() {
   const { profile, role, pageAccess, signOut, user } = useAuth();
   const [open, setOpen] = useState(false);
+  const [askOpen, setAskOpen] = useState(false);
   const [inboxN, setInboxN] = useState(0);
   const [notifN, setNotifN] = useState(0);
 
@@ -187,6 +188,14 @@ export default function Layout() {
     return n;
   });
 
+  // the phone's menu closes with Escape, like its backdrop and its close button
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [open]);
+
   // record page visits for the admin User Activity page (throttled, fire-and-forget)
   useEffect(() => { logActivity(user?.id, location.pathname); }, [user?.id, location.pathname]);
 
@@ -219,15 +228,26 @@ export default function Layout() {
 
   return (
     <div className="min-h-screen flex">
+      {open && <div className="fixed inset-0 z-[35] bg-slate-900/50 md:hidden" onClick={() => setOpen(false)} aria-hidden />}
       <aside className={`${open ? 'flex' : 'hidden'} md:flex w-60 shrink-0 bg-slate-900 text-slate-200 flex-col fixed md:static inset-y-0 z-40`}
-        style={{ paddingLeft: 'var(--sa-l)' }}>
+        style={{ paddingLeft: 'var(--sa-l)' }} aria-label="Menu">
         <div className="px-5 py-4 flex items-center gap-2 border-b border-slate-800" style={{ paddingTop: 'calc(1rem + var(--sa-t))' }}>
           <Watch size={22} className="text-amber-400" />
-          <div>
+          <div className="flex-1">
             <div className="font-bold text-white leading-tight">Timekeeper Online</div>
-            <div className="text-[11px] text-slate-400">Operations Control</div>
+            <div className="text-[12px] text-slate-300">Operations Control</div>
           </div>
+          <button type="button" onClick={() => setOpen(false)} aria-label="Close menu"
+            className="md:hidden -mr-3 grid h-11 w-11 place-items-center rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white">
+            <CloseIcon size={20} />
+          </button>
         </div>
+        {/* On a wide screen Ask Mohammed lives here, not floating over the page */}
+        {user && askAllowed && (
+          <div className="hidden md:block px-4 pt-3">
+            <AskMohammedButton onOpen={() => setAskOpen(true)} />
+          </div>
+        )}
         <nav className="flex-1 overflow-y-auto py-3">
           {(() => {
             const NavItem = (n: NavItem) => (
@@ -237,14 +257,14 @@ export default function Layout() {
                 end={n.to === '/'}
                 onClick={() => setOpen(false)}
                 className={({ isActive }) =>
-                  `${n.wideOnly ? 'hidden md:flex' : 'flex'} items-center gap-3 px-5 py-2 text-sm ${isActive ? 'bg-slate-800 text-white border-r-2 border-amber-400' : 'text-slate-300 hover:bg-slate-800/60'}`}
+                  `${n.wideOnly ? 'hidden md:flex' : 'flex'} min-h-[44px] md:min-h-[36px] items-center gap-3 px-5 py-2 text-sm ${isActive ? 'bg-slate-800 text-white border-r-2 border-amber-400' : 'text-slate-300 hover:bg-slate-800/60'}`}
               >
                 <n.icon size={16} /> <span className="flex-1">{n.label}</span>
                 {n.to === '/inbox' && inboxN > 0 && (
-                  <span className="min-w-[1.25rem] h-5 px-1.5 rounded-full bg-amber-400 text-slate-900 text-[11px] font-bold flex items-center justify-center">{inboxN}</span>
+                  <span className="min-w-[1.25rem] h-5 px-1.5 rounded-full bg-amber-400 text-slate-900 text-[12px] font-bold flex items-center justify-center">{inboxN}</span>
                 )}
                 {n.to === '/notifications' && notifN > 0 && (
-                  <span className="min-w-[1.25rem] h-5 px-1.5 rounded-full bg-amber-400 text-slate-900 text-[11px] font-bold flex items-center justify-center">{notifN}</span>
+                  <span className="min-w-[1.25rem] h-5 px-1.5 rounded-full bg-amber-400 text-slate-900 text-[12px] font-bold flex items-center justify-center">{notifN}</span>
                 )}
               </NavLink>
             );
@@ -255,7 +275,7 @@ export default function Layout() {
               return (
                 <div key={g.title} className="mt-3">
                   <button onClick={() => toggleGroup(g.title!)}
-                    className="w-full flex items-center gap-2 px-5 pt-1 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 hover:text-slate-300">
+                    className="w-full flex min-h-[44px] md:min-h-0 items-center gap-2 px-5 pt-1 pb-1.5 text-[12px] font-semibold uppercase tracking-wider text-slate-300 hover:text-white">
                     <span className="flex-1 text-left">{g.title}</span>
                     {!isOpen && count > 0 && <span className="h-1.5 w-1.5 rounded-full bg-amber-400" aria-hidden />}
                     <ChevronDown size={13} className={`transition-transform ${isOpen ? 'rotate-180' : ''}`} />
@@ -269,36 +289,44 @@ export default function Layout() {
         <div className="px-5 py-4 border-t border-slate-800 text-sm"
              style={{ paddingBottom: 'calc(1rem + var(--sa-b))' }}>
           <div className="font-medium text-white">{profile?.full_name}</div>
-          <div className="text-xs text-slate-400 capitalize mb-2">{role}</div>
-          <button onClick={signOut} className="flex items-center gap-2 text-slate-300 hover:text-white text-xs">
+          <div className="text-xs text-slate-300 capitalize">{role}</div>
+          <button onClick={signOut} className="flex min-h-[44px] items-center gap-2 text-slate-300 hover:text-white text-xs">
             <LogOut size={14} /> Sign out
           </button>
-          <div className="mt-3">
-            <VersionChip tone="dark" className="text-[11px] text-slate-500" />
+          <div className="mt-1">
+            <VersionChip tone="dark" className="text-[12px] text-slate-300 before:absolute before:-inset-y-3 before:inset-x-0 before:content-['']" />
           </div>
         </div>
       </aside>
 
       <div className="flex-1 min-w-0">
-        <div className="md:hidden flex items-center gap-3 text-white px-4 py-3 sticky top-0 z-30 tk-glass bg-slate-900/75 backdrop-blur-lg backdrop-saturate-150"
-          style={{ paddingTop: 'calc(0.75rem + var(--sa-t))',
-                   paddingLeft: 'calc(1rem + var(--sa-l))',
-                   paddingRight: 'calc(1rem + var(--sa-r))' }}>
-          <button onClick={() => setOpen((o) => !o)} aria-label="Menu"><Menu size={20} /></button>
-          <span className="font-semibold whitespace-nowrap">Timekeeper Online</span>
-          {/* On the narrowest phones the name needs the room; the menu still shows the version. */}
-          <span className="hidden shrink-0 min-[360px]:inline-flex">
-            <VersionChip tone="light" compact className="text-[10px] text-slate-400" />
-          </span>
-          <div className="ml-auto flex items-center gap-1">
-            {showInstall && (
-              <button onClick={handleInstall} aria-label="Install app" className="p-1"><Download size={20} /></button>
-            )}
-            <NavLink to="/notifications" aria-label="Notifications" className="relative p-1">
-              <Bell size={20} />
-              {notifN > 0 && <span className="absolute top-0 right-0 h-4 min-w-4 px-1 rounded-full bg-amber-400 text-slate-900 text-[10px] font-bold flex items-center justify-center">{notifN}</span>}
-            </NavLink>
+        {/* The phone's top bar. Every control is a 44px target; Ask Mohammed sits
+            here rather than floating over the figures. */}
+        <div className="md:hidden flex items-center gap-1.5 text-white px-2 py-1.5 sticky top-0 z-30 tk-glass bg-slate-900/75 backdrop-blur-lg backdrop-saturate-150"
+          style={{ paddingTop: 'calc(0.375rem + var(--sa-t))',
+                   paddingLeft: 'calc(0.5rem + var(--sa-l))',
+                   paddingRight: 'calc(0.5rem + var(--sa-r))' }}>
+          <button onClick={() => setOpen((o) => !o)} aria-label="Menu" aria-expanded={open}
+            className="grid h-11 w-11 shrink-0 place-items-center rounded-lg hover:bg-white/10"><Menu size={22} /></button>
+          <div className="min-w-0 flex-1 leading-tight">
+            <div className="truncate font-semibold">Timekeeper Online</div>
+            {/* the version under the title opens What's new; its tap area reaches 44px tall */}
+            <VersionChip tone="light" compact
+              className="text-[12px] text-white/80 before:absolute before:-inset-y-3 before:inset-x-0 before:content-['']" />
           </div>
+          {user && askAllowed && (
+            <AskMohammedButton onOpen={() => setAskOpen(true)} label="Ask"
+              labelClass={showInstall ? 'hidden min-[400px]:inline' : 'hidden min-[340px]:inline'} />
+          )}
+          {showInstall && (
+            <button onClick={handleInstall} aria-label="Install app"
+              className="grid h-11 w-11 shrink-0 place-items-center rounded-lg hover:bg-white/10"><Download size={20} /></button>
+          )}
+          <NavLink to="/notifications" aria-label="Notifications"
+            className="relative grid h-11 w-11 shrink-0 place-items-center rounded-lg hover:bg-white/10">
+            <Bell size={20} />
+            {notifN > 0 && <span className="absolute top-1 right-1 h-4 min-w-4 px-1 rounded-full bg-amber-400 text-slate-900 text-[11px] font-bold flex items-center justify-center">{notifN}</span>}
+          </NavLink>
         </div>
         {/* full available width — tables were leaving a large empty gutter on wide screens */}
         <main className="p-4 md:p-6 w-full"
@@ -325,7 +353,7 @@ export default function Layout() {
         </main>
       </div>
 
-      {user && askAllowed && <AskMohammed />}
+      {user && askAllowed && <AskMohammed open={askOpen} onClose={() => setAskOpen(false)} />}
 
       {showIosHelp && (
         <div className="fixed inset-0 z-[60] bg-black/40 flex items-end sm:items-center justify-center p-4" onClick={() => setShowIosHelp(false)}>

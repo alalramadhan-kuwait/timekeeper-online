@@ -4,16 +4,21 @@
  * Designed by the review panel on 29 Sep. The old dashboard answered "how is
  * the company doing?" — supplier balance, stock value, ad spend, followers —
  * which is the owner's question, and it lives on at /money. The manager runs the
- * day, so this answers four things in the order a morning goes:
+ * day. Since 24 Nov (3.26.0) it opens with three sentences, one per card,
+ * each of which jumps to its card, and then three cards built from one card
+ * component (TodayCard), in this order on a phone:
  *
- *   1. Staffing   — who is not here who should be (gaps first; one quiet line
- *                   when everybody is in).
- *   2. Outlet sales — each outlet against its target with a pace mark, so it is
- *                   clear which team needs a word.
- *   3. Waiting on you — one list, overdue first, of everything that needs a
- *                   decision or a phone call.
- *   4. Watch      — lost sales, what customers asked for that we did not have,
- *                   and deliveries that are late.
+ *   1. Sales     — the month against target in till days, the gap in KD, what
+ *                  it needs a day, yesterday, the same days last month, each
+ *                  outlet with its pace mark, and the one outlet to push.
+ *                  Event sales (the Expo) stand apart, with a view switch to
+ *                  see them counted: whether they count is the owner's call.
+ *   2. Needs you — overdue first, numbered, each with what to do about it and
+ *                  how late it is; then requests stuck with somebody else, and
+ *                  the Watch lines (lost sales, purchase orders).
+ *   3. Staffing  — who is not here who should be, branch by branch.
+ *
+ * On a wide screen the three cards sit side by side.
  *
  * Nothing here is a count with no action behind it.
  *
@@ -24,7 +29,7 @@
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ExternalLink, ChevronRight, Check, AlertTriangle, RotateCw } from 'lucide-react';
+import { ExternalLink, ChevronRight, ChevronDown, Check, AlertTriangle, RotateCw, TrendingUp, ListChecks, Users, Eye } from 'lucide-react';
 import { format } from 'date-fns';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
@@ -36,7 +41,8 @@ import { shiftTimesOn } from '../shared/punctuality';
 import { scheduleFromRow, type Schedule, type ScheduleRow } from '../shared/schedule';
 import { StaffingCard, judgeBranch, type StaffPerson, type StaffBranch } from '../components/StaffingCard';
 import { loadRequests, waitedFor, stageOf, tabOf, type RequestRow } from '../shared/requests';
-import { monthSales, eventDates, type MonthSales, type TillRow } from '../shared/tillSales';
+import { monthSales, eventDates, daySales, sameDaysBefore, prevMonthOf, type MonthSales, type TillRow, type DaySales, type SameDays } from '../shared/tillSales';
+import { TodayCard, Chip, Dot, PaceBar, SubHead, TONE, type Tone } from '../components/TodayCard';
 
 /* ------------------------------------------------------------------ types */
 
@@ -46,20 +52,38 @@ interface Leave { employee_id: string; leave_start: string; leave_end: string; l
 
 interface Item {
   key: string;
-  text: string;
+  /** What kind of thing it is, e.g. "Residency expired"; red when overdue. */
+  kind: string;
+  /** Which one, e.g. the person's name or the task's title. */
+  what?: string;
   sub?: string;
+  /** What to do about it, in a few words. */
+  verb: string;
+  /** How late, for the chip on the right: "25d late", "expired". */
+  chip?: string;
   /** Hours it has been waiting, or late; sorts the list. */
   age: number;
   overdue: boolean;
   link: string;
+  /** Shown in place when the row is opened: the follow-ups behind a count. */
+  children?: { key: string; text: string; sub: string; chip: string; link: string }[];
 }
 
+interface StuckRow { id: string; who: string; what: string; hours: number }
+
 interface StaffData { branches: StaffBranch[]; workStart: string }
-interface SalesData { month: MonthSales; syncedAt: string | null }
+interface SalesData {
+  month: MonthSales;
+  /** The last till day's regular sales ("yesterday" when the tills are up to date). */
+  lastDay: DaySales | null;
+  /** The same till days of the month before. */
+  sameDays: SameDays | null;
+  syncedAt: string | null;
+}
 interface NeedsData {
   items: Item[];
   /** Requests past due that are with somebody else, not with you. */
-  stuck: { count: number; hours: number[]; withWhom: string };
+  stuck: { count: number; rows: StuckRow[]; withWhom: string };
 }
 interface WatchData {
   lost7: number;
@@ -85,7 +109,6 @@ interface Slot<T> {
 interface Slots { staff: Slot<StaffData>; sales: Slot<SalesData>; needs: Slot<NeedsData>; watch: Slot<WatchData> }
 
 const KEYS: Key[] = ['staff', 'sales', 'needs', 'watch'];
-const SECTION_NAME: Record<Key, string> = { staff: 'Staffing', sales: 'Outlet sales', needs: 'Waiting on you', watch: 'Watch' };
 const TIMEOUT_MS = 10_000;
 
 interface Targets {
@@ -216,8 +239,10 @@ async function loadStaff(settings: Promise<Partial<Targets>>): Promise<StaffData
 /* ---- sales: what rang through the tills, refreshed each morning */
 async function loadSales(settings: Promise<Partial<Targets>>): Promise<SalesData> {
   const month = kuwaitDate().slice(0, 7);
+  /* From the first of last month: the same read, a wider range, so the card can
+     set this month's till days against the same days of the last. */
   const [posQ, syncQ, targets] = await Promise.all([
-    supabase.from('pos_channel_sales').select('channel_code, outlet, sale_date, revenue, sale_count').gte('sale_date', `${month}-01`),
+    supabase.from('pos_channel_sales').select('channel_code, outlet, sale_date, revenue, sale_count').gte('sale_date', `${prevMonthOf(month)}-01`),
     supabase.from('lightspeed_sync_log').select('finished_at').eq('status', 'ok').not('finished_at', 'is', null)
       .order('finished_at', { ascending: false }).limit(1),
     settings,
@@ -225,15 +250,18 @@ async function loadSales(settings: Promise<Partial<Targets>>): Promise<SalesData
   const pos = rowsOf<TillRow[]>(posQ, 'Till sales');
   const sync = rowsOf<{ finished_at: string | null }[]>(syncQ, 'Till sync log');
   const num = (v: unknown) => (v == null ? null : Number(v));
+  const ms = monthSales(pos, {
+    month,
+    monthTarget: num(targets.sales_target_month),
+    targets: {
+      avenues: num(targets.sales_target_avenues), time_gallery: num(targets.sales_target_timegallery),
+      online: num(targets.sales_target_online), whatsapp: num(targets.sales_target_whatsapp),
+    },
+  });
   return {
-    month: monthSales(pos, {
-      month,
-      monthTarget: num(targets.sales_target_month),
-      targets: {
-        avenues: num(targets.sales_target_avenues), time_gallery: num(targets.sales_target_timegallery),
-        online: num(targets.sales_target_online), whatsapp: num(targets.sales_target_whatsapp),
-      },
-    }),
+    month: ms,
+    lastDay: ms.lastSaleDay ? daySales(pos, ms.lastSaleDay) : null,
+    sameDays: ms.tillDays ? sameDaysBefore(pos, month, ms.tillDays) : null,
     syncedAt: sync[0]?.finished_at ?? null,
   };
 }
@@ -246,30 +274,33 @@ async function loadNeeds(role: string | null, canHR: boolean): Promise<NeedsData
   const mine = stageOf(role);
   const [reqs, fuQ, repQ, preQ, projQ, taskQ, docQ] = await Promise.all([
     loadRequests({ openOnly: true }),
-    supabase.from('cases_visible').select('promised_callback').eq('case_type', 'Follow-up').eq('status', 'Open')
+    supabase.from('cases_visible').select('id, customer_name, outlet, staff, promised_callback').eq('case_type', 'Follow-up').eq('status', 'Open')
       .eq('deleted', false).lt('promised_callback', today).order('promised_callback'),
     supabase.from('repair_watches').select('status, estimated_completion, updated_at'),
     supabase.from('waiting_list').select('customer_name, status, updated_at').eq('list_type', 'Pre-Order').eq('status', 'Arrived'),
-    supabase.from('limited_projects').select('project_name, brand, status, launch_date'),
-    supabase.from('assigned_tasks').select('title, due_date').eq('status', 'Open').lt('due_date', today).order('due_date'),
+    supabase.from('limited_projects').select('id, project_name, brand, status, launch_date'),
+    supabase.from('assigned_tasks').select('id, title, due_date, priority, assignee_name').eq('status', 'Open').lt('due_date', today).order('due_date'),
     canHR
       ? supabase.from('employees').select('id, full_name, residency_expiry, work_permit_expiry').in('status', ['Active', 'On leave'])
       : Promise.resolve({ data: [] as unknown[], error: null }),
   ]);
   if (reqs.error) throw new Error(`Requests: ${reqs.error}`);
-  const fus = rowsOf<{ promised_callback: string }[]>(fuQ, 'Follow-ups');
+  const fus = rowsOf<{ id: string; customer_name: string | null; outlet: string | null; staff: string | null; promised_callback: string }[]>(fuQ, 'Follow-ups');
   const reps = rowsOf<{ status: string; estimated_completion: string | null; updated_at: string }[]>(repQ, 'Repairs');
   const pre = rowsOf<{ customer_name: string; updated_at: string }[]>(preQ, 'Pre-orders');
-  const projs = rowsOf<{ project_name: string | null; brand: string | null; status: string; launch_date: string | null }[]>(projQ, 'Limited projects');
-  const tasks = rowsOf<{ title: string | null; due_date: string }[]>(taskQ, 'Tasks');
+  const projs = rowsOf<{ id: string; project_name: string | null; brand: string | null; status: string; launch_date: string | null }[]>(projQ, 'Limited projects');
+  const tasks = rowsOf<{ id: string; title: string | null; due_date: string; priority: string | null; assignee_name: string | null }[]>(taskQ, 'Tasks');
   const docs = rowsOf<{ id: string; full_name: string; residency_expiry: string | null; work_permit_expiry: string | null }[]>(docQ, 'Staff documents');
 
   const items: Item[] = [];
   for (const r of reqs.rows as RequestRow[]) {
     if (tabOf(r, mine) !== 'action') continue;
+    const when = r.kind === 'Leave' ? r.proposed_from : r.attendance_date;
     items.push({
-      key: `req:${r.id}`, text: `${r.employee_name ?? 'Someone'} — ${r.kind}${(r.kind === 'Leave' ? r.proposed_from : r.attendance_date) ? ` · ${dayOf(r.kind === 'Leave' ? r.proposed_from : r.attendance_date)}` : ''}`,
-      sub: `Waiting ${waitedFor(r.hours_pending)}`, age: r.hours_pending, overdue: r.is_overdue, link: '/inbox',
+      key: `req:${r.id}`, kind: `${r.kind} request`, what: `${r.employee_name ?? 'Someone'}${when ? ` · ${dayOf(when)}` : ''}`,
+      sub: `Waiting ${waitedFor(r.hours_pending)}`, verb: 'Decide in the Inbox',
+      chip: r.is_overdue ? `waiting ${waitedFor(r.hours_pending)}` : undefined,
+      age: r.hours_pending, overdue: r.is_overdue, link: `/inbox?focus=${r.id}`,
     });
   }
   /* Requests past due that sit with somebody else. Not yours to decide, but
@@ -279,29 +310,41 @@ async function loadNeeds(role: string | null, canHR: boolean): Promise<NeedsData
   const holders = [...new Set(stuckRows.map((r) => r.stage_owner))];
   const stuck = {
     count: stuckRows.length,
-    hours: stuckRows.map((r) => r.hours_pending),
+    rows: stuckRows.map((r) => {
+      const when = r.kind === 'Leave' ? r.proposed_from : r.attendance_date;
+      return { id: r.id, who: r.employee_name ?? 'Someone', what: `${r.kind}${when ? ` ${dayOf(when)}` : ''}`, hours: r.hours_pending };
+    }),
     withWhom: holders.length === 1 && holders[0] === 'manager' ? 'the store manager' : holders.length === 1 && holders[0] === 'owner' ? 'the owner' : 'others',
   };
 
   if (fus.length) {
     const oldest = fus[0].promised_callback;
     const days = Math.max(1, daysSince(today, oldest));
-    items.push({ key: 'fu', text: `${plural(fus.length, 'follow-up')} overdue`, sub: `Oldest promised ${dayOf(oldest)} · ${plural(days, 'day')} late`, age: days * 24, overdue: true, link: '/follow-ups' });
+    items.push({
+      key: 'fu', kind: 'Follow-ups overdue', what: plural(fus.length, 'customer'),
+      sub: `Oldest callback promised ${dayOf(oldest)}`, verb: fus.length === 1 ? 'Call them back' : 'Call them back · tap to see who',
+      chip: `${fus.length === 1 ? '' : 'oldest '}${days}d late`, age: days * 24, overdue: true, link: '/follow-ups',
+      children: fus.map((f) => ({
+        key: f.id, text: f.customer_name?.trim() || 'Customer',
+        sub: [f.outlet, f.staff, `promised ${dayOf(f.promised_callback)}`].filter(Boolean).join(' · '),
+        chip: `${Math.max(1, daysSince(today, f.promised_callback))}d late`, link: '/follow-ups',
+      })),
+    });
   }
   const overdueReps = reps.filter((r) => r.estimated_completion && r.estimated_completion < today && !['Returned to customer', 'Cancelled'].includes(r.status));
   if (overdueReps.length) {
     const oldest = overdueReps.map((r) => r.estimated_completion!).sort()[0];
     const days = daysSince(today, oldest);
-    items.push({ key: 'rep-late', text: `${plural(overdueReps.length, 'repair')} past the promised date`, sub: `Oldest promised ${dayOf(oldest)} · ${lateBy(days)}`, age: days * 24, overdue: true, link: '/repairs' });
+    items.push({ key: 'rep-late', kind: 'Repairs late', what: `${plural(overdueReps.length, 'repair')} past the promised date`, sub: `Oldest promised ${dayOf(oldest)} · ${lateBy(days)}`, verb: 'Open Repairs and call the workshop', chip: days > 0 ? `${days}d late` : 'due today', age: days * 24, overdue: true, link: '/repairs' });
   }
   const ready = reps.filter((r) => r.status === 'Ready for pickup');
   if (ready.length) {
     const oldest = Math.max(...ready.map((r) => (now.getTime() - Date.parse(r.updated_at)) / 3_600_000));
-    items.push({ key: 'rep-ready', text: `${plural(ready.length, 'repair')} ready for pickup`, sub: `Oldest ${waitedFor(oldest)}`, age: oldest, overdue: oldest >= 24 * 7, link: '/repairs' });
+    items.push({ key: 'rep-ready', kind: 'Ready for pickup', what: plural(ready.length, 'repair'), sub: `Oldest waiting ${waitedFor(oldest)}`, verb: 'Tell the customers', chip: oldest >= 24 * 7 ? `waiting ${waitedFor(oldest)}` : undefined, age: oldest, overdue: oldest >= 24 * 7, link: '/repairs' });
   }
   if (pre.length) {
     const oldest = Math.max(...pre.map((p) => (now.getTime() - Date.parse(p.updated_at)) / 3_600_000));
-    items.push({ key: 'pre', text: `${plural(pre.length, 'pre-order')} arrived, customer to be told`, sub: `Oldest ${waitedFor(oldest)}`, age: oldest, overdue: oldest >= 48, link: '/waiting-list' });
+    items.push({ key: 'pre', kind: 'Pre-orders arrived', what: `${plural(pre.length, 'customer')} to be told`, sub: `Oldest waiting ${waitedFor(oldest)}`, verb: 'Tell the customers', chip: oldest >= 48 ? `waiting ${waitedFor(oldest)}` : undefined, age: oldest, overdue: oldest >= 48, link: '/waiting-list' });
   }
 
   /* A project past its launch date, a task past its due date and a document
@@ -313,15 +356,16 @@ async function loadNeeds(role: string | null, canHR: boolean): Promise<NeedsData
     const days = daysSince(today, first.launch_date!);
     const name = [first.project_name, first.brand ? `(${first.brand})` : null].filter(Boolean).join(' ');
     items.push(delayed.length === 1
-      ? { key: 'proj', text: `Project past launch · ${name || 'unnamed project'}`, sub: `Launch was ${dayOf(first.launch_date)} · ${lateBy(days)} · ${first.status}`, age: days * 24, overdue: true, link: '/limited-projects' }
-      : { key: 'proj', text: `${plural(delayed.length, 'project')} past launch date`, sub: `Oldest launch ${dayOf(first.launch_date)} · ${lateBy(days)}`, age: days * 24, overdue: true, link: '/limited-projects' });
+      ? { key: 'proj', kind: 'Project past launch', what: name || 'unnamed project', sub: `Launch was ${dayOf(first.launch_date)} · ${first.status}`, verb: 'Open the project to set a new date', chip: `${days}d late`, age: days * 24, overdue: true, link: `/limited-projects?focus=${first.id}` }
+      : { key: 'proj', kind: 'Projects past launch', what: plural(delayed.length, 'project'), sub: `Oldest launch ${dayOf(first.launch_date)} · ${name}`, verb: 'Open Limited projects to set new dates', chip: `oldest ${days}d late`, age: days * 24, overdue: true, link: '/limited-projects' });
   }
   if (tasks.length) {
     const first = tasks[0];
     const days = daysSince(today, first.due_date);
+    const who = first.assignee_name?.trim() || 'no assignee';
     items.push(tasks.length === 1
-      ? { key: 'task', text: `Task overdue · ${first.title?.trim() || 'untitled task'}`, sub: `Due ${dayOf(first.due_date)} · ${lateBy(days)}`, age: days * 24, overdue: true, link: '/tasks' }
-      : { key: 'task', text: `${plural(tasks.length, 'assigned task')} overdue`, sub: `Oldest due ${dayOf(first.due_date)} · ${lateBy(days)}`, age: days * 24, overdue: true, link: '/tasks' });
+      ? { key: 'task', kind: 'Task overdue', what: first.title?.trim() || 'untitled task', sub: [`Due ${dayOf(first.due_date)}`, first.priority ? `${first.priority} priority` : null, who].filter(Boolean).join(' · '), verb: first.assignee_name ? 'Open Assign tasks to chase or close it' : 'Open Assign tasks to give it to someone', chip: `${days}d late`, age: days * 24, overdue: true, link: '/tasks' }
+      : { key: 'task', kind: 'Tasks overdue', what: plural(tasks.length, 'assigned task'), sub: `Oldest due ${dayOf(first.due_date)} · ${first.title?.trim() || 'untitled task'}`, verb: 'Open Assign tasks to chase or close them', chip: `oldest ${days}d late`, age: days * 24, overdue: true, link: '/tasks' });
   }
 
   /* Documents: an expired one is named, person by person, and is overdue. One
@@ -333,9 +377,10 @@ async function loadNeeds(role: string | null, canHR: boolean): Promise<NeedsData
       if (date < today) {
         const days = daysSince(today, date);
         items.push({
-          key: `doc:${e.id}:${doc}`, text: `${doc} expired ${dayOf(date)} · ${e.full_name}`,
-          sub: days === 1 ? 'Expired yesterday' : `Expired ${plural(days, 'day')} ago`,
-          age: days * 24, overdue: true, link: '/hr',
+          key: `doc:${e.id}:${doc}`, kind: `${doc} expired`, what: e.full_name,
+          sub: `Expired ${dayOf(date)} · ${days === 1 ? 'yesterday' : `${plural(days, 'day')} ago`}`,
+          verb: `Open ${e.full_name.trim().split(/\s+/)[0]}'s HR record`, chip: 'expired',
+          age: days * 24, overdue: true, link: `/hr?focus=${e.id}`,
         });
       } else if (date <= in30) expiring.push({ date, name: e.full_name });
     }
@@ -343,8 +388,8 @@ async function loadNeeds(role: string | null, canHR: boolean): Promise<NeedsData
   if (expiring.length) {
     const next = expiring.sort((a, b) => a.date.localeCompare(b.date))[0];
     items.push({
-      key: 'docs', text: `${plural(expiring.length, 'staff document')} ${expiring.length === 1 ? 'expires' : 'expire'} within 30 days`,
-      sub: `Next ${dayOf(next.date)} · ${next.name}`, age: 12, overdue: false, link: '/hr',
+      key: 'docs', kind: 'Documents expiring', what: `${plural(expiring.length, 'staff document')} within 30 days`,
+      sub: `Next ${dayOf(next.date)} · ${next.name}`, verb: 'Open Employees to renew', age: 12, overdue: false, link: '/hr',
     });
   }
   items.sort((a, b) => Number(b.overdue) - Number(a.overdue) || b.age - a.age);
@@ -387,11 +432,31 @@ type Verdict = 'behind' | 'ahead' | 'ok' | 'none';
 
 const empty = <T,>(): Slot<T> => ({ data: null, error: null, loading: true, at: null });
 
+/** 2006 → "2,006"; 61039.3 → "61,039.3". For figures read one by one. */
+const full = (n: number, dp = 0) => n.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: dp });
+/** −10 → "−10%", 5 → "+5%", with a true minus sign. */
+const signed = (n: number) => `${n > 0 ? '+' : n < 0 ? '−' : ''}${Math.abs(n)}%`;
+const monName = (ym: string) => ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][Number(ym.slice(5, 7)) - 1];
+const longMonth = (ym: string) => new Date(`${ym}-15T12:00:00+03:00`).toLocaleDateString('en-GB', { month: 'long', timeZone: 'Asia/Kuwait' });
+
+interface Headline {
+  key: 'sales' | 'needs' | 'staff'; tone: Tone; lead: string; rest?: string;
+  /** A branch the sentence names: the tap opens its sheet as well. */
+  branch?: string;
+}
+
 export default function ManagerDashboard() {
   const { role, profile, pageAccess } = useAuth();
   const canHR = ['admin', 'manager', 'hr'].includes(role ?? '');
   const [slots, setSlots] = useState<Slots>({ staff: empty(), sales: empty(), needs: empty(), watch: empty() });
   const [all, setAll] = useState(false);
+  /* Whether the event sales are shown counted toward the target. A way of
+     looking only, never saved: whether they count is the owner's call. */
+  const [eventsCounted, setEventsCounted] = useState(false);
+  const [openRows, setOpenRows] = useState<Record<string, boolean>>({});
+  const [flash, setFlash] = useState<string | null>(null);
+  const [openBranch, setOpenBranch] = useState<{ key: string; at: number } | null>(null);
+  const flashTimer = useRef<number | undefined>(undefined);
   /* Each section's latest load; an older answer arriving late is dropped. */
   const gen = useRef<Record<Key, number>>({ staff: 0, sales: 0, needs: 0, watch: 0 });
 
@@ -422,6 +487,7 @@ export default function ManagerDashboard() {
   }, [role, canHR]);
 
   useEffect(() => { run(KEYS); }, [run]);
+  useEffect(() => () => window.clearTimeout(flashTimer.current), []);
   const refreshStaff = useCallback(() => run(['staff']), [run]);
   useLive('mgr-dash', [{ table: 'attendance_records' }, { table: 'leave_records' }], refreshStaff);
 
@@ -437,6 +503,14 @@ export default function ManagerDashboard() {
     if (pct >= pace.frac * 100 + 10) return 'ahead';
     return 'ok';
   };
+  /* One colour rule: red well behind, amber a little behind, green on or
+     ahead, grey with nothing to judge against. */
+  const toneOf = (pct: number | null): Tone => {
+    const v = verdictOf(pct);
+    if (v === 'none') return 'grey';
+    if (v === 'behind') return 'red';
+    return pct !== null && pace && pct < pace.frac * 100 ? 'amber' : 'green';
+  };
 
   /* Which sections are shown to this person at all; only those count toward
      "did not load". */
@@ -448,214 +522,449 @@ export default function ManagerDashboard() {
   ];
   const failed = visible.filter((k) => slots[k].error && !slots[k].data);
   const anyRetrying = visible.some((k) => slots[k].loading);
-  const staleNote = (k: Key) => (slots[k].error && slots[k].data && slots[k].at ? ` (as of ${hhmmOf(slots[k].at!)}, could not refresh)` : '');
+  const staleAt = (k: Key) => (slots[k].error && slots[k].data && slots[k].at ? hhmmOf(slots[k].at!) : null);
 
-  const round = (p: number | null) => (p === null ? null : Math.round(p));
-  const goneTxt = pace ? `${Math.round(pace.frac * 100)}% of the month gone` : '';
+  const jump = (k: 'sales' | 'needs' | 'staff') => {
+    const el = document.getElementById(`card-${k}`);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      el.focus({ preventScroll: true });
+    }
+    setFlash(k);
+    window.clearTimeout(flashTimer.current);
+    flashTimer.current = window.setTimeout(() => setFlash(null), 1600);
+  };
 
-  /* the headline: one sentence per thing worth saying, and an all-clear only
-     from a section that actually loaded */
-  const bits: { text: string; bad: boolean; muted?: boolean }[] = [];
-  if (staff.data) {
-    const nobodyIn = staff.data.branches.filter((b) => b.tone === 'bad');
-    const shortB = staff.data.branches.filter((b) => b.shop && b.tone === 'warn');
-    const gapCount = staff.data.branches.reduce((n, b) => n + b.people.filter((p) => p.status === 'late' || p.status === 'missing').length, 0);
-    const sn = staleNote('staff');
-    if (nobodyIn.length) bits.push({ text: `${nobodyIn.map((s) => s.name).join(' and ')} ${nobodyIn.length === 1 ? 'has' : 'have'} nobody on the floor${sn}.`, bad: true });
-    else if (shortB.length) bits.push({ text: `${shortB.map((s) => s.name).join(' and ')} ${shortB.length === 1 ? 'is' : 'are'} short-staffed${sn}.`, bad: true });
-    else if (gapCount) bits.push({ text: `${plural(gapCount, 'person is', 'people are')} not in yet${sn}.`.replace('1 person is', 'One person is'), bad: true });
-    else bits.push({ text: `Everyone due is in${sn}.`, bad: false });
-  } else if (staff.error && visible.includes('staff')) bits.push({ text: 'Staffing did not load: unknown, not an all-clear.', bad: true });
-  else if (visible.includes('staff')) bits.push({ text: 'Checking staffing…', bad: false, muted: true });
+  /* ---- the sales figures the card and the headline share */
+  const reg = m?.regular ?? null;
+  const regPct = reg?.pct ?? null;
+  const regTone = toneOf(regPct);
+  const daysLeft = m && m.tillDays ? m.daysInMonth - m.tillDays : null;
+  const perDay = (v: number) => (m?.tillDays ? v / m.tillDays : null);
+  const neededPerDay = (v: number, t: number | null) => (t && daysLeft ? Math.max(0, t - v) / daysLeft : null);
+  const behindChannels = m ? m.channels.filter((c) => verdictOf(c.pct) === 'behind') : [];
+  /* The one outlet to push: of those well behind, the one furthest short in KD. */
+  const push = behindChannels.length
+    ? [...behindChannels].sort((a, b) => ((b.target ?? 0) - b.sales) - ((a.target ?? 0) - a.sales))[0]
+    : null;
+  const eventsTotal = m ? m.events.reduce((t, e) => t + e.sales, 0) : 0;
+  const canCount = !!(m && m.events.length && reg?.target);
+  const counted = canCount && eventsCounted;
 
-  if (m) {
-    const behind = m.channels.filter((c) => verdictOf(round(c.pct)) === 'behind');
-    const sn = staleNote('sales');
-    if (behind.length === 1) {
-      const b = behind[0];
-      bits.push({ text: `${bare(outletName(b.code))} is at ${round(b.pct)}% of its target with ${goneTxt}${sn}.`, bad: true });
-    } else if (behind.length > 1) bits.push({ text: `${behind.length} outlets are behind pace${sn}.`, bad: true });
-    else if (pace && m.channels.some((c) => c.target)) bits.push({ text: `All outlets are on or ahead of pace${sn}.`, bad: false });
-  } else if (sales.error && visible.includes('sales')) bits.push({ text: 'Sales did not load.', bad: true });
-
-  if (needs.data) {
-    const n = needs.data.items.length;
-    const overdue = needs.data.items.filter((i) => i.overdue).length;
-    const sn = staleNote('needs');
-    bits.push(n
-      ? { text: `${plural(n, 'thing')} waiting on you${overdue ? `, ${overdue} overdue` : ''}${sn}.`, bad: overdue > 0 }
-      : { text: `Nothing is waiting on you${sn}.`, bad: false });
-  } else if (needs.error) bits.push({ text: 'What is waiting on you did not load: unknown, not an all-clear.', bad: true });
-  else bits.push({ text: 'Checking what is waiting on you…', bad: false, muted: true });
+  /* ---- headline sentences: one per card, an all-clear only from a section that loaded */
+  const heads: Headline[] = [];
+  if (visible.includes('sales')) {
+    const at = staleAt('sales');
+    const cue = at ? ` · as of ${at}, could not refresh` : '';
+    if (m && reg) {
+      const v = verdictOf(regPct);
+      const outlets = m.channels.filter((c) => c.target).length;
+      if (counted) heads.push({ key: 'sales', tone: 'grey', lead: 'Sales with events counted', rest: `regular outlets alone ${v === 'behind' ? 'are behind pace' : 'are on pace'}${cue}` });
+      else if (v === 'behind') heads.push({ key: 'sales', tone: 'red', lead: 'Sales behind pace', rest: `${behindChannels.length} of ${outlets} outlets behind${push ? ` · push ${bare(outletName(push.code))}` : ''}${cue}` });
+      else if (v === 'none') heads.push({ key: 'sales', tone: 'grey', lead: m.tillDays ? 'Sales: no monthly target set' : 'No till sales yet this month', rest: cue.replace(/^ · /, '') || undefined });
+      else heads.push({ key: 'sales', tone: regTone, lead: v === 'ahead' ? 'Sales ahead of pace' : regTone === 'amber' ? 'Sales a little behind pace' : 'Sales on pace', rest: `${behindChannels.length ? `${behindChannels.length} of ${outlets} outlets behind` : 'every outlet on or near pace'}${cue}` });
+    } else if (sales.error) heads.push({ key: 'sales', tone: 'red', lead: 'Sales did not load', rest: 'unknown, not zero' });
+    else heads.push({ key: 'sales', tone: 'grey', lead: 'Sales', rest: 'loading…' });
+  }
+  {
+    const at = staleAt('needs');
+    const cue = at ? ` · as of ${at}, could not refresh` : '';
+    if (needs.data) {
+      const n = needs.data.items.length;
+      const overdue = needs.data.items.filter((i) => i.overdue).length;
+      const stuckTxt = needs.data.stuck.count ? ` · ${needs.data.stuck.count} stuck with others` : '';
+      heads.push(overdue
+        ? { key: 'needs', tone: 'red', lead: `${overdue} overdue`, rest: `${plural(n, 'thing')} waiting on you${stuckTxt}${cue}` }
+        : n
+          ? { key: 'needs', tone: 'amber', lead: `${plural(n, 'thing')} waiting on you`, rest: `none overdue${stuckTxt}${cue}` }
+          : { key: 'needs', tone: needs.data.stuck.count ? 'amber' : 'green', lead: 'Nothing is waiting on you', rest: `${stuckTxt.replace(/^ · /, '')}${cue}` || undefined });
+    } else if (needs.error) heads.push({ key: 'needs', tone: 'red', lead: 'Needs you did not load', rest: 'unknown, not an all-clear' });
+    else heads.push({ key: 'needs', tone: 'grey', lead: 'Needs you', rest: 'checking…' });
+  }
+  if (visible.includes('staff')) {
+    const at = staleAt('staff');
+    const cue = at ? ` · as of ${at}, could not refresh` : '';
+    if (staff.data) {
+      const nobodyIn = staff.data.branches.filter((b) => b.tone === 'bad');
+      const shortB = staff.data.branches.filter((b) => b.shop && b.tone === 'warn');
+      const gapCount = staff.data.branches.reduce((n, b) => n + b.people.filter((p) => p.status === 'late' || p.status === 'missing').length, 0);
+      /* Naming one branch: the tap opens its sheet, one tap from the top. */
+      if (nobodyIn.length) heads.push({ key: 'staff', tone: 'red', lead: `${nobodyIn.map((s) => s.name).join(' and ')}: nobody on the floor`, rest: cue.replace(/^ · /, '') || undefined, branch: nobodyIn.length === 1 ? nobodyIn[0].key : undefined });
+      else if (shortB.length) {
+        const b = shortB[0];
+        /* as the To-do button counts them: not in, and no shift time to judge by */
+        const unknown = b.people.filter((p) => p.timeUnknown && !['working', 'completed'].includes(p.status)).length;
+        heads.push({
+          key: 'staff', tone: 'amber', lead: `${b.name} ${b.onFloor} in · minimum ${b.need}`,
+          rest: `${unknown ? `${unknown} with no shift time` : ''}${shortB.length > 1 ? `${unknown ? ' · ' : ''}${shortB.length - 1} more short` : ''}${cue}`.replace(/^ · /, '') || undefined,
+          branch: b.key,
+        });
+      } else if (gapCount) heads.push({ key: 'staff', tone: 'amber', lead: `${gapCount === 1 ? 'One person is' : `${gapCount} people are`} not in yet`, rest: cue.replace(/^ · /, '') || undefined });
+      else heads.push({ key: 'staff', tone: 'green', lead: 'Everyone due is in', rest: cue.replace(/^ · /, '') || undefined });
+    } else if (staff.error) heads.push({ key: 'staff', tone: 'red', lead: 'Staffing did not load', rest: 'unknown, not an all-clear' });
+    else heads.push({ key: 'staff', tone: 'grey', lead: 'Staffing', rest: 'checking…' });
+  }
 
   /* The figures run to the last day the tills synced, not to now. */
-  const asOf = !can('/sales') ? '' : m?.lastSaleDay ? `sales to end of ${dayOf(m.lastSaleDay)}`
-    : sales.data ? 'no till sales yet this month' : sales.error ? 'sales not loaded' : '';
+  const salesCtx = !visible.includes('sales') ? null
+    : m?.lastSaleDay ? { text: `Sales to end of ${dayOf(m.lastSaleDay)}`, bad: false }
+      : sales.data ? { text: 'No till sales yet this month', bad: false }
+        : sales.error ? { text: 'Sales not loaded', bad: true } : null;
+  const staffCtx = !visible.includes('staff') ? null
+    : staff.data && staff.at ? { text: `staff at ${hhmmOf(staff.at)}${staff.error ? ', could not refresh' : ''}`, bad: !!staff.error }
+      : staff.error ? { text: 'staff not loaded', bad: true } : null;
   /* The tills sync once a morning; figures that stop before yesterday did not refresh. */
   const yesterday = kuwaitDate(new Date(Date.now() - 86_400_000));
   const tillsBehind = !!m?.lastSaleDay && m.lastSaleDay < yesterday;
 
-  return (
-    <div className="max-w-3xl">
-      <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
-        <div>
-          <h1 className="text-xl font-bold text-slate-900">Today</h1>
-          <p className="text-sm text-slate-500">{format(new Date(), 'EEEE d MMMM')}{profile ? ` · ${profile.full_name}` : ''}</p>
-        </div>
-        <div className="flex items-center gap-3 text-xs text-slate-500">
-          {asOf && <span className={sales.error && !sales.data ? 'text-rose-600' : ''}>{asOf}</span>}
-          {role === 'admin' && <Link to="/money" className="text-blue-600 hover:underline">Money →</Link>}
-        </div>
-      </div>
+  const toggleRow = (k: string) => setOpenRows((o) => ({ ...o, [k]: !o[k] }));
 
-      {/* headline */}
-      <div className="rounded-xl bg-slate-900 px-4 py-3 text-[15px] leading-snug text-white" aria-live="polite">
-        {bits.map((b, i) => <span key={i} className={b.bad ? 'text-amber-300' : b.muted ? 'text-white/70' : ''}>{b.text} </span>)}
-      </div>
-
-      {failed.length >= 2 && (
-        <div role="alert" className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-rose-200 bg-rose-50 px-4 py-2 text-sm text-rose-700">
-          <span>{failed.length} sections did not load. What they would show is unknown, not zero.</span>
-          <RetryButton busy={failed.some((k) => slots[k].loading)} onClick={() => run(failed)} label="Retry all" />
-        </div>
-      )}
-
-      {/* 1 — staffing: is each branch covered, and what to do about it */}
-      {can('/attendance') && (staff.data ? (
+  /* ---- the cards */
+  const salesCard = visible.includes('sales') && (
+    <TodayCard id="card-sales" icon={<TrendingUp className="h-5 w-5" />} title="Sales" flash={flash === 'sales'}
+      chip={m && pace && regPct !== null ? (counted
+        ? <Chip tone="grey">events counted</Chip>
+        : regPct < pace.frac * 100
+          ? <Chip tone={regTone}>{Math.round(pace.frac * 100 - regPct)} pts behind</Chip>
+          : <Chip tone="green">on pace</Chip>) : undefined}
+      meta={m ? `${longMonth(m.month)} · ${m.tillDays ? `${m.tillDays} of ${m.daysInMonth} till days` : 'no till sales yet'}` : sales.error ? 'Not loaded' : 'Loading till sales'}
+      link={can('/money') ? { label: 'Money', to: '/money' } : undefined}>
+      {!m || !reg ? <SectionState slot={sales} name="sales" onRetry={() => run(['sales'])} /> : (
         <>
-          {staff.error && <div className="mt-3 -mb-1"><StaleBar at={staff.at} error={staff.error} busy={staff.loading} onRetry={refreshStaff} label="Staffing" /></div>}
-          <StaffingCard branches={staff.data.branches} workStart={staff.data.workStart} onChanged={refreshStaff} />
+          {sales.error && <StaleBar at={sales.at} error={sales.error} busy={sales.loading} onRetry={() => run(['sales'])}
+            what={m.lastSaleDay ? `sales to end of ${dayOf(m.lastSaleDay)}` : undefined} syncedAt={sales.data?.syncedAt ?? null} />}
+          {tillsBehind && (
+            <p className="mb-2 rounded-lg bg-amber-50 px-2 py-1.5 text-[13px] text-amber-800">
+              Till figures stop at {dayOf(m.lastSaleDay)}: the morning sync may not have run{sales.data?.syncedAt ? ` (last good sync ${format(new Date(sales.data.syncedAt), 'd MMM HH:mm')})` : ''}.
+            </p>
+          )}
+          {salesBody()}
         </>
-      ) : (
-        <Group title="Staffing">
-          <SectionState slot={staff} name="staffing" onRetry={refreshStaff} />
-        </Group>
-      ))}
+      )}
+    </TodayCard>
+  );
 
-      {/* 2 — outlet sales */}
-      {can('/sales') && (
-        <Group title="Outlet sales" right={pace ? `${format(new Date(), 'MMM')} · ${goneTxt}` : undefined} link="/sales">
-          {!m ? <SectionState slot={sales} name="sales" onRetry={() => run(['sales'])} /> : (
-            <>
-              {sales.error && <StaleBar at={sales.at} error={sales.error} busy={sales.loading} onRetry={() => run(['sales'])} />}
-              {tillsBehind && (
-                <p className="mb-1 rounded-lg bg-amber-50 px-2 py-1.5 text-xs text-amber-800">
-                  Till figures stop at {dayOf(m.lastSaleDay)}: the morning sync may not have run{sales.data?.syncedAt ? ` (last good sync ${format(new Date(sales.data.syncedAt), 'd MMM HH:mm')})` : ''}.
-                </p>
-              )}
-              {(() => {
-                const r = m.regular;
-                const p = round(r.pct);
-                const v = verdictOf(p);
-                const shortBy = r.projectedShort !== null && r.projectedShort > 0 ? ` · ~${short(r.projectedShort)} short` : '';
-                const note = r.projected !== null ? `on pace for ~${short(r.projected)}${r.target ? shortBy : ''}` : '';
-                return <SalesLine name="Regular outlets" sales={r.sales} target={r.target} pct={p}
-                  frac={pace?.frac ?? null} verdict={v} note={note} total />;
-              })()}
-              {m.channels.map((c) => {
-                const p = round(c.pct);
-                const v = verdictOf(p);
-                const note = v === 'behind' && pace ? `behind by ${Math.round(pace.frac * 100 - (p ?? 0))} pts`
-                  : v === 'ahead' ? 'ahead' : v === 'ok' ? 'on pace' : c.target ? '' : 'no target set';
-                return <SalesLine key={c.code} name={bare(outletName(c.code))} sales={c.sales} target={c.target} pct={p}
-                  frac={pace?.frac ?? null} verdict={v} note={note} />;
-              })}
-              {/* Event sales stand apart: whether they count toward the target is the owner's call. */}
-              {m.events.map((e) => (
-                <div key={e.name} className="border-t border-slate-100 py-2">
-                  <div className="flex items-baseline justify-between gap-2 text-sm">
-                    <span className="text-slate-700">{e.name} <span className="text-slate-500">(event · {eventDates(e.from, e.to)})</span></span>
-                    <span className="whitespace-nowrap text-sm font-semibold tabular-nums text-slate-700">{kd(e.sales)}</span>
-                  </div>
-                  <p className="mt-1 text-[11px] text-slate-500">
-                    {plural(e.count, 'sale')} · no target · {m.regular.target ? `not in the ${round(m.regular.pct)}%` : 'not in the regular total'}
-                  </p>
-                </div>
+  function salesBody() {
+    if (!m || !reg) return null;
+    const pacePct = pace ? pace.frac * 100 : null;
+    const target = reg.target;
+    const cPct = target ? ((reg.sales + eventsTotal) / target) * 100 : null;
+    const bigPct = counted ? cPct : regPct;
+    const bigTone: Tone = counted ? (cPct !== null && pacePct !== null && cPct >= pacePct ? 'green' : toneOf(cPct)) : regTone;
+    const shortBy = reg.projectedShort !== null && reg.projectedShort > 0 ? reg.projectedShort : null;
+    const sd = sales.data?.sameDays ?? null;
+    const ld = sales.data?.lastDay ?? null;
+    const need = neededPerDay(reg.sales, target);
+    const doing = perDay(reg.sales);
+    const vs = sd && sd.rows && sd.sales ? Math.round(((reg.sales - sd.sales) / sd.sales) * 100) : null;
+    const sdRange = sd ? `${Number(sd.from.slice(8))}–${Number(sd.to.slice(8))} ${monName(sd.month)}` : '';
+    const remaining = target ? Math.max(0, target - reg.sales) : null;
+    return (
+      <>
+        {/* the month in one figure, with the gap in KD under it */}
+        <div className="flex items-center gap-3">
+          <span className={`text-[40px] font-bold leading-[44px] tabular-nums ${TONE[bigTone].text}`}>{bigPct !== null ? `${Math.round(bigPct)}%` : kd(reg.sales)}</span>
+          <div className="min-w-0 text-[14px] leading-[18px]">
+            <p className="font-semibold tabular-nums text-slate-900">
+              {target ? `${short(counted ? reg.sales + eventsTotal : reg.sales)} of ${kd(target)}` : `${kd(reg.sales)} · no monthly target set`}
+            </p>
+            <p className="text-slate-600">{counted ? 'regular + events' : 'regular'}{pace ? ` · ${Math.round(pace.frac * 100)}% of month gone` : ''}</p>
+          </div>
+        </div>
+        {target && bigPct !== null && (
+          <div className="mb-1.5 mt-2.5">
+            <PaceBar pct={bigPct} pace={pacePct} tone={bigTone} thick
+              label={`${Math.round(bigPct)}% of target${pace ? `, ${Math.round(pace.frac * 100)}% of the month gone` : ''}`} />
+          </div>
+        )}
+        {counted ? (
+          <>
+            <p className="text-[14px] font-semibold tabular-nums text-slate-700">
+              {reg.projected !== null ? `On pace for ~${kd(reg.projected + eventsTotal)} with events counted once` : 'Events counted once'}
+            </p>
+            <p className={`text-[14px] font-semibold tabular-nums ${TONE[regTone].text}`}>
+              Regular outlets alone: {regPct !== null ? `${Math.round(regPct)}%` : kd(reg.sales)}{shortBy ? ` · ~${short(shortBy)} short` : ''}
+            </p>
+          </>
+        ) : reg.projected !== null && (
+          <p className={`text-[15px] font-semibold tabular-nums ${TONE[regTone].text}`}>
+            On pace for ~{kd(reg.projected)}{target ? (shortBy ? ` · ~${short(shortBy)} short` : ` · ~${short(reg.projected - target)} over`) : ''}
+          </p>
+        )}
+
+        {canCount && (
+          <div className="mt-2 flex items-center justify-between gap-2">
+            <p className="text-[13px] leading-[17px] text-slate-600">{m.events.map((e) => e.name).join(', ')} {kd(eventsTotal)} in the target? <span className="block font-semibold text-slate-700">Owner decides</span></p>
+            <div role="radiogroup" aria-label="Show event sales apart or counted toward the target" className="flex shrink-0 rounded-xl bg-slate-100 p-0.5">
+              {[{ v: false, l: 'Apart' }, { v: true, l: 'Counted' }].map((o) => (
+                <button key={o.l} type="button" role="radio" aria-checked={eventsCounted === o.v} onClick={() => setEventsCounted(o.v)}
+                  className={`h-11 min-w-[68px] rounded-[10px] px-2.5 text-[13px] font-semibold ${eventsCounted === o.v ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600'}`}>
+                  {o.l}
+                </button>
               ))}
-              {pace && <p className="mt-2 flex items-center gap-1.5 text-[11px] text-slate-500"><span className="inline-block h-3 w-0.5 bg-slate-800" /> where each outlet should be after {plural(pace.day, 'till day')} of {m.daysInMonth}</p>}
+            </div>
+          </div>
+        )}
+
+        {/* three facts: what it needs a day, yesterday, the same days last month */}
+        <div className="mt-3 grid grid-cols-3 divide-x divide-slate-200 rounded-xl bg-slate-50 py-2 text-center tabular-nums">
+          <div className="px-1">
+            <p className="text-[12px] text-slate-600">Needs a day</p>
+            <p className={`text-[15px] font-semibold leading-5 ${need !== null && doing !== null && need > doing ? TONE.red.text : 'text-slate-900'}`}>
+              {need === null ? '—' : need === 0 ? 'Target met' : `${full(need)} KD`}
+            </p>
+            <p className="text-[12px] text-slate-600">{doing !== null ? `doing ${full(doing)}` : 'no till days yet'}</p>
+          </div>
+          <div className="px-1">
+            <p className="text-[12px] text-slate-600">{ld ? (ld.date === yesterday ? 'Yesterday' : dayOf(ld.date)) : 'Yesterday'}</p>
+            <p className="text-[15px] font-semibold leading-5 text-slate-900">{ld ? `${full(ld.sales)} KD` : '—'}</p>
+            <p className="text-[12px] text-slate-600">{ld ? plural(ld.count, 'sale') : 'no till sales'}</p>
+          </div>
+          <div className="px-1">
+            <p className="text-[12px] text-slate-600">{sd ? `vs ${sdRange}` : 'Last month'}</p>
+            <p className={`text-[15px] font-semibold leading-5 ${vs === null ? 'text-slate-600' : vs < 0 ? TONE.red.text : TONE.green.text}`}>{vs === null ? 'no figures' : signed(vs)}</p>
+            <p className="text-[12px] text-slate-600">{sd && sd.rows ? `was ${short(sd.sales)}` : '—'}</p>
+          </div>
+        </div>
+
+        {/* each outlet on the same pace mark, so the bars read as one picture */}
+        <ul className="mt-2">
+          {m.channels.map((c) => {
+            const t = toneOf(c.pct);
+            const v = verdictOf(c.pct);
+            const name = bare(outletName(c.code));
+            const prev = sd?.rows ? sd.byChannel[c.code] ?? 0 : null;
+            const vsC = prev ? Math.round(((c.sales - prev) / prev) * 100) : null;
+            const needC = neededPerDay(c.sales, c.target);
+            const doingC = perDay(c.sales);
+            const isPush = push?.code === c.code;
+            return (
+              <li key={c.code} className={isPush ? `-mx-2 my-1 rounded-xl px-2 py-2 ${TONE.red.soft}` : 'border-t border-slate-100 py-2 first:border-0'}>
+                {isPush && <p className={`mb-1 text-[12px] font-semibold uppercase tracking-wide ${TONE.red.text}`}>One thing to push</p>}
+                <div className="flex items-center gap-2">
+                  <span className="w-[100px] shrink-0 truncate text-[15px] font-semibold text-slate-900">{name}</span>
+                  <div className="flex-1">{c.target ? <PaceBar pct={c.pct ?? 0} pace={pacePct} tone={t} /> : null}</div>
+                  <span className={`w-11 text-right text-[15px] font-bold tabular-nums ${TONE[t].text}`}>{c.pct !== null ? `${Math.round(c.pct)}%` : ''}</span>
+                </div>
+                <p className="text-[13px] leading-[18px] tabular-nums text-slate-600">
+                  {c.target ? `${short(c.sales)} of ${short(c.target)}` : `${kd(c.sales)} · no target set`}
+                  {c.target && !isPush && (v === 'behind' && needC !== null
+                    ? <> · <span className={TONE.red.text}>needs {full(needC)}/day</span></>
+                    : v === 'ahead' ? <> · <span className={TONE.green.text}>ahead</span></>
+                      : v === 'ok' ? <> · <span className={TONE[t].text}>{t === 'amber' ? 'a little behind' : 'on pace'}</span></> : null)}
+                  {vsC !== null && <> · {signed(vsC)} vs {monName(sd!.month)}</>}
+                </p>
+                {isPush && remaining !== null && needC !== null && doingC !== null && (
+                  <>
+                    <p className={`text-[13px] font-semibold leading-[18px] tabular-nums ${TONE.red.text}`}>
+                      {short(Math.max(0, (c.target ?? 0) - c.sales))} of the {short(remaining)} gap · needs {full(needC)}/day, doing {full(doingC)}
+                    </p>
+                    {c.code === 'online' && (
+                      <p className="mt-0.5 text-[13px] leading-[18px] text-slate-700">
+                        Open question for the owner: do all Shopify orders go through Lightspeed? If not, part of this fall is orders the tills never saw.
+                      </p>
+                    )}
+                  </>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+
+        {/* the exact figure the percentage is of */}
+        {target && (() => {
+          const body = (
+            <>
+              <span className="flex-1 text-[14px] text-slate-900"><span className="font-semibold">Regular outlets</span> <span className="tabular-nums">{full(reg.sales, 1)} KD of {full(target)} = {Math.round(regPct ?? 0)}%</span></span>
+              {can('/money') && <ChevronRight className="h-4 w-4 shrink-0 text-slate-500" aria-hidden />}
+            </>
+          );
+          return can('/money')
+            ? <Link to="/money" className="-mx-2 flex min-h-[44px] items-center gap-2 rounded-lg border-t border-slate-200 px-2 hover:bg-slate-50">{body}</Link>
+            : <div className="flex min-h-[44px] items-center gap-2 border-t border-slate-200">{body}</div>;
+        })()}
+
+        {/* events: their own rows, never inside the regular figure */}
+        {m.events.map((e) => (
+          <div key={e.name} className="border-t border-slate-100 py-2">
+            <div className="flex items-center gap-2">
+              <span className="text-[15px] font-semibold text-slate-900">{e.name} <span className="font-normal text-slate-600">(event)</span></span>
+              <Chip tone="grey">no target</Chip>
+              <span className="ml-auto text-[15px] font-bold tabular-nums text-slate-900">{kd(e.sales)}</span>
+            </div>
+            <p className="text-[13px] leading-[18px] tabular-nums text-slate-600">
+              {eventDates(e.from, e.to)} · {plural(e.count, 'sale')} · {counted ? `counted once in the ${Math.round(((reg.sales + eventsTotal) / (target ?? 1)) * 100)}%` : target ? `not in the ${Math.round(regPct ?? 0)}%` : 'not in the regular total'}
+            </p>
+          </div>
+        ))}
+        {pace && (
+          <p className="mt-2 flex items-center gap-1.5 text-[12px] text-slate-600">
+            <span className="inline-block h-3 w-0.5 bg-slate-900" aria-hidden /> where each outlet should be after {plural(pace.day, 'till day')} of {m.daysInMonth}
+          </p>
+        )}
+      </>
+    );
+  }
+
+  const nd = needs.data;
+  const overdueItems = nd ? nd.items.filter((i) => i.overdue) : [];
+  const otherItems = nd ? nd.items.filter((i) => !i.overdue) : [];
+  const shownOther = all ? otherItems : otherItems.slice(0, 4);
+  const needsCard = (
+    <TodayCard id="card-needs" icon={<ListChecks className="h-5 w-5" />} title="Needs you" flash={flash === 'needs'}
+      chip={nd ? (overdueItems.length ? <Chip tone="red">{overdueItems.length} overdue</Chip> : nd.items.length ? <Chip tone="amber">{nd.items.length} waiting</Chip> : <Chip tone="green">all clear</Chip>) : undefined}
+      meta={nd ? `Overdue first${nd.stuck.count ? `, then ${nd.stuck.count} stuck` : ''}` : needs.error ? 'Not loaded' : 'Checking what needs you'}
+      link={{ label: 'Inbox', to: '/inbox' }}>
+      {!nd ? <SectionState slot={needs} name="what is waiting on you" onRetry={() => run(['needs'])} /> : (
+        <>
+          {needs.error && <StaleBar at={needs.at} error={needs.error} busy={needs.loading} onRetry={() => run(['needs'])} />}
+          {nd.items.length === 0 && (
+            <p className="flex min-h-[44px] items-center gap-2 text-[14px] text-slate-700"><Check size={16} className="text-emerald-600" aria-hidden /> Nothing is waiting on you</p>
+          )}
+          <ol>
+            {overdueItems.map((it, i) => <NeedRow key={it.key} it={it} n={i + 1} open={!!openRows[it.key]} onToggle={() => toggleRow(it.key)} />)}
+          </ol>
+          {shownOther.length > 0 && (
+            <ul className={overdueItems.length ? 'mt-1 border-t border-slate-200' : ''}>
+              {shownOther.map((it) => <NeedRow key={it.key} it={it} open={!!openRows[it.key]} onToggle={() => toggleRow(it.key)} />)}
+            </ul>
+          )}
+          {otherItems.length > 4 && (
+            <button type="button" onClick={() => setAll((a) => !a)} className="min-h-[44px] text-[13px] font-semibold text-slate-700 hover:underline">
+              {all ? 'Show fewer' : `See all ${otherItems.length} not yet overdue`}
+            </button>
+          )}
+
+          {nd.stuck.count > 0 && (
+            <>
+              <SubHead right={<span className="text-[12px] font-semibold text-slate-600">nudge</span>}>Stuck with others</SubHead>
+              <p className="mt-1 text-[14px] leading-5 text-slate-900">
+                {plural(nd.stuck.count, 'request')} overdue with {nd.stuck.withWhom}
+              </p>
+              <ul className="mt-0.5">
+                {nd.stuck.rows.map((r) => (
+                  <li key={r.id}>
+                    <Link to={`/inbox?focus=${r.id}`} className="-mx-2 flex min-h-[44px] items-center gap-2 rounded-lg px-2 text-[14px] hover:bg-slate-50">
+                      <span className="min-w-0 flex-1 text-slate-900">{r.who} <span className="text-slate-600">· {r.what}</span></span>
+                      <span className={`text-[13px] font-semibold tabular-nums ${TONE.amber.text}`}>waiting {waitedFor(r.hours)}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
             </>
           )}
-        </Group>
+        </>
       )}
 
-      {/* 3 — waiting on you */}
-      <Group title="Waiting on you" right={needs.data?.items.length ? `${needs.data.items.length}` : undefined} link="/inbox">
-        {!needs.data ? <SectionState slot={needs} name="what is waiting on you" onRetry={() => run(['needs'])} /> : (
-          <>
-            {needs.error && <StaleBar at={needs.at} error={needs.error} busy={needs.loading} onRetry={() => run(['needs'])} />}
-            {needs.data.items.length === 0 ? (
-              <p className="flex items-center gap-2 text-sm text-slate-500"><Check size={14} className="text-emerald-600" /> Nothing is waiting on you</p>
-            ) : (all ? needs.data.items : needs.data.items.slice(0, 5)).map((i) => (
-              <Link key={i.key} to={i.link} className="flex items-center gap-2 border-t border-slate-100 py-2 first:border-t-0">
-                <Dot bad={i.overdue} />
-                <span className="min-w-0 flex-1">
-                  <span className={`block break-words text-sm ${i.overdue ? 'text-rose-700' : 'text-slate-800'}`}>{i.text}</span>
-                  {i.sub && <span className="block text-xs text-slate-500">{i.sub}</span>}
-                </span>
-                <ChevronRight size={14} className="shrink-0 text-slate-400" />
-              </Link>
-            ))}
-            {needs.data.items.length > 5 && (
-              <button onClick={() => setAll((a) => !a)} className="mt-1 text-xs text-blue-600 hover:underline">
-                {all ? 'Show fewer' : `See all ${needs.data.items.length}`}
-              </button>
-            )}
-            {needs.data.stuck.count > 0 && (
-              <Link to="/inbox?tab=waiting" className="mt-1 flex items-center gap-2 border-t border-slate-100 pt-2">
-                <span className="h-2 w-2 shrink-0 rounded-full bg-amber-500" aria-hidden />
-                <span className="min-w-0 flex-1">
-                  <span className="block text-sm text-slate-800">Stuck with others · {plural(needs.data.stuck.count, 'request')} overdue with {needs.data.stuck.withWhom}</span>
-                  <span className="block text-xs text-slate-500">Waiting {needs.data.stuck.hours.map((h) => waitedFor(h)).join(' and ')}</span>
-                </span>
-                <ChevronRight size={14} className="shrink-0 text-slate-400" />
-              </Link>
-            )}
-          </>
-        )}
-      </Group>
-
-      {/* 4 — watch */}
       {visible.includes('watch') && (
-        <Group title="Watch">
-          {!watch.data ? <SectionState slot={watch} name="the watch list" onRetry={() => run(['watch'])} /> : (
-            <>
-              {watch.error && <StaleBar at={watch.at} error={watch.error} busy={watch.loading} onRetry={() => run(['watch'])} />}
+        <>
+          <SubHead right={<Eye className="h-4 w-4 text-slate-600" aria-hidden />}>Watch</SubHead>
+          {!watch.data ? <div className="mt-2"><SectionState slot={watch} name="the watch list" onRetry={() => run(['watch'])} /></div> : (
+            <ul>
+              {watch.error && <li className="mt-2"><StaleBar at={watch.at} error={watch.error} busy={watch.loading} onRetry={() => run(['watch'])} /></li>}
               {can('/sales') && (watch.data.lostMonth === 0 ? (
                 /* An empty month is missing data until shown otherwise, not good news. */
-                <WatchLine to="/sales" tone="warn"
+                <WatchLine to="/sales" tone="amber" sub="Missing, not proof of none"
                   label={watch.data.lastLost ? `No lost sales logged since ${dayOf(watch.data.lastLost)}` : 'No lost sales have ever been logged'} />
               ) : (
                 <>
-                  <WatchLine to="/sales" label="Asked for, not available (month)"
-                    value={`${watch.data.notAvailableMonth} of ${watch.data.lostMonth}`} tone={watch.data.notAvailableMonth > 0 && watch.data.notAvailableMonth * 2 >= watch.data.lostMonth ? 'bad' : undefined} />
-                  <WatchLine to="/sales" label="Lost sales · last 7 days" value={String(watch.data.lost7)} />
+                  <WatchLine to="/sales" label="Asked for, not available this month"
+                    value={`${watch.data.notAvailableMonth} of ${watch.data.lostMonth}`} tone={watch.data.notAvailableMonth > 0 && watch.data.notAvailableMonth * 2 >= watch.data.lostMonth ? 'red' : 'grey'} />
+                  <WatchLine to="/sales" label="Lost sales · last 7 days" value={String(watch.data.lost7)} tone="grey" />
                 </>
               ))}
               {can('/purchase-orders') && (
                 <>
                   {watch.data.latePOs > 0 && (
-                    <WatchLine to="/purchase-orders" label="Deliveries · past expected date" value={plural(watch.data.latePOs, 'PO')} tone="bad" />
+                    <WatchLine to="/purchase-orders" label="Deliveries past their expected date" value={plural(watch.data.latePOs, 'PO')} tone="red" />
                   )}
                   {watch.data.noDatePOs > 0 && (
-                    <WatchLine to="/purchase-orders" tone="warn"
+                    <WatchLine to="/purchase-orders" tone="amber" sub="So none of them can show as late"
                       label={`${plural(watch.data.noDatePOs, 'open order')} ${watch.data.noDatePOs === 1 ? 'has' : 'have'} no expected date`} />
                   )}
                   {/* "due this week" means something only for orders that have a date */}
                   {watch.data.latePOs === 0 && watch.data.openPOs > watch.data.noDatePOs && (
-                    <WatchLine to="/purchase-orders" label="Deliveries · due this week" value={String(watch.data.duePOs)} />
+                    <WatchLine to="/purchase-orders" label="Deliveries due this week" value={String(watch.data.duePOs)} tone="grey" />
                   )}
-                  {watch.data.openPOs === 0 && <WatchLine to="/purchase-orders" label="Open purchase orders" value="none" />}
+                  {watch.data.openPOs === 0 && <WatchLine to="/purchase-orders" label="Open purchase orders" value="none" tone="grey" />}
                 </>
               )}
-            </>
+            </ul>
           )}
-        </Group>
+        </>
       )}
+    </TodayCard>
+  );
+
+  const staffCard = visible.includes('staff') && (
+    <TodayCard id="card-staff" icon={<Users className="h-5 w-5" />} title="Staffing" flash={flash === 'staff'}
+      chip={staff.data ? (() => {
+        const bad = staff.data.branches.filter((b) => b.tone === 'bad').length;
+        const warn = staff.data.branches.filter((b) => b.tone === 'warn').length;
+        return bad ? <Chip tone="red">{bad} uncovered</Chip> : warn ? <Chip tone="amber">{warn} to check</Chip> : <Chip tone="green">covered</Chip>;
+      })() : undefined}
+      meta={staff.data && staff.at ? `Who is in at ${hhmmOf(staff.at)}` : staff.error ? 'Not loaded' : 'Loading clock-ins'}
+      link={{ label: 'Attendance', to: '/attendance' }}>
+      {staff.data ? (
+        <>
+          {staff.error && <StaleBar at={staff.at} error={staff.error} busy={staff.loading} onRetry={refreshStaff} label="Staffing" />}
+          <StaffingCard branches={staff.data.branches} workStart={staff.data.workStart} onChanged={refreshStaff} embedded openSignal={openBranch} />
+        </>
+      ) : <SectionState slot={staff} name="staffing" onRetry={refreshStaff} />}
+    </TodayCard>
+  );
+
+  return (
+    <div className="mx-auto max-w-2xl xl:max-w-none">
+      <div className="mb-3">
+        <h1 className="text-xl font-bold text-slate-900">Today</h1>
+        <p className="text-[14px] text-slate-600">{format(new Date(), 'EEEE d MMMM')}{profile ? ` · ${profile.full_name}` : ''}</p>
+        {(salesCtx || staffCtx) && (
+          <p className="text-[13px] text-slate-600">
+            {[salesCtx, staffCtx].filter(Boolean).map((c, i) => (
+              <span key={i} className={c!.bad ? 'font-semibold text-rose-700' : ''}>{i ? ' · ' : ''}{c!.text}</span>
+            ))}
+          </p>
+        )}
+      </div>
+
+      {/* one sentence per card; each one jumps to its card */}
+      <section aria-label="Today in three lines" className="rounded-2xl border border-slate-200 bg-white p-1 shadow-sm" aria-live="polite">
+        <ul className="xl:grid xl:grid-cols-3 xl:gap-1">
+          {heads.map((h) => (
+            <li key={h.key}>
+              <button type="button" onClick={() => { jump(h.key); if (h.branch) setOpenBranch({ key: h.branch, at: Date.now() }); }}
+                className="flex min-h-[44px] w-full items-center gap-2.5 rounded-xl px-2.5 py-1.5 text-left hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400">
+                <Dot tone={h.tone} />
+                <span className="flex-1 text-[15px] leading-5 text-slate-700">
+                  <span className={`font-semibold ${h.tone === 'grey' ? 'text-slate-900' : TONE[h.tone].text}`}>{h.lead}</span>
+                  {h.rest ? ` · ${h.rest}` : ''}
+                </span>
+                <ChevronRight className="h-4 w-4 shrink-0 text-slate-500" aria-hidden />
+              </button>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      {failed.length >= 2 && (
+        <div role="alert" className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-rose-200 bg-rose-50 px-4 py-2 text-[14px] text-rose-700">
+          <span>{failed.length} sections did not load. What they would show is unknown, not zero.</span>
+          <RetryButton busy={failed.some((k) => slots[k].loading)} onClick={() => run(failed)} label="Retry all" />
+        </div>
+      )}
+
+      {/* phone: Sales, Needs you, Staffing; wide: the three side by side */}
+      <div className="mt-3 space-y-3 xl:grid xl:grid-cols-3 xl:items-start xl:gap-4 xl:space-y-0">
+        {salesCard}
+        {needsCard}
+        {staffCard}
+      </div>
 
       {can('/sales') && (
         <a href="https://alalramadhan-kuwait.github.io/watch-store-crm/#/reports" target="_blank" rel="noopener noreferrer"
-          className="mt-4 inline-flex items-center gap-2 text-xs text-slate-500 hover:text-slate-800">
-          <ExternalLink size={13} /> Store Daily Report
+          className="mt-3 inline-flex min-h-[44px] items-center gap-2 text-[13px] text-slate-600 hover:text-slate-900">
+          <ExternalLink size={14} aria-hidden /> Store Daily Report
         </a>
       )}
       {anyRetrying && <span className="sr-only" aria-live="polite">Loading</span>}
@@ -665,18 +974,56 @@ export default function ManagerDashboard() {
 
 /* ------------------------------------------------------------------ parts */
 
-function Group({ title, right, link, children }: { title: string; right?: string; link?: string; children: React.ReactNode }) {
-  return (
-    <section className="mt-3 rounded-xl border border-slate-200 bg-white px-4 py-3">
-      <div className="mb-1.5 flex items-baseline justify-between">
-        <h2 className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">{title}</h2>
-        <span className="flex items-center gap-2 text-[11px] text-slate-500">
-          {right}
-          {link && <Link to={link} className="text-blue-600 hover:underline">Open →</Link>}
+/** One thing that needs you: numbered when overdue, with what to do and how late. */
+function NeedRow({ it, n, open, onToggle }: { it: Item; n?: number; open: boolean; onToggle: () => void }) {
+  const tone: Tone = it.overdue ? 'red' : 'amber';
+  const inner = (
+    <>
+      {n !== undefined
+        ? <span className={`mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full text-[12px] font-bold tabular-nums ${TONE.red.soft} ${TONE.red.text}`} aria-hidden>{n}</span>
+        : <span className="mt-1.5"><Dot tone={tone} /></span>}
+      <span className="min-w-0 flex-1">
+        <span className="block break-words text-[15px] leading-5 text-slate-900">
+          <span className={`font-semibold ${TONE[tone].text}`}>{it.kind}</span>{it.what ? ` · ${it.what}` : ''}
         </span>
-      </div>
-      {children}
-    </section>
+        <span className="mt-0.5 flex items-center justify-between gap-2">
+          <span className="min-w-0 text-[13px] leading-[18px] tabular-nums text-slate-600">{it.sub}</span>
+          {it.chip && <Chip tone={tone}>{it.chip}</Chip>}
+        </span>
+        <span className="mt-0.5 block text-[13px] font-semibold leading-[18px] text-slate-900">{it.verb}</span>
+      </span>
+      {it.children
+        ? <ChevronDown className={`mt-1 h-4 w-4 shrink-0 text-slate-500 transition-transform ${open ? 'rotate-180' : ''}`} aria-hidden />
+        : <ChevronRight className="mt-1 h-4 w-4 shrink-0 text-slate-500" aria-hidden />}
+    </>
+  );
+  const cls = '-mx-2 flex min-h-[52px] w-[calc(100%+16px)] items-start gap-2.5 rounded-lg px-2 py-2 text-left hover:bg-slate-50';
+  return (
+    <li className="border-t border-slate-100 first:border-0">
+      {it.children ? (
+        <button type="button" onClick={onToggle} aria-expanded={open} className={cls}>{inner}</button>
+      ) : (
+        <Link to={it.link} className={cls}>{inner}</Link>
+      )}
+      {it.children && open && (
+        <ul className="mb-2 ml-3 border-l-2 border-slate-200 pl-3">
+          {it.children.map((c) => (
+            <li key={c.key}>
+              <Link to={c.link} className="flex min-h-[44px] items-center gap-2 py-1">
+                <span className="min-w-0 flex-1 text-[14px] leading-5 text-slate-900">{c.text}
+                  <span className="block text-[13px] leading-[18px] text-slate-600">{c.sub}</span>
+                </span>
+                <span className={`text-[13px] font-semibold tabular-nums ${TONE[tone].text}`}>{c.chip}</span>
+                <ChevronRight className="h-4 w-4 shrink-0 text-slate-500" aria-hidden />
+              </Link>
+            </li>
+          ))}
+          <li>
+            <Link to={it.link} className="flex min-h-[44px] items-center text-[13px] font-semibold text-slate-700 hover:underline">Open Follow-ups</Link>
+          </li>
+        </ul>
+      )}
+    </li>
   );
 }
 
@@ -696,7 +1043,7 @@ function SectionState<T>({ slot, name, onRetry }: { slot: Slot<T>; name: string;
       <div role="alert" className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
         <p className="flex items-start gap-2 font-semibold"><AlertTriangle size={15} className="mt-0.5 shrink-0" aria-hidden />
           Could not load {name}: unknown, not zero and not an all-clear.</p>
-        <p className="mt-0.5 break-words text-xs text-rose-700/90">{slot.error}</p>
+        <p className="mt-0.5 break-words text-xs text-rose-700">{slot.error}</p>
         <div className="mt-2"><RetryButton busy={slot.loading} onClick={onRetry} /></div>
       </div>
     );
@@ -705,61 +1052,38 @@ function SectionState<T>({ slot, name, onRetry }: { slot: Slot<T>; name: string;
     <div className="space-y-2 py-1" aria-busy="true" aria-label={`Loading ${name}`}>
       <div className="h-3 w-2/3 animate-pulse rounded bg-slate-200" />
       <div className="h-3 w-1/2 animate-pulse rounded bg-slate-200" />
-      <p className="text-xs text-slate-500">Loading {name}…</p>
+      <p className="text-xs text-slate-600">Loading {name}…</p>
     </div>
   );
 }
 
 /** The last figures that did load, with the time they are from, after a refresh failed. */
-function StaleBar({ at, error, busy, onRetry, label }: { at: number | null; error: string; busy: boolean; onRetry: () => void; label?: string }) {
+function StaleBar({ at, error, busy, onRetry, label, what, syncedAt }: {
+  at: number | null; error: string; busy: boolean; onRetry: () => void; label?: string;
+  /** What the figures shown cover, e.g. "sales to end of 23 Nov". */
+  what?: string;
+  syncedAt?: string | null;
+}) {
+  const cover = what ? `last good figures: ${what}${syncedAt ? `, synced ${format(new Date(syncedAt), 'd MMM HH:mm')} Kuwait` : ''}` : at ? `showing what loaded at ${hhmmOf(at)}` : '';
   return (
     <div role="status" className="mb-2 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-amber-50 px-2 py-1.5 text-xs text-amber-800">
-      <span>{label ? `${label} could` : 'Could'} not refresh{at ? `: showing what loaded at ${hhmmOf(at)}` : ''}. <span className="text-amber-700/90">{error}</span></span>
+      <span>{label ? `${label} could` : 'Could'} not refresh{cover ? `: ${cover}` : ''}. <span className="text-amber-800">{error}</span></span>
       <RetryButton busy={busy} onClick={onRetry} />
     </div>
   );
 }
 
-function Dot({ bad }: { bad: boolean }) {
-  return <span className={`h-2 w-2 shrink-0 rounded-full ${bad ? 'bg-rose-600' : 'bg-amber-500'}`} aria-hidden />;
-}
-
-function SalesLine({ name, sales, target, pct, frac, verdict, note, total }: {
-  name: string; sales: number; target: number | null; pct: number | null; frac: number | null;
-  verdict: Verdict; note: string; total?: boolean;
-}) {
-  const fill = Math.min(100, pct ?? 0);
-  const bar = verdict === 'behind' ? 'bg-rose-600' : total ? 'bg-slate-800' : 'bg-slate-400';
-  const pctCls = verdict === 'behind' ? 'text-rose-600' : verdict === 'ahead' ? 'text-emerald-600' : 'text-slate-800';
+function WatchLine({ to, label, sub, value, tone }: { to: string; label: string; sub?: string; value?: string; tone: Tone }) {
   return (
-    <div className={`py-2 ${verdict === 'behind' ? '-mx-2 rounded-lg bg-rose-50 px-2' : 'border-t border-slate-100 first:border-t-0'}`}>
-      <div className="flex items-baseline justify-between text-sm">
-        <span className={total ? 'font-semibold text-slate-900' : 'text-slate-700'}>{name}</span>
-        {/* without a target there is no percentage; the line below already says "no target set" */}
-        {target ? <span className={`font-mono text-sm font-semibold ${pctCls}`}>{pct}%</span> : null}
-      </div>
-      <div className="relative mt-1.5 h-2 rounded bg-slate-200">
-        <div className={`absolute inset-y-0 left-0 rounded ${target ? bar : ''}`} style={{ width: `${target ? fill : 0}%` }} />
-        {frac !== null && target && <div className="absolute -inset-y-[3px] w-0.5 rounded bg-slate-800" style={{ left: `${frac * 100}%` }} />}
-      </div>
-      <div className="mt-1 flex justify-between gap-2 text-[11px] text-slate-500">
-        <span className="tabular-nums">{target ? `${short(sales)} of ${kd(target)}` : kd(sales)}</span>
-        <span className={`text-right ${verdict === 'behind' ? 'text-rose-700' : ''}`}>{note}</span>
-      </div>
-    </div>
+    <li className="border-t border-slate-100 first:border-0">
+      <Link to={to} className="-mx-2 flex min-h-[44px] items-center gap-2.5 rounded-lg px-2 py-1.5 hover:bg-slate-50">
+        <Dot tone={tone} />
+        <span className="min-w-0 flex-1 text-[14px] leading-5 text-slate-900">{label}
+          {sub && <span className="block text-[13px] leading-[18px] text-slate-600">{sub}</span>}
+        </span>
+        {value !== undefined && <span className={`whitespace-nowrap text-[14px] font-semibold tabular-nums ${tone === 'grey' ? 'text-slate-900' : TONE[tone].text}`}>{value}</span>}
+        <ChevronRight className="h-4 w-4 shrink-0 text-slate-500" aria-hidden />
+      </Link>
+    </li>
   );
 }
-
-function WatchLine({ to, label, value, tone }: { to: string; label: string; value?: string; tone?: 'bad' | 'warn' }) {
-  const cls = tone === 'bad' ? 'text-rose-600' : tone === 'warn' ? 'text-amber-700' : 'text-slate-800';
-  return (
-    <Link to={to} className="flex items-center justify-between gap-3 border-t border-slate-100 py-2 text-sm first:border-t-0">
-      <span className={tone === 'warn' ? 'font-medium text-amber-800' : 'text-slate-600'}>
-        {tone === 'warn' && <AlertTriangle size={13} className="mr-1.5 inline -translate-y-px text-amber-600" aria-hidden />}{label}
-      </span>
-      {value !== undefined && <span className={`whitespace-nowrap font-mono font-semibold ${cls}`}>{value}</span>}
-      {value === undefined && <ChevronRight size={14} className="shrink-0 text-slate-400" aria-hidden />}
-    </Link>
-  );
-}
-

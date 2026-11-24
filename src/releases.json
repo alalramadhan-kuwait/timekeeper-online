@@ -1,5 +1,18 @@
 [
   {
+    "version": "3.26.0",
+    "date": "2026-11-24",
+    "title": "A new Today page",
+    "changes": [
+      "Today opens with three short lines, one for sales, one for what needs you and one for staffing. Tap a line to jump to its card; tapping the staffing line opens the branch it names.",
+      "On a phone the cards come in the order of the morning: Sales first, then Needs you, then Staffing. On a wide screen the three sit side by side.",
+      "The Sales card shows the month's percentage large, how far short it is heading in KD, what it needs a day against what it is doing, yesterday's sales, and the same days last month. Each outlet has its own bar, and the outlet furthest behind is marked \"One thing to push\".",
+      "Event sales such as the Expo stay on their own line. A switch shows them counted toward the target, just to see; the regular outlets' own figure always stays in view. Whether events count is still the owner's call.",
+      "Needs you numbers the overdue items, says how late each one is and what to do about it, and opens the right record (the employee, the project, the request). Overdue follow-ups open in place to show each customer. Requests stuck with someone else link straight to each one, and the Watch lines sit at the bottom of the card.",
+      "Ask Mohammed is now in the top bar on a phone and in the menu on a wide screen, so it no longer covers figures. The menu has a close button, closes when you tap outside it, and its buttons are easier to tap."
+    ]
+  },
+  {
     "version": "3.25.1",
     "date": "2026-11-24",
     "title": "Today's figures corrected",
