@@ -786,7 +786,7 @@ export default function ManagerDashboard() {
     const badgeTone = overdueN ? 'red' : nd.missing.length ? 'grey' : 'green';
     needsCard = (
       <BoardCard id="card-needs" label="Overdue"
-        lead={<span className={`grid h-7 min-w-[28px] place-items-center rounded-full px-1.5 text-[15px] font-extrabold tabular-nums ${badgeTone === 'red' ? 'bg-[#d92d20] text-white' : PILL[badgeTone]}`}>{overdueN}</span>}
+        lead={<span className={`grid h-7 min-w-[28px] place-items-center rounded-full px-1.5 text-[15px] font-extrabold tabular-nums ${badgeTone === 'red' ? 'bg-[#d92d20] text-white' : PILL[badgeTone]}`}>{nd.missing.length ? (overdueN ? `${overdueN}+` : '—') : overdueN}</span>}
         right={<Stale slot={needs} onRetry={retryNeeds} />}>
         <ul className="mt-1">
           {nd.items.map((it) => lateRow(it.key, it.link, it.label, it.chip, it.overdue ? 'red' : 'amber'))}
