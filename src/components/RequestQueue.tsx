@@ -11,7 +11,7 @@
  * rules from src/shared/requests. The two look different because a phone in a
  * shop and a laptop in an office are different places. They cannot disagree.
  */
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Check, X, AlertTriangle, ShieldAlert, BellRing } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Spinner } from './ui';
@@ -75,6 +75,7 @@ export default function RequestQueue({ role, userId, focusId, initialTab, onSumm
   const [tab, setTab] = useState<Tab>(initialTab ?? 'action');
   const [busy, setBusy] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
+  const [loadErr, setLoadErr] = useState<string | null>(null);
   const [remarks, setRemarks] = useState<Record<string, string>>({});
   /* The request the owner is about to decide over the manager's head. Holding
      it here rather than deciding straight away is what forces the reason. */
@@ -85,7 +86,10 @@ export default function RequestQueue({ role, userId, focusId, initialTab, onSumm
   const [leaveCtx, setLeaveCtx] = useState<Record<string, LeaveContext>>({});
 
   async function reload() {
-    const all = await loadRequests();
+    const { rows: all, error } = await loadRequests();
+    /* A failed read is not an empty queue: say so, keep whatever was showing. */
+    setLoadErr(error);
+    if (error) { setRows((r) => r ?? []); return; }
     setRows(all);
     const open = all.filter((r) => r.kind === 'Leave' && r.stage_owner !== 'nobody' && r.employee_id);
     if (open.length === 0) { setLeaveCtx({}); return; }
@@ -126,7 +130,7 @@ export default function RequestQueue({ role, userId, focusId, initialTab, onSumm
   }, [shown, tab]);
 
   useEffect(() => {
-    if (!rows || !onSummary) return;
+    if (!rows || !onSummary || loadErr) return;
     const waitingRows = rows.filter((r) => tabOf(r, mine) === 'waiting');
     const holders = [...new Set(waitingRows.map(holderOf))];
     onSummary({
@@ -135,7 +139,7 @@ export default function RequestQueue({ role, userId, focusId, initialTab, onSumm
       overdue: rows.filter((r) => r.is_overdue && r.stage_owner !== 'nobody').length,
       waitingOn: holders.length === 1 ? holders[0]! : null,
     });
-  }, [rows, tally, mine, onSummary]);
+  }, [rows, tally, mine, onSummary, loadErr]);
 
   /* Jump to whatever a notification pointed at, and open the tab it is in
      rather than leaving the reader on an empty list wondering. */
@@ -144,6 +148,16 @@ export default function RequestQueue({ role, userId, focusId, initialTab, onSumm
     const hit = rows.find((r) => r.id === focusId);
     if (hit) setTab(tabOf(hit, mine));
   }, [focusId, rows, mine]);
+  /* ...and bring it into view once its tab shows it: on a phone the outlined
+     card otherwise sits below the fold. Once, so the reader can scroll away. */
+  const scrolledTo = useRef<string | null>(null);
+  useEffect(() => {
+    if (!focusId || !rows || scrolledTo.current === focusId) return;
+    const el = document.getElementById(`nid-${focusId}`);
+    if (!el) return;
+    scrolledTo.current = focusId;
+    el.scrollIntoView({ block: 'center' });
+  }, [focusId, rows, tab]);
 
   /* Chasing whoever is holding it up. The cooldown and the recipient are the
      database's business — the same function the nightly job calls — so a refusal
@@ -242,7 +256,15 @@ export default function RequestQueue({ role, userId, focusId, initialTab, onSumm
         <p className="text-sm text-rose-700 bg-rose-50 border border-rose-200 rounded-lg px-3 py-2">{err}</p>
       )}
 
-      {shown.length === 0 ? (
+      {loadErr && (
+        <div role="alert" className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+          <span>Requests could not be loaded, so this list is not complete: {loadErr}</span>
+          <button type="button" onClick={() => { void reload(); }}
+            className="min-h-[40px] rounded-lg border border-rose-300 bg-white px-3 font-semibold text-rose-700 hover:bg-rose-100">Retry</button>
+        </div>
+      )}
+
+      {shown.length === 0 && loadErr ? null : shown.length === 0 ? (
         <p className="rounded-xl border border-slate-200 bg-white px-4 py-8 text-center text-sm text-slate-400">
           {tab === 'action' ? 'Nothing needs you right now.'
             : tab === 'waiting' ? 'Nothing is waiting on anyone.'

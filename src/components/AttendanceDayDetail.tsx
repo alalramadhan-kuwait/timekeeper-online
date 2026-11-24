@@ -116,7 +116,7 @@ export function AttendanceDayDetail({ employee, date, workStart, note, onChanged
       <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
         <div>
           <p className="text-sm font-semibold text-slate-800">{employee.full_name}</p>
-          <p className="text-xs text-slate-400">{dayLabel}</p>
+          <p className="text-xs text-slate-600">{dayLabel}</p>
         </div>
         {recs.length > 0 && (
           <p className="text-xs text-slate-500">
@@ -156,9 +156,9 @@ export function AttendanceDayDetail({ employee, date, workStart, note, onChanged
               <span className="tabular-nums font-medium text-slate-800">{fmtTime(r.clock_in)}</span>
               <span className="text-slate-300">→</span>
               <span className="tabular-nums font-medium text-slate-800">
-                {r.clock_out ? fmtTime(r.clock_out) : <span className="text-slate-400 font-normal">still open</span>}
+                {r.clock_out ? fmtTime(r.clock_out) : <span className="text-slate-600 font-normal">still open</span>}
               </span>
-              <span className="text-xs text-slate-400 tabular-nums">{formatHours(hoursOf(r.clock_in, r.clock_out))}</span>
+              <span className="text-xs text-slate-600 tabular-nums">{formatHours(hoursOf(r.clock_in, r.clock_out))}</span>
               {r.justified
                 ? <Badge className="bg-slate-100 text-slate-600 border-slate-200">Late — excused</Badge>
                 : late && late !== 'On time' && <Badge className="bg-amber-100 text-amber-700 border-amber-200">{late}</Badge>}
@@ -168,14 +168,14 @@ export function AttendanceDayDetail({ employee, date, workStart, note, onChanged
               {/* Where they were, and how far off the pin — the same cell the
                   List shows, because a site name alone never said whether
                   somebody was at the counter or in the car park. */}
-              <span className="text-xs text-slate-400"><GeoCell r={r} /></span>
+              <span className="text-xs text-slate-600"><GeoCell r={r} /></span>
               <span className="ml-auto flex items-center gap-2">
                 <button onClick={() => startEdit(r)}
-                  className={`text-xs font-medium ${editId === r.id ? 'text-blue-600' : 'text-slate-500 hover:text-blue-600'}`}>
+                  className={`min-h-[44px] px-2 text-xs font-medium ${editId === r.id ? 'text-blue-600' : 'text-slate-600 hover:text-blue-600'}`}>
                   {editId === r.id ? 'Cancel' : 'Correct'}
                 </button>
                 <button onClick={() => remove(r)} disabled={busy === `del-${r.id}`}
-                  className="text-slate-400 hover:text-rose-600 disabled:opacity-50" title="Delete (mark absent)">
+                  className="grid h-11 w-11 place-items-center text-slate-600 hover:text-rose-600 disabled:opacity-50" title="Delete (mark absent)" aria-label="Delete (mark absent)">
                   <X size={15} />
                 </button>
               </span>
@@ -202,7 +202,7 @@ export function AttendanceDayDetail({ employee, date, workStart, note, onChanged
                   onClick={() => run(`save-${r.id}`, () => saveCorrection(r,
                     { clockIn: eIn, clockOut: eOut, reason: eReason, justified: eJustified }, workStart))}
                   disabled={busy === `save-${r.id}`}
-                  className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-medium disabled:opacity-60">
+                  className="flex min-h-[44px] items-center gap-1 px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-medium disabled:opacity-60">
                   {busy === `save-${r.id}` ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />} Save correction
                 </button>
               </div>
@@ -226,19 +226,19 @@ export function AttendanceDayDetail({ employee, date, workStart, note, onChanged
               location: employee.location, date, clockIn: aIn, clockOut: aOut, reason: aReason,
             }, workStart))}
             disabled={busy === 'add'}
-            className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-medium disabled:opacity-60">
+            className="flex min-h-[44px] items-center gap-1 px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-medium disabled:opacity-60">
             {busy === 'add' ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />} Add record
           </button>
-          <button onClick={() => setAdding(false)} className="text-slate-400 hover:text-slate-600 pb-1.5"><X size={15} /></button>
+          <button onClick={() => setAdding(false)} aria-label="Cancel" className="grid h-11 w-11 place-items-center text-slate-600 hover:text-slate-900"><X size={15} /></button>
         </div>
       ) : (
         <button onClick={() => { setAdding(true); setEditId(null); }}
-          className="flex items-center gap-1.5 text-xs font-medium text-blue-600 hover:underline">
+          className="flex min-h-[44px] items-center gap-1.5 text-xs font-medium text-blue-600 hover:underline">
           <Plus size={13} /> {recs.length ? 'Add another shift' : 'Add a record for this day'}
         </button>
       ))}
 
-      <p className="text-[10px] text-slate-400">
+      <p className="text-[12px] text-slate-600">
         Old and new values are recorded automatically in the History Log.
       </p>
     </div>

@@ -8,7 +8,7 @@ interface TeamRow { id: string; full_name: string; role: string; email?: string;
 interface ActivityRow { user_id: string; last_active: string | null; views_7d: number; views_30d: number; recent_pages: string[] | null }
 
 const PAGE_LABEL: Record<string, string> = {
-  '/': 'Today', '/money': 'Money', '/me': 'My Portal', '/sales': 'Sales Reports', '/crm': 'Customers', '/follow-ups': 'Follow-ups',
+  '/': 'Today', '/money': 'Money', '/me': 'My Portal', '/sales': 'Visits & lost sales', '/till-sales': 'Till sales', '/crm': 'Customers', '/follow-ups': 'Follow-ups',
   '/vip': 'VIP', '/waiting-list': 'Demand List', '/stock': 'Stock', '/purchase-orders': 'Suppliers',
   '/consignments': 'Consignments', '/limited-projects': 'Limited Projects', '/repairs': 'Repairs',
   '/attendance': 'Attendance', '/hr': 'Employees', '/leave': 'Leave', '/instagram': 'Instagram',

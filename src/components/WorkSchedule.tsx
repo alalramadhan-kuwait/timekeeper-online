@@ -41,10 +41,10 @@ function DayPicker({ days, onChange }: { days: Weekday[]; onChange: (d: Weekday[
             type="button"
             aria-pressed={on}
             onClick={() => onChange(on ? days.filter((x) => x !== d) : [...days, d].sort())}
-            className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
+            className={`min-h-[44px] min-w-[44px] px-2 rounded-lg text-xs font-semibold border transition-colors ${
               on
                 ? 'bg-slate-900 text-white border-slate-900'
-                : 'bg-white text-slate-400 border-slate-200 hover:border-slate-300'
+                : 'bg-white text-slate-600 border-slate-300 hover:border-slate-400'
             }`}
           >
             {WEEKDAY_SHORT[d]}
@@ -130,7 +130,7 @@ export function WorkScheduleModal({
           <div>
             <span className="block text-xs font-semibold text-slate-600 mb-1.5">Working days</span>
             <DayPicker days={days} onChange={setDays} />
-            <p className="mt-1.5 text-[11px] text-slate-400">
+            <p className="mt-1.5 text-[12px] text-slate-600">
               {days.length ? describeDays(days) : 'No working days — they will never be expected in'}
             </p>
           </div>
@@ -147,9 +147,10 @@ export function WorkScheduleModal({
                 className="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm" />
             </label>
           </div>
-          <p className="text-[11px] text-slate-400">
-            Leave the times blank to use the shop's opening time. Without a start time nobody
-            can be called late.
+          <p className="text-[12px] text-slate-600">
+            Leave the times blank if their hours vary from day to day. Blank means no shift
+            time: they are never called late or on time, and Today lists them as having no
+            shift time.
           </p>
         </div>
 
@@ -175,7 +176,7 @@ export function WorkScheduleModal({
               className="mt-0.5" />
             <span>
               Just for a while
-              <span className="block text-[11px] text-slate-400">
+              <span className="block text-[12px] text-slate-600">
                 Their usual schedule comes back by itself the day after.
               </span>
             </span>
@@ -200,7 +201,7 @@ export function WorkScheduleModal({
         <div className="pt-3 border-t border-slate-100">
           <h4 className="text-xs font-semibold text-slate-600 mb-2">Schedule history</h4>
           {rows === null ? <Spinner /> : !rows.length ? (
-            <p className="text-xs text-slate-400">Nothing recorded yet.</p>
+            <p className="text-xs text-slate-600">Nothing recorded yet.</p>
           ) : (
             <ul className="space-y-1.5">
               {rows.map((s) => (
@@ -213,8 +214,8 @@ export function WorkScheduleModal({
                     <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">Now</Badge>
                   )}
                   <span className="text-slate-500">{describeDays(s.workingDays)}</span>
-                  <span className="text-slate-400">{describeShift(s, 'no set hours')}</span>
-                  {s.note && <span className="w-full text-[11px] text-slate-400">{s.note}</span>}
+                  <span className="text-slate-600">{describeShift(s, 'no set hours')}</span>
+                  {s.note && <span className="w-full text-[12px] text-slate-600">{s.note}</span>}
                 </li>
               ))}
             </ul>

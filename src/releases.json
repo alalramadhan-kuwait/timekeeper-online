@@ -1,5 +1,80 @@
 [
   {
+    "version": "4.1.0",
+    "date": "2026-11-24",
+    "title": "Today: numbers, not sentences",
+    "changes": [
+      "Today shows figures and colours only: green good, red bad, amber needs a look.",
+      "Sales shows the month as a line against the target, and where it is heading.",
+      "Each outlet has a bar with a mark for how much of the month has gone.",
+      "Attendance shows everyone at a glance, branch by branch: in, late, due later, no time set, away.",
+      "Anything that did not load shows a dash and Retry."
+    ]
+  },
+  {
+    "version": "4.0.1",
+    "date": "2026-11-24",
+    "title": "Fewer surprises on Today and Money",
+    "changes": [
+      "If part of Today or Money cannot load, it shows a dash and Retry, never 0 KD or \"all clear\".",
+      "Going back to Today shows it straight away.",
+      "An overdue task or request opens on that item, outlined.",
+      "The top bar on the phone no longer lets the page show through."
+    ]
+  },
+  {
+    "version": "4.0.0",
+    "date": "2026-11-24",
+    "title": "Every tap on Today opens the right place",
+    "changes": [
+      "Tapping Sales or an outlet on Today opens Till sales: the month against its target, day by day.",
+      "Till sales has a button for each outlet and each month.",
+      "Sales reports is now called Visits & lost sales.",
+      "Attendance opens on today, on the branch or person you tapped.",
+      "Back returns you to the same place on Today."
+    ]
+  },
+  {
+    "version": "3.27.0",
+    "date": "2026-11-24",
+    "title": "Staffing says what it knows",
+    "changes": [
+      "Each branch on Today now says what is known in plain words, for example \"1 in · minimum 2 · 3 with no shift time\", \"3 in · 2 late · 1 no hours set · 1 on work trip to 26 Nov\" or \"Opens 14:00 · 1 planned\".",
+      "Nobody is called on time or late unless they have a shift time to compare with. People with a shift show whether they came in within the grace time, and by how much they missed it.",
+      "A branch's page opens over Today and closes with Back, Escape, the close button or a tap outside it. On a wide screen it sits beside the page instead of covering it. A link to a branch's page opens it straight away, and closing it leaves you on Today.",
+      "\"Set Avenues times\" opens the first person without a shift time, then brings you back to the branch with the next one ready.",
+      "The branch page shows how the last ten days of clock-ins went, the open question for the owner about how many people a shop needs before the afternoon, and an expired residency on that person's row with a link to their HR record.",
+      "The shift editor now says correctly what leaving the times blank means, and its day buttons are easier to tap."
+    ]
+  },
+  {
+    "version": "3.26.0",
+    "date": "2026-11-24",
+    "title": "A new Today page",
+    "changes": [
+      "Today opens with three short lines, one for sales, one for what needs you and one for staffing. Tap a line to jump to its card; tapping the staffing line opens the branch it names.",
+      "On a phone the cards come in the order of the morning: Sales first, then Needs you, then Staffing. On a wide screen the three sit side by side.",
+      "The Sales card shows the month's percentage large, how far short it is heading in KD, what it needs a day against what it is doing, yesterday's sales, and the same days last month. Each outlet has its own bar, and the outlet furthest behind is marked \"One thing to push\".",
+      "Event sales such as the Expo stay on their own line. A switch shows them counted toward the target, just to see; the regular outlets' own figure always stays in view. Whether events count is still the owner's call.",
+      "Needs you numbers the overdue items, says how late each one is and what to do about it, and opens the right record (the employee, the project, the request). Overdue follow-ups open in place to show each customer. Requests stuck with someone else link straight to each one, and the Watch lines sit at the bottom of the card.",
+      "Ask Mohammed is now in the top bar on a phone and in the menu on a wide screen, so it no longer covers figures. The menu has a close button, closes when you tap outside it, and its buttons are easier to tap."
+    ]
+  },
+  {
+    "version": "3.25.1",
+    "date": "2026-11-24",
+    "title": "Today's figures corrected",
+    "changes": [
+      "The month's sales on Today and Money count only the four regular outlets against the 110k target. The Expo sales are shown on their own line, with their dates, and are not added into the percentage or the month-end estimate.",
+      "Today shows how far short the month is heading on current pace, and says the figures run to the last day the tills sent (for example \"sales to end of 23 Nov\").",
+      "A task past its due date, a project past its launch date and an expired residency or work permit now count as overdue. An expired document is named: \"Residency expired 23 Nov\" with the person's name.",
+      "Requests that are overdue with someone else are listed as \"Stuck with others\", with how long they have waited.",
+      "Watch says when nothing is being recorded: \"No lost sales logged since 20 Oct\", and how many open orders have no expected date.",
+      "If part of Today cannot load, that part says so and has a Retry button, instead of showing zero or \"Nothing is waiting on you\". A slow database no longer leaves the page loading for ever.",
+      "My requests and the Inbox say when the requests could not be loaded, instead of showing an empty list."
+    ]
+  },
+  {
     "version": "3.25.0",
     "date": "2026-11-23",
     "title": "Mark someone away for work",

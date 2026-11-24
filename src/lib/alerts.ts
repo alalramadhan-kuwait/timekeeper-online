@@ -37,6 +37,14 @@ export async function loadAlertActions(): Promise<Map<string, AlertAction>> {
   return map;
 }
 
+/** The same, with a failed read reported rather than read as "nothing handled". */
+export async function readAlertActions(): Promise<{ map: Map<string, AlertAction>; error: string | null }> {
+  const { data, error } = await supabase.from('alert_actions').select('*');
+  const map = new Map<string, AlertAction>();
+  for (const r of (data ?? []) as AlertAction[]) map.set(r.alert_key, r);
+  return { map, error: error ? error.message || 'could not be read' : null };
+}
+
 export async function saveAlertAction(key: string, patch: Partial<AlertAction>): Promise<void> {
   await supabase.from('alert_actions').upsert(
     { alert_key: key, ...patch, updated_at: new Date().toISOString() },
