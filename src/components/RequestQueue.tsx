@@ -11,7 +11,7 @@
  * rules from src/shared/requests. The two look different because a phone in a
  * shop and a laptop in an office are different places. They cannot disagree.
  */
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Check, X, AlertTriangle, ShieldAlert, BellRing } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Spinner } from './ui';
@@ -148,6 +148,16 @@ export default function RequestQueue({ role, userId, focusId, initialTab, onSumm
     const hit = rows.find((r) => r.id === focusId);
     if (hit) setTab(tabOf(hit, mine));
   }, [focusId, rows, mine]);
+  /* ...and bring it into view once its tab shows it: on a phone the outlined
+     card otherwise sits below the fold. Once, so the reader can scroll away. */
+  const scrolledTo = useRef<string | null>(null);
+  useEffect(() => {
+    if (!focusId || !rows || scrolledTo.current === focusId) return;
+    const el = document.getElementById(`nid-${focusId}`);
+    if (!el) return;
+    scrolledTo.current = focusId;
+    el.scrollIntoView({ block: 'center' });
+  }, [focusId, rows, tab]);
 
   /* Chasing whoever is holding it up. The cooldown and the recipient are the
      database's business — the same function the nightly job calls — so a refusal

@@ -96,20 +96,25 @@ export default function TillSalesPage() {
   const outlet = op ? regular.find((o) => o.code === op) ?? null : null;
   const unknownOutlet = !!op && !outlet;
 
-  const [data, setData] = useState<Loaded | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  /* Kept with the month it is for: after switching month, the old month's
+     figures are never shown under the new one's name while it loads. */
+  const [got, setData] = useState<(Loaded & { month: string }) | null>(null);
+  const data = got && got.month === month ? got : null;
+  const [failed, setFailed] = useState<{ month: string; msg: string } | null>(null);
+  const error = failed && failed.month === month ? failed.msg : null;
   const [loading, setLoading] = useState(true);
   const gen = useRef(0);
-  const run = useCallback(() => {
+  /* Reads the month; state changes only when the answer arrives. */
+  const start = useCallback(() => {
     const g = ++gen.current;
-    setLoading(true);
-    setError(null);
     within(load(month)).then(
-      (d) => { if (g === gen.current) { setData(d); setLoading(false); } },
-      (e: unknown) => { if (g === gen.current) { setData(null); setError(e instanceof Error ? e.message : String(e)); setLoading(false); } },
+      (d) => { if (g === gen.current) { setData({ ...d, month }); setFailed(null); setLoading(false); } },
+      (e: unknown) => { if (g === gen.current) { setData(null); setFailed({ month, msg: e instanceof Error ? e.message : String(e) }); setLoading(false); } },
     );
   }, [month]);
-  useEffect(() => { run(); }, [run]);
+  /* Retry: shown as loading, then read. */
+  const run = useCallback(() => { setLoading(true); start(); }, [start]);
+  useEffect(() => { start(); }, [start]);
 
   /* Switching outlet or month replaces the entry, so Back still goes straight to
      where the page was opened from, and keeps the way back to Today. */
@@ -170,7 +175,7 @@ export default function TillSalesPage() {
 
       {unknownOutlet ? (
         <div className="rounded-2xl border border-slate-200 bg-white p-4 text-[14px] text-slate-700">
-          There is no regular outlet called “{op}”. <Link to={to(null, month)} {...linkProps} className="font-semibold text-blue-700 underline">Show all regular outlets</Link>
+          There is no regular outlet called “{op}”. <Link to={to(null, month)} {...linkProps} className="inline-flex min-h-[44px] items-center font-semibold text-blue-700 underline">Show all regular outlets</Link>
         </div>
       ) : !data ? (
         error ? (
@@ -272,7 +277,10 @@ function Body({ data, month, isCurrent, code, rowLink, linkProps }: {
   }
   const days = Array.from({ length: dim }, (_, i) => `${month}-${String(i + 1).padStart(2, '0')}`);
   const lastDay = ms.lastSaleDay!;
-  const daysWithSales = days.filter((d) => (byDay.get(d)?.sales ?? 0) !== 0).length;
+  /* A day had sales when the tills rang any up, even if they netted to 0 KD
+     (Time Gallery on 15 Nov: 2 sales, 0 KD). */
+  const hadSales = (d: string) => { const e = byDay.get(d); return !!e && (e.count > 0 || e.sales !== 0); };
+  const daysWithSales = days.filter(hadSales).length;
   const peak = days.reduce<{ d: string; v: number } | null>((m, d) => {
     const v = byDay.get(d)?.sales ?? 0;
     return !m || v > m.v ? { d, v } : m;
@@ -356,7 +364,7 @@ function Body({ data, month, isCurrent, code, rowLink, linkProps }: {
               return (
                 <li key={d} className="flex justify-between border-t border-slate-100 py-1.5">
                   <span className="text-slate-700">{dayOf(d)}</span>
-                  <span className={e?.sales ? 'text-slate-900' : 'text-slate-600'}>{e?.sales ? `${full(e.sales)} KD · ${plural(e.count, 'sale')}` : 'no sales'}</span>
+                  <span className={hadSales(d) ? 'text-slate-900' : 'text-slate-600'}>{e && hadSales(d) ? `${full(e.sales)} KD · ${plural(e.count, 'sale')}` : 'no sales'}</span>
                 </li>
               );
             })}

@@ -310,9 +310,9 @@ export default function Layout() {
       </aside>
 
       <div className="flex-1 min-w-0">
-        {/* The phone's top bar. Every control is a 44px target; Ask Mohammed sits
+        {/* The phone's top bar, opaque so the page never shows through it. Every control is a 44px target; Ask Mohammed sits
             here rather than floating over the figures. */}
-        <div className="md:hidden flex items-center gap-1.5 text-white px-2 py-1.5 sticky top-0 z-30 tk-glass bg-slate-900/75 backdrop-blur-lg backdrop-saturate-150"
+        <div className="md:hidden flex items-center gap-1.5 text-white px-2 py-1.5 sticky top-0 z-30 bg-slate-900"
           style={{ paddingTop: 'calc(0.375rem + var(--sa-t))',
                    paddingLeft: 'calc(0.5rem + var(--sa-l))',
                    paddingRight: 'calc(0.5rem + var(--sa-r))' }}>

@@ -1,5 +1,22 @@
 [
   {
+    "version": "4.0.1",
+    "date": "2026-11-24",
+    "title": "Fewer surprises on Today and Money",
+    "changes": [
+      "When part of Needs you cannot load, Today still shows everything that did, and says which part is missing with a Retry button, instead of hiding the whole card.",
+      "Money no longer shows 0 KD or \"Nothing needs action\" when it could not load something. Those tiles show a dash and say they did not load, with a Retry button.",
+      "Money shows the last day the tills sent (yesterday) instead of a \"Sales today\" that was always 0, and its month figure is coloured by pace like Today's. The Expo line now always shows \"not in total\".",
+      "Going back to Today shows it straight away instead of loading it all again, and the follow-ups you had opened stay open.",
+      "Today's header is one line, and Money is one tap away from it for those who use it.",
+      "The overdue task opens on that task in Assign tasks, outlined. A task given to a team now says which team instead of \"no assignee\".",
+      "A request opened from Today is scrolled into view in the Inbox.",
+      "Today names every branch that needs checking in its staffing line, and only links to pages you can open.",
+      "Till sales counts a day with sales that added up to 0 KD as a day with sales, and \"last 7 days\" of lost sales is now exactly 7 days.",
+      "The top bar on the phone no longer lets the page show through it."
+    ]
+  },
+  {
     "version": "4.0.0",
     "date": "2026-11-24",
     "title": "Every tap on Today opens the right place",

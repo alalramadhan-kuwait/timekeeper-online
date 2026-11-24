@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { ClipboardList, Plus, Send, Trash2, Check, RotateCcw } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
@@ -33,6 +34,11 @@ export default function AssignTasksPage() {
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const [filter, setFilter] = useState<'Open' | 'Done' | 'Cancelled' | 'All'>('Open');
+  /* ?focus=<task id> (from Today's overdue task): that task is outlined and
+     scrolled to, on whichever filter shows it. */
+  const [params] = useSearchParams();
+  const focusId = params.get('focus');
+  const scrolledTo = useRef<string | null>(null);
 
   // form
   const [assignee, setAssignee] = useState('');
@@ -46,8 +52,11 @@ export default function AssignTasksPage() {
       supabase.from('employees').select('id, full_name, job_title, user_id, status').order('full_name'),
       supabase.from('assigned_tasks').select('*').order('created_at', { ascending: false }),
     ]);
+    const rows = (t.data as Task[]) ?? [];
     setEmps((e.data as Emp[]) ?? []);
-    setTasks((t.data as Task[]) ?? []);
+    setTasks(rows);
+    const hit = focusId ? rows.find((r) => r.id === focusId) : undefined;
+    if (hit && hit.status !== 'Open' && scrolledTo.current !== focusId) setFilter('All');
     setLoading(false);
   }
   useEffect(() => { load(); }, []);
@@ -83,6 +92,13 @@ export default function AssignTasksPage() {
   }
 
   const shown = useMemo(() => filter === 'All' ? tasks : tasks.filter((t) => t.status === filter), [tasks, filter]);
+  useEffect(() => {
+    if (!focusId || loading || scrolledTo.current === focusId) return;
+    const el = document.getElementById(`task-${focusId}`);
+    if (!el) return;
+    scrolledTo.current = focusId;
+    el.scrollIntoView({ block: 'center' });
+  }, [focusId, loading, shown]);
   const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kuwait' });
 
   if (loading) return <Spinner />;
@@ -151,7 +167,7 @@ export default function AssignTasksPage() {
             {shown.map((t) => {
               const overdue = t.status === 'Open' && !!t.due_date && t.due_date < today;
               return (
-                <li key={t.id} className="px-5 py-3 flex flex-wrap items-start gap-3">
+                <li key={t.id} id={`task-${t.id}`} className={`px-5 py-3 flex flex-wrap items-start gap-3 ${t.id === focusId ? 'bg-amber-50 ring-2 ring-inset ring-amber-400' : ''}`}>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-sm font-medium text-slate-800">{t.title}</span>

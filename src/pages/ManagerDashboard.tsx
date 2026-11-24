@@ -69,7 +69,7 @@ interface Item {
   /** An expired document: whose, which, and when, so their row in a branch sheet can say so too. */
   person?: { id: string; doc: string; date: string };
   /** Shown in place when the row is opened: the follow-ups behind a count. */
-  children?: { key: string; text: string; sub: string; chip: string; link: string }[];
+  children?: { key: string; text: string; sub: string; chip: string }[];
 }
 
 interface StuckRow { id: string; who: string; what: string; hours: number }
@@ -85,20 +85,30 @@ interface SalesData {
 }
 interface NeedsData {
   items: Item[];
-  /** Requests past due that are with somebody else, not with you. */
-  stuck: { count: number; rows: StuckRow[]; withWhom: string };
+  /** Requests past due that are with somebody else, not with you; null when the requests did not load. */
+  stuck: { count: number; rows: StuckRow[]; withWhom: string } | null;
+  /** The reads that failed while the others loaded: what they would add is unknown. */
+  missing: { what: string; error: string }[];
 }
-interface WatchData {
+interface LostData {
   lost7: number;
   lostMonth: number;
   notAvailableMonth: number;
   /** The most recent lost sale ever logged; null when none ever has been. */
   lastLost: string | null;
-  openPOs: number;
+}
+interface PoData {
+  /** Placed with a supplier (Ordered or Partially Received), not merged. */
+  placedPOs: number;
   latePOs: number;
   duePOs: number;
-  /** Open orders nobody has given an expected date: they can never show as late. */
+  /** Placed orders nobody has given an expected date: they can never show as late. */
   noDatePOs: number;
+}
+/** The two Watch reads load and fail on their own: one failing never hides the other. */
+interface WatchData {
+  lost: LostData | null; lostError: string | null;
+  po: PoData | null; poError: string | null;
 }
 
 type Key = 'staff' | 'sales' | 'needs' | 'watch';
@@ -113,6 +123,15 @@ interface Slots { staff: Slot<StaffData>; sales: Slot<SalesData>; needs: Slot<Ne
 
 const KEYS: Key[] = ['staff', 'sales', 'needs', 'watch'];
 const TIMEOUT_MS = 10_000;
+
+/* What Today last showed, kept in memory between visits so that coming back
+   from a drill-down shows it straight away instead of a skeleton. A section
+   older than a minute is read again in the background; until the new answer
+   arrives the old one stays, with its own "as of" time where it has one. Kept
+   per person, role and page access, and never written to storage. */
+const FRESH_MS = 60_000;
+interface Memo { who: string; slots: Partial<Record<Key, { data: unknown; at: number }>>; openRows: Record<string, boolean>; all: boolean }
+let memo: Memo | null = null;
 
 interface Targets {
   sales_target_month: number | null; sales_target_avenues: number | null; sales_target_timegallery: number | null;
@@ -141,6 +160,14 @@ const hhmmOf = (ms: number) => format(new Date(ms), 'HH:mm');
 function rowsOf<T>(q: { data: unknown; error: { message?: string } | null }, what: string): T {
   if (q.error) throw new Error(`${what}: ${q.error.message || 'could not be read'}`);
   return (q.data ?? []) as T;
+}
+
+/** A query's rows, or null with the failure noted in `missing`: for a section
+    that shows what did load and names what did not. */
+function partOf<T>(q: { data: unknown; error: { message?: string } | null }, what: string, missing: { what: string; error: string }[]): T | null {
+  if (!q.error) return (q.data ?? []) as T;
+  missing.push({ what, error: q.error.message || 'could not be read' });
+  return null;
 }
 
 /** Give up on a section the database does not answer, instead of spinning for ever. */
@@ -305,21 +332,26 @@ async function loadNeeds(role: string | null, canHR: boolean): Promise<NeedsData
     supabase.from('repair_watches').select('status, estimated_completion, updated_at'),
     supabase.from('waiting_list').select('customer_name, status, updated_at').eq('list_type', 'Pre-Order').eq('status', 'Arrived'),
     supabase.from('limited_projects').select('id, project_name, brand, status, launch_date'),
-    supabase.from('assigned_tasks').select('id, title, due_date, priority, assignee_name').eq('status', 'Open').lt('due_date', today).order('due_date'),
+    supabase.from('assigned_tasks').select('id, title, due_date, priority, assignee_name, assignee_role').eq('status', 'Open').lt('due_date', today).order('due_date'),
     canHR
       ? supabase.from('employees').select('id, full_name, residency_expiry, work_permit_expiry').in('status', ['Active', 'On leave'])
       : Promise.resolve({ data: [] as unknown[], error: null }),
   ]);
-  if (reqs.error) throw new Error(`Requests: ${reqs.error}`);
-  const fus = rowsOf<{ id: string; customer_name: string | null; outlet: string | null; staff: string | null; promised_callback: string }[]>(fuQ, 'Follow-ups');
-  const reps = rowsOf<{ status: string; estimated_completion: string | null; updated_at: string }[]>(repQ, 'Repairs');
-  const pre = rowsOf<{ customer_name: string; updated_at: string }[]>(preQ, 'Pre-orders');
-  const projs = rowsOf<{ id: string; project_name: string | null; brand: string | null; status: string; launch_date: string | null }[]>(projQ, 'Limited projects');
-  const tasks = rowsOf<{ id: string; title: string | null; due_date: string; priority: string | null; assignee_name: string | null }[]>(taskQ, 'Tasks');
-  const docs = rowsOf<{ id: string; full_name: string; residency_expiry: string | null; work_permit_expiry: string | null }[]>(docQ, 'Staff documents');
+  /* Each read stands on its own: one that fails is named, and the rest still
+     show. Only when every one failed is the whole section "not loaded". */
+  const missing: { what: string; error: string }[] = [];
+  const reqRows = reqs.error ? null : (reqs.rows as RequestRow[]);
+  if (reqs.error) missing.push({ what: 'Requests', error: reqs.error });
+  const fus = partOf<{ id: string; customer_name: string | null; outlet: string | null; staff: string | null; promised_callback: string }[]>(fuQ, 'Follow-ups', missing) ?? [];
+  const reps = partOf<{ status: string; estimated_completion: string | null; updated_at: string }[]>(repQ, 'Repairs', missing) ?? [];
+  const pre = partOf<{ customer_name: string; updated_at: string }[]>(preQ, 'Pre-orders', missing) ?? [];
+  const projs = partOf<{ id: string; project_name: string | null; brand: string | null; status: string; launch_date: string | null }[]>(projQ, 'Limited projects', missing) ?? [];
+  const tasks = partOf<{ id: string; title: string | null; due_date: string; priority: string | null; assignee_name: string | null; assignee_role: string | null }[]>(taskQ, 'Tasks', missing) ?? [];
+  const docs = partOf<{ id: string; full_name: string; residency_expiry: string | null; work_permit_expiry: string | null }[]>(docQ, 'Staff documents', missing) ?? [];
+  if (missing.length === (canHR ? 7 : 6)) throw new Error(missing.map((m) => `${m.what}: ${m.error}`).join(' · '));
 
   const items: Item[] = [];
-  for (const r of reqs.rows as RequestRow[]) {
+  for (const r of reqRows ?? []) {
     if (tabOf(r, mine) !== 'action') continue;
     const when = r.kind === 'Leave' ? r.proposed_from : r.attendance_date;
     items.push({
@@ -331,10 +363,10 @@ async function loadNeeds(role: string | null, canHR: boolean): Promise<NeedsData
   }
   /* Requests past due that sit with somebody else. Not yours to decide, but
      yours to chase: they are counted apart from what is waiting on you. */
-  const stuckRows = (reqs.rows as RequestRow[]).filter((r) => tabOf(r, mine) === 'waiting' && r.is_overdue)
+  const stuckRows = (reqRows ?? []).filter((r) => tabOf(r, mine) === 'waiting' && r.is_overdue)
     .sort((a, b) => a.hours_pending - b.hours_pending);
   const holders = [...new Set(stuckRows.map((r) => r.stage_owner))];
-  const stuck = {
+  const stuck = !reqRows ? null : {
     count: stuckRows.length,
     rows: stuckRows.map((r) => {
       const when = r.kind === 'Leave' ? r.proposed_from : r.attendance_date;
@@ -353,7 +385,7 @@ async function loadNeeds(role: string | null, canHR: boolean): Promise<NeedsData
       children: fus.map((f) => ({
         key: f.id, text: f.customer_name?.trim() || 'Customer',
         sub: [f.outlet, f.staff, `promised ${dayOf(f.promised_callback)}`].filter(Boolean).join(' · '),
-        chip: `${Math.max(1, daysSince(today, f.promised_callback))}d late`, link: '/follow-ups?bucket=overdue',
+        chip: `${Math.max(1, daysSince(today, f.promised_callback))}d late`,
       })),
     });
   }
@@ -388,10 +420,12 @@ async function loadNeeds(role: string | null, canHR: boolean): Promise<NeedsData
   if (tasks.length) {
     const first = tasks[0];
     const days = daysSince(today, first.due_date);
-    const who = first.assignee_name?.trim() || 'no assignee';
+    /* A task given to a team (operations, hr…) has a role and no name: it is assigned. */
+    const who = first.assignee_name?.trim() || (first.assignee_role ? `team: ${first.assignee_role}` : 'nobody assigned');
+    const held = !!(first.assignee_name?.trim() || first.assignee_role);
     items.push(tasks.length === 1
-      ? { key: 'task', kind: 'Task overdue', what: first.title?.trim() || 'untitled task', sub: [`Due ${dayOf(first.due_date)}`, first.priority ? `${first.priority} priority` : null, who].filter(Boolean).join(' · '), verb: first.assignee_name ? 'Open Assign tasks to chase or close it' : 'Open Assign tasks to give it to someone', chip: `${days}d late`, age: days * 24, overdue: true, link: '/tasks' }
-      : { key: 'task', kind: 'Tasks overdue', what: plural(tasks.length, 'assigned task'), sub: `Oldest due ${dayOf(first.due_date)} · ${first.title?.trim() || 'untitled task'}`, verb: 'Open Assign tasks to chase or close them', chip: `oldest ${days}d late`, age: days * 24, overdue: true, link: '/tasks' });
+      ? { key: 'task', kind: 'Task overdue', what: first.title?.trim() || 'untitled task', sub: [`Due ${dayOf(first.due_date)}`, first.priority ? `${first.priority} priority` : null, who].filter(Boolean).join(' · '), verb: held ? 'Open the task to chase or close it' : 'Open the task: nobody has it yet', chip: `${days}d late`, age: days * 24, overdue: true, link: `/tasks?focus=${first.id}` }
+      : { key: 'task', kind: 'Tasks overdue', what: plural(tasks.length, 'assigned task'), sub: `Oldest due ${dayOf(first.due_date)} · ${first.title?.trim() || 'untitled task'}`, verb: 'Open the oldest to chase or close it', chip: `oldest ${days}d late`, age: days * 24, overdue: true, link: `/tasks?focus=${first.id}` });
   }
 
   /* Documents: an expired one is named, person by person, and is overdue. One
@@ -419,37 +453,52 @@ async function loadNeeds(role: string | null, canHR: boolean): Promise<NeedsData
     });
   }
   items.sort((a, b) => Number(b.overdue) - Number(a.overdue) || b.age - a.age);
-  return { items, stuck };
+  return { items, stuck, missing };
 }
 
-/* ---- watch */
-async function loadWatch(): Promise<WatchData> {
+/* ---- watch: lost sales and purchase orders load, and fail, on their own */
+async function loadWatch(want: { lost: boolean; po: boolean }): Promise<WatchData> {
   const now = new Date();
   const today = kuwaitDate(now);
   const monthStart = `${today.slice(0, 7)}-01`;
   const in7 = kuwaitDate(new Date(now.getTime() + 7 * 86_400_000));
-  const sevenAgo = kuwaitDate(new Date(now.getTime() - 7 * 86_400_000));
+  /* "Last 7 days" is today and the six before it, as Visits & lost sales counts it. */
+  const sevenAgo = kuwaitDate(new Date(now.getTime() - 6 * 86_400_000));
+  const none = Promise.resolve({ data: [] as unknown[], error: null });
   const [lostQ, poQ] = await Promise.all([
     /* Newest first and not cut off at the month: an empty month has to say when
        a lost sale was last logged, or "none" reads as good news. */
-    supabase.from('cases_visible').select('lost_reason, date_logged').eq('case_type', 'Lost Sale')
-      .eq('deleted', false).order('date_logged', { ascending: false }).limit(1000),
-    supabase.from('purchase_orders').select('po_number, status, expected_arrival')
-      .in('status', ['Ordered', 'Partially Received']).is('merged_into', null),
+    want.lost ? supabase.from('cases_visible').select('lost_reason, date_logged').eq('case_type', 'Lost Sale')
+      .eq('deleted', false).order('date_logged', { ascending: false }).limit(1000) : none,
+    want.po ? supabase.from('purchase_orders').select('po_number, status, expected_arrival')
+      .in('status', ['Ordered', 'Partially Received']).is('merged_into', null) : none,
   ]);
-  const lost = rowsOf<{ lost_reason: string | null; date_logged: string }[]>(lostQ, 'Lost sales');
-  const pos = rowsOf<{ expected_arrival: string | null }[]>(poQ, 'Purchase orders');
-  const inMonth = lost.filter((l) => l.date_logged.slice(0, 10) >= monthStart);
-  return {
-    lost7: lost.filter((l) => l.date_logged.slice(0, 10) >= sevenAgo).length,
-    lostMonth: inMonth.length,
-    notAvailableMonth: inMonth.filter((l) => (l.lost_reason ?? '').toLowerCase() === 'not available').length,
-    lastLost: lost[0]?.date_logged?.slice(0, 10) ?? null,
-    openPOs: pos.length,
-    latePOs: pos.filter((p) => p.expected_arrival && p.expected_arrival < today).length,
-    duePOs: pos.filter((p) => p.expected_arrival && p.expected_arrival >= today && p.expected_arrival <= in7).length,
-    noDatePOs: pos.filter((p) => !p.expected_arrival).length,
-  };
+  const errOf = (q: { error: { message?: string } | null }, what: string) => (q.error ? `${what}: ${q.error.message || 'could not be read'}` : null);
+  const lostError = want.lost ? errOf(lostQ, 'Lost sales') : null;
+  const poError = want.po ? errOf(poQ, 'Purchase orders') : null;
+  if ((!want.lost || lostError) && (!want.po || poError)) throw new Error([lostError, poError].filter(Boolean).join(' · ') || 'Nothing to watch');
+  let lost: LostData | null = null;
+  if (want.lost && !lostError) {
+    const rows = (lostQ.data ?? []) as { lost_reason: string | null; date_logged: string }[];
+    const inMonth = rows.filter((l) => l.date_logged.slice(0, 10) >= monthStart);
+    lost = {
+      lost7: rows.filter((l) => l.date_logged.slice(0, 10) >= sevenAgo).length,
+      lostMonth: inMonth.length,
+      notAvailableMonth: inMonth.filter((l) => (l.lost_reason ?? '').toLowerCase() === 'not available').length,
+      lastLost: rows[0]?.date_logged?.slice(0, 10) ?? null,
+    };
+  }
+  let po: PoData | null = null;
+  if (want.po && !poError) {
+    const rows = (poQ.data ?? []) as { expected_arrival: string | null }[];
+    po = {
+      placedPOs: rows.length,
+      latePOs: rows.filter((p) => p.expected_arrival && p.expected_arrival < today).length,
+      duePOs: rows.filter((p) => p.expected_arrival && p.expected_arrival >= today && p.expected_arrival <= in7).length,
+      noDatePOs: rows.filter((p) => !p.expected_arrival).length,
+    };
+  }
+  return { lost, lostError, po, poError };
 }
 
 /* ------------------------------------------------------------- the screen */
@@ -472,14 +521,25 @@ interface Headline {
 }
 
 export default function ManagerDashboard() {
-  const { role, profile, pageAccess } = useAuth();
+  const { role, user, pageAccess } = useAuth();
   const canHR = ['admin', 'manager', 'hr'].includes(role ?? '');
-  const [slots, setSlots] = useState<Slots>({ staff: empty(), sales: empty(), needs: empty(), watch: empty() });
-  const [all, setAll] = useState(false);
+  const wantLost = canAccessPath('/sales', role, pageAccess);
+  const wantPo = canAccessPath('/purchase-orders', role, pageAccess);
+  const who = `${user?.id ?? ''}|${role ?? ''}|${JSON.stringify(pageAccess ?? null)}`;
+  const [cached] = useState(() => (memo && memo.who === who ? memo : null));
+  const [slots, setSlots] = useState<Slots>(() => {
+    const s: Record<Key, Slot<unknown>> = { staff: empty(), sales: empty(), needs: empty(), watch: empty() };
+    for (const k of KEYS) {
+      const c = cached?.slots[k];
+      if (c) s[k] = { data: c.data, error: null, loading: false, at: c.at };
+    }
+    return s as unknown as Slots;
+  });
+  const [all, setAll] = useState(cached?.all ?? false);
   /* Whether the event sales are shown counted toward the target. A way of
      looking only, never saved: whether they count is the owner's call. */
   const [eventsCounted, setEventsCounted] = useState(false);
-  const [openRows, setOpenRows] = useState<Record<string, boolean>>({});
+  const [openRows, setOpenRows] = useState<Record<string, boolean>>(cached?.openRows ?? {});
   const [flash, setFlash] = useState<string | null>(null);
   const sheetNav = useBranchSheet();
   const wide = useWideSheet();
@@ -487,7 +547,8 @@ export default function ManagerDashboard() {
   /* Each section's latest load; an older answer arriving late is dropped. */
   const gen = useRef<Record<Key, number>>({ staff: 0, sales: 0, needs: 0, watch: 0 });
 
-  const run = useCallback((keys: Key[]) => {
+  /* Reads the sections; state changes only when each answer arrives. */
+  const start = useCallback((keys: Key[]) => {
     /* Settings feed staffing (the default start) and sales (the targets): read
        once for both, and marked handled so a failure is reported by the
        sections, not as an unhandled rejection. */
@@ -497,11 +558,10 @@ export default function ManagerDashboard() {
       staff: () => loadStaff(settings),
       sales: () => loadSales(settings),
       needs: () => loadNeeds(role, canHR),
-      watch: () => loadWatch(),
+      watch: () => loadWatch({ lost: wantLost, po: wantPo }),
     };
     for (const k of keys) {
       const g = ++gen.current[k];
-      setSlots((s) => ({ ...s, [k]: { ...s[k], loading: true } }));
       within(loaders[k]()).then(
         (data) => { if (g === gen.current[k]) setSlots((s) => ({ ...s, [k]: { data, error: null, loading: false, at: Date.now() } })); },
         (e: unknown) => {
@@ -511,9 +571,37 @@ export default function ManagerDashboard() {
         },
       );
     }
-  }, [role, canHR]);
+  }, [role, canHR, wantLost, wantPo]);
+  /* A retry or a live change: marked as loading, then read. */
+  const run = useCallback((keys: Key[]) => {
+    setSlots((s) => {
+      const next = { ...s } as Record<Key, Slot<unknown>>;
+      for (const k of keys) next[k] = { ...next[k], loading: true };
+      return next as unknown as Slots;
+    });
+    start(keys);
+  }, [start]);
 
-  useEffect(() => { run(KEYS); }, [run]);
+  /* On the first visit everything is read; on a return only what is over a
+     minute old, the rest being shown from memory as it was. */
+  const firstLoad = useRef(true);
+  useEffect(() => {
+    const now = Date.now();
+    const keys = firstLoad.current && cached
+      ? KEYS.filter((k) => { const c = cached.slots[k]; return !c || now - c.at > FRESH_MS; })
+      : KEYS;
+    firstLoad.current = false;
+    if (keys.length) start(keys);
+  }, [start, cached]);
+  /* Remember what loaded, and which rows were open, for the next visit. */
+  useEffect(() => {
+    const kept: Memo['slots'] = memo && memo.who === who ? { ...memo.slots } : {};
+    for (const k of KEYS) {
+      const sl = slots[k] as Slot<unknown>;
+      if (sl.data && sl.at && !sl.error) kept[k] = { data: sl.data, at: sl.at };
+    }
+    memo = { who, slots: kept, openRows, all };
+  }, [who, slots, openRows, all]);
   useEffect(() => () => window.clearTimeout(flashTimer.current), []);
   const refreshStaff = useCallback(() => run(['staff']), [run]);
   useLive('mgr-dash', [{ table: 'attendance_records' }, { table: 'leave_records' }], refreshStaff);
@@ -599,12 +687,18 @@ export default function ManagerDashboard() {
     if (needs.data) {
       const n = needs.data.items.length;
       const overdue = needs.data.items.filter((i) => i.overdue).length;
-      const stuckTxt = needs.data.stuck.count ? ` · ${needs.data.stuck.count} stuck with others` : '';
+      const stuckN = needs.data.stuck?.count ?? 0;
+      const stuckTxt = stuckN ? ` · ${stuckN} stuck with others` : '';
+      const miss = needs.data.missing.map((x) => x.what);
+      const missTxt = miss.length ? ` · ${miss.join(', ')} did not load` : '';
       heads.push(overdue
-        ? { key: 'needs', tone: 'red', lead: `${overdue} overdue`, rest: `${plural(n, 'thing')} waiting on you${stuckTxt}${cue}` }
+        ? { key: 'needs', tone: 'red', lead: `${overdue} overdue`, rest: `${plural(n, 'thing')} waiting on you${stuckTxt}${missTxt}${cue}` }
         : n
-          ? { key: 'needs', tone: 'amber', lead: `${plural(n, 'thing')} waiting on you`, rest: `none overdue${stuckTxt}${cue}` }
-          : { key: 'needs', tone: needs.data.stuck.count ? 'amber' : 'green', lead: 'Nothing is waiting on you', rest: `${stuckTxt.replace(/^ · /, '')}${cue}` || undefined });
+          ? { key: 'needs', tone: 'amber', lead: `${plural(n, 'thing')} waiting on you`, rest: `${miss.length ? 'none overdue in what loaded' : 'none overdue'}${stuckTxt}${missTxt}${cue}` }
+          : miss.length
+            /* nothing among what loaded is not an all-clear */
+            ? { key: 'needs', tone: 'red', lead: 'Needs you partly loaded', rest: `${miss.join(', ')} did not load · unknown, not an all-clear${stuckTxt}${cue}` }
+            : { key: 'needs', tone: stuckN ? 'amber' : 'green', lead: 'Nothing is waiting on you', rest: `${stuckTxt.replace(/^ · /, '')}${cue}` || undefined });
     } else if (needs.error) heads.push({ key: 'needs', tone: 'red', lead: 'Needs you did not load', rest: 'unknown, not an all-clear' });
     else heads.push({ key: 'needs', tone: 'grey', lead: 'Needs you', rest: 'checking…' });
   }
@@ -616,17 +710,28 @@ export default function ManagerDashboard() {
       const shortB = staff.data.branches.filter((b) => b.shop && b.tone === 'warn');
       const gapCount = staff.data.branches.reduce((n, b) => n + b.people.filter((p) => p.status === 'late' || p.status === 'missing').length, 0);
       /* Naming one branch: the tap opens its sheet, one tap from the top. */
-      if (nobodyIn.length) heads.push({ key: 'staff', tone: 'red', lead: `${nobodyIn.map((s) => s.name).join(' and ')}: nobody on the floor`, rest: cue.replace(/^ · /, '') || undefined, branch: nobodyIn.length === 1 ? nobodyIn[0].key : undefined });
+      /* Every branch the card flags is named here, so none of them is only
+         found by scrolling; with more than one, the tap goes to the card. */
+      const flagged = staff.data.branches.filter((b) => b.tone === 'bad' || b.tone === 'warn');
+      const alsoOf = (shown: StaffBranch[]) => {
+        const others = flagged.filter((b) => !shown.includes(b)).map((b) => b.name);
+        return others.length ? `${others.join(', ')} also to check` : '';
+      };
+      const join = (...parts: string[]) => parts.filter(Boolean).join(' · ') || undefined;
+      if (nobodyIn.length) heads.push({ key: 'staff', tone: 'red', lead: `${nobodyIn.map((s) => s.name).join(' and ')}: nobody on the floor`, rest: join(alsoOf(nobodyIn), cue.replace(/^ · /, '')), branch: flagged.length === 1 ? nobodyIn[0].key : undefined });
       else if (shortB.length) {
         const b = shortB[0];
         /* as the To-do button counts them: not in, and no shift time to judge by */
         const unknown = b.people.filter((p) => p.timeUnknown && !['working', 'completed'].includes(p.status)).length;
         heads.push({
           key: 'staff', tone: 'amber', lead: `${b.name} ${b.onFloor} in · minimum ${b.need}`,
-          rest: `${unknown ? `${unknown} with no shift time` : ''}${shortB.length > 1 ? `${unknown ? ' · ' : ''}${shortB.length - 1} more short` : ''}${cue}`.replace(/^ · /, '') || undefined,
-          branch: b.key,
+          rest: join(unknown ? `${unknown} with no shift time` : '', alsoOf([b]), cue.replace(/^ · /, '')),
+          branch: flagged.length === 1 ? b.key : undefined,
         });
-      } else if (gapCount) heads.push({ key: 'staff', tone: 'amber', lead: `${gapCount === 1 ? 'One person is' : `${gapCount} people are`} not in yet`, rest: cue.replace(/^ · /, '') || undefined });
+      } else if (gapCount) {
+        const where = staff.data.branches.filter((b) => b.people.some((p) => p.status === 'late' || p.status === 'missing'));
+        heads.push({ key: 'staff', tone: 'amber', lead: `${gapCount === 1 ? 'One person is' : `${gapCount} people are`} not in yet`, rest: join(where.map((b) => b.name).join(', '), cue.replace(/^ · /, '')), branch: where.length === 1 ? where[0].key : undefined });
+      }
       else heads.push({ key: 'staff', tone: 'green', lead: 'Everyone due is in', rest: cue.replace(/^ · /, '') || undefined });
     } else if (staff.error) heads.push({ key: 'staff', tone: 'red', lead: 'Staffing did not load', rest: 'unknown, not an all-clear' });
     else heads.push({ key: 'staff', tone: 'grey', lead: 'Staffing', rest: 'checking…' });
@@ -634,14 +739,14 @@ export default function ManagerDashboard() {
 
   /* The figures run to the last day the tills synced, not to now. */
   const salesCtx = !visible.includes('sales') ? null
-    : m?.lastSaleDay ? { text: `Sales to end of ${dayOf(m.lastSaleDay)}`, bad: false }
-      : sales.data ? { text: 'No till sales yet this month', bad: false }
-        : sales.error ? { text: 'Sales not loaded', bad: true } : null;
+    : m?.lastSaleDay ? { text: `sales to end of ${dayOf(m.lastSaleDay)}`, bad: false }
+      : sales.data ? { text: 'no till sales yet this month', bad: false }
+        : sales.error ? { text: 'sales not loaded', bad: true } : null;
   const staffCtx = !visible.includes('staff') ? null
     : staff.data && staff.at ? { text: `staff at ${hhmmOf(staff.at)}${staff.error ? ', could not refresh' : ''}`, bad: !!staff.error }
       : staff.error ? { text: 'staff not loaded', bad: true } : null;
   /* The tills sync once a morning; figures that stop before yesterday did not refresh. */
-  const yesterday = kuwaitDate(new Date(Date.now() - 86_400_000));
+  const yesterday = sales.at ? kuwaitDate(new Date(sales.at - 86_400_000)) : '';
   const tillsBehind = !!m?.lastSaleDay && m.lastSaleDay < yesterday;
 
   const toggleRow = (k: string) => setOpenRows((o) => ({ ...o, [k]: !o[k] }));
@@ -653,8 +758,9 @@ export default function ManagerDashboard() {
     <TodayCard id="card-sales" icon={<TrendingUp className="h-5 w-5" />} title="Sales" flash={flash === 'sales'}
       chip={m && pace && regPct !== null ? (counted
         ? <Chip tone="grey">events counted</Chip>
-        : regPct < pace.frac * 100
-          ? <Chip tone={regTone}>{Math.round(pace.frac * 100 - regPct)} pts behind</Chip>
+        /* from the two rounded figures the card shows, so 77% − 55% reads 22 */
+        : Math.round(pace.frac * 100) > Math.round(regPct)
+          ? <Chip tone={regTone}>{Math.round(pace.frac * 100) - Math.round(regPct)} pts behind</Chip>
           : <Chip tone="green">on pace</Chip>) : undefined}
       meta={m ? `${longMonth(m.month)} · ${m.tillDays ? `${m.tillDays} of ${m.daysInMonth} till days` : 'no till sales yet'}` : sales.error ? 'Not loaded' : 'Loading till sales'}
       link={can('/till-sales') ? { label: 'Till sales', to: tillHref(null) } : undefined}>
@@ -736,7 +842,8 @@ export default function ManagerDashboard() {
         )}
 
         {/* three facts: what it needs a day, yesterday, the same days last month */}
-        <div className="mt-3 grid grid-cols-3 divide-x divide-slate-200 rounded-xl bg-slate-50 py-2 text-center tabular-nums">
+        {counted && <p className="mt-3 text-[12px] font-semibold uppercase tracking-wide text-slate-600">Below: regular outlets only</p>}
+        <div className={`${counted ? 'mt-1' : 'mt-3'} grid grid-cols-3 divide-x divide-slate-200 rounded-xl bg-slate-50 py-2 text-center tabular-nums`}>
           <div className="px-1">
             <p className="text-[12px] text-slate-600">Needs a day</p>
             <p className={`text-[15px] font-semibold leading-5 ${need !== null && doing !== null && need > doing ? TONE.red.text : 'text-slate-900'}`}>
@@ -855,23 +962,36 @@ export default function ManagerDashboard() {
   const overdueItems = nd ? nd.items.filter((i) => i.overdue) : [];
   const otherItems = nd ? nd.items.filter((i) => !i.overdue) : [];
   const shownOther = all ? otherItems : otherItems.slice(0, 4);
+  /* A row links only where this person may open the page; otherwise it is read-only. */
+  const canOpen = (to: string) => can(to.split('?')[0]);
+  const missOther = nd ? nd.missing.filter((x) => x.what !== 'Requests') : [];
+  const wd = watch.data;
   const needsCard = (
     <TodayCard id="card-needs" icon={<ListChecks className="h-5 w-5" />} title="Needs you" flash={flash === 'needs'}
-      chip={nd ? (overdueItems.length ? <Chip tone="red">{overdueItems.length} overdue</Chip> : nd.items.length ? <Chip tone="amber">{nd.items.length} waiting</Chip> : <Chip tone="green">all clear</Chip>) : undefined}
-      meta={nd ? `Overdue first${nd.stuck.count ? `, then ${nd.stuck.count} stuck` : ''}` : needs.error ? 'Not loaded' : 'Checking what needs you'}
+      chip={nd ? (overdueItems.length ? <Chip tone="red">{overdueItems.length} overdue</Chip> : nd.items.length ? <Chip tone="amber">{nd.items.length} waiting</Chip> : nd.missing.length ? <Chip tone="red">partly loaded</Chip> : <Chip tone="green">all clear</Chip>) : undefined}
+      meta={nd ? `Overdue first${nd.stuck?.count ? `, then ${nd.stuck.count} stuck` : ''}` : needs.error ? 'Not loaded' : 'Checking what needs you'}
       link={{ label: 'Inbox', to: '/inbox' }}>
       {!nd ? <SectionState slot={needs} name="what is waiting on you" onRetry={() => run(['needs'])} /> : (
         <>
           {needs.error && <StaleBar at={needs.at} error={needs.error} busy={needs.loading} onRetry={() => run(['needs'])} />}
-          {nd.items.length === 0 && (
+          {/* the reads that failed while the rest loaded: named, never an all-clear */}
+          {missOther.length > 0 && (
+            <div role="alert" className="mb-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-[13px] text-rose-700">
+              <p className="flex items-start gap-2 font-semibold"><AlertTriangle size={15} className="mt-0.5 shrink-0" aria-hidden />
+                {missOther.map((x) => x.what).join(', ')} could not load: what {missOther.length === 1 ? 'it' : 'they'} would add is unknown, not an all-clear.</p>
+              <p className="mt-0.5 break-words text-xs">{missOther.map((x) => `${x.what}: ${x.error}`).join(' · ')}</p>
+              <div className="mt-1.5"><RetryButton busy={needs.loading} onClick={() => run(['needs'])} /></div>
+            </div>
+          )}
+          {nd.items.length === 0 && nd.missing.length === 0 && (
             <p className="flex min-h-[44px] items-center gap-2 text-[14px] text-slate-700"><Check size={16} className="text-emerald-600" aria-hidden /> Nothing is waiting on you</p>
           )}
           <ol>
-            {overdueItems.map((it, i) => <NeedRow key={it.key} it={it} n={i + 1} open={!!openRows[it.key]} onToggle={() => toggleRow(it.key)} />)}
+            {overdueItems.map((it, i) => <NeedRow key={it.key} it={it} n={i + 1} open={!!openRows[it.key]} onToggle={() => toggleRow(it.key)} canOpen={canOpen} />)}
           </ol>
           {shownOther.length > 0 && (
             <ul className={overdueItems.length ? 'mt-1 border-t border-slate-200' : ''}>
-              {shownOther.map((it) => <NeedRow key={it.key} it={it} open={!!openRows[it.key]} onToggle={() => toggleRow(it.key)} />)}
+              {shownOther.map((it) => <NeedRow key={it.key} it={it} open={!!openRows[it.key]} onToggle={() => toggleRow(it.key)} canOpen={canOpen} />)}
             </ul>
           )}
           {otherItems.length > 4 && (
@@ -880,21 +1000,37 @@ export default function ManagerDashboard() {
             </button>
           )}
 
-          {nd.stuck.count > 0 && (
+          {nd.stuck === null ? (
+            /* the requests did not load: what waits on you and what is stuck with others are both unknown */
+            <>
+              <SubHead>Stuck with others</SubHead>
+              <div role="alert" className="mt-1 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-1.5 text-[13px] text-rose-700">
+                <span><span className="font-semibold">Requests could not load</span>: those waiting on you and stuck with others are unknown. {nd.missing.find((x) => x.what === 'Requests')?.error}</span>
+                <RetryButton busy={needs.loading} onClick={() => run(['needs'])} />
+              </div>
+            </>
+          ) : nd.stuck.count > 0 && (
             <>
               <SubHead right={<span className="text-[12px] font-semibold text-slate-600">nudge</span>}>Stuck with others</SubHead>
               <p className="mt-1 text-[14px] leading-5 text-slate-900">
                 {plural(nd.stuck.count, 'request')} overdue with {nd.stuck.withWhom}
               </p>
               <ul className="mt-0.5">
-                {nd.stuck.rows.map((r) => (
-                  <li key={r.id}>
-                    <Link to={`/inbox?focus=${r.id}`} state={FROM_TODAY} className="-mx-2 flex min-h-[44px] items-center gap-2 rounded-lg px-2 text-[14px] hover:bg-slate-50">
+                {nd.stuck.rows.map((r) => {
+                  const body = (
+                    <>
                       <span className="min-w-0 flex-1 text-slate-900">{r.who} <span className="text-slate-600">· {r.what}</span></span>
                       <span className={`text-[13px] font-semibold tabular-nums ${TONE.amber.text}`}>waiting {waitedFor(r.hours)}</span>
-                    </Link>
-                  </li>
-                ))}
+                    </>
+                  );
+                  return (
+                    <li key={r.id}>
+                      {canOpen('/inbox')
+                        ? <Link to={`/inbox?focus=${r.id}`} state={FROM_TODAY} className="-mx-2 flex min-h-[44px] items-center gap-2 rounded-lg px-2 text-[14px] hover:bg-slate-50">{body}</Link>
+                        : <div className="flex min-h-[44px] items-center gap-2 text-[14px]">{body}</div>}
+                    </li>
+                  );
+                })}
               </ul>
             </>
           )}
@@ -904,36 +1040,42 @@ export default function ManagerDashboard() {
       {visible.includes('watch') && (
         <>
           <SubHead right={<Eye className="h-4 w-4 text-slate-600" aria-hidden />}>Watch</SubHead>
-          {!watch.data ? <div className="mt-2"><SectionState slot={watch} name="the watch list" onRetry={() => run(['watch'])} /></div> : (
+          {!wd ? <div className="mt-2"><SectionState slot={watch} name="the watch list" onRetry={() => run(['watch'])} /></div> : (
             <ul>
               {watch.error && <li className="mt-2"><StaleBar at={watch.at} error={watch.error} busy={watch.loading} onRetry={() => run(['watch'])} /></li>}
-              {can('/sales') && (watch.data.lostMonth === 0 ? (
+              {can('/sales') && (!wd.lost ? (
+                <WatchFail what="Lost sales" error={wd.lostError} busy={watch.loading} onRetry={() => run(['watch'])} />
+              ) : wd.lost.lostMonth === 0 ? (
                 /* An empty month is missing data until shown otherwise, not good news. */
                 <WatchLine to="/sales?view=lost&period=30d" tone="amber" sub="Missing, not proof of none"
-                  label={watch.data.lastLost ? `No lost sales logged since ${dayOf(watch.data.lastLost)}` : 'No lost sales have ever been logged'} />
+                  label={wd.lost.lastLost ? `No lost sales logged since ${dayOf(wd.lost.lastLost)}` : 'No lost sales have ever been logged'} />
               ) : (
                 <>
                   <WatchLine to="/sales?view=lost&reason=Not%20Available" label="Asked for, not available this month"
-                    value={`${watch.data.notAvailableMonth} of ${watch.data.lostMonth}`} tone={watch.data.notAvailableMonth > 0 && watch.data.notAvailableMonth * 2 >= watch.data.lostMonth ? 'red' : 'grey'} />
-                  <WatchLine to="/sales?view=lost&period=7d" label="Lost sales · last 7 days" value={String(watch.data.lost7)} tone="grey" />
+                    value={`${wd.lost.notAvailableMonth} of ${wd.lost.lostMonth}`} tone={wd.lost.notAvailableMonth > 0 && wd.lost.notAvailableMonth * 2 >= wd.lost.lostMonth ? 'red' : 'grey'} />
+                  <WatchLine to="/sales?view=lost&period=7d" label="Lost sales · last 7 days" value={String(wd.lost.lost7)} tone="grey" />
                 </>
               ))}
-              {can('/purchase-orders') && (
+              {can('/purchase-orders') && (!wd.po ? (
+                <WatchFail what="Purchase orders" error={wd.poError} busy={watch.loading} onRetry={() => run(['watch'])} />
+              ) : (
+                /* "Placed" is Ordered or Partially Received: orders a supplier has.
+                   Money's "Open POs" also counts those still waiting for approval. */
                 <>
-                  {watch.data.latePOs > 0 && (
-                    <WatchLine to="/purchase-orders?filter=late" label="Deliveries past their expected date" value={plural(watch.data.latePOs, 'PO')} tone="red" />
+                  {wd.po.latePOs > 0 && (
+                    <WatchLine to="/purchase-orders?filter=late" label="Deliveries past their expected date" value={plural(wd.po.latePOs, 'PO')} tone="red" />
                   )}
-                  {watch.data.noDatePOs > 0 && (
-                    <WatchLine to="/purchase-orders?filter=no-expected-date" tone="amber" sub="So none of them can show as late"
-                      label={`${plural(watch.data.noDatePOs, 'open order')} ${watch.data.noDatePOs === 1 ? 'has' : 'have'} no expected date`} />
+                  {wd.po.noDatePOs > 0 && (
+                    <WatchLine to="/purchase-orders?filter=no-expected-date" tone="amber" sub="Placed with suppliers, so none of them can show as late"
+                      label={`${plural(wd.po.noDatePOs, 'placed order')} ${wd.po.noDatePOs === 1 ? 'has' : 'have'} no expected date`} />
                   )}
                   {/* "due this week" means something only for orders that have a date */}
-                  {watch.data.latePOs === 0 && watch.data.openPOs > watch.data.noDatePOs && (
-                    <WatchLine to="/purchase-orders?filter=due-this-week" label="Deliveries due this week" value={String(watch.data.duePOs)} tone="grey" />
+                  {wd.po.latePOs === 0 && wd.po.placedPOs > wd.po.noDatePOs && (
+                    <WatchLine to="/purchase-orders?filter=due-this-week" label="Deliveries due this week" value={String(wd.po.duePOs)} tone="grey" />
                   )}
-                  {watch.data.openPOs === 0 && <WatchLine to="/purchase-orders" label="Open purchase orders" value="none" tone="grey" />}
+                  {wd.po.placedPOs === 0 && <WatchLine to="/purchase-orders" label="Orders placed with suppliers" value="none" tone="grey" />}
                 </>
-              )}
+              ))}
             </ul>
           )}
         </>
@@ -972,15 +1114,21 @@ export default function ManagerDashboard() {
   return (
     <div className={`mx-auto max-w-2xl xl:max-w-none ${split ? 'xl:mr-[392px]' : ''}`}>
       <div className="mb-3">
-        <h1 className="text-xl font-bold text-slate-900">Today</h1>
-        <p className="text-[14px] text-slate-600">{format(new Date(), 'EEEE d MMMM')}{profile ? ` · ${profile.full_name}` : ''}</p>
-        {(salesCtx || staffCtx) && (
-          <p className="text-[13px] text-slate-600">
-            {[salesCtx, staffCtx].filter(Boolean).map((c, i) => (
-              <span key={i} className={c!.bad ? 'font-semibold text-rose-700' : ''}>{i ? ' · ' : ''}{c!.text}</span>
-            ))}
-          </p>
-        )}
+        <div className="flex items-center justify-between gap-2">
+          <h1 className="text-xl font-bold text-slate-900">Today</h1>
+          {can('/money') && (
+            <Link to="/money" className="-mr-2 inline-flex min-h-[44px] items-center gap-0.5 rounded-lg px-2 text-[14px] font-semibold text-slate-700 hover:bg-slate-100">
+              Money <ChevronRight className="h-4 w-4" aria-hidden />
+            </Link>
+          )}
+        </div>
+        {/* one line: the day, and how fresh each set of figures is */}
+        <p className="text-[13px] text-slate-600">
+          {format(new Date(), 'EEE d MMM')}
+          {[salesCtx, staffCtx].filter(Boolean).map((c, i) => (
+            <span key={i} className={c!.bad ? 'font-semibold text-rose-700' : ''}> · {c!.text}</span>
+          ))}
+        </p>
       </div>
 
       {/* one sentence per card; each one jumps to its card */}
@@ -1030,7 +1178,8 @@ export default function ManagerDashboard() {
 /* ------------------------------------------------------------------ parts */
 
 /** One thing that needs you: numbered when overdue, with what to do and how late. */
-function NeedRow({ it, n, open, onToggle }: { it: Item; n?: number; open: boolean; onToggle: () => void }) {
+function NeedRow({ it, n, open, onToggle, canOpen }: { it: Item; n?: number; open: boolean; onToggle: () => void; canOpen: (to: string) => boolean }) {
+  const linkable = canOpen(it.link);
   const tone: Tone = it.overdue ? 'red' : 'amber';
   const inner = (
     <>
@@ -1049,7 +1198,7 @@ function NeedRow({ it, n, open, onToggle }: { it: Item; n?: number; open: boolea
       </span>
       {it.children
         ? <ChevronDown className={`mt-1 h-4 w-4 shrink-0 text-slate-500 transition-transform ${open ? 'rotate-180' : ''}`} aria-hidden />
-        : <ChevronRight className="mt-1 h-4 w-4 shrink-0 text-slate-500" aria-hidden />}
+        : linkable ? <ChevronRight className="mt-1 h-4 w-4 shrink-0 text-slate-500" aria-hidden /> : null}
     </>
   );
   const cls = '-mx-2 flex min-h-[52px] w-[calc(100%+16px)] items-start gap-2.5 rounded-lg px-2 py-2 text-left hover:bg-slate-50';
@@ -1057,25 +1206,30 @@ function NeedRow({ it, n, open, onToggle }: { it: Item; n?: number; open: boolea
     <li className="border-t border-slate-100 first:border-0">
       {it.children ? (
         <button type="button" onClick={onToggle} aria-expanded={open} className={cls}>{inner}</button>
-      ) : (
+      ) : linkable ? (
         <Link to={it.link} state={FROM_TODAY} className={cls}>{inner}</Link>
+      ) : (
+        <div className={cls.replace(' hover:bg-slate-50', '')}>{inner}</div>
       )}
+      {/* The customers behind the count, to read: Follow-ups opens on the
+          overdue list, not on one customer, so they are not links each. */}
       {it.children && open && (
         <ul className="mb-2 ml-3 border-l-2 border-slate-200 pl-3">
           {it.children.map((c) => (
-            <li key={c.key}>
-              <Link to={c.link} state={FROM_TODAY} className="flex min-h-[44px] items-center gap-2 py-1">
-                <span className="min-w-0 flex-1 text-[14px] leading-5 text-slate-900">{c.text}
-                  <span className="block text-[13px] leading-[18px] text-slate-600">{c.sub}</span>
-                </span>
-                <span className={`text-[13px] font-semibold tabular-nums ${TONE[tone].text}`}>{c.chip}</span>
-                <ChevronRight className="h-4 w-4 shrink-0 text-slate-500" aria-hidden />
-              </Link>
+            <li key={c.key} className="flex min-h-[44px] items-center gap-2 py-1">
+              <span className="min-w-0 flex-1 text-[14px] leading-5 text-slate-900">{c.text}
+                <span className="block text-[13px] leading-[18px] text-slate-600">{c.sub}</span>
+              </span>
+              <span className={`text-[13px] font-semibold tabular-nums ${TONE[tone].text}`}>{c.chip}</span>
             </li>
           ))}
-          <li>
-            <Link to={it.link} state={FROM_TODAY} className="flex min-h-[44px] items-center text-[13px] font-semibold text-slate-700 hover:underline">Open Follow-ups</Link>
-          </li>
+          {linkable && (
+            <li>
+              <Link to={it.link} state={FROM_TODAY} className="inline-flex min-h-[44px] items-center gap-0.5 text-[14px] font-semibold text-slate-900 hover:underline">
+                Open Follow-ups <ChevronRight className="h-4 w-4" aria-hidden />
+              </Link>
+            </li>
+          )}
         </ul>
       )}
     </li>
@@ -1125,6 +1279,16 @@ function StaleBar({ at, error, busy, onRetry, label, what, syncedAt }: {
       <span>{label ? `${label} could` : 'Could'} not refresh{cover ? `: ${cover}` : ''}. <span className="text-amber-800">{error}</span></span>
       <RetryButton busy={busy} onClick={onRetry} />
     </div>
+  );
+}
+
+/** One Watch read that failed while the other loaded. */
+function WatchFail({ what, error, busy, onRetry }: { what: string; error: string | null; busy: boolean; onRetry: () => void }) {
+  return (
+    <li role="alert" className="mt-1 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-1.5 text-[13px] text-rose-700">
+      <span><span className="font-semibold">{what} could not load</span>: unknown, not zero. {error}</span>
+      <RetryButton busy={busy} onClick={onRetry} />
+    </li>
   );
 }
 

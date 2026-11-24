@@ -1,15 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  ExternalLink, ChevronDown, StickyNote, BellOff, UserRound, CheckCheck, ArrowRight, RotateCcw, Bell, ClipboardList,
+  ExternalLink, ChevronDown, StickyNote, BellOff, UserRound, CheckCheck, ArrowRight, RotateCcw, Bell, ClipboardList, AlertTriangle, RotateCw,
 } from 'lucide-react';
 import { format, startOfWeek, startOfMonth } from 'date-fns';
 import { supabase } from '../lib/supabase';
 import { resolveOutlet, outletName, type OutletCode } from '../shared/outlets';
-import { monthSales, eventDates, type EventMonth, type TillRow } from '../shared/tillSales';
+import { monthSales, eventDates, daySales, type EventMonth, type TillRow, type DaySales } from '../shared/tillSales';
+import { TONE } from '../components/TodayCard';
 import { Badge, Spinner } from '../components/ui';
 import { formatKDCompact } from '../lib/format';
-import { alertsFrom, alertQueries, loadAlertActions, saveAlertAction, Alert, AlertAction } from '../lib/alerts';
+import { alertsFrom, alertQueries, loadAlertActions, readAlertActions, saveAlertAction, Alert, AlertAction } from '../lib/alerts';
 import { tierClass, tierLabel } from '../lib/expiry';
 import { useAuth } from '../context/AuthContext';
 import { canAccessPath } from '../components/Layout';
@@ -135,13 +136,30 @@ function AlertRow({ alert, action, expanded, onToggle, onSave }: {
   );
 }
 
+function RetryButton({ busy, onClick }: { busy: boolean; onClick: () => void }) {
+  return (
+    <button type="button" onClick={onClick} disabled={busy}
+      className="mt-2 inline-flex min-h-[44px] items-center gap-1.5 rounded-lg border border-rose-300 bg-white px-3 text-sm font-semibold text-rose-700 hover:bg-rose-100 disabled:cursor-wait disabled:opacity-60 sm:mt-0">
+      <RotateCw size={14} className={busy ? 'animate-spin' : ''} aria-hidden /> {busy ? 'Retrying…' : 'Retry'}
+    </button>
+  );
+}
+
 // ── KPI primitives ────────────────────────────────────────────────────────────
-interface KpiPart { label: string; value: string; pct?: number | null }
+interface KpiPart {
+  label: string; value: string; pct?: number | null;
+  /** A second line under the label, e.g. an event's dates. */
+  note?: string;
+  /** Set apart from the rows above it, its label never cut off: a figure outside the total. */
+  apart?: boolean;
+}
 interface Kpi {
   label: string; value: string | number; sub?: string; accent?: string; link?: string;
   onClick?: () => void;
   /** Where the headline figure came from, shop by shop. */
   parts?: KpiPart[];
+  /** The reads the tile is made from: if one failed, the tile says so instead of showing 0. */
+  src?: string[];
 }
 
 function KpiCard({ k }: { k: Kpi }) {
@@ -162,10 +180,12 @@ function KpiCard({ k }: { k: Kpi }) {
       {k.parts && k.parts.length > 0 && (
         <div className="mt-2 pt-2 border-t border-slate-100 space-y-1">
           {k.parts.map((b) => (
-            <div key={b.label} className="flex items-baseline gap-2 text-xs">
-              <span className="flex-1 truncate text-slate-500">{b.label}</span>
-              <span className="font-semibold text-slate-700 tabular-nums">{b.value}</span>
-              <span className="w-10 text-right tabular-nums text-slate-400">
+            <div key={b.label} className={`flex items-baseline gap-2 text-xs ${b.apart ? 'mt-1.5 border-t border-dashed border-slate-200 pt-1.5' : ''}`}>
+              <span className={`min-w-0 flex-1 text-slate-500 ${b.apart ? '' : 'truncate'}`}>{b.label}
+                {b.note && <span className="block text-slate-400">{b.note}</span>}
+              </span>
+              <span className={`tabular-nums ${b.apart ? 'text-slate-500' : 'font-semibold text-slate-700'}`}>{b.value}</span>
+              <span className="w-10 shrink-0 text-right tabular-nums text-slate-400">
                 {b.pct == null ? '' : `${b.pct}%`}
               </span>
             </div>
@@ -349,7 +369,16 @@ export default function Dashboard({ title = 'Today', money = false }: { title?: 
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [showHandled, setShowHandled] = useState(false);
+  /* The reads that failed, by name: their tiles show "—, did not load", never
+     0 KD or an all-clear. `fatal` is a load that threw before any answer. */
+  const [failed, setFailed] = useState<string[]>([]);
+  const [fatal, setFatal] = useState<string | null>(null);
+  const [lastDay, setLastDay] = useState<DaySales | null>(null);
+  const [pace, setPace] = useState<{ frac: number; days: number } | null>(null);
+  const [nonce, setNonce] = useState(0);
+  const [retrying, setRetrying] = useState(false);
   const alertsRef = useRef<HTMLDivElement>(null);
+  const retry = () => { setRetrying(true); setNonce((n) => n + 1); };
 
   async function handleSave(key: string, patch: Partial<AlertAction>) {
     await saveAlertAction(key, patch);
@@ -371,10 +400,17 @@ export default function Dashboard({ title = 'Today', money = false }: { title?: 
     const canHR = ['admin', 'manager', 'hr'].includes(role ?? '');
 
     async function load() {
+      try { await read(); } catch (e) {
+        setFatal(e instanceof Error ? e.message : String(e));
+        setLoading(false);
+      }
+      setRetrying(false);
+    }
+    async function read() {
       const [
         posQ, lostQ, overdueFuQ, newCustQ, vipQ, wlQ, preQ, projQ,
         stockSumQ, lowQ, stockCntQ, poQ, attTodayQ, attLateQ, leaveQ, reqQ, empQ,
-        repairsQ, igQ, setQ, actMap, stockHistQ, syncQ, alertPoQ, postQ,
+        repairsQ, igQ, setQ, actQ, stockHistQ, syncQ, alertPoQ, postQ,
       ] = await Promise.all([
         /* Till revenue from Lightspeed, refreshed by the 05:00 UTC sync every
            morning. This used to read logged Sale cases — which is a pipeline,
@@ -412,7 +448,7 @@ export default function Dashboard({ title = 'Today', money = false }: { title?: 
         supabase.from('repair_watches').select('status, estimated_completion, date_returned'),
         supabase.from('instagram_daily').select('snapshot_date, followers, username, last_post_date').order('snapshot_date', { ascending: true }).limit(400),
         supabase.from('settings').select('sales_target_month, sales_target_avenues, sales_target_timegallery, sales_target_online, sales_target_whatsapp').single(),
-        loadAlertActions(),
+        readAlertActions(),
         supabase.from('lightspeed_stock_value_history').select('snapshot_date, retail_value, cost_value').order('snapshot_date', { ascending: true }).limit(90),
         supabase.from('lightspeed_sync_log').select('finished_at').eq('status', 'ok').not('finished_at', 'is', null).order('finished_at', { ascending: false }).limit(1),
         // the rest of what the alerts read; the dashboard's own purchase orders are a different set
@@ -423,6 +459,20 @@ export default function Dashboard({ title = 'Today', money = false }: { title?: 
           .eq('username', IG_MAIN)
           .order('posted_at', { ascending: false }).limit(30),
       ]);
+      /* Every read is checked: a failure is named, and nothing built from it
+         is shown as a figure. */
+      const bad = new Set<string>();
+      const chk = (q: { error?: unknown } | null | undefined, name: string) => { if (q && q.error) bad.add(name); };
+      chk(posQ, 'Till sales'); chk(lostQ, 'Lost sales'); chk(overdueFuQ, 'Follow-ups'); chk(newCustQ, 'Customers');
+      chk(vipQ, 'Customers'); chk(wlQ, 'Waiting list'); chk(preQ, 'Pre-orders'); chk(projQ, 'Limited projects');
+      chk(stockSumQ, 'Stock'); chk(lowQ, 'Stock'); chk(stockCntQ, 'Stock'); chk(poQ, 'Purchase orders');
+      chk(attTodayQ, 'Attendance'); chk(attLateQ, 'Attendance'); chk(leaveQ, 'Leave'); chk(reqQ, 'Requests');
+      chk(empQ as { error?: unknown }, 'Staff documents'); chk(repairsQ, 'Repairs'); chk(igQ, 'Instagram'); chk(setQ, 'Settings');
+      if (actQ.error) bad.add('Alert actions');
+      chk(stockHistQ, 'Stock history'); chk(syncQ, 'Till sync log'); chk(alertPoQ, 'Purchase order alerts'); chk(postQ, 'Instagram');
+      setFailed([...bad]);
+      setFatal(null);
+      const actMap = actQ.map;
       const alertList = alertsFrom(role, {
         waitingList: wlQ, preOrders: preQ, purchaseOrders: alertPoQ,
         employees: empQ as { data: any[] | null }, pendingLeave: leaveQ, customers: vipQ, actions: actMap,
@@ -430,8 +480,6 @@ export default function Dashboard({ title = 'Today', money = false }: { title?: 
 
       // sales — what rang through the tills, per outlet, as of this morning's sync
       const posDays = (posQ.data ?? []) as any[];
-      const sumRev = (rows: any[]) => rows.reduce((s, r) => s + Number(r.revenue ?? 0), 0);
-      const salesToday = sumRev(posDays.filter((r) => r.sale_date === today));
       const salesTarget = setQ.data?.sales_target_month != null ? Number(setQ.data.sales_target_month) : null;
       const tgt = (v: unknown) => (v != null ? Number(v) : null);
       /* The month against its target the one way both apps add it up: the four
@@ -448,6 +496,10 @@ export default function Dashboard({ title = 'Today', money = false }: { title?: 
       });
       const salesMonth = month.regular.sales;
       setSalesEvents(month.events);
+      /* The tills are loaded each morning up to the day before, so "today" is
+         never in them: the tile shows the last till day instead. */
+      setLastDay(month.lastSaleDay ? daySales(posDays as TillRow[], month.lastSaleDay) : null);
+      setPace(month.paceFrac !== null && month.tillDays ? { frac: month.paceFrac, days: month.tillDays } : null);
       /* These figures are only as fresh as the last sync, so the dashboard says
          so. Logged cases arrived through the day; till revenue arrives once in
          the morning, and a "today" that quietly stopped counting at 8am would
@@ -632,7 +684,7 @@ export default function Dashboard({ title = 'Today', money = false }: { title?: 
       setCharts({ salesTrend, outletSales: outletBars, stockHistory, supplierByBrand, repairsByStatus, igSeries, igAccounts, igTopPosts });
 
       setD({
-        salesToday, salesMonth, salesTarget,
+        salesMonth, salesTarget,
         avenuesSales, timeGallerySales, onlineSales, whatsappSales,
         avenuesTarget, timeGalleryTarget, onlineTarget, whatsappTarget,
         lostMonth, overdueFu: overdueFuQ.count ?? 0,
@@ -648,9 +700,26 @@ export default function Dashboard({ title = 'Today', money = false }: { title?: 
       setLoading(false);
     }
     load();
-  }, [role]);
+  }, [role, nonce]);
 
   if (loading) return <Spinner />;
+  if (fatal) {
+    return (
+      <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
+        <p className="flex items-start gap-2 font-semibold"><AlertTriangle size={16} className="mt-0.5 shrink-0" aria-hidden />
+          Could not load {title}: unknown, not zero and not an all-clear.</p>
+        <p className="mt-0.5 break-words text-xs">{fatal}</p>
+        <RetryButton busy={retrying} onClick={retry} />
+      </div>
+    );
+  }
+  const bad = new Set(failed);
+  /* A tile made from a read that failed says so, in place of a 0. */
+  const guard = (k: Kpi): Kpi => (k.src?.some((x) => bad.has(x))
+    ? { ...k, value: '—', sub: 'Did not load · unknown, not zero', accent: 'text-rose-700', parts: undefined }
+    : k);
+  const ALERT_SRC = ['Waiting list', 'Pre-orders', 'Purchase order alerts', 'Staff documents', 'Leave', 'Customers', 'Alert actions'];
+  const alertsMissing = ALERT_SRC.filter((x) => bad.has(x));
 
   const kd = (v: number | null | undefined) => v == null ? '—' : `${formatKDCompact(v)} KD`;
   const kdC = (n: number) => `${formatKDCompact(n)} KD`; // chart axis/label formatter
@@ -673,67 +742,86 @@ export default function Dashboard({ title = 'Today', money = false }: { title?: 
     { label: outletName('time_gallery'), value: kd(d.timeGallerySales), pct: pctOf(d.timeGallerySales, d.timeGalleryTarget) },
     /* Events are shown, and said to be outside the total: no target, no percentage. */
     ...salesEvents.map((e) => ({
-      label: `${e.name} (event, ${eventDates(e.from, e.to)}) · not in total`, value: kd(e.sales), pct: null,
+      label: `${e.name} (event) · not in total`, note: `${eventDates(e.from, e.to)} · no target`, value: kd(e.sales), pct: null, apart: true,
     })),
   ];
+  /* The headline coloured as Today colours it: by where the month should be
+     after the till days counted, not green whatever the figure. */
+  const headTone = (() => {
+    if (targetPct === null || !pace) return 'text-slate-800';
+    const at = pace.frac * 100;
+    if (pace.days >= 7 && targetPct < at - 15) return TONE.red.text;
+    return targetPct < at ? TONE.amber.text : TONE.green.text;
+  })();
   const tillAsOf = tillSyncedAt
     ? `from the tills, as of ${format(new Date(tillSyncedAt), 'HH:mm')}`
     : 'waiting for the first Lightspeed sync';
+  /* With some alert reads missing, the count is at least what did load: "2+", or unknown when none did. */
+  const alertsTile: Kpi = {
+    label: 'Action alerts',
+    value: alertsMissing.length ? (activeAlerts.length ? `${activeAlerts.length}+` : '—') : activeAlerts.length,
+    sub: alertsMissing.length ? 'Some alerts did not load · unknown, not an all-clear' : undefined,
+    accent: activeAlerts.length || alertsMissing.length ? 'text-rose-600' : 'text-emerald-600',
+    onClick: () => alertsRef.current?.scrollIntoView({ behavior: 'smooth' }),
+  };
   // Headline strip — only the company-wide numbers this role is allowed to see. A
   // non-financial role (e.g. marketing) sees none of these and gets its own sections below.
   const topRow: Kpi[] = [
     ...(can('/sales') ? [{ label: 'Sales this month · tills', value: kd(d.salesMonth),
-      sub: d.salesTarget != null ? `Regular outlets · ${targetPct}% of ${kd(d.salesTarget)} target` : 'set a target in Settings',
-      accent: 'text-emerald-600', link: '/till-sales', parts: outletParts } as Kpi] : []),
-    ...(can('/purchase-orders') ? [{ label: 'Supplier balance', value: kd(d.supplierBalance), accent: Number(d.supplierBalance) > 0 ? 'text-rose-600' : 'text-emerald-600', link: '/purchase-orders' } as Kpi] : []),
-    ...(can('/stock') && d.stockValue != null ? [{ label: 'Stock value', value: kd(d.stockValue), link: '/stock' } as Kpi] : []),
-    ...(isManager ? [{ label: 'Action alerts', value: activeAlerts.length, accent: activeAlerts.length ? 'text-rose-600' : 'text-emerald-600', onClick: () => alertsRef.current?.scrollIntoView({ behavior: 'smooth' }) } as Kpi] : []),
-  ];
+      sub: d.salesTarget != null ? `Regular outlets · ${targetPct}% of ${kd(d.salesTarget)} target${pace ? ` · ${Math.round(pace.frac * 100)}% of month gone` : ''}` : 'set a target in Settings',
+      accent: headTone, link: '/till-sales', parts: outletParts, src: ['Till sales', 'Settings'] } as Kpi] : []),
+    ...(can('/purchase-orders') ? [{ label: 'Supplier balance', value: kd(d.supplierBalance), accent: Number(d.supplierBalance) > 0 ? 'text-rose-600' : 'text-emerald-600', link: '/purchase-orders', src: ['Purchase orders'] } as Kpi] : []),
+    ...(can('/stock') && (d.stockValue != null || bad.has('Stock')) ? [{ label: 'Stock value', value: kd(d.stockValue), link: '/stock', src: ['Stock'] } as Kpi] : []),
+  ].map(guard).concat(isManager ? [alertsTile] : []);
 
   // Each section = its few must-follow KPIs; the fuller breakdown lives on the section's page.
   const salesCards: Kpi[] = [
-    { label: 'Sales today · tills', value: kd(d.salesToday), sub: tillAsOf, accent: 'text-emerald-600', link: '/till-sales' },
-    { label: 'Lost sales (month)', value: kd(d.lostMonth), accent: Number(d.lostMonth) ? 'text-rose-600' : undefined, link: '/sales?view=lost' },
-    ...(full ? [{ label: 'Overdue follow-ups', value: d.overdueFu ?? 0, accent: Number(d.overdueFu) ? 'text-red-600' : undefined, link: '/follow-ups?bucket=overdue' } as Kpi] : []),
-  ];
+    /* The tills hold up to yesterday, never today: the last till day, named. */
+    lastDay
+      ? { label: `Last till day · ${format(new Date(`${lastDay.date}T12:00:00`), 'd MMM')}`, value: kd(lastDay.sales), sub: `${lastDay.count} ${lastDay.count === 1 ? 'sale' : 'sales'} · ${tillAsOf}. Today's sales arrive tomorrow morning.`, link: '/till-sales', src: ['Till sales'] }
+      : { label: 'Last till day', value: '—', sub: `No till sales yet this month · ${tillAsOf}`, link: '/till-sales', src: ['Till sales'] },
+    { label: 'Lost sales (month)', value: kd(d.lostMonth), accent: Number(d.lostMonth) ? 'text-rose-600' : undefined, link: '/sales?view=lost', src: ['Lost sales'] },
+    ...(full ? [{ label: 'Overdue follow-ups', value: d.overdueFu ?? 0, accent: Number(d.overdueFu) ? 'text-red-600' : undefined, link: '/follow-ups?bucket=overdue', src: ['Follow-ups'] } as Kpi] : []),
+  ].map(guard);
 
   const demandCards: Kpi[] = [
-    { label: 'Open pre-orders', value: d.openPre ?? 0, link: '/waiting-list' },
-    { label: 'Active limited projects', value: d.activeProjects ?? 0, link: '/limited-projects' },
-    { label: 'Delayed projects', value: d.delayedProjects ?? 0, accent: Number(d.delayedProjects) ? 'text-rose-600' : undefined, link: '/limited-projects' },
-  ];
+    { label: 'Open pre-orders', value: d.openPre ?? 0, link: '/waiting-list', src: ['Pre-orders'] },
+    { label: 'Active limited projects', value: d.activeProjects ?? 0, link: '/limited-projects', src: ['Limited projects'] },
+    { label: 'Delayed projects', value: d.delayedProjects ?? 0, accent: Number(d.delayedProjects) ? 'text-rose-600' : undefined, link: '/limited-projects', src: ['Limited projects'] },
+  ].map(guard);
 
   const stockCards: Kpi[] = [
-    ...(d.deadValue != null ? [{ label: 'Not-moving stock', value: kd(d.deadValue), accent: Number(d.deadValue) ? 'text-rose-600' : 'text-emerald-600', link: '/stock' } as Kpi] : []),
-    ...(d.lowStock != null ? [{ label: 'Low stock items', value: d.lowStock, accent: Number(d.lowStock) ? 'text-amber-600' : undefined, link: '/stock' } as Kpi] : []),
-    { label: 'Open POs', value: d.openPOs ?? 0, link: '/purchase-orders' },
-  ];
+    ...(d.deadValue != null || bad.has('Stock') ? [{ label: 'Not-moving stock', value: kd(d.deadValue), accent: Number(d.deadValue) ? 'text-rose-600' : 'text-emerald-600', link: '/stock', src: ['Stock'] } as Kpi] : []),
+    ...(d.lowStock != null || bad.has('Stock') ? [{ label: 'Low stock items', value: d.lowStock ?? 0, accent: Number(d.lowStock) ? 'text-amber-600' : undefined, link: '/stock', src: ['Stock'] } as Kpi] : []),
+    /* Open here counts Pending Approval as well; Today's Watch counts only orders placed with suppliers. */
+    { label: 'Open POs', value: d.openPOs ?? 0, sub: 'incl. awaiting approval', link: '/purchase-orders', src: ['Purchase orders'] },
+  ].map(guard);
 
   /* The three cards that open the Inbox. They are a summary and nothing more —
      the full list lives in one place, and duplicating it here is how two
      screens start disagreeing about what is outstanding. */
   const requestCards: Kpi[] = [
-    { label: 'Needs my approval', value: d.needsMe ?? 0, accent: Number(d.needsMe) ? 'text-amber-600' : undefined, link: '/inbox' },
-    { label: 'Waiting on managers', value: d.withManager ?? 0, link: '/inbox?tab=waiting' },
-    { label: 'Overdue', value: d.overdueReq ?? 0, accent: Number(d.overdueReq) ? 'text-rose-600' : undefined, link: '/inbox' },
-  ];
+    { label: 'Needs my approval', value: d.needsMe ?? 0, accent: Number(d.needsMe) ? 'text-amber-600' : undefined, link: '/inbox', src: ['Requests'] },
+    { label: 'Waiting on managers', value: d.withManager ?? 0, link: '/inbox?tab=waiting', src: ['Requests'] },
+    { label: 'Overdue', value: d.overdueReq ?? 0, accent: Number(d.overdueReq) ? 'text-rose-600' : undefined, link: '/inbox', src: ['Requests'] },
+  ].map(guard);
 
   const hrCards: Kpi[] = [
-    { label: 'Present today', value: d.presentToday ?? 0, accent: 'text-emerald-600', link: '/attendance?day=today' },
-    { label: 'Pending leave', value: d.pendingLeave ?? 0, accent: Number(d.pendingLeave) ? 'text-amber-600' : undefined, link: '/leave' },
-    { label: 'Expiring docs ≤30d', value: d.empDocs ?? 0, accent: Number(d.empDocs) ? 'text-red-600' : undefined, link: '/hr' },
-  ];
+    { label: 'Present today', value: d.presentToday ?? 0, accent: 'text-emerald-600', link: '/attendance?day=today', src: ['Attendance'] },
+    { label: 'Pending leave', value: d.pendingLeave ?? 0, accent: Number(d.pendingLeave) ? 'text-amber-600' : undefined, link: '/leave', src: ['Leave'] },
+    { label: 'Expiring docs ≤30d', value: d.empDocs ?? 0, accent: Number(d.empDocs) ? 'text-red-600' : undefined, link: '/hr', src: ['Staff documents'] },
+  ].map(guard);
 
   const repairCards: Kpi[] = [
-    { label: 'Open repairs', value: d.openRepairs ?? 0, link: '/repairs' },
-    { label: 'Ready for pickup', value: d.readyPickup ?? 0, accent: Number(d.readyPickup) ? 'text-emerald-600' : undefined, link: '/repairs' },
-    { label: 'Overdue repairs', value: d.overdueRepairs ?? 0, accent: Number(d.overdueRepairs) ? 'text-rose-600' : undefined, link: '/repairs' },
-  ];
+    { label: 'Open repairs', value: d.openRepairs ?? 0, link: '/repairs', src: ['Repairs'] },
+    { label: 'Ready for pickup', value: d.readyPickup ?? 0, accent: Number(d.readyPickup) ? 'text-emerald-600' : undefined, link: '/repairs', src: ['Repairs'] },
+    { label: 'Overdue repairs', value: d.overdueRepairs ?? 0, accent: Number(d.overdueRepairs) ? 'text-rose-600' : undefined, link: '/repairs', src: ['Repairs'] },
+  ].map(guard);
 
   const marketingCards: Kpi[] = [
-    ...(d.igFollowers != null ? [{ label: 'Instagram followers', value: formatKDCompact(d.igFollowers).replace(' KD', ''), sub: '@timekeeperkw', link: '/instagram' } as Kpi] : [{ label: 'Instagram', value: 'Connect', link: '/instagram' } as Kpi]),
-    ...(d.igAvgEng != null ? [{ label: 'Avg engagement / post', value: formatKDCompact(d.igAvgEng).replace(' KD', ''), sub: d.igEngRate != null ? `${Number(d.igEngRate).toFixed(2)}% of followers` : '@timekeeperkw', accent: 'text-emerald-600', link: '/instagram' } as Kpi] : []),
-  ];
+    ...(d.igFollowers != null ? [{ label: 'Instagram followers', value: formatKDCompact(d.igFollowers).replace(' KD', ''), sub: '@timekeeperkw', link: '/instagram', src: ['Instagram'] } as Kpi] : [{ label: 'Instagram', value: 'Connect', link: '/instagram', src: ['Instagram'] } as Kpi]),
+    ...(d.igAvgEng != null ? [{ label: 'Avg engagement / post', value: formatKDCompact(d.igAvgEng).replace(' KD', ''), sub: d.igEngRate != null ? `${Number(d.igEngRate).toFixed(2)}% of followers` : '@timekeeperkw', accent: 'text-emerald-600', link: '/instagram', src: ['Instagram'] } as Kpi] : []),
+  ].map(guard);
 
   return (
     <div>
@@ -750,6 +838,15 @@ export default function Dashboard({ title = 'Today', money = false }: { title?: 
         )}
       </div>
 
+      {failed.length > 0 && (
+        <div role="alert" className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-rose-200 bg-rose-50 px-4 py-2 text-sm text-rose-700">
+          <span className="flex items-start gap-2"><AlertTriangle size={16} className="mt-0.5 shrink-0" aria-hidden />
+            <span><span className="font-semibold">{failed.length > 4 ? `${failed.length} of this page's reads did not load.` : `${failed.join(', ')} did not load.`}</span> Their tiles show “—”: unknown, not zero.
+              {failed.length > 4 && <span className="block text-xs">{failed.join(', ')}</span>}</span></span>
+          <RetryButton busy={retrying} onClick={retry} />
+        </div>
+      )}
+
       {/* Top KPI row — business health (only the numbers this role may see) */}
       {topRow.length > 0 && (
         <div className="mb-6">
@@ -764,10 +861,10 @@ export default function Dashboard({ title = 'Today', money = false }: { title?: 
       {can('/sales') && <Section title="Sales & Customers" detailLink="/sales" cards={salesCards} charts={
         <>
           <ChartCard title="Sales trend this month" hint="cumulative KD" link="/till-sales">
-            <LineChart data={charts.salesTrend} color="#059669" fmt={kdC} />
+            <LineChart data={bad.has('Till sales') ? [] : charts.salesTrend} color="#059669" fmt={kdC} />
           </ChartCard>
           <ChartCard title="Sales by outlet vs target" hint="this month" link="/till-sales">
-            <BarChart data={charts.outletSales} fmt={kdC} />
+            <BarChart data={bad.has('Till sales') ? [] : charts.outletSales} fmt={kdC} />
           </ChartCard>
         </>
       } />}
@@ -812,7 +909,7 @@ export default function Dashboard({ title = 'Today', money = false }: { title?: 
       {isManager && (<>
       <div ref={alertsRef} className="mb-3 flex items-center gap-3 scroll-mt-4">
         <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2"><Bell size={17} /> Alerts & Actions</h2>
-        <Badge className="bg-slate-900 text-white border-slate-900">{activeAlerts.length}</Badge>
+        <Badge className="bg-slate-900 text-white border-slate-900">{alertsMissing.length ? (activeAlerts.length ? `${activeAlerts.length}+` : '—') : activeAlerts.length}</Badge>
         {handledCount > 0 && (
           <button onClick={() => setShowHandled((s) => !s)} className="text-xs text-slate-400 hover:text-slate-600 ml-auto">
             {showHandled ? 'Hide' : `Show ${handledCount} done`}
@@ -821,7 +918,13 @@ export default function Dashboard({ title = 'Today', money = false }: { title?: 
         <p className="text-xs text-slate-400 ml-auto hidden sm:block">Only items that need action. Click to assign, set a due date, or mark done.</p>
       </div>
 
-      {activeAlerts.length === 0 && !showHandled ? (
+      {alertsMissing.length > 0 && (
+        <div role="alert" className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-rose-200 bg-rose-50 px-4 py-2 text-sm text-rose-700">
+          <span>{alertsMissing.join(', ')} did not load, so the alerts below may be incomplete: unknown, not an all-clear.</span>
+          <RetryButton busy={retrying} onClick={retry} />
+        </div>
+      )}
+      {activeAlerts.length === 0 && !showHandled && alertsMissing.length > 0 ? null : activeAlerts.length === 0 && !showHandled ? (
         <div className="bg-white rounded-xl border border-slate-200 p-6 text-slate-400 text-sm">
           Nothing needs action right now 🎉
           {handledCount > 0 && <button onClick={() => setShowHandled(true)} className="ml-3 text-slate-500 hover:text-slate-700 underline text-xs">Show {handledCount} done</button>}

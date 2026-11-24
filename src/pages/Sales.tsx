@@ -5,6 +5,7 @@ import { Card, Spinner } from '../components/ui';
 import { formatKD } from '../lib/format';
 import { Link, useSearchParams } from 'react-router-dom';
 import { ContextBar } from '../components/FromToday';
+import { kuwaitDate } from '../shared/attendanceStatus';
 
 interface SaleItem { brand: string | null; product_type: string | null; product: string | null; quantity: number; amount_kd: number }
 interface TrafficRow { date_logged: string; time_logged: string | null; visitor_count: number; outlet: string | null }
@@ -39,7 +40,8 @@ function periodStart(p: Period): string {
   if (p === 'today') return format(now, 'yyyy-MM-dd');
   if (p === 'week') return format(startOfWeek(now, { weekStartsOn: 6 }), 'yyyy-MM-dd'); // Kuwait week starts Saturday
   if (p === 'month') return format(startOfMonth(now), 'yyyy-MM-dd');
-  if (p === '7d') return format(subDays(now, 7), 'yyyy-MM-dd'); // as Today's "Lost sales · last 7 days" counts
+  /* today and the six days before it, in Kuwait, as Today's "Lost sales · last 7 days" counts */
+  if (p === '7d') return kuwaitDate(subDays(now, 6));
   return format(subDays(now, 30), 'yyyy-MM-dd');
 }
 
