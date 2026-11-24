@@ -1,19 +1,25 @@
 [
   {
+    "version": "4.1.0",
+    "date": "2026-11-24",
+    "title": "Today: numbers, not sentences",
+    "changes": [
+      "Today shows figures and colours only: green good, red bad, amber needs a look.",
+      "Sales shows the month as a line against the target, and where it is heading.",
+      "Each outlet has a bar with a mark for how much of the month has gone.",
+      "Attendance shows everyone at a glance, branch by branch: in, late, due later, no time set, away.",
+      "Anything that did not load shows a dash and Retry."
+    ]
+  },
+  {
     "version": "4.0.1",
     "date": "2026-11-24",
     "title": "Fewer surprises on Today and Money",
     "changes": [
-      "When part of Needs you cannot load, Today still shows everything that did, and says which part is missing with a Retry button, instead of hiding the whole card.",
-      "Money no longer shows 0 KD or \"Nothing needs action\" when it could not load something. Those tiles show a dash and say they did not load, with a Retry button.",
-      "Money shows the last day the tills sent (yesterday) instead of a \"Sales today\" that was always 0, and its month figure is coloured by pace like Today's. The Expo line now always shows \"not in total\".",
-      "Going back to Today shows it straight away instead of loading it all again, and the follow-ups you had opened stay open.",
-      "Today's header is one line, and Money is one tap away from it for those who use it.",
-      "The overdue task opens on that task in Assign tasks, outlined. A task given to a team now says which team instead of \"no assignee\".",
-      "A request opened from Today is scrolled into view in the Inbox.",
-      "Today names every branch that needs checking in its staffing line, and only links to pages you can open.",
-      "Till sales counts a day with sales that added up to 0 KD as a day with sales, and \"last 7 days\" of lost sales is now exactly 7 days.",
-      "The top bar on the phone no longer lets the page show through it."
+      "If part of Today or Money cannot load, it shows a dash and Retry, never 0 KD or \"all clear\".",
+      "Going back to Today shows it straight away.",
+      "An overdue task or request opens on that item, outlined.",
+      "The top bar on the phone no longer lets the page show through."
     ]
   },
   {
@@ -21,12 +27,11 @@
     "date": "2026-11-24",
     "title": "Every tap on Today opens the right place",
     "changes": [
-      "Tapping Sales, an outlet or the regular outlets' total on Today now opens Till sales: the month against its target, what is needed a day, every day's sales as bars, and the Expo on its own line. It used to open a page that showed November at 0 KD.",
-      "Till sales has a button for each outlet and for each month, so you can look at Online in October as easily as all outlets this month.",
-      "The old Sales reports page is now called Visits & lost sales, because that is what it shows: what the shop teams log by hand. Till sales sits next to it in the menu.",
-      "Attendance opens on today, and on the branch or person you came from. A bar at the top says what it is showing and has a button for the whole month.",
-      "Overdue follow-ups open on the overdue ones, the Watch lines about orders open on those orders, and the lost-sales lines open on lost sales for that period.",
-      "Going back to Today puts you where you were on the page, with the branch you had open still open, instead of at the top."
+      "Tapping Sales or an outlet on Today opens Till sales: the month against its target, day by day.",
+      "Till sales has a button for each outlet and each month.",
+      "Sales reports is now called Visits & lost sales.",
+      "Attendance opens on today, on the branch or person you tapped.",
+      "Back returns you to the same place on Today."
     ]
   },
   {

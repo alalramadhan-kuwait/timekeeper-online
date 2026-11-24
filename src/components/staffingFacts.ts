@@ -47,6 +47,14 @@ export interface ClockInPattern {
   text: string;
   /** The question only the owner can answer, or null when the pattern raises none. */
   question: string | null;
+  /** The same facts as figures, for the sheet: days with clock-ins, and on how many one person was alone from opening. */
+  days: number;
+  alone: number;
+  /** When the second person arrived on those days, earliest and latest (HH:MM); null when nobody did. */
+  secondFrom: string | null;
+  secondTo: string | null;
+  /** Days nobody clocked in until an hour after opening. */
+  lateOpens: { date: string; at: string }[];
 }
 
 export interface StaffBranch {
@@ -202,5 +210,10 @@ export function clockInPattern(b: { name: string; opensAt: string | null; need: 
     const hour = Math.round(mid / 60);
     question = `Does ${b.name} need ${b.need} people before ${String(hour).padStart(2, '0')}:00?`;
   }
-  return { text, question };
+  const s = [...seconds].sort((x, y) => x - y);
+  return {
+    text, question, days: dates.length, alone,
+    secondFrom: s.length ? toHM(s[0]) : null, secondTo: s.length ? toHM(s[s.length - 1]) : null,
+    lateOpens: lateOpen.map((l) => ({ date: dayWord(l.date), at: l.at })),
+  };
 }

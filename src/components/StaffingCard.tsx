@@ -1,20 +1,20 @@
 /**
- * Staffing on the Today page, built around the decisions a manager makes.
+ * Attendance on the Today board (4.1.0), and the branch sheet behind it.
  *
- * One line per branch says what is known: who the clock has in, the minimum a
- * shop needs on the floor, and how many have no shift time to judge them by
- * ("Avenues 1 in · minimum 2 · 3 with no shift time"). Below it, "To do" holds
- * only buttons, and only when something needs doing.
+ * The card is data only: one stacked bar of everyone (in, late, due later, no
+ * shift time, away) with its counts, then each branch with its count (in /
+ * needed) and a chip, and one row per person in fixed columns: dot, name,
+ * clock-in time, status pill. Statuses come from the shared engine
+ * (`standing()`); anybody whose shift time is not known is listed as "No time
+ * set" and never called late or on time.
  *
  * Tapping a branch opens its sheet, which lives in the URL (?sheet=<branch>,
  * &person=<id> for one person's day), so Back closes it and a link can open it.
  * Closing a sheet that was opened from a link lands on Today, never outside the
  * app. On a phone the sheet is modal: the page behind it, top bar included, is
  * inert and does not scroll. From 1280px it docks to the right as a split view
- * and the page narrows beside it, so it covers nothing.
- *
- * Anybody whose shift time is not known is listed but never called late,
- * missing or on time.
+ * and the page narrows beside it, so it covers nothing. Mark away, Set time and
+ * Call live in the sheet. Tapping a person opens Attendance on their day.
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -27,7 +27,8 @@ import { WorkScheduleModal } from './WorkSchedule';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { LEAVE_TYPES, workingDaysBetween, todayKuwait } from '../shared/kuwaitTime';
-import { Chip, Dot, TONE, type Tone } from './TodayCard';
+import { Dot, TONE, type Tone } from './TodayCard';
+import { Pill, FIG, HEX, type BoardTone } from './TodayBoard';
 import { IN, NOT_IN, noShiftTime, personLine, type StaffBranch, type StaffPerson } from './staffingFacts';
 
 export { judgeBranch, clockInPattern, type StaffPerson, type StaffBranch } from './staffingFacts';
@@ -37,7 +38,6 @@ export interface PersonAlert { text: string; href: string | null }
 
 const first = (n: string) => n.trim().split(/\s+/)[0];
 const toneOf: Record<StaffBranch['tone'], Tone> = { bad: 'red', warn: 'amber', good: 'green', idle: 'grey' };
-const labelTone: Record<StaffBranch['tone'], string> = { bad: 'text-rose-700', warn: 'text-amber-700', good: 'text-slate-700', idle: 'text-slate-700' };
 
 /* ------------------------------------------------------------ the sheet in the URL */
 
@@ -93,17 +93,70 @@ export function useWideSheet() {
 
 /* ------------------------------------------------------------------ the card */
 
-type Run = { open: string; person?: string } | { times: string };
-interface Action { key: string; label: string; primary?: boolean; href?: string; run?: Run }
+/** One person's place on the board, from the shared engine's status: never invented. */
+type Kind = 'in' | 'late' | 'due' | 'none' | 'away' | 'fix';
+const KIND_TONE: Record<Kind, BoardTone> = { in: 'green', late: 'red', due: 'blue', none: 'grey', away: 'teal', fix: 'amber' };
+const AWAY_SHORT: Record<string, string> = { 'Work trip': 'Trip', Annual: 'Leave', Sick: 'Sick', WFH: 'WFH' };
+/** 25 → "25m", 92 → "1h 32m". */
+const dur = (m: number) => (m < 60 ? `${m}m` : `${Math.floor(m / 60)}h${m % 60 ? ` ${m % 60}m` : ''}`);
+/** A long name keeps its first and last word, so the columns stay put. */
+const shortName = (n: string) => {
+  const w = n.trim().split(/\s+/);
+  return n.length > 18 && w.length > 2 ? `${w[0]} ${w[w.length - 1]}` : n.trim();
+};
 
-export function StaffingCard({ branches, workStart, onChanged, embedded = false, at = null, alerts = {} }: {
+/** Null for somebody not working today (a day off): they are not on the board. */
+export function placeOf(p: StaffPerson): { kind: Kind; pill: string; time: string } | null {
+  if (p.status === 'off') return null;
+  if (IN.includes(p.status)) {
+    const late = (p.lateAfterGraceMin ?? 0) > 0;
+    return {
+      kind: late ? 'late' : 'in',
+      pill: late ? `Late ${dur(p.lateAfterGraceMin!)}` : p.status === 'completed' && p.lastOut ? `Out ${p.lastOut}` : 'In',
+      time: p.firstIn ?? '',
+    };
+  }
+  if (p.status === 'needs_correction') return { kind: 'fix', pill: 'No clock-out', time: p.firstIn ?? '' };
+  /* nobody with no shift time is called late or on time: there is nothing to compare with */
+  if (noShiftTime(p)) return { kind: 'none', pill: 'No time set', time: '' };
+  if (NOT_IN.includes(p.status)) return { kind: 'late', pill: p.status === 'missing' ? 'Missing' : 'Not in', time: '' };
+  if (p.status === 'due_later') return { kind: 'due', pill: 'Due later', time: p.due ?? '' };
+  if (p.status === 'on_leave') {
+    const t = AWAY_SHORT[p.awayType ?? 'Annual'] ?? 'Away';
+    return { kind: 'away', pill: p.awayTo ? `${t} · ${p.awayTo}` : t, time: '' };
+  }
+  return null;
+}
+const ORDER: Record<Kind, number> = { in: 0, late: 0, fix: 0, due: 2, none: 3, away: 4 };
+
+/** The branch's count (in / needed) and its chip. */
+function branchHead(b: StaffBranch, late: number): { count: string; countTone: BoardTone; chip: string; chipTone: BoardTone } {
+  const count = `${b.onFloor}/${b.need}`;
+  if (b.shop && !b.open) return { count, countTone: 'grey', chip: b.opensAt ? `Opens ${b.opensAt}` : 'Closed', chipTone: 'grey' };
+  const short = b.need - b.onFloor;
+  const countTone: BoardTone = short <= 0 ? 'green' : b.onFloor === 0 ? 'red' : 'amber';
+  if (b.shop && short > 0) return { count, countTone, chip: `Short ${short}`, chipTone: b.onFloor === 0 ? 'red' : 'amber' };
+  if (late > 0) return { count, countTone, chip: `${late} late`, chipTone: 'red' };
+  if (short > 0) return { count, countTone, chip: `${short} not in`, chipTone: 'amber' };
+  return { count, countTone, chip: 'All in', chipTone: 'green' };
+}
+
+const LEGEND: { kind: Kind; label: string }[] = [
+  { kind: 'in', label: 'In' }, { kind: 'late', label: 'Late' }, { kind: 'due', label: 'Later' },
+  { kind: 'none', label: 'No time' }, { kind: 'away', label: 'Away' },
+];
+const dotStyle = (k: Kind) => (k === 'none'
+  ? { background: '#ffffff', border: `2px solid ${HEX.grey}` }
+  : { background: HEX[KIND_TONE[k]] });
+
+export function StaffingCard({ branches, workStart, onChanged, at = null, alerts = {}, canAttendance = true }: {
   branches: StaffBranch[]; workStart: string; onChanged: () => void;
-  /** Inside a Today card, which already carries the title and the Attendance link. */
-  embedded?: boolean;
   /** When the figures were read, "11:30". */
   at?: string | null;
   /** By employee id: what HR must act on, shown on that person's row in the sheet. */
   alerts?: Record<string, PersonAlert>;
+  /** Whether a person's row may open Attendance. */
+  canAttendance?: boolean;
 }) {
   const nav = useBranchSheet();
   const wide = useWideSheet();
@@ -111,7 +164,7 @@ export function StaffingCard({ branches, workStart, onChanged, embedded = false,
   /* "Set Avenues times": one person after another, back to the sheet between them */
   const [timesFlow, setTimesFlow] = useState<{ branch: string; done: string[] } | null>(null);
   const opener = useRef<HTMLElement | null>(null);
-  const sectionRef = useRef<HTMLElement | null>(null);
+  const sectionRef = useRef<HTMLDivElement | null>(null);
 
   const branch = branches.find((b) => b.key === nav.sheet) ?? null;
   const person = branch?.people.find((p) => p.id === nav.person) ?? null;
@@ -134,10 +187,7 @@ export function StaffingCard({ branches, workStart, onChanged, embedded = false,
     }
   }, [branch]);
 
-  const remember = (e: React.MouseEvent<HTMLElement>) => { opener.current = e.currentTarget; };
-
-  const startTimes = (b: StaffBranch, e?: React.MouseEvent<HTMLElement>) => {
-    if (e) remember(e);
+  const startTimes = (b: StaffBranch) => {
     if (nav.sheet !== b.key || nav.person) nav.open(b.key);
     const next = b.people.find(noShiftTime);
     setTimesFlow({ branch: b.key, done: [] });
@@ -146,80 +196,76 @@ export function StaffingCard({ branches, workStart, onChanged, embedded = false,
   const flowNext = timesFlow && branch && timesFlow.branch === branch.key
     ? branch.people.find((p) => noShiftTime(p) && !timesFlow.done.includes(p.id)) ?? null : null;
 
-  /* one button per thing to do, most urgent first */
-  const all = branches.flatMap((b) => b.people);
-  const firstNames = new Map<string, number>();
-  for (const p of all) firstNames.set(first(p.name), (firstNames.get(first(p.name)) ?? 0) + 1);
-  const call = (p: StaffPerson) => {
-    const f = first(p.name);
-    const w = p.name.trim().split(/\s+/);
-    return (firstNames.get(f) ?? 0) > 1 && w.length > 1 ? `${f} ${w[w.length - 1][0]}.` : f;
-  };
-  const actions: Action[] = [];
-  for (const b of branches.filter((x) => x.tone === 'bad')) {
-    actions.push({ key: `cover-${b.key}`, label: `Send cover to ${b.name}`, primary: true, run: { open: b.key } });
-  }
-  for (const b of branches.filter((x) => x.shop && x.open && x.tone === 'warn')) {
-    const unknown = b.people.filter(noShiftTime);
-    if (unknown.length) actions.push({ key: `times-${b.key}`, label: `Set ${b.name} times (${unknown.length})`, run: { times: b.key } });
-    else if (!b.people.some((p) => NOT_IN.includes(p.status))) actions.push({ key: `cover-${b.key}`, label: `Send cover to ${b.name}`, run: { open: b.key } });
-  }
-  const late = all.filter((p) => NOT_IN.includes(p.status) && !p.timeUnknown)
-    .sort((x, y) => (y.lateNowMin ?? 0) - (x.lateNowMin ?? 0));
-  for (const p of late) {
-    actions.push(p.phone
-      ? { key: `call-${p.id}`, label: `Call ${call(p)}`, href: `tel:${p.phone.replace(/[^\d+]/g, '')}` }
-      : { key: `see-${p.id}`, label: `Check ${call(p)}`, run: { open: p.branch, person: p.id } });
-  }
-  for (const p of all.filter((x) => x.status === 'needs_correction')) {
-    actions.push({ key: `fix-${p.id}`, label: `Fix ${call(p)}'s clock-out`, run: { open: p.branch, person: p.id } });
-  }
-  const act = (r: Run, e: React.MouseEvent<HTMLElement>) => {
-    if ('times' in r) { const b = branches.find((x) => x.key === r.times); if (b) startTimes(b, e); return; }
-    remember(e);
-    nav.open(r.open, r.person ?? null);
-  };
-  const shown = actions.slice(0, 5);
-  const more = actions.length - shown.length;
+  /* everyone on the board, once: one stacked bar and its counts */
+  const placed = branches.map((b) => ({
+    b,
+    people: b.people.map((p) => ({ p, at: placeOf(p) })).filter((x): x is { p: StaffPerson; at: NonNullable<ReturnType<typeof placeOf>> } => x.at !== null)
+      .sort((x, y) => ORDER[x.at.kind] - ORDER[y.at.kind] || (x.at.time || '99').localeCompare(y.at.time || '99') || x.p.name.localeCompare(y.p.name)),
+  }));
+  const counts: Record<Kind, number> = { in: 0, late: 0, due: 0, none: 0, away: 0, fix: 0 };
+  for (const x of placed) for (const y of x.people) counts[y.at.kind === 'fix' ? 'in' : y.at.kind]++;
+  const total = LEGEND.reduce((t, l) => t + counts[l.kind], 0);
 
   return (
-    <section ref={sectionRef} className={embedded ? '-mx-4 -mb-4 overflow-hidden rounded-b-2xl' : 'mt-3 overflow-hidden rounded-xl border border-slate-200 bg-white'}>
-      {!embedded && (
-        <div className="flex items-baseline justify-between px-3 pt-2.5 pb-1">
-          <h2 className="text-[15px] font-semibold text-slate-900">Staffing</h2>
-          <Link to="/attendance?day=today" state={FROM_TODAY} className="text-[13px] text-blue-600 hover:underline">Attendance →</Link>
-        </div>
+    <div ref={sectionRef}>
+      {total > 0 && (
+        <>
+          <div className="mt-2.5 flex h-3.5 gap-[3px]" role="img"
+            aria-label={LEGEND.map((l) => `${counts[l.kind]} ${l.label.toLowerCase()}`).join(', ')}>
+            {LEGEND.filter((l) => counts[l.kind] > 0).map((l) => (
+              <span key={l.kind} className="block rounded box-border" style={{ flex: `${counts[l.kind]} 1 0`, ...dotStyle(l.kind) }} />
+            ))}
+          </div>
+          <div className="mt-2 grid grid-cols-5 gap-1" aria-hidden>
+            {LEGEND.map((l) => (
+              <div key={l.kind} className="flex min-w-0 flex-col">
+                <span className={`text-[20px] font-extrabold leading-6 tabular-nums ${counts[l.kind] ? FIG[KIND_TONE[l.kind]] : 'text-slate-400'}`}>{counts[l.kind]}</span>
+                <span className="truncate text-[12px] font-semibold text-slate-500">{l.label}</span>
+              </div>
+            ))}
+          </div>
+        </>
       )}
-      {branches.length === 0 && <p className="px-4 pb-3 text-sm text-slate-600">Nobody is scheduled today</p>}
-      {branches.map((b) => {
+      {branches.length === 0 && <p className="mt-2 text-[15px] font-semibold text-slate-500">0 scheduled</p>}
+      {placed.map(({ b, people }) => {
+        const head = branchHead(b, people.filter((x) => x.at.kind === 'late').length);
         const active = nav.sheet === b.key;
         return (
-          <button key={b.key} type="button" onClick={(e) => { remember(e); nav.open(b.key); }}
-            aria-current={active ? 'true' : undefined} aria-haspopup="dialog"
-            className={`flex min-h-[56px] w-full items-center gap-3 border-t border-slate-100 ${embedded ? 'px-4' : 'px-3'} py-2 text-left hover:bg-slate-50 focus-visible:bg-slate-50 focus-visible:outline-none ${active ? 'bg-slate-100' : b.tone === 'bad' ? 'bg-rose-50/60' : ''}`}>
-            <Dot tone={toneOf[b.tone]} />
-            <span className="min-w-0 flex-1">
-              <span className="block text-[15px] font-semibold leading-5 text-slate-900">{b.name}</span>
-              <span className={`block text-[13px] leading-[18px] tabular-nums ${labelTone[b.tone]}`}>{b.label}</span>
-            </span>
-            <ChevronRight size={16} className="shrink-0 text-slate-500" aria-hidden />
-          </button>
+          <div key={b.key} className="mt-2.5 border-t border-slate-200 pt-1">
+            <button type="button" onClick={(e) => { opener.current = e.currentTarget; nav.open(b.key); }}
+              aria-current={active ? 'true' : undefined} aria-haspopup="dialog"
+              aria-label={`${b.name}: ${head.count.replace('/', ' of ')} in, ${head.chip}`}
+              className={`-mx-2 flex min-h-[48px] w-[calc(100%+16px)] items-center gap-2.5 rounded-xl px-2 text-left hover:bg-slate-50 ${active ? 'bg-slate-100' : ''}`}>
+              <span className="min-w-0 flex-1 truncate text-[17px] font-extrabold text-slate-900">{b.name}</span>
+              <span className={`text-[22px] font-extrabold tabular-nums ${FIG[head.countTone]}`}>{head.count}</span>
+              <Pill tone={head.chipTone}>{head.chip}</Pill>
+              <ChevronRight size={16} className="-mr-1 shrink-0 text-slate-400" aria-hidden />
+            </button>
+            <ul>
+              {people.map(({ p, at: pl }) => {
+                const tone = KIND_TONE[pl.kind];
+                const row = (
+                  <>
+                    <span className="block h-2.5 w-2.5 rounded-full box-border" style={dotStyle(pl.kind)} aria-hidden />
+                    <span className={`truncate text-[15px] font-semibold ${pl.kind === 'none' || pl.kind === 'away' ? 'text-slate-500' : 'text-slate-900'}`}>{shortName(p.name)}</span>
+                    <span className="text-right text-[14px] font-semibold tabular-nums text-slate-700">{pl.time}</span>
+                    <Pill tone={tone} className="w-full px-1.5">{pl.pill}</Pill>
+                  </>
+                );
+                const cls = 'grid min-h-[44px] grid-cols-[10px_minmax(0,1fr)_44px_104px] items-center gap-2';
+                return (
+                  <li key={p.id}>
+                    {canAttendance ? (
+                      <Link to={`/attendance?day=today&branch=${encodeURIComponent(b.key)}&person=${encodeURIComponent(p.id)}`} state={FROM_TODAY}
+                        className={`-mx-2 rounded-lg px-2 hover:bg-slate-50 ${cls}`}>{row}</Link>
+                    ) : <div className={cls}>{row}</div>}
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
         );
       })}
-      {shown.length > 0 && (
-        <div className={`border-t border-slate-200 ${embedded ? 'px-4 pb-4' : 'px-3 pb-2.5'} pt-2`}>
-          <p className="mb-1.5 text-[12px] font-semibold uppercase tracking-wide text-slate-600">To do</p>
-          <div className="flex flex-wrap gap-1.5">
-            {shown.map((a) => {
-              const cls = `inline-flex min-h-[44px] items-center gap-1.5 rounded-lg px-2.5 text-[13px] font-semibold ${a.primary ? 'bg-slate-900 text-white' : 'border border-slate-300 text-slate-900 hover:bg-slate-50'}`;
-              return a.href
-                ? <a key={a.key} href={a.href} className={cls}><Phone size={13} aria-hidden />{a.label}</a>
-                : <button key={a.key} type="button" onClick={(e) => a.run && act(a.run, e)} className={cls}>{a.label}</button>;
-            })}
-            {more > 0 && <Link to="/attendance?day=today" state={FROM_TODAY} className="inline-flex min-h-[44px] items-center px-1 text-[13px] font-semibold text-blue-600">+{more} more</Link>}
-          </div>
-        </div>
-      )}
 
       {branch && (
         <BranchSheet b={branch} person={person} at={at} wide={wide} alerts={alerts} workStart={workStart}
@@ -238,7 +284,7 @@ export function StaffingCard({ branches, workStart, onChanged, embedded = false,
             onChanged();
           }} />
       )}
-    </section>
+    </div>
   );
 }
 
@@ -300,8 +346,8 @@ function BranchSheet({ b, person, at, wide, alerts, workStart, editing, flow, on
   useEffect(() => { if (!editing) (nextRef.current ?? titleRef.current)?.focus({ preventScroll: true }); }, [editing]);
 
   const hours = b.shop
-    ? `${b.opensAt && b.closesAt ? `Open ${b.opensAt}–${b.closesAt}` : b.closesAt ? `Closes ${b.closesAt}` : 'Closed now'} · minimum ${b.need} on the floor`
-    : 'Office · each person against their own hours';
+    ? `${b.opensAt && b.closesAt ? `${b.opensAt}–${b.closesAt}` : b.closesAt ? `Closes ${b.closesAt}` : 'Closed'} · min ${b.need}`
+    : 'Office';
   const unknown = b.people.filter(noShiftTime);
 
   const body = person ? (
@@ -357,18 +403,26 @@ function BranchSheet({ b, person, at, wide, alerts, workStart, editing, flow, on
       })}
 
       {b.pattern && (
-        <p className="mt-4 rounded-xl bg-slate-50 p-3 text-[13px] leading-5 text-slate-700">
-          <b className="font-semibold text-slate-900">Pattern:</b> {b.pattern.text}
-        </p>
-      )}
-      {b.pattern?.question && (
-        <div className="mt-3 rounded-xl border border-slate-200 p-3">
-          <Chip tone="grey">Owner to decide</Chip>
-          <p className="mt-1.5 text-[14px] font-medium leading-5 text-slate-900">{b.pattern.question}</p>
-          <p className="text-[13px] leading-5 text-slate-700">Until it is answered, the minimum stays {b.need} from opening.</p>
+        /* the last days' clock-ins as figures: no sentence, no question */
+        <div className="mt-4 grid grid-cols-2 gap-2 tabular-nums">
+          <div className="rounded-xl bg-slate-50 px-3 py-2">
+            <p className="text-[12px] font-semibold text-slate-500">Alone at opening</p>
+            <p className={`text-[17px] font-extrabold ${b.pattern.alone * 2 >= b.pattern.days && b.pattern.alone ? 'text-[#b26b00]' : 'text-slate-900'}`}>{b.pattern.alone} of {b.pattern.days} days</p>
+          </div>
+          {b.pattern.secondFrom && (
+            <div className="rounded-xl bg-slate-50 px-3 py-2">
+              <p className="text-[12px] font-semibold text-slate-500">2nd in</p>
+              <p className="text-[17px] font-extrabold text-slate-900">{b.pattern.secondFrom}{b.pattern.secondTo !== b.pattern.secondFrom ? `–${b.pattern.secondTo}` : ''}</p>
+            </div>
+          )}
+          {b.pattern.lateOpens.map((l) => (
+            <div key={l.date} className="rounded-xl bg-[#fde8e6] px-3 py-2">
+              <p className="text-[12px] font-semibold text-[#b42318]">First in · {l.date}</p>
+              <p className="text-[17px] font-extrabold text-[#b42318]">{l.at}</p>
+            </div>
+          ))}
         </div>
       )}
-      <p className="mt-3 text-[12px] text-slate-600">Tap a name to see their day or mark them away (work trip, leave).</p>
     </>
   );
 
@@ -389,7 +443,7 @@ function BranchSheet({ b, person, at, wide, alerts, workStart, editing, flow, on
           <h2 id="branch-sheet-title" ref={titleRef} tabIndex={-1} className="text-[19px] font-semibold leading-6 text-slate-900 focus:outline-none">
             {person ? person.name : `${b.name} today`}
           </h2>
-          <p className="text-[13px] text-slate-600">{person ? `${b.name} · today` : `${hours}${at ? ` · staff at ${at}` : ''}`}</p>
+          <p className="text-[13px] text-slate-600">{person ? `${b.name} · today` : `${hours}${at ? ` · at ${at}` : ''}`}</p>
         </div>
         <button type="button" onClick={onClose} aria-label="Close"
           className="-mr-2 grid h-11 w-11 shrink-0 place-items-center rounded-full text-slate-700 hover:bg-slate-100"><X className="h-5 w-5" /></button>
