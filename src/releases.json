@@ -1,5 +1,19 @@
 [
   {
+    "version": "3.25.1",
+    "date": "2026-11-24",
+    "title": "Today's figures corrected",
+    "changes": [
+      "The month's sales on Today and Money count only the four regular outlets against the 110k target. The Expo sales are shown on their own line, with their dates, and are not added into the percentage or the month-end estimate.",
+      "Today shows how far short the month is heading on current pace, and says the figures run to the last day the tills sent (for example \"sales to end of 23 Nov\").",
+      "A task past its due date, a project past its launch date and an expired residency or work permit now count as overdue. An expired document is named: \"Residency expired 23 Nov\" with the person's name.",
+      "Requests that are overdue with someone else are listed as \"Stuck with others\", with how long they have waited.",
+      "Watch says when nothing is being recorded: \"No lost sales logged since 20 Oct\", and how many open orders have no expected date.",
+      "If part of Today cannot load, that part says so and has a Retry button, instead of showing zero or \"Nothing is waiting on you\". A slow database no longer leaves the page loading for ever.",
+      "My requests and the Inbox say when the requests could not be loaded, instead of showing an empty list."
+    ]
+  },
+  {
     "version": "3.25.0",
     "date": "2026-11-23",
     "title": "Mark someone away for work",

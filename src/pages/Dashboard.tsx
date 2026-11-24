@@ -6,6 +6,7 @@ import {
 import { format, startOfWeek, startOfMonth } from 'date-fns';
 import { supabase } from '../lib/supabase';
 import { resolveOutlet, outletName, type OutletCode } from '../shared/outlets';
+import { monthSales, eventDates, type EventMonth, type TillRow } from '../shared/tillSales';
 import { Badge, Spinner } from '../components/ui';
 import { formatKDCompact } from '../lib/format';
 import { alertsFrom, alertQueries, loadAlertActions, saveAlertAction, Alert, AlertAction } from '../lib/alerts';
@@ -44,14 +45,6 @@ async function allRows(page: (from: number, to: number) => PromiseLike<{ data: a
   const failed = rest.find((r) => r.error);
   return { data: rows.concat(...rest.map((r) => r.data ?? [])), error: failed?.error ?? null };
 }
-
-/* Revenue already resolved to a channel by the pos_channel_sales view, which
-   also splits the one till register that serves two: what Eman rings up there
-   is the WhatsApp channel, the rest is the online shop. The dashboard never
-   sees a register name. */
-const posRevenue = (rows: Array<{ channel_code: string | null; revenue: unknown }>, code: OutletCode) =>
-  rows.filter((r) => r.channel_code === code)
-      .reduce((t, r) => t + Number(r.revenue ?? 0), 0);
 
 // ── Alert Action Panel ────────────────────────────────────────────────────────
 function AlertActionPanel({ alert, existing, onSave, onClose, onReopen }: {
@@ -348,6 +341,7 @@ export default function Dashboard({ title = 'Today', money = false }: { title?: 
   const full = !money;
   const { role, profile, pageAccess } = useAuth();
   const [d, setD] = useState<Record<string, number | null>>({});
+  const [salesEvents, setSalesEvents] = useState<EventMonth[]>([]);
   const [tillSyncedAt, setTillSyncedAt] = useState<string | null>(null);
   const [charts, setCharts] = useState<Charts>(EMPTY_CHARTS);
   const [alerts, setAlerts] = useState<Alert[]>([]);
@@ -387,7 +381,7 @@ export default function Dashboard({ title = 'Today', money = false }: { title?: 
            not money: measured on the same month they came to barely half of
            what actually rang through. The cases still drive lost sales and
            follow-ups below, where they belong. */
-        supabase.from('pos_channel_sales').select('channel_code, sale_date, revenue').gte('sale_date', monthStart),
+        supabase.from('pos_channel_sales').select('channel_code, outlet, sale_date, revenue, sale_count').gte('sale_date', monthStart),
         supabase.from('cases_visible').select('amount_kd').eq('case_type', 'Lost Sale').eq('deleted', false).gte('date_logged', monthStart),
         supabase.from('cases_visible').select('id', { count: 'exact', head: true }).eq('case_type', 'Follow-up').eq('status', 'Open').eq('deleted', false).lt('promised_callback', today),
         supabase.from('customers').select('id', { count: 'exact', head: true }).gte('created_at', monthStart),
@@ -437,19 +431,37 @@ export default function Dashboard({ title = 'Today', money = false }: { title?: 
       // sales — what rang through the tills, per outlet, as of this morning's sync
       const posDays = (posQ.data ?? []) as any[];
       const sumRev = (rows: any[]) => rows.reduce((s, r) => s + Number(r.revenue ?? 0), 0);
-      const salesMonth = sumRev(posDays);
       const salesToday = sumRev(posDays.filter((r) => r.sale_date === today));
       const salesTarget = setQ.data?.sales_target_month != null ? Number(setQ.data.sales_target_month) : null;
+      const tgt = (v: unknown) => (v != null ? Number(v) : null);
+      /* The month against its target the one way both apps add it up: the four
+         regular channels only. An event register (the Expo stand, 5–12 Nov) is
+         its own line with no target; it used to be added in, which read 129%
+         when the shops were at 55%. */
+      const month = monthSales(posDays as TillRow[], {
+        month: monthStart.slice(0, 7),
+        monthTarget: salesTarget,
+        targets: {
+          avenues: tgt(setQ.data?.sales_target_avenues), time_gallery: tgt(setQ.data?.sales_target_timegallery),
+          online: tgt(setQ.data?.sales_target_online), whatsapp: tgt(setQ.data?.sales_target_whatsapp),
+        },
+      });
+      const salesMonth = month.regular.sales;
+      setSalesEvents(month.events);
       /* These figures are only as fresh as the last sync, so the dashboard says
          so. Logged cases arrived through the day; till revenue arrives once in
          the morning, and a "today" that quietly stopped counting at 8am would
          read as live when it is not. */
       setTillSyncedAt(((syncQ.data?.[0] as any)?.finished_at as string | undefined) ?? null);
       // per-outlet month sales vs their own targets
-      const avenuesSales = posRevenue(posDays, 'avenues');
-      const timeGallerySales = posRevenue(posDays, 'time_gallery');
-      const whatsappSales = posRevenue(posDays, 'whatsapp');
-      const onlineSales = posRevenue(posDays, 'online');
+      /* Revenue already resolved to a channel by the pos_channel_sales view, which
+         also splits the one till register that serves two: what Eman rings up
+         there is the WhatsApp channel, the rest is the online shop. */
+      const channelSales = (code: OutletCode) => month.channels.find((c) => c.code === code)?.sales ?? 0;
+      const avenuesSales = channelSales('avenues');
+      const timeGallerySales = channelSales('time_gallery');
+      const whatsappSales = channelSales('whatsapp');
+      const onlineSales = channelSales('online');
       const avenuesTarget = setQ.data?.sales_target_avenues != null ? Number(setQ.data.sales_target_avenues) : null;
       const timeGalleryTarget = setQ.data?.sales_target_timegallery != null ? Number(setQ.data.sales_target_timegallery) : null;
       /* The register's old single target moved to Online when it was split in
@@ -533,7 +545,11 @@ export default function Dashboard({ title = 'Today', money = false }: { title?: 
       const dayNum = (iso: string) => iso.slice(8, 10);
       // cumulative sales per day this month → shows the shape of the month
       const byDay = new Map<string, number>();
-      for (const r of posDays) byDay.set(r.sale_date, (byDay.get(r.sale_date) ?? 0) + Number(r.revenue ?? 0));
+      // regular channels only, so the line ends where the headline figure does
+      for (const r of posDays) {
+        if (!r.channel_code || !month.channels.some((c) => c.code === r.channel_code)) continue;
+        byDay.set(r.sale_date, (byDay.get(r.sale_date) ?? 0) + Number(r.revenue ?? 0));
+      }
       const todayDay = Number(today.slice(8, 10));
       let running = 0;
       const salesTrend: Point[] = [];
@@ -655,6 +671,10 @@ export default function Dashboard({ title = 'Today', money = false }: { title?: 
     { label: outletName('whatsapp'), value: kd(d.whatsappSales), pct: pctOf(d.whatsappSales, d.whatsappTarget) },
     { label: outletName('avenues'), value: kd(d.avenuesSales), pct: pctOf(d.avenuesSales, d.avenuesTarget) },
     { label: outletName('time_gallery'), value: kd(d.timeGallerySales), pct: pctOf(d.timeGallerySales, d.timeGalleryTarget) },
+    /* Events are shown, and said to be outside the total: no target, no percentage. */
+    ...salesEvents.map((e) => ({
+      label: `${e.name} (event, ${eventDates(e.from, e.to)}) · not in total`, value: kd(e.sales), pct: null,
+    })),
   ];
   const tillAsOf = tillSyncedAt
     ? `from the tills, as of ${format(new Date(tillSyncedAt), 'HH:mm')}`
@@ -663,7 +683,7 @@ export default function Dashboard({ title = 'Today', money = false }: { title?: 
   // non-financial role (e.g. marketing) sees none of these and gets its own sections below.
   const topRow: Kpi[] = [
     ...(can('/sales') ? [{ label: 'Sales this month · tills', value: kd(d.salesMonth),
-      sub: d.salesTarget != null ? `${targetPct}% of ${kd(d.salesTarget)} target` : 'set a target in Settings',
+      sub: d.salesTarget != null ? `Regular outlets · ${targetPct}% of ${kd(d.salesTarget)} target` : 'set a target in Settings',
       accent: 'text-emerald-600', link: '/sales', parts: outletParts } as Kpi] : []),
     ...(can('/purchase-orders') ? [{ label: 'Supplier balance', value: kd(d.supplierBalance), accent: Number(d.supplierBalance) > 0 ? 'text-rose-600' : 'text-emerald-600', link: '/purchase-orders' } as Kpi] : []),
     ...(can('/stock') && d.stockValue != null ? [{ label: 'Stock value', value: kd(d.stockValue), link: '/stock' } as Kpi] : []),
