@@ -15,6 +15,7 @@
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
+import { FROM_TODAY } from './FromToday';
 
 export type Tone = 'green' | 'amber' | 'red' | 'grey';
 
@@ -80,7 +81,7 @@ export function TodayCard({ id, icon, title, chip, meta, link, flash, children, 
           {meta && <p className="text-[13px] leading-[18px] text-slate-600">{meta}</p>}
         </div>
         {link && (
-          <Link to={link.to} className="-mr-2 -mt-1 inline-flex min-h-[44px] shrink-0 items-center rounded-lg pl-2 pr-1 text-[13px] font-semibold text-slate-700 hover:bg-slate-100">
+          <Link to={link.to} state={FROM_TODAY} className="-mr-2 -mt-1 inline-flex min-h-[44px] shrink-0 items-center rounded-lg pl-2 pr-1 text-[13px] font-semibold text-slate-700 hover:bg-slate-100">
             {link.label}<ChevronRight className="h-4 w-4" aria-hidden />
           </Link>
         )}

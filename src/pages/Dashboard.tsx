@@ -684,7 +684,7 @@ export default function Dashboard({ title = 'Today', money = false }: { title?: 
   const topRow: Kpi[] = [
     ...(can('/sales') ? [{ label: 'Sales this month · tills', value: kd(d.salesMonth),
       sub: d.salesTarget != null ? `Regular outlets · ${targetPct}% of ${kd(d.salesTarget)} target` : 'set a target in Settings',
-      accent: 'text-emerald-600', link: '/sales', parts: outletParts } as Kpi] : []),
+      accent: 'text-emerald-600', link: '/till-sales', parts: outletParts } as Kpi] : []),
     ...(can('/purchase-orders') ? [{ label: 'Supplier balance', value: kd(d.supplierBalance), accent: Number(d.supplierBalance) > 0 ? 'text-rose-600' : 'text-emerald-600', link: '/purchase-orders' } as Kpi] : []),
     ...(can('/stock') && d.stockValue != null ? [{ label: 'Stock value', value: kd(d.stockValue), link: '/stock' } as Kpi] : []),
     ...(isManager ? [{ label: 'Action alerts', value: activeAlerts.length, accent: activeAlerts.length ? 'text-rose-600' : 'text-emerald-600', onClick: () => alertsRef.current?.scrollIntoView({ behavior: 'smooth' }) } as Kpi] : []),
@@ -692,9 +692,9 @@ export default function Dashboard({ title = 'Today', money = false }: { title?: 
 
   // Each section = its few must-follow KPIs; the fuller breakdown lives on the section's page.
   const salesCards: Kpi[] = [
-    { label: 'Sales today · tills', value: kd(d.salesToday), sub: tillAsOf, accent: 'text-emerald-600', link: '/sales' },
-    { label: 'Lost sales (month)', value: kd(d.lostMonth), accent: Number(d.lostMonth) ? 'text-rose-600' : undefined, link: '/sales' },
-    ...(full ? [{ label: 'Overdue follow-ups', value: d.overdueFu ?? 0, accent: Number(d.overdueFu) ? 'text-red-600' : undefined, link: '/follow-ups' } as Kpi] : []),
+    { label: 'Sales today · tills', value: kd(d.salesToday), sub: tillAsOf, accent: 'text-emerald-600', link: '/till-sales' },
+    { label: 'Lost sales (month)', value: kd(d.lostMonth), accent: Number(d.lostMonth) ? 'text-rose-600' : undefined, link: '/sales?view=lost' },
+    ...(full ? [{ label: 'Overdue follow-ups', value: d.overdueFu ?? 0, accent: Number(d.overdueFu) ? 'text-red-600' : undefined, link: '/follow-ups?bucket=overdue' } as Kpi] : []),
   ];
 
   const demandCards: Kpi[] = [
@@ -719,7 +719,7 @@ export default function Dashboard({ title = 'Today', money = false }: { title?: 
   ];
 
   const hrCards: Kpi[] = [
-    { label: 'Present today', value: d.presentToday ?? 0, accent: 'text-emerald-600', link: '/attendance' },
+    { label: 'Present today', value: d.presentToday ?? 0, accent: 'text-emerald-600', link: '/attendance?day=today' },
     { label: 'Pending leave', value: d.pendingLeave ?? 0, accent: Number(d.pendingLeave) ? 'text-amber-600' : undefined, link: '/leave' },
     { label: 'Expiring docs ≤30d', value: d.empDocs ?? 0, accent: Number(d.empDocs) ? 'text-red-600' : undefined, link: '/hr' },
   ];
@@ -763,10 +763,10 @@ export default function Dashboard({ title = 'Today', money = false }: { title?: 
 
       {can('/sales') && <Section title="Sales & Customers" detailLink="/sales" cards={salesCards} charts={
         <>
-          <ChartCard title="Sales trend this month" hint="cumulative KD" link="/sales">
+          <ChartCard title="Sales trend this month" hint="cumulative KD" link="/till-sales">
             <LineChart data={charts.salesTrend} color="#059669" fmt={kdC} />
           </ChartCard>
-          <ChartCard title="Sales by outlet vs target" hint="this month" link="/sales">
+          <ChartCard title="Sales by outlet vs target" hint="this month" link="/till-sales">
             <BarChart data={charts.outletSales} fmt={kdC} />
           </ChartCard>
         </>

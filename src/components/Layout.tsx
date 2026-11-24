@@ -1,7 +1,7 @@
 import { NavLink, Outlet, useLocation, useSearchParams } from 'react-router-dom';
 import {
   LayoutDashboard, Briefcase, TrendingUp, Hourglass, Truck, Handshake,
-  Users, CalendarRange, LogOut, Watch, Menu, Contact, Settings, Gem, ClipboardCheck, PhoneCall, Boxes, History, UserRound, Wrench, Instagram, Megaphone, Target, Sparkles, Gauge, Inbox, ClipboardList, ChevronDown, BellRing, Bell, Download, Share, Wallet, Landmark, Scale, type LucideIcon,
+  Users, CalendarRange, LogOut, Watch, Menu, Contact, Settings, Gem, ClipboardCheck, PhoneCall, Boxes, History, UserRound, Wrench, Instagram, Megaphone, Target, Sparkles, Gauge, Inbox, ClipboardList, ChevronDown, BellRing, Bell, Download, Share, Wallet, Landmark, Scale, BarChart3, type LucideIcon,
 } from 'lucide-react';
 import { Suspense, useEffect, useRef, useState } from 'react';
 import { useAuth, Role } from '../context/AuthContext';
@@ -14,6 +14,7 @@ import { X as CloseIcon } from 'lucide-react';
 import { VersionChip } from './WhatsNew';
 import AskMohammed, { AskMohammedButton } from './AskMohammed';
 import { Spinner } from './ui';
+import { useScrollMemory } from '../lib/scrollMemory';
 
 interface NavItem {
   to: string;
@@ -49,7 +50,10 @@ const NAV_GROUPS: NavGroup[] = [
   {
     title: 'Sales & customers',
     items: [
-      { to: '/sales', label: 'Sales reports', icon: TrendingUp, roles: ['admin', 'manager', 'staff', 'viewer', 'sales'] },
+      // till revenue by outlet and day against the target; who may open it follows /sales (canAccessPath)
+      { to: '/till-sales', label: 'Till sales', icon: BarChart3, roles: [] },
+      // what the shop teams log in the DSR: visits, lost sales and the sales they note down (till revenue is Till sales)
+      { to: '/sales', label: 'Visits & lost sales', icon: TrendingUp, roles: ['admin', 'manager', 'staff', 'viewer', 'sales'] },
       { to: '/crm', label: 'Customers', icon: Contact, roles: ['admin', 'manager', 'staff', 'viewer', 'sales'] },
       { to: '/follow-ups', label: 'Follow-ups', icon: PhoneCall, roles: ['admin', 'manager', 'staff', 'viewer', 'sales'] },
       { to: '/waiting-list', label: 'Demand list', icon: Hourglass, roles: ['admin', 'manager', 'staff', 'viewer', 'sales', 'operations'] },
@@ -113,7 +117,7 @@ const NAV_GROUPS: NavGroup[] = [
 /** Flat catalogue of every page, for the per-user access editor in Settings. */
 export interface PageDef { to: string; label: string; group: string }
 export const PAGES: PageDef[] = NAV_GROUPS.flatMap((g) =>
-  g.items.filter((i) => !i.owners && i.to !== '/settings' && i.to !== '/me' && i.to !== '/' && i.to !== '/inbox' && i.to !== '/notifications').map((i) => ({ to: i.to, label: i.label, group: g.title ?? 'Main' })),
+  g.items.filter((i) => !i.owners && i.to !== '/till-sales' && i.to !== '/settings' && i.to !== '/me' && i.to !== '/' && i.to !== '/inbox' && i.to !== '/notifications').map((i) => ({ to: i.to, label: i.label, group: g.title ?? 'Main' })),
 );
 
 /** Whether a user may open a page, honouring per-user overrides then role defaults. */
@@ -123,6 +127,10 @@ export function canAccessPath(to: string, role: Role | null, pageAccess: string[
   if (to === '/settings') return role === 'admin' || role === 'manager';
   // the owners' pages: the page and the database check the owner list itself
   if (to === '/payroll' || to === '/financials' || to === '/valuation') return role === 'admin';
+  /* Till sales is the detail behind the till figures that Today and Money show
+     to whoever may open /sales, so it follows that page rather than having an
+     access setting of its own (the database's own rules still apply). */
+  if (to === '/till-sales') return canAccessPath('/sales', role, pageAccess);
   if (role === 'admin') return true;
   // an explicit list — even an empty one — replaces the role defaults, so a
   // salesperson can be limited to Dashboard, My Portal, Inbox and Notifications
@@ -160,6 +168,8 @@ export default function Layout() {
     else if (isIos()) setShowIosHelp(true);
   }
   const location = useLocation();
+  /* a new page starts at the top; Back returns to where the page was left */
+  useScrollMemory();
 
   // Ask Mohammed is for the owners on stock_ai_access, whatever their role; the backend checks again
   const [askAllowed, setAskAllowed] = useState(false);

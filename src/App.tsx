@@ -37,6 +37,7 @@ function page<T extends ComponentType<any>>(load: () => Promise<{ default: T }>)
 const modules = () => import('./pages/modules');
 
 const SalesPage = page(() => import('./pages/Sales'));
+const TillSalesPage = page(() => import('./pages/TillSales'));
 const CrmPage = page(() => import('./pages/Crm'));
 const FollowUpsPage = page(() => import('./pages/FollowUps'));
 const StockPage = page(() => import('./pages/Stock'));
@@ -95,6 +96,7 @@ function Shell() {
         <Route path="/inbox" element={<InboxPage />} />
         <Route path="/notifications" element={<NotificationsPage />} />
         <Route path="/tasks" element={g('/tasks', <AssignTasksPage />)} />
+        <Route path="/till-sales" element={g('/till-sales', <TillSalesPage />)} />
         <Route path="/sales" element={g('/sales', <SalesPage />)} />
         <Route path="/crm" element={g('/crm', <CrmPage />)} />
         <Route path="/follow-ups" element={g('/follow-ups', <FollowUpsPage />)} />

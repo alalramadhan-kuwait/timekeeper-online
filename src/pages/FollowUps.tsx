@@ -6,6 +6,8 @@ import { format } from 'date-fns';
 import { supabase } from '../lib/supabase';
 import { Badge, Spinner } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
+import { useSearchParams } from 'react-router-dom';
+import { ContextBar } from '../components/FromToday';
 
 interface FollowUpCase {
   id: string;
@@ -35,12 +37,17 @@ const BUCKETS: { key: Bucket; label: string; icon: typeof AlertTriangle; accent:
   { key: 'nodate', label: 'No callback date', icon: HelpCircle, accent: 'text-slate-500', chip: 'bg-slate-100 text-slate-600 border-slate-200' },
 ];
 
+const plural = (n: number, one: string) => `${n} ${one}${n === 1 ? '' : 's'}`;
+
 export default function FollowUpsPage() {
   const { role } = useAuth();
   const canEdit = ['admin', 'manager', 'staff'].includes(role ?? '');
   const [cases, setCases] = useState<FollowUpCase[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  /* ?bucket=overdue (from Today's "Follow-ups overdue") shows that group only, until Show all. */
+  const [params, setParams] = useSearchParams();
+  const only = BUCKETS.find((b) => b.key === params.get('bucket'))?.key ?? null;
   const [staffFilter, setStaffFilter] = useState('All');
   const [outletFilter, setOutletFilter] = useState('All');
   const [saving, setSaving] = useState<string | null>(null);
@@ -89,17 +96,15 @@ export default function FollowUpsPage() {
 
   const todayStr = format(new Date(), 'yyyy-MM-dd');
 
+  const bucketOf = (c: FollowUpCase): Bucket => (!c.promised_callback ? 'nodate'
+    : c.promised_callback < todayStr ? 'overdue' : c.promised_callback === todayStr ? 'today' : 'upcoming');
+
   const buckets = useMemo(() => {
     let list = cases;
     if (staffFilter !== 'All') list = list.filter((c) => c.staff === staffFilter);
     if (outletFilter !== 'All') list = list.filter((c) => c.outlet === outletFilter);
     const b: Record<Bucket, FollowUpCase[]> = { overdue: [], today: [], upcoming: [], nodate: [] };
-    for (const c of list) {
-      if (!c.promised_callback) b.nodate.push(c);
-      else if (c.promised_callback < todayStr) b.overdue.push(c);
-      else if (c.promised_callback === todayStr) b.today.push(c);
-      else b.upcoming.push(c);
-    }
+    for (const c of list) b[bucketOf(c)].push(c);
     // Group related items together: same brand, then same product, then by callback date
     const rel = (a: FollowUpCase, z: FollowUpCase) =>
       (a.brand ?? '').localeCompare(z.brand ?? '') ||
@@ -111,7 +116,7 @@ export default function FollowUpsPage() {
 
   // Brand view: sections per brand (alphabetical), items sorted by callback date
   const brandGroups = useMemo(() => {
-    let list = cases;
+    let list = only ? cases.filter((c) => bucketOf(c) === only) : cases;
     if (staffFilter !== 'All') list = list.filter((c) => c.staff === staffFilter);
     if (outletFilter !== 'All') list = list.filter((c) => c.outlet === outletFilter);
     const map = new Map<string, FollowUpCase[]>();
@@ -125,11 +130,13 @@ export default function FollowUpsPage() {
     }
     return [...map.entries()].sort((a, z) =>
       a[0] === 'No brand' ? 1 : z[0] === 'No brand' ? -1 : a[0].localeCompare(z[0]));
-  }, [cases, staffFilter, outletFilter]);
+  }, [cases, staffFilter, outletFilter, only, todayStr]);
 
   if (loading) return <Spinner />;
 
-  const total = BUCKETS.reduce((s, bk) => s + buckets[bk.key].length, 0);
+  const shown = only ? BUCKETS.filter((bk) => bk.key === only) : BUCKETS;
+  const total = shown.reduce((s, bk) => s + buckets[bk.key].length, 0);
+  const allTotal = BUCKETS.reduce((s, bk) => s + buckets[bk.key].length, 0);
 
   const renderRow = (c: FollowUpCase) => (
     <div key={c.id} className="px-4 py-3 flex flex-wrap items-center gap-x-4 gap-y-2">
@@ -209,18 +216,28 @@ export default function FollowUpsPage() {
             </button>
           ))}
         </div>
-        <div className="ml-auto text-sm text-slate-500 self-center">{total} open follow-up{total !== 1 ? 's' : ''}</div>
+        <div className="ml-auto text-sm text-slate-500 self-center">{only ? `${total} of ${allTotal}` : total} open follow-up{total !== 1 ? 's' : ''}</div>
       </div>
+
+      {only && (
+        <ContextBar onClear={() => setParams({}, { replace: true })}>
+          Showing <b>{BUCKETS.find((b) => b.key === only)!.label.toLowerCase()}</b> only · {plural(allTotal - total, 'other')} open
+        </ContextBar>
+      )}
 
       {error && <div className="mb-3 px-4 py-2 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">{error}</div>}
 
-      {total === 0 ? (
+      {total === 0 && only ? (
+        <div className="bg-white rounded-xl border border-slate-200 p-8 text-center text-slate-600 text-sm">
+          None {BUCKETS.find((b) => b.key === only)!.label.toLowerCase()} right now.
+        </div>
+      ) : total === 0 ? (
         <div className="bg-white rounded-xl border border-slate-200 p-8 text-center text-slate-400 text-sm">
           No open follow-ups — everyone has been contacted 🎉
         </div>
       ) : groupBy === 'urgency' ? (
         <div className="space-y-6">
-          {BUCKETS.map((bk) => {
+          {shown.map((bk) => {
             const list = buckets[bk.key];
             if (list.length === 0) return null;
             const Icon = bk.icon;

@@ -6,6 +6,9 @@ import { formatKD } from '../lib/format';
 import { expiryTier, tierClass, tierLabel } from '../lib/expiry';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
+import { useSearchParams } from 'react-router-dom';
+import { ContextBar } from '../components/FromToday';
+import { kuwaitDate } from '../shared/attendanceStatus';
 
 const purchasingRoles = (r: string | null) => ['admin', 'manager', 'operations'].includes(r ?? '');
 
@@ -50,6 +53,16 @@ const matchesQuick: Record<QuickFilter, (r: Record<string, any>) => boolean> = {
   invoice: (r) => ['Fully Received', 'Partially Received'].includes(r.status)
     && r.invoice_received !== true && balanceOf(r) > 0.0005,
 };
+
+/* Today's Watch lines open the list on one of these (?filter=), matching the
+   question each line asks. Open = the statuses and merge rule Today counts. */
+type LinkFilter = 'late' | 'no-expected-date' | 'due-this-week';
+const LINK_FILTERS: Record<LinkFilter, { title: string; match: (r: Record<string, any>, today: string, in7: string) => boolean }> = {
+  late: { title: 'Deliveries past their expected date', match: (r, t) => !!r.expected_arrival && r.expected_arrival < t },
+  'no-expected-date': { title: 'Open orders with no expected date', match: (r) => !r.expected_arrival },
+  'due-this-week': { title: 'Deliveries due this week', match: (r, t, w) => !!r.expected_arrival && r.expected_arrival >= t && r.expected_arrival <= w },
+};
+const OPEN_FOR_LINKS = ['Ordered', 'Partially Received'];
 
 interface Summary {
   owed_kd: number; owed_count: number;
@@ -485,6 +498,12 @@ export function PurchaseOrdersPage() {
   const [reloadKey, setReloadKey] = useState(0);
   const [summary, setSummary] = useState<Summary | null>(null);
   const [quick, setQuick] = useState<QuickFilter | null>(null);
+  const [params, setParams] = useSearchParams();
+  const linkFilter = (params.get('filter') ?? '') in LINK_FILTERS ? params.get('filter') as LinkFilter : null;
+  const pick = (q: QuickFilter) => {
+    if (linkFilter) setParams({}, { replace: true });
+    setQuick((cur) => (cur === q ? null : q));
+  };
 
   const loadSyncTime = useCallback(() => {
     supabase.from('purchase_orders').select('ls_synced_at')
@@ -537,21 +556,28 @@ export function PurchaseOrdersPage() {
 
   const activeConfig = useMemo<CrudConfig>(() => ({
     ...withRuntime,
-    title: quick
-      ? { owed: 'Outstanding balance', receipt: 'Awaiting receipt', invoice: 'Awaiting invoice' }[quick]
-      : baseConfig.title,
-    description: quick
-      ? 'Filtered by the highlighted card above — click it again to clear.'
-      : baseConfig.description,
+    title: linkFilter ? LINK_FILTERS[linkFilter].title
+      : quick
+        ? { owed: 'Outstanding balance', receipt: 'Awaiting receipt', invoice: 'Awaiting invoice' }[quick]
+        : baseConfig.title,
+    description: linkFilter ? 'Open orders (Ordered or Partially received), as Today counts them.'
+      : quick
+        ? 'Filtered by the highlighted card above — click it again to clear.'
+        : baseConfig.description,
     groupBy: 'brand',
     // A card overrides the default active/completed split so it can surface matching POs
     // wherever they sit (a settled PO can still be awaiting its invoice, etc.).
     filter: (r) => {
       if (r.merged_into) return false;
+      if (linkFilter) {
+        const today = kuwaitDate();
+        const in7 = kuwaitDate(new Date(Date.now() + 7 * 86_400_000));
+        return OPEN_FOR_LINKS.includes(r.status) && LINK_FILTERS[linkFilter].match(r, today, in7);
+      }
       if (quick) return matchesQuick[quick](r);
       return !poIsCompleted(r);
     },
-  }), [withRuntime, quick]);
+  }), [withRuntime, quick, linkFilter]);
 
   const completedConfig = useMemo<CrudConfig>(() => ({
     ...withRuntime,
@@ -563,6 +589,14 @@ export function PurchaseOrdersPage() {
 
   return (
     <div className="space-y-6">
+      {/* opened from Today's Watch: the filter first, the list straight under it */}
+      {linkFilter && (
+        <div className="-mb-2">
+          <ContextBar onClear={() => setParams({}, { replace: true })}>Showing <b>{LINK_FILTERS[linkFilter].title.toLowerCase()}</b></ContextBar>
+        </div>
+      )}
+      {linkFilter && <CrudModule key={`link-${reloadKey}-${linkFilter}`} config={activeConfig} />}
+
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
         <div className="text-sm">
           <strong className="text-slate-800">Lightspeed is the source of truth for POs.</strong>
@@ -591,29 +625,29 @@ export function PurchaseOrdersPage() {
           label="Outstanding balance"
           value={summary ? kd(summary.owed_kd) : '—'}
           sub={summary ? `${summary.owed_count} PO${summary.owed_count === 1 ? '' : 's'} still owed` : ' '}
-          active={quick === 'owed'} onClick={() => setQuick((q) => (q === 'owed' ? null : 'owed'))}
+          active={!linkFilter && quick === 'owed'} onClick={() => pick('owed')}
         />
         <SummaryCard
           icon={<Truck size={16} />} tone="sky"
           label="Awaiting receipt"
           value={summary ? String(summary.receipt_count) : '—'}
           sub={summary ? `${kd(summary.receipt_kd)} on order` : ' '}
-          active={quick === 'receipt'} onClick={() => setQuick((q) => (q === 'receipt' ? null : 'receipt'))}
+          active={!linkFilter && quick === 'receipt'} onClick={() => pick('receipt')}
         />
         <SummaryCard
           icon={<FileText size={16} />} tone="amber"
           label="Awaiting invoice"
           value={summary ? String(summary.invoice_count) : '—'}
           sub="Received & owed, no invoice logged"
-          active={quick === 'invoice'} onClick={() => setQuick((q) => (q === 'invoice' ? null : 'invoice'))}
+          active={!linkFilter && quick === 'invoice'} onClick={() => pick('invoice')}
         />
       </div>
 
       {purchasingRoles(role) && <LegacyMatches onLinked={() => { setReloadKey((k) => k + 1); loadSummary(); }} />}
 
-      <CrudModule key={`active-${reloadKey}-${quick ?? 'all'}`} config={activeConfig} />
+      {!linkFilter && <CrudModule key={`active-${reloadKey}-${quick ?? 'all'}`} config={activeConfig} />}
 
-      {!quick && (
+      {!quick && !linkFilter && (
         <div>
           <button
             onClick={() => setShowCompleted((v) => !v)}

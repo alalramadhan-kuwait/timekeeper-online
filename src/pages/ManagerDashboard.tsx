@@ -43,6 +43,7 @@ import { StaffingCard, judgeBranch, clockInPattern, useBranchSheet, useWideSheet
 import { loadRequests, waitedFor, stageOf, tabOf, type RequestRow } from '../shared/requests';
 import { monthSales, eventDates, daySales, sameDaysBefore, prevMonthOf, type MonthSales, type TillRow, type DaySales, type SameDays } from '../shared/tillSales';
 import { TodayCard, Chip, Dot, PaceBar, SubHead, TONE, type Tone } from '../components/TodayCard';
+import { FROM_TODAY } from '../components/FromToday';
 
 /* ------------------------------------------------------------------ types */
 
@@ -348,11 +349,11 @@ async function loadNeeds(role: string | null, canHR: boolean): Promise<NeedsData
     items.push({
       key: 'fu', kind: 'Follow-ups overdue', what: plural(fus.length, 'customer'),
       sub: `Oldest callback promised ${dayOf(oldest)}`, verb: fus.length === 1 ? 'Call them back' : 'Call them back · tap to see who',
-      chip: `${fus.length === 1 ? '' : 'oldest '}${days}d late`, age: days * 24, overdue: true, link: '/follow-ups',
+      chip: `${fus.length === 1 ? '' : 'oldest '}${days}d late`, age: days * 24, overdue: true, link: '/follow-ups?bucket=overdue',
       children: fus.map((f) => ({
         key: f.id, text: f.customer_name?.trim() || 'Customer',
         sub: [f.outlet, f.staff, `promised ${dayOf(f.promised_callback)}`].filter(Boolean).join(' · '),
-        chip: `${Math.max(1, daysSince(today, f.promised_callback))}d late`, link: '/follow-ups',
+        chip: `${Math.max(1, daysSince(today, f.promised_callback))}d late`, link: '/follow-ups?bucket=overdue',
       })),
     });
   }
@@ -644,6 +645,8 @@ export default function ManagerDashboard() {
   const tillsBehind = !!m?.lastSaleDay && m.lastSaleDay < yesterday;
 
   const toggleRow = (k: string) => setOpenRows((o) => ({ ...o, [k]: !o[k] }));
+  /* Till sales for this month, one outlet or the regular outlets together. */
+  const tillHref = (code: string | null) => `/till-sales?${code ? `outlet=${code}&` : ''}month=${m?.month ?? kuwaitDate().slice(0, 7)}`;
 
   /* ---- the cards */
   const salesCard = visible.includes('sales') && (
@@ -654,7 +657,7 @@ export default function ManagerDashboard() {
           ? <Chip tone={regTone}>{Math.round(pace.frac * 100 - regPct)} pts behind</Chip>
           : <Chip tone="green">on pace</Chip>) : undefined}
       meta={m ? `${longMonth(m.month)} · ${m.tillDays ? `${m.tillDays} of ${m.daysInMonth} till days` : 'no till sales yet'}` : sales.error ? 'Not loaded' : 'Loading till sales'}
-      link={can('/money') ? { label: 'Money', to: '/money' } : undefined}>
+      link={can('/till-sales') ? { label: 'Till sales', to: tillHref(null) } : undefined}>
       {!m || !reg ? <SectionState slot={sales} name="sales" onRetry={() => run(['sales'])} /> : (
         <>
           {sales.error && <StaleBar at={sales.at} error={sales.error} busy={sales.loading} onRetry={() => run(['sales'])}
@@ -764,13 +767,14 @@ export default function ManagerDashboard() {
             const needC = neededPerDay(c.sales, c.target);
             const doingC = perDay(c.sales);
             const isPush = push?.code === c.code;
-            return (
-              <li key={c.code} className={isPush ? `-mx-2 my-1 rounded-xl px-2 py-2 ${TONE.red.soft}` : 'border-t border-slate-100 py-2 first:border-0'}>
+            const row = (
+              <>
                 {isPush && <p className={`mb-1 text-[12px] font-semibold uppercase tracking-wide ${TONE.red.text}`}>One thing to push</p>}
                 <div className="flex items-center gap-2">
                   <span className="w-[100px] shrink-0 truncate text-[15px] font-semibold text-slate-900">{name}</span>
                   <div className="flex-1">{c.target ? <PaceBar pct={c.pct ?? 0} pace={pacePct} tone={t} /> : null}</div>
                   <span className={`w-11 text-right text-[15px] font-bold tabular-nums ${TONE[t].text}`}>{c.pct !== null ? `${Math.round(c.pct)}%` : ''}</span>
+                  {can('/till-sales') && <ChevronRight className="h-4 w-4 shrink-0 text-slate-500" aria-hidden />}
                 </div>
                 <p className="text-[13px] leading-[18px] tabular-nums text-slate-600">
                   {c.target ? `${short(c.sales)} of ${short(c.target)}` : `${kd(c.sales)} · no target set`}
@@ -792,6 +796,15 @@ export default function ManagerDashboard() {
                     )}
                   </>
                 )}
+              </>
+            );
+            /* each outlet opens its own month, day by day */
+            return (
+              <li key={c.code} className={isPush ? `-mx-2 my-1 rounded-xl ${TONE.red.soft}` : 'border-t border-slate-100 first:border-0'}>
+                {can('/till-sales') ? (
+                  <Link to={tillHref(c.code)} state={FROM_TODAY}
+                    className={`block rounded-xl py-2 hover:bg-slate-900/[0.03] ${isPush ? 'px-2' : '-mx-2 px-2'}`}>{row}</Link>
+                ) : <div className={`py-2 ${isPush ? 'px-2' : ''}`}>{row}</div>}
               </li>
             );
           })}
@@ -802,27 +815,33 @@ export default function ManagerDashboard() {
           const body = (
             <>
               <span className="flex-1 text-[14px] text-slate-900"><span className="font-semibold">Regular outlets</span> <span className="tabular-nums">{full(reg.sales, 1)} KD of {full(target)} = {Math.round(regPct ?? 0)}%</span></span>
-              {can('/money') && <ChevronRight className="h-4 w-4 shrink-0 text-slate-500" aria-hidden />}
+              {can('/till-sales') && <ChevronRight className="h-4 w-4 shrink-0 text-slate-500" aria-hidden />}
             </>
           );
-          return can('/money')
-            ? <Link to="/money" className="-mx-2 flex min-h-[44px] items-center gap-2 rounded-lg border-t border-slate-200 px-2 hover:bg-slate-50">{body}</Link>
+          return can('/till-sales')
+            ? <Link to={tillHref(null)} state={FROM_TODAY} className="-mx-2 flex min-h-[44px] items-center gap-2 rounded-lg border-t border-slate-200 px-2 hover:bg-slate-50">{body}</Link>
             : <div className="flex min-h-[44px] items-center gap-2 border-t border-slate-200">{body}</div>;
         })()}
 
         {/* events: their own rows, never inside the regular figure */}
-        {m.events.map((e) => (
-          <div key={e.name} className="border-t border-slate-100 py-2">
-            <div className="flex items-center gap-2">
-              <span className="text-[15px] font-semibold text-slate-900">{e.name} <span className="font-normal text-slate-600">(event)</span></span>
-              <Chip tone="grey">no target</Chip>
-              <span className="ml-auto text-[15px] font-bold tabular-nums text-slate-900">{kd(e.sales)}</span>
-            </div>
-            <p className="text-[13px] leading-[18px] tabular-nums text-slate-600">
-              {eventDates(e.from, e.to)} · {plural(e.count, 'sale')} · {counted ? `counted once in the ${Math.round(((reg.sales + eventsTotal) / (target ?? 1)) * 100)}%` : target ? `not in the ${Math.round(regPct ?? 0)}%` : 'not in the regular total'}
-            </p>
-          </div>
-        ))}
+        {m.events.map((e) => {
+          const body = (
+            <>
+              <div className="flex items-center gap-2">
+                <span className="text-[15px] font-semibold text-slate-900">{e.name} <span className="font-normal text-slate-600">(event)</span></span>
+                <Chip tone="grey">no target</Chip>
+                <span className="ml-auto text-[15px] font-bold tabular-nums text-slate-900">{kd(e.sales)}</span>
+                {can('/till-sales') && <ChevronRight className="h-4 w-4 shrink-0 text-slate-500" aria-hidden />}
+              </div>
+              <p className="text-[13px] leading-[18px] tabular-nums text-slate-600">
+                {eventDates(e.from, e.to)} · {plural(e.count, 'sale')} · {counted ? `counted once in the ${Math.round(((reg.sales + eventsTotal) / (target ?? 1)) * 100)}%` : target ? `not in the ${Math.round(regPct ?? 0)}%` : 'not in the regular total'}
+              </p>
+            </>
+          );
+          return can('/till-sales')
+            ? <Link key={e.name} to={tillHref(null)} state={FROM_TODAY} className="-mx-2 block rounded-lg border-t border-slate-100 px-2 py-2 hover:bg-slate-50">{body}</Link>
+            : <div key={e.name} className="border-t border-slate-100 py-2">{body}</div>;
+        })}
         {pace && (
           <p className="mt-2 flex items-center gap-1.5 text-[12px] text-slate-600">
             <span className="inline-block h-3 w-0.5 bg-slate-900" aria-hidden /> where each outlet should be after {plural(pace.day, 'till day')} of {m.daysInMonth}
@@ -870,7 +889,7 @@ export default function ManagerDashboard() {
               <ul className="mt-0.5">
                 {nd.stuck.rows.map((r) => (
                   <li key={r.id}>
-                    <Link to={`/inbox?focus=${r.id}`} className="-mx-2 flex min-h-[44px] items-center gap-2 rounded-lg px-2 text-[14px] hover:bg-slate-50">
+                    <Link to={`/inbox?focus=${r.id}`} state={FROM_TODAY} className="-mx-2 flex min-h-[44px] items-center gap-2 rounded-lg px-2 text-[14px] hover:bg-slate-50">
                       <span className="min-w-0 flex-1 text-slate-900">{r.who} <span className="text-slate-600">· {r.what}</span></span>
                       <span className={`text-[13px] font-semibold tabular-nums ${TONE.amber.text}`}>waiting {waitedFor(r.hours)}</span>
                     </Link>
@@ -890,27 +909,27 @@ export default function ManagerDashboard() {
               {watch.error && <li className="mt-2"><StaleBar at={watch.at} error={watch.error} busy={watch.loading} onRetry={() => run(['watch'])} /></li>}
               {can('/sales') && (watch.data.lostMonth === 0 ? (
                 /* An empty month is missing data until shown otherwise, not good news. */
-                <WatchLine to="/sales" tone="amber" sub="Missing, not proof of none"
+                <WatchLine to="/sales?view=lost&period=30d" tone="amber" sub="Missing, not proof of none"
                   label={watch.data.lastLost ? `No lost sales logged since ${dayOf(watch.data.lastLost)}` : 'No lost sales have ever been logged'} />
               ) : (
                 <>
-                  <WatchLine to="/sales" label="Asked for, not available this month"
+                  <WatchLine to="/sales?view=lost&reason=Not%20Available" label="Asked for, not available this month"
                     value={`${watch.data.notAvailableMonth} of ${watch.data.lostMonth}`} tone={watch.data.notAvailableMonth > 0 && watch.data.notAvailableMonth * 2 >= watch.data.lostMonth ? 'red' : 'grey'} />
-                  <WatchLine to="/sales" label="Lost sales · last 7 days" value={String(watch.data.lost7)} tone="grey" />
+                  <WatchLine to="/sales?view=lost&period=7d" label="Lost sales · last 7 days" value={String(watch.data.lost7)} tone="grey" />
                 </>
               ))}
               {can('/purchase-orders') && (
                 <>
                   {watch.data.latePOs > 0 && (
-                    <WatchLine to="/purchase-orders" label="Deliveries past their expected date" value={plural(watch.data.latePOs, 'PO')} tone="red" />
+                    <WatchLine to="/purchase-orders?filter=late" label="Deliveries past their expected date" value={plural(watch.data.latePOs, 'PO')} tone="red" />
                   )}
                   {watch.data.noDatePOs > 0 && (
-                    <WatchLine to="/purchase-orders" tone="amber" sub="So none of them can show as late"
+                    <WatchLine to="/purchase-orders?filter=no-expected-date" tone="amber" sub="So none of them can show as late"
                       label={`${plural(watch.data.noDatePOs, 'open order')} ${watch.data.noDatePOs === 1 ? 'has' : 'have'} no expected date`} />
                   )}
                   {/* "due this week" means something only for orders that have a date */}
                   {watch.data.latePOs === 0 && watch.data.openPOs > watch.data.noDatePOs && (
-                    <WatchLine to="/purchase-orders" label="Deliveries due this week" value={String(watch.data.duePOs)} tone="grey" />
+                    <WatchLine to="/purchase-orders?filter=due-this-week" label="Deliveries due this week" value={String(watch.data.duePOs)} tone="grey" />
                   )}
                   {watch.data.openPOs === 0 && <WatchLine to="/purchase-orders" label="Open purchase orders" value="none" tone="grey" />}
                 </>
@@ -939,7 +958,7 @@ export default function ManagerDashboard() {
         return bad ? <Chip tone="red">{bad} uncovered</Chip> : warn ? <Chip tone="amber">{warn} to check</Chip> : <Chip tone="green">covered</Chip>;
       })() : undefined}
       meta={staff.data && staff.at ? `Who is in at ${hhmmOf(staff.at)}` : staff.error ? 'Not loaded' : 'Loading clock-ins'}
-      link={{ label: 'Attendance', to: '/attendance' }}>
+      link={{ label: 'Attendance', to: '/attendance?day=today' }}>
       {staff.data ? (
         <>
           {staff.error && <StaleBar at={staff.at} error={staff.error} busy={staff.loading} onRetry={refreshStaff} label="Staffing" />}
@@ -1039,13 +1058,13 @@ function NeedRow({ it, n, open, onToggle }: { it: Item; n?: number; open: boolea
       {it.children ? (
         <button type="button" onClick={onToggle} aria-expanded={open} className={cls}>{inner}</button>
       ) : (
-        <Link to={it.link} className={cls}>{inner}</Link>
+        <Link to={it.link} state={FROM_TODAY} className={cls}>{inner}</Link>
       )}
       {it.children && open && (
         <ul className="mb-2 ml-3 border-l-2 border-slate-200 pl-3">
           {it.children.map((c) => (
             <li key={c.key}>
-              <Link to={c.link} className="flex min-h-[44px] items-center gap-2 py-1">
+              <Link to={c.link} state={FROM_TODAY} className="flex min-h-[44px] items-center gap-2 py-1">
                 <span className="min-w-0 flex-1 text-[14px] leading-5 text-slate-900">{c.text}
                   <span className="block text-[13px] leading-[18px] text-slate-600">{c.sub}</span>
                 </span>
@@ -1055,7 +1074,7 @@ function NeedRow({ it, n, open, onToggle }: { it: Item; n?: number; open: boolea
             </li>
           ))}
           <li>
-            <Link to={it.link} className="flex min-h-[44px] items-center text-[13px] font-semibold text-slate-700 hover:underline">Open Follow-ups</Link>
+            <Link to={it.link} state={FROM_TODAY} className="flex min-h-[44px] items-center text-[13px] font-semibold text-slate-700 hover:underline">Open Follow-ups</Link>
           </li>
         </ul>
       )}
@@ -1112,7 +1131,7 @@ function StaleBar({ at, error, busy, onRetry, label, what, syncedAt }: {
 function WatchLine({ to, label, sub, value, tone }: { to: string; label: string; sub?: string; value?: string; tone: Tone }) {
   return (
     <li className="border-t border-slate-100 first:border-0">
-      <Link to={to} className="-mx-2 flex min-h-[44px] items-center gap-2.5 rounded-lg px-2 py-1.5 hover:bg-slate-50">
+      <Link to={to} state={FROM_TODAY} className="-mx-2 flex min-h-[44px] items-center gap-2.5 rounded-lg px-2 py-1.5 hover:bg-slate-50">
         <Dot tone={tone} />
         <span className="min-w-0 flex-1 text-[14px] leading-5 text-slate-900">{label}
           {sub && <span className="block text-[13px] leading-[18px] text-slate-600">{sub}</span>}

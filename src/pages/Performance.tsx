@@ -30,7 +30,7 @@ const TABLE_LABEL: Record<string, string> = {
   company_documents: 'Documents', settings: 'Settings', employee_requests: 'Requests',
 };
 const PAGE_LABEL: Record<string, string> = {
-  '/': 'Today', '/money': 'Money', '/me': 'My Portal', '/sales': 'Sales', '/crm': 'Customers', '/follow-ups': 'Follow-ups', '/vip': 'VIP',
+  '/': 'Today', '/money': 'Money', '/me': 'My Portal', '/sales': 'Visits & lost sales', '/till-sales': 'Till sales', '/crm': 'Customers', '/follow-ups': 'Follow-ups', '/vip': 'VIP',
   '/waiting-list': 'Demand', '/stock': 'Stock', '/purchase-orders': 'Suppliers', '/consignments': 'Consignments',
   '/limited-projects': 'Limited Projects', '/repairs': 'Repairs', '/attendance': 'Attendance', '/hr': 'Employees',
   '/leave': 'Leave', '/instagram': 'Instagram', '/content': 'Content', '/paid-ads': 'Paid Ads', '/client-ads': 'Client ad jobs', '/ads': 'Our ads', '/marketing': 'Marketing Overview', '/owner': 'Money', '/influencers': 'Influencers',

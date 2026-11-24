@@ -3,6 +3,8 @@ import { format, startOfWeek, startOfMonth, subDays, subMonths, parseISO, getDay
 import { supabase } from '../lib/supabase';
 import { Card, Spinner } from '../components/ui';
 import { formatKD } from '../lib/format';
+import { Link, useSearchParams } from 'react-router-dom';
+import { ContextBar } from '../components/FromToday';
 
 interface SaleItem { brand: string | null; product_type: string | null; product: string | null; quantity: number; amount_kd: number }
 interface TrafficRow { date_logged: string; time_logged: string | null; visitor_count: number; outlet: string | null }
@@ -26,10 +28,10 @@ interface LostCase {
   lost_reason: string | null;
 }
 
-type Period = 'today' | 'week' | 'month' | '30d' | 'custom';
+type Period = 'today' | 'week' | '7d' | 'month' | '30d' | 'custom';
 
 const periodLabels: Record<Period, string> = {
-  today: 'Today', week: 'This week', month: 'This month', '30d': 'Last 30 days', custom: 'Custom',
+  today: 'Today', week: 'This week', '7d': 'Last 7 days', month: 'This month', '30d': 'Last 30 days', custom: 'Custom',
 };
 
 function periodStart(p: Period): string {
@@ -37,6 +39,7 @@ function periodStart(p: Period): string {
   if (p === 'today') return format(now, 'yyyy-MM-dd');
   if (p === 'week') return format(startOfWeek(now, { weekStartsOn: 6 }), 'yyyy-MM-dd'); // Kuwait week starts Saturday
   if (p === 'month') return format(startOfMonth(now), 'yyyy-MM-dd');
+  if (p === '7d') return format(subDays(now, 7), 'yyyy-MM-dd'); // as Today's "Lost sales · last 7 days" counts
   return format(subDays(now, 30), 'yyyy-MM-dd');
 }
 
@@ -47,9 +50,20 @@ function caseTotal(c: SaleCase): number {
   return Number(c.amount_kd ?? 0);
 }
 
+/* What the shop teams log in the DSR: visits, lost sales and the sales they
+   note down by hand. Till revenue is on Till sales (/till-sales).
+
+   Today's Watch lines open this page on lost sales: ?view=lost scrolls to them,
+   ?period= sets the range and ?reason= keeps one lost reason. */
+const LINK_PERIODS: Period[] = ['today', 'week', '7d', 'month', '30d'];
+
 export default function SalesPage() {
-  const [period, setPeriod] = useState<Period>('month');
-  const [from, setFrom] = useState(periodStart('month'));
+  const [params, setParams] = useSearchParams();
+  const linkPeriod = LINK_PERIODS.find((p) => p === params.get('period')) ?? null;
+  const view = params.get('view');
+  const reason = params.get('reason');
+  const [period, setPeriod] = useState<Period>(linkPeriod ?? 'month');
+  const [from, setFrom] = useState(periodStart(linkPeriod ?? 'month'));
   const [to, setTo] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [allSales, setAllSales] = useState<SaleCase[]>([]);
   const [allLost, setAllLost] = useState<LostCase[]>([]);
@@ -115,9 +129,16 @@ export default function SalesPage() {
   const total = useMemo(() => sales.reduce((s, c) => s + caseTotal(c), 0), [sales]);
 
   const lost = useMemo(
-    () => (outlet === 'All' ? allLost : allLost.filter((c) => (c.outlet || 'Unknown') === outlet)),
-    [allLost, outlet],
+    () => (outlet === 'All' ? allLost : allLost.filter((c) => (c.outlet || 'Unknown') === outlet))
+      .filter((c) => !reason || (c.lost_reason ?? '').toLowerCase() === reason.toLowerCase()),
+    [allLost, outlet, reason],
   );
+
+  /* opened on lost sales: bring them into view once they are on the page */
+  useEffect(() => {
+    if (view !== 'lost' || loading) return;
+    document.getElementById('lost-sales')?.scrollIntoView({ block: 'start' });
+  }, [view, loading]);
   const lostValue = useMemo(() => lost.reduce((s, c) => s + Number(c.amount_kd ?? 0), 0), [lost]);
   const lostByKey = (level: 'brand' | 'outlet' | 'lost_reason') => {
     const map = new Map<string, { amount: number; count: number }>();
@@ -222,8 +243,11 @@ export default function SalesPage() {
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
         <div>
-          <h1 className="text-xl font-bold text-slate-900">Sales Reports</h1>
-          <p className="text-sm text-slate-500">Store traffic, demand, lost sales and follow-ups per outlet — live from the Daily Sales Report app. Sales of record stay in Lightspeed.</p>
+          <h1 className="text-xl font-bold text-slate-900">Visits &amp; lost sales</h1>
+          <p className="text-sm text-slate-600">
+            What the shop teams log in the Daily Sales Report: store traffic, lost sales, follow-ups, and the sales they note down by hand.
+            The money that went through the tills is on <Link to="/till-sales" className="font-semibold text-slate-800 underline">Till sales</Link>.
+          </p>
         </div>
         <div className="flex gap-2 items-center flex-wrap">
           <select
@@ -255,6 +279,12 @@ export default function SalesPage() {
           )}
         </div>
       </div>
+
+      {(view === 'lost' || linkPeriod || reason) && (
+        <ContextBar onClear={() => { setParams({}, { replace: true }); setPeriod('month'); }} clearLabel="Show all, this month">
+          Showing <b>{['lost sales', periodLabels[period].toLowerCase(), reason ? `reason ${reason}` : null].filter(Boolean).join(' · ')}</b>
+        </ContextBar>
+      )}
 
       {loading ? <Spinner /> : (
         <>
@@ -374,9 +404,9 @@ export default function SalesPage() {
           </div>
 
           {/* ── Lost sales analysis ── */}
-          <div className="mb-6 bg-white rounded-xl border border-rose-200 shadow-sm p-4">
+          <div id="lost-sales" style={{ scrollMarginTop: 'calc(var(--sa-t, 0px) + 72px)' }} className="mb-6 bg-white rounded-xl border border-rose-200 shadow-sm p-4">
             <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-              <h2 className="text-sm font-semibold text-rose-700">Lost sales — this period</h2>
+              <h2 className="text-sm font-semibold text-rose-700">Lost sales — this period{reason ? ` · reason ${reason}` : ''}</h2>
               <div className="text-sm text-slate-500">
                 <b className="text-rose-600">{lost.length}</b> lost · value{' '}
                 <b className="text-rose-600">{formatKD(lostValue)} KD</b>
@@ -386,7 +416,7 @@ export default function SalesPage() {
               </div>
             </div>
             {lost.length === 0 ? (
-              <div className="text-slate-400 text-sm">No lost sales recorded in this period 🎉</div>
+              <div className="text-slate-600 text-sm">No lost sales logged in this period. If nobody logged them, that is missing, not proof there were none.</div>
             ) : (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">

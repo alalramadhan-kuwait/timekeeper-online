@@ -2,7 +2,7 @@ import { useCallback, Fragment, useEffect, useMemo, useState } from 'react';
 import {
   Clock, AlertTriangle, Users, LogIn, LogOut, CalendarDays, Download, Pencil, Plus, X, Check, UserRound, ArrowRight, ChevronRight,
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { format, parseISO, eachDayOfInterval, startOfMonth, endOfMonth, subMonths } from 'date-fns';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
@@ -19,6 +19,8 @@ import { scheduleFromRow, type Schedule, type ScheduleRow } from '../shared/sche
 import { useLive } from '../shared/live';
 import { rangeLabel } from '../lib/dateRange';
 import { todayKuwait, kuwaitDateOf as kuwaitDate } from '../shared/kuwaitTime';
+import { outletOf, outletName } from '../shared/outlets';
+import { ContextBar } from '../components/FromToday';
 
 interface EmpLite { id: string; full_name: string; location: string | null; job_title: string | null; status: string; user_id: string | null }
 interface LeaveLite { employee_id: string; leave_type: string; leave_start: string; leave_end: string; approval_status: string }
@@ -46,13 +48,25 @@ export default function AttendancePage() {
   return <ManagerDashboard />;
 }
 
+/** A branch as Today names it: the outlet code for a known outlet, else the location as written. */
+const branchOf = (location: string | null | undefined) => outletOf(location)?.code ?? location ?? 'other';
+
 function ManagerDashboard() {
   const today = todayKuwait();
+  /* Opened from Today: ?day=today|yyyy-mm-dd, &branch=<outlet code>, &person=<employee id>.
+     The link sets the first view; the filters below can change it, and Show all clears it. */
+  const [params, setParams] = useSearchParams();
+  const linkDay = (() => {
+    const d = params.get('day');
+    if (d === 'today') return today;
+    return d && /^\d{4}-\d{2}-\d{2}$/.test(d) ? d : null;
+  })();
+  const [branchFilter, setBranchFilter] = useState<string | null>(params.get('branch'));
   /* Whose days are open. A total answers "how much"; only the days answer
      "which", and that is the question that follows every time. */
   const [openName, setOpenName] = useState<string | null>(null);
-  const [from, setFrom] = useState(format(startOfMonth(new Date()), 'yyyy-MM-dd'));
-  const [to, setTo] = useState(format(endOfMonth(new Date()), 'yyyy-MM-dd'));
+  const [from, setFrom] = useState(linkDay ?? format(startOfMonth(new Date()), 'yyyy-MM-dd'));
+  const [to, setTo] = useState(linkDay ?? format(endOfMonth(new Date()), 'yyyy-MM-dd'));
   const [records, setRecords] = useState<AttendanceRecord[]>([]);
   const [employees, setEmployees] = useState<EmpLite[]>([]);
   const [leaves, setLeaves] = useState<LeaveLite[]>([]);
@@ -64,7 +78,7 @@ function ManagerDashboard() {
      office's 09:00–17:00, which scored an afternoon shop shift as six hours
      late every day somebody turned up on time. */
   const [schedules, setSchedules] = useState<Map<string, Schedule[]>>(new Map());
-  const [empFilter, setEmpFilter] = useState('All');
+  const [empFilter, setEmpFilter] = useState(params.get('person') ?? 'All');
   const [teamFilter, setTeamFilter] = useState('All');
   const [typeFilter, setTypeFilter] = useState<'All' | LocationType>('All');
   const [statusFilter, setStatusFilter] = useState('All');
@@ -180,6 +194,7 @@ function ManagerDashboard() {
 
   const filtered = useMemo(() => records.filter((r) => {
     if (empFilter !== 'All' && empOf(r)?.id !== empFilter) return false;
+    if (branchFilter && branchOf(empOf(r)?.location ?? r.location) !== branchFilter) return false;
     if (teamFilter !== 'All' && empOf(r)?.location !== teamFilter) return false;
     if (typeFilter !== 'All' && locationType(empOf(r)?.location) !== typeFilter) return false;
     if (statusFilter !== 'All') {
@@ -187,7 +202,7 @@ function ManagerDashboard() {
       else if (statusOf(r) !== statusFilter) return false;
     }
     return true;
-  }), [records, empFilter, teamFilter, typeFilter, statusFilter, empOf, today, workStart]);
+  }), [records, empFilter, branchFilter, teamFilter, typeFilter, statusFilter, empOf, today, workStart]);
 
   // approved leave / WFH covering today, per employee id (item 18: not absent)
   const onLeaveToday = useMemo(() => {
@@ -207,15 +222,17 @@ function ManagerDashboard() {
     const inRangeToday = to >= today && from <= today;
     const absentToday = inRangeToday
       ? activeEmployees.filter((e) => !presentToday.has(e.id) && !onLeaveToday.has(e.id) &&
+          (!branchFilter || branchOf(e.location) === branchFilter) &&
           (teamFilter === 'All' || e.location === teamFilter) &&
           (typeFilter === 'All' || locationType(e.location) === typeFilter) &&
           (empFilter === 'All' || e.id === empFilter))
       : [];
     const excusedToday = inRangeToday
-      ? activeEmployees.filter((e) => onLeaveToday.has(e.id)).map((e) => ({ name: e.full_name, type: onLeaveToday.get(e.id)! }))
+      ? activeEmployees.filter((e) => onLeaveToday.has(e.id) && (!branchFilter || branchOf(e.location) === branchFilter) &&
+          (empFilter === 'All' || e.id === empFilter)).map((e) => ({ name: e.full_name, type: onLeaveToday.get(e.id)! }))
       : [];
     return { late, stillIn, missed, totalHours, needCorrection, records: filtered.length, absentToday, excusedToday };
-  }, [filtered, activeEmployees, today, from, to, teamFilter, typeFilter, empFilter, onLeaveToday, workStart, personKey]);
+  }, [filtered, activeEmployees, today, from, to, branchFilter, teamFilter, typeFilter, empFilter, onLeaveToday, workStart, personKey]);
 
   /* Hours and days come from src/shared/workload.ts — the same counting the
      shop-floor team list uses, so the two cannot disagree about a week.
@@ -372,6 +389,22 @@ function ManagerDashboard() {
           Clock-ins not closed, by person <ChevronRight size={14} />
         </Link>
       </div>
+
+      {(params.get('day') || params.get('branch') || params.get('person')) && (
+        <ContextBar onClear={() => {
+          setParams({}, { replace: true });
+          setBranchFilter(null);
+          setEmpFilter('All');
+          setFrom(format(startOfMonth(new Date()), 'yyyy-MM-dd'));
+          setTo(format(endOfMonth(new Date()), 'yyyy-MM-dd'));
+        }} clearLabel="Whole month, everyone">
+          Showing <b>{[
+            branchFilter ? outletName(branchFilter).replace(/^time ?keeper\s*-?\s*/i, '') || branchFilter : null,
+            from === to ? (from === today ? 'today' : fmtDate(`${from}T12:00:00+03:00`)) : `${fmtDate(`${from}T12:00:00+03:00`)} – ${fmtDate(`${to}T12:00:00+03:00`)}`,
+            empFilter !== 'All' ? empById.get(empFilter)?.full_name ?? 'one person' : null,
+          ].filter(Boolean).join(' · ')}</b>
+        </ContextBar>
+      )}
 
       {err && <div className="px-4 py-2 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">{err}</div>}
 

@@ -20,6 +20,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { ChevronRight, ChevronLeft, Phone, Clock, CalendarPlus, CalendarClock, Users, X } from 'lucide-react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { FROM_TODAY } from './FromToday';
 import { motion, useReducedMotion } from 'motion/react';
 import { AttendanceDayDetail } from './AttendanceDayDetail';
 import { WorkScheduleModal } from './WorkSchedule';
@@ -186,7 +187,7 @@ export function StaffingCard({ branches, workStart, onChanged, embedded = false,
       {!embedded && (
         <div className="flex items-baseline justify-between px-3 pt-2.5 pb-1">
           <h2 className="text-[15px] font-semibold text-slate-900">Staffing</h2>
-          <Link to="/attendance" className="text-[13px] text-blue-600 hover:underline">Attendance →</Link>
+          <Link to="/attendance?day=today" state={FROM_TODAY} className="text-[13px] text-blue-600 hover:underline">Attendance →</Link>
         </div>
       )}
       {branches.length === 0 && <p className="px-4 pb-3 text-sm text-slate-600">Nobody is scheduled today</p>}
@@ -215,7 +216,7 @@ export function StaffingCard({ branches, workStart, onChanged, embedded = false,
                 ? <a key={a.key} href={a.href} className={cls}><Phone size={13} aria-hidden />{a.label}</a>
                 : <button key={a.key} type="button" onClick={(e) => a.run && act(a.run, e)} className={cls}>{a.label}</button>;
             })}
-            {more > 0 && <Link to="/attendance" className="inline-flex min-h-[44px] items-center px-1 text-[13px] font-semibold text-blue-600">+{more} more</Link>}
+            {more > 0 && <Link to="/attendance?day=today" state={FROM_TODAY} className="inline-flex min-h-[44px] items-center px-1 text-[13px] font-semibold text-blue-600">+{more} more</Link>}
           </div>
         </div>
       )}
@@ -394,13 +395,13 @@ function BranchSheet({ b, person, at, wide, alerts, workStart, editing, flow, on
           className="-mr-2 grid h-11 w-11 shrink-0 place-items-center rounded-full text-slate-700 hover:bg-slate-100"><X className="h-5 w-5" /></button>
       </div>
       <div className="flex-1 overflow-y-auto overscroll-contain px-4 pb-4">{body}</div>
-      {!person && (
-        <div className="shrink-0 border-t border-slate-200 bg-white px-4 pt-3" style={{ paddingBottom: 'max(12px, var(--sa-b))' }}>
-          <Link to="/attendance" className="flex h-11 items-center justify-center gap-1 rounded-xl border border-slate-300 text-[15px] font-semibold text-slate-900 hover:bg-slate-50">
-            Today’s attendance <ChevronRight className="h-4 w-4" aria-hidden />
-          </Link>
-        </div>
-      )}
+      <div className="shrink-0 border-t border-slate-200 bg-white px-4 pt-3" style={{ paddingBottom: 'max(12px, var(--sa-b))' }}>
+        {/* opens Attendance on today, this branch (and this person), and Back returns to this sheet */}
+        <Link to={`/attendance?day=today&branch=${encodeURIComponent(b.key)}${person ? `&person=${encodeURIComponent(person.id)}` : ''}`} state={FROM_TODAY}
+          className="flex h-11 items-center justify-center gap-1 rounded-xl border border-slate-300 text-[15px] font-semibold text-slate-900 hover:bg-slate-50">
+          {person ? `${person.name.split(' ')[0]}’s attendance` : `${b.name} attendance today`} <ChevronRight className="h-4 w-4" aria-hidden />
+        </Link>
+      </div>
     </div>
   );
 
@@ -450,7 +451,7 @@ function PersonRow({ p, alert, onOpen, onSetTime }: { p: StaffPerson; alert?: Pe
 
 function AlertLine({ alert }: { alert: PersonAlert }) {
   return alert.href
-    ? <Link to={alert.href} className="flex min-h-[44px] items-center gap-1 text-[13px] font-semibold text-rose-700 hover:underline">
+    ? <Link to={alert.href} state={FROM_TODAY} className="flex min-h-[44px] items-center gap-1 text-[13px] font-semibold text-rose-700 hover:underline">
         {alert.text} · Open HR record <ChevronRight className="h-4 w-4" aria-hidden />
       </Link>
     : <p className="pb-1 text-[13px] font-semibold text-rose-700">{alert.text}</p>;
