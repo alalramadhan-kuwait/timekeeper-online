@@ -1,5 +1,13 @@
 [
   {
+    "version": "4.1.1",
+    "date": "2026-11-25",
+    "title": "Outlet totals on Today",
+    "changes": [
+      "Each outlet on Today shows its sales so far and its target, e.g. 37.2k / 45k."
+    ]
+  },
+  {
     "version": "4.1.0",
     "date": "2026-11-24",
     "title": "Today: numbers, not sentences",
