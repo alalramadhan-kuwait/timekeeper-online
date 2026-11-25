@@ -712,7 +712,12 @@ export default function ManagerDashboard() {
               const name = bare(outletName(c.code));
               const row = (
                 <>
-                  <span className="truncate text-[15px] font-semibold text-slate-900">{name}</span>
+                  <span className="flex min-w-0 flex-col">
+                    <span className="truncate text-[15px] font-semibold leading-tight text-slate-900">{name}</span>
+                    <span className="whitespace-nowrap text-[13px] font-semibold tabular-nums leading-tight text-slate-600">
+                      {short(c.sales)}{c.target ? <span className="font-medium"> / {short(c.target)}</span> : ' KD'}
+                    </span>
+                  </span>
                   {c.target ? (
                     <span className="relative block h-2.5 rounded-full bg-[#edf1f5]" role="img"
                       aria-label={`${name} ${Math.round(c.pct ?? 0)}% of ${short(c.target)}`}>
