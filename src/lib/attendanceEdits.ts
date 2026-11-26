@@ -98,3 +98,26 @@ export async function deleteRecord(r: AttendanceRecord, reason: string): Promise
   const { error } = await supabase.from('attendance_records').delete().eq('id', r.id);
   return error ? error.message : null;
 }
+
+/**
+ * Closing a shift somebody forgot to clock out of. Only the clock-out is
+ * written: the arrival, and whether it was late, were already judged and are
+ * not re-judged by fixing the other end of the day. Returns null on success,
+ * or the message to show.
+ */
+export async function closeShift(
+  r: { id: string; clock_in: string },
+  clockOut: string,
+  reason: string,
+): Promise<string | null> {
+  if (!/^\d{2}:\d{2}$/.test(clockOut)) return 'Pick the time they left';
+  const out = kuwaitISO(kuwaitDate(r.clock_in), clockOut);
+  if (new Date(out).getTime() <= new Date(r.clock_in).getTime()) {
+    return `Must be after they came in (${kuwaitHM(r.clock_in)})`;
+  }
+  const { error } = await supabase.from('attendance_records').update({
+    clock_out: out,
+    correction_reason: `[closed by manager] ${reason.trim() || 'clock-out was missing'}`,
+  }).eq('id', r.id).is('clock_out', null);
+  return error ? error.message : null;
+}

@@ -8,13 +8,13 @@
  * is everything the person needs to ask for the right correction.
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Check, ClipboardCheck, Copy, MessageCircle } from 'lucide-react';
+import { Check, Copy, LogOut, MessageCircle } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Spinner } from '../components/ui';
 import { normalizePhone } from '../shared/phoneRules';
 import { whatsappLink } from '../shared/messageRules';
-import { outletName, outletNameAr } from '../shared/outlets';
+import { outletName, outletNameAr, resolveOutlet } from '../shared/outlets';
+import { closeShift, hoursOf, kuwaitDate, kuwaitISO } from '../lib/attendanceEdits';
 import { useLive } from '../shared/live';
 
 /** Same line the database draws (attendance_abandon_hours): a shift still open after this is forgotten, not running. */
@@ -58,14 +58,19 @@ export default function OpenShiftsPage() {
   const [people, setPeople] = useState<Person[] | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
+  /* closing time per outlet code, the default leaving time offered */
+  const [closes, setCloses] = useState<Record<string, string>>({});
 
   const load = useCallback(async () => {
     const cutoff = new Date(Date.now() - ABANDON_HOURS * 3_600_000).toISOString();
-    const [{ data: recs, error }, { data: emps }] = await Promise.all([
+    const [{ data: recs, error }, { data: emps }, { data: outs }] = await Promise.all([
       supabase.from('attendance_records').select('id, user_id, employee_name, clock_in, location')
         .is('clock_out', null).lt('clock_in', cutoff).order('clock_in', { ascending: true }),
       supabase.from('employees').select('user_id, full_name, name_ar, phone'),
+      supabase.from('outlets').select('code, closes_at'),
     ]);
+    setCloses(Object.fromEntries(((outs ?? []) as { code: string; closes_at: string | null }[])
+      .filter((o) => o.closes_at).map((o) => [o.code, (o.closes_at as string).slice(0, 5)])));
     if (error) { setErr(error.message); setPeople([]); return; }
     const byUser = new Map(((emps ?? []) as Emp[]).filter((e) => e.user_id).map((e) => [e.user_id as string, e]));
     const groups = new Map<string, Person>();
@@ -119,16 +124,7 @@ export default function OpenShiftsPage() {
             </header>
             <ul className="px-4 py-3 divide-y divide-slate-100">
               {p.recs.map((r) => (
-                <li key={r.id} className="py-2 flex items-start justify-between gap-3 text-sm">
-                  <div className="min-w-0">
-                    <div className="text-slate-900 font-medium">{dayEn(r.clock_in)}</div>
-                    <div className="text-xs text-slate-500">{r.location ? outletName(r.location) : 'Place not recorded'}</div>
-                  </div>
-                  <div className="text-right shrink-0">
-                    <div className="text-slate-700 tabular-nums">In {time(r.clock_in)} · <span className="text-rose-600">no clock-out</span></div>
-                    <div className="text-xs text-slate-400 tabular-nums">{daysAgo(r.clock_in)} days ago</div>
-                  </div>
-                </li>
+                <CloseRow key={r.id} r={r} defaultOut={closes[resolveOutlet(r.location) ?? ''] ?? ''} onClosed={load} />
               ))}
             </ul>
             <div className="flex flex-wrap gap-2 px-4 pb-4">
@@ -146,14 +142,69 @@ export default function OpenShiftsPage() {
                 className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-slate-300 text-sm text-slate-700 hover:bg-slate-50">
                 {copied === p.key ? <><Check size={15} /> Copied</> : <><Copy size={15} /> Copy message</>}
               </button>
-              <Link to="/attendance"
-                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm text-slate-600 hover:bg-slate-50">
-                <ClipboardCheck size={15} /> Correct it myself
-              </Link>
             </div>
           </section>
         );
       })}
     </div>
+  );
+}
+
+/**
+ * One open day. Tap Close, pick the time they left (the outlet's closing time
+ * is offered), and it is closed here, without going to Attendance.
+ */
+function CloseRow({ r, defaultOut, onClosed }: { r: OpenRec; defaultOut: string; onClosed: () => void }) {
+  const [open, setOpen] = useState(false);
+  const [out, setOut] = useState(defaultOut);
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
+
+  const h = /^\d{2}:\d{2}$/.test(out) ? hoursOf(r.clock_in, kuwaitISO(kuwaitDate(r.clock_in), out)) : null;
+
+  async function save() {
+    setBusy(true); setMsg(null);
+    const e = await closeShift(r, out, 'clock-out was missing');
+    setBusy(false);
+    if (e) { setMsg(e); return; }
+    onClosed();
+  }
+
+  return (
+    <li className="py-2 text-sm">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <div className="whitespace-nowrap text-slate-900 font-medium">{dayEn(r.clock_in)}</div>
+          <div className="truncate text-xs text-slate-500">{r.location ? outletName(r.location).replace(/^Time Keeper - /, '') : 'Place not recorded'}</div>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <div className="text-right">
+            <div className="whitespace-nowrap text-slate-700 tabular-nums">In {time(r.clock_in)}</div>
+            <div className="whitespace-nowrap text-xs text-rose-600 tabular-nums">{daysAgo(r.clock_in)}d open</div>
+          </div>
+          {!open && (
+            <button type="button" onClick={() => { setOut(defaultOut); setOpen(true); }}
+              className="min-h-[44px] inline-flex items-center gap-1 rounded-lg border border-slate-300 px-3 text-sm font-semibold text-slate-800 hover:bg-slate-50">
+              <LogOut size={15} /> Close
+            </button>
+          )}
+        </div>
+      </div>
+      {open && (
+        <div className="mt-2 flex flex-wrap items-center gap-2 rounded-lg bg-slate-50 p-2">
+          <label className="text-xs font-semibold text-slate-600" htmlFor={`out-${r.id}`}>Out at</label>
+          <input id={`out-${r.id}`} type="time" value={out} onChange={(e) => setOut(e.target.value)}
+            className="min-h-[44px] rounded-lg border border-slate-300 bg-white px-2 text-base tabular-nums" />
+          <span className="text-sm font-semibold tabular-nums text-slate-700">{h !== null ? `${h.toFixed(1)} h` : '—'}</span>
+          <button type="button" disabled={busy || h === null} onClick={() => void save()}
+            className="min-h-[44px] rounded-lg bg-emerald-600 px-4 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-50">
+            {busy ? 'Saving…' : 'Save'}
+          </button>
+          <button type="button" onClick={() => { setOpen(false); setMsg(null); }}
+            className="min-h-[44px] rounded-lg px-3 text-sm text-slate-600 hover:bg-white">Cancel</button>
+          {msg && <div className="w-full text-xs font-semibold text-rose-700">{msg}</div>}
+        </div>
+      )}
+    </li>
   );
 }

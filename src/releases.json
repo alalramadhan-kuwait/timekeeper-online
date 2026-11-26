@@ -1,5 +1,13 @@
 [
   {
+    "version": "4.1.2",
+    "date": "2026-11-26",
+    "title": "Close missing clock-outs",
+    "changes": [
+      "On Clock-ins not closed, tap Close on a day, pick the time they left, and save. The shop's closing time is filled in for you."
+    ]
+  },
+  {
     "version": "4.1.1",
     "date": "2026-11-25",
     "title": "Outlet totals on Today",
