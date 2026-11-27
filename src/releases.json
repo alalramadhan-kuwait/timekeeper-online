@@ -1,5 +1,14 @@
 [
   {
+    "version": "4.1.3",
+    "date": "2026-11-27",
+    "title": "Open clock-ins, month by month",
+    "changes": [
+      "The alert about clock-ins never closed now comes once a month, on the 1st, for the month that ended.",
+      "Clock-ins not closed shows one month at a time. Older months are still there: tap the month."
+    ]
+  },
+  {
     "version": "4.1.2",
     "date": "2026-11-26",
     "title": "Close missing clock-outs",
