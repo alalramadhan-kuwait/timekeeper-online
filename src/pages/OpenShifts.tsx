@@ -8,6 +8,7 @@
  * is everything the person needs to ask for the right correction.
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Check, Copy, LogOut, MessageCircle } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Spinner } from '../components/ui';
@@ -28,6 +29,8 @@ const KW = { timeZone: 'Asia/Kuwait' } as const;
 const dayEn = (iso: string) => new Date(iso).toLocaleDateString('en-GB', { ...KW, weekday: 'short', day: 'numeric', month: 'short' });
 const dayAr = (iso: string) => new Date(iso).toLocaleDateString('ar-KW-u-nu-latn', { ...KW, weekday: 'long', day: 'numeric', month: 'long' });
 const time = (iso: string) => new Date(iso).toLocaleTimeString('en-GB', { ...KW, hour: '2-digit', minute: '2-digit', hour12: false });
+const monthOf = (iso: string) => kuwaitDate(iso).slice(0, 7);
+const monthLabel = (m: string) => new Date(`${m}-15T12:00:00Z`).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' });
 const daysAgo = (iso: string) => Math.max(1, Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000));
 
 /** What to send. Arabic when the record has an Arabic name, which is how the other staff messages decide. */
@@ -55,7 +58,8 @@ export function openShiftMessage(p: Person): string {
 }
 
 export default function OpenShiftsPage() {
-  const [people, setPeople] = useState<Person[] | null>(null);
+  const [all, setAll] = useState<Person[] | null>(null);
+  const [params, setParams] = useSearchParams();
   const [err, setErr] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
   /* closing time per outlet code, the default leaving time offered */
@@ -71,7 +75,7 @@ export default function OpenShiftsPage() {
     ]);
     setCloses(Object.fromEntries(((outs ?? []) as { code: string; closes_at: string | null }[])
       .filter((o) => o.closes_at).map((o) => [o.code, (o.closes_at as string).slice(0, 5)])));
-    if (error) { setErr(error.message); setPeople([]); return; }
+    if (error) { setErr(error.message); setAll([]); return; }
     const byUser = new Map(((emps ?? []) as Emp[]).filter((e) => e.user_id).map((e) => [e.user_id as string, e]));
     const groups = new Map<string, Person>();
     for (const r of (recs ?? []) as OpenRec[]) {
@@ -82,13 +86,27 @@ export default function OpenShiftsPage() {
       groups.set(key, p);
     }
     // most open days first: that is who to chase first
-    setPeople([...groups.values()].sort((a, b) => b.recs.length - a.recs.length || a.name.localeCompare(b.name)));
+    setAll([...groups.values()]);
   }, []);
 
   useEffect(() => { void load(); }, [load]);
   useLive('open-shifts', [{ table: 'attendance_records' }], load);
 
+  /* One month at a time. Older months stay in the system and are one tap away. */
+  const months = useMemo(() => {
+    const c = new Map<string, number>();
+    for (const p of all ?? []) for (const r of p.recs) { const m = monthOf(r.clock_in); c.set(m, (c.get(m) ?? 0) + 1); }
+    return [...c.entries()].sort((a, b) => b[0].localeCompare(a[0]));
+  }, [all]);
+  const asked = params.get('month');
+  const month = asked && /^\d{4}-\d{2}$/.test(asked) ? asked : monthOf(new Date().toISOString());
+  const people = useMemo(() => all === null ? null : all
+    .map((p) => ({ ...p, recs: p.recs.filter((r) => monthOf(r.clock_in) === month) }))
+    .filter((p) => p.recs.length > 0)
+    // most open days first: that is who to chase first
+    .sort((a, b) => b.recs.length - a.recs.length || a.name.localeCompare(b.name)), [all, month]);
   const total = useMemo(() => (people ?? []).reduce((n, p) => n + p.recs.length, 0), [people]);
+  const pick = (m: string) => setParams((q) => { const n = new URLSearchParams(q); n.set('month', m); return n; }, { replace: true });
 
   async function copy(key: string, text: string) {
     try { await navigator.clipboard.writeText(text); setCopied(key); setTimeout(() => setCopied(null), 2000); } catch { /* clipboard refused */ }
@@ -102,10 +120,20 @@ export default function OpenShiftsPage() {
         <h1 className="text-xl font-bold text-slate-900">Clock-ins not closed</h1>
         <p className="text-sm text-slate-500">
           {total === 0
-            ? 'Everyone has clocked out. Nothing to chase.'
-            : `${total} shift${total === 1 ? '' : 's'} with no clock-out, ${people.length} ${people.length === 1 ? 'person' : 'people'}. Until each is corrected, those days count no hours.`}
+            ? `${monthLabel(month)}: none open.`
+            : `${monthLabel(month)} · ${total} open · ${people.length} ${people.length === 1 ? 'person' : 'people'}`}
         </p>
       </div>
+      {(months.length > 1 || (months.length === 1 && months[0][0] !== month)) && (
+        <div className="flex flex-wrap gap-2" role="tablist" aria-label="Month">
+          {(months.some(([m]) => m === month) ? months : [[month, 0] as [string, number], ...months]).map(([m, n]) => (
+            <button key={m} type="button" role="tab" aria-selected={m === month} onClick={() => pick(m)}
+              className={`min-h-[44px] rounded-full px-4 text-sm font-semibold tabular-nums border ${m === month ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'}`}>
+              {monthLabel(m)} · {n}
+            </button>
+          ))}
+        </div>
+      )}
       {err && <div className="px-4 py-2 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">{err}</div>}
 
       {people.map((p) => {
